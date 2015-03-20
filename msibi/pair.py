@@ -1,7 +1,7 @@
 import mdtraj as md
 import numpy as np
 
-from msibi.potentials import lennard_jones_12_6
+from msibi.msibi import R_RANGE
 
 
 class Pair(object):
@@ -21,7 +21,7 @@ class Pair(object):
         Form of the potential function.
 
     """
-    def __init__(self, name, potential=lennard_jones_12_6):
+    def __init__(self, name, potential):
         self.name = name
         self.potential = potential
         self.states = dict()
@@ -36,5 +36,15 @@ class Pair(object):
     def compute_current_rdf(self, state):
         """ """
         pairs = self.states[state]['pair_indices']
-        r, g_r = md.compute_rdf(state.traj, pairs, r_range=[0, 2.0])
+        r, g_r = md.compute_rdf(state.traj, pairs, r_range=R_RANGE)
         self.states[state]['current_rdf'] = np.vstack((r, g_r))
+
+    def update_potential(self):
+        """ """
+        for state in self.states:
+            alpha = self.states[state]['alpha']
+            kT = state.kT
+            current_rdf = self.states[state]['current_rdf']
+            target_rdf = self.states[state]['target_rdf']
+
+            self.potential += kT * alpha * np.log(current_rdf / target_rdf)

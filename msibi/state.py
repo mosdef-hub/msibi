@@ -26,3 +26,4 @@ class State(object):
         else:
             self.traj = md.load(traj_path)
 
+

@@ -5,8 +5,9 @@ import numpy as np
 from msibi.pair import Pair
 from msibi.state import State
 
-rdf_relative_tol = 0.01
-rdf_absolute_tol = 0.01
+R_RANGE = [0.0, 2.0]
+DR = 0.01
+R = np.arange(R_RANGE[0], R_RANGE[1] + 0.5 * DR, DR)
 
 # Load states
 state0 = State(k=5, T=1.0, traj_path='query.dcd', top_path='query.pdb')
@@ -31,7 +32,6 @@ for n in range(10):
     for pair in pairs:
         for state in pair.states:
             pair.compute_current_rdf(state)
-
-        update_all
+        pair.update_potential()
 
 
