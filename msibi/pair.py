@@ -33,11 +33,16 @@ class Pair(object):
                               'alpha': alpha,
                               'pair_indices': pair_indices}
 
-    def compute_current_rdf(self, state):
+    def compute_current_rdf(self, state, save_txt=False):
         """ """
         pairs = self.states[state]['pair_indices']
         r, g_r = md.compute_rdf(state.traj, pairs, r_range=R_RANGE)
-        self.states[state]['current_rdf'] = np.vstack((r, g_r))
+        rdf = np.vstack((r, g_r))
+        self.states[state]['current_rdf'] = rdf
+
+        if save_txt:
+            filename = 'pair_{0}-state_{1}.txt'.format(self.name, state.name)
+            np.savetxt(filename, rdf)
 
     def update_potential(self):
         """ """

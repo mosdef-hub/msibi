@@ -1,0 +1,59 @@
+/home/tcmoore3/group-code/gbb.hpp: In member function ‘void gbb::load_bond(const char*)’:
+/home/tcmoore3/group-code/gbb.hpp:149: warning: passing ‘double’ for argument 1 to ‘void std::vector<_Tp, _Alloc>::push_back(const _Tp&) [with _Tp = int, _Alloc = std::allocator<int>]’
+/home/tcmoore3/group-code/gbb.hpp:150: warning: passing ‘double’ for argument 1 to ‘void std::vector<_Tp, _Alloc>::push_back(const _Tp&) [with _Tp = int, _Alloc = std::allocator<int>]’
+/home/tcmoore3/group-code/gbb.hpp: In member function ‘void gbb::load_angle(const char*)’:
+/home/tcmoore3/group-code/gbb.hpp:180: warning: passing ‘double’ for argument 1 to ‘void std::vector<_Tp, _Alloc>::push_back(const _Tp&) [with _Tp = int, _Alloc = std::allocator<int>]’
+/home/tcmoore3/group-code/gbb.hpp:181: warning: passing ‘double’ for argument 1 to ‘void std::vector<_Tp, _Alloc>::push_back(const _Tp&) [with _Tp = int, _Alloc = std::allocator<int>]’
+/home/tcmoore3/group-code/gbb.hpp:182: warning: passing ‘double’ for argument 1 to ‘void std::vector<_Tp, _Alloc>::push_back(const _Tp&) [with _Tp = int, _Alloc = std::allocator<int>]’
+/home/tcmoore3/group-code/gbb.hpp: In member function ‘void gbb::load_dihedral(const char*)’:
+/home/tcmoore3/group-code/gbb.hpp:210: warning: passing ‘double’ for argument 1 to ‘void std::vector<_Tp, _Alloc>::push_back(const _Tp&) [with _Tp = int, _Alloc = std::allocator<int>]’
+/home/tcmoore3/group-code/gbb.hpp:211: warning: passing ‘double’ for argument 1 to ‘void std::vector<_Tp, _Alloc>::push_back(const _Tp&) [with _Tp = int, _Alloc = std::allocator<int>]’
+/home/tcmoore3/group-code/gbb.hpp:212: warning: passing ‘double’ for argument 1 to ‘void std::vector<_Tp, _Alloc>::push_back(const _Tp&) [with _Tp = int, _Alloc = std::allocator<int>]’
+/home/tcmoore3/group-code/gbb.hpp:213: warning: passing ‘double’ for argument 1 to ‘void std::vector<_Tp, _Alloc>::push_back(const _Tp&) [with _Tp = int, _Alloc = std::allocator<int>]’
+/home/tcmoore3/group-code/gbb.hpp: In member function ‘void gbb::load_improper(const char*)’:
+/home/tcmoore3/group-code/gbb.hpp:243: warning: passing ‘double’ for argument 1 to ‘void std::vector<_Tp, _Alloc>::push_back(const _Tp&) [with _Tp = int, _Alloc = std::allocator<int>]’
+/home/tcmoore3/group-code/gbb.hpp:244: warning: passing ‘double’ for argument 1 to ‘void std::vector<_Tp, _Alloc>::push_back(const _Tp&) [with _Tp = int, _Alloc = std::allocator<int>]’
+/home/tcmoore3/group-code/gbb.hpp:245: warning: passing ‘double’ for argument 1 to ‘void std::vector<_Tp, _Alloc>::push_back(const _Tp&) [with _Tp = int, _Alloc = std::allocator<int>]’
+/home/tcmoore3/group-code/gbb.hpp:246: warning: passing ‘double’ for argument 1 to ‘void std::vector<_Tp, _Alloc>::push_back(const _Tp&) [with _Tp = int, _Alloc = std::allocator<int>]’
+/home/tcmoore3/group-code/gbb.hpp: In member function ‘void gbb::load_element(const char*)’:
+/home/tcmoore3/group-code/gbb.hpp:348: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/celllist.hpp: In member function ‘void cellList::init(double, double, double, box_info, int)’:
+/home/tcmoore3/group-code/celllist.hpp:61: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/celllist.hpp:62: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/celllist.hpp:63: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/celllist.hpp: In member function ‘void cellList::init(int)’:
+/home/tcmoore3/group-code/celllist.hpp:132: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/celllist.hpp:134: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/celllist.hpp:136: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/celllist.hpp: In member function ‘int cellList::cell_containing(coord_t)’:
+/home/tcmoore3/group-code/celllist.hpp:225: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/celllist.hpp:226: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/celllist.hpp:227: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/average.hpp: In member function ‘void block_average::init(double, double, double)’:
+/home/tcmoore3/group-code/average.hpp:84: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/average.hpp: In member function ‘void block_average::insert(double, double)’:
+/home/tcmoore3/group-code/average.hpp:103: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/histogram.hpp: In member function ‘void histogram_1D::insert(double)’:
+/home/tcmoore3/group-code/histogram.hpp:49: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/histogram.hpp: In member function ‘void histogram_1D::insert(double, double)’:
+/home/tcmoore3/group-code/histogram.hpp:59: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/histogram.hpp: In member function ‘void histogram_2D::insert(double, double)’:
+/home/tcmoore3/group-code/histogram.hpp:171: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/histogram.hpp:174: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/histogram.hpp: In member function ‘void histogram_2D::insert(double, double, double)’:
+/home/tcmoore3/group-code/histogram.hpp:188: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/histogram.hpp:191: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/lattice.hpp: In function ‘void init_cubic_lattice(coordlist_t&, int, double, double, double, box_info)’:
+/home/tcmoore3/group-code/lattice.hpp:111: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/lattice.hpp:112: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/lattice.hpp:113: warning: converting to ‘int’ from ‘double’
+/home/tcmoore3/group-code/structure_matching.hpp: In member function ‘void intermolecular::init_potential_LJ(double, double, double, double)’:
+/home/tcmoore3/group-code/structure_matching.hpp:371: warning: converting to ‘int’ from ‘double’
+rm: cannot remove `query.dcd': No such file or directory
+runner.sh: line 5: hoomd: command not found
+rm: cannot remove `query.dcd': No such file or directory
+runner.sh: line 10: hoomd: command not found
+rm: cannot remove `query.dcd': No such file or directory
+runner.sh: line 15: hoomd: command not found
+opt: /home/tcmoore3/group-code/structure_matching.hpp:30: void calc_rdf_dcd(std::string, RDF&, box_info, int, int, double, double, gbb): Assertion `input_target.good()' failed.
+/var/spool/torque/mom_priv/jobs/605.edwards.vuse.vanderbilt.edu.SC: line 11: 13805 Aborted                 ./opt > run.log
