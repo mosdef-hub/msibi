@@ -16,7 +16,6 @@ def optimize(states, pairs):
     initialize(states, pairs, engine='hoomd')
     for n in range(10):
         for state in states:
-            gather_potentials(pairs)
             os.system('hoomd {0}'.format(input_script))
 
         for pair in pairs:
@@ -46,8 +45,6 @@ def initialize(states, pairs, engine='hoomd', potentials_dir=None):
         # This file is overwritten at each iteration and actually used for the
         # simulation.
         pair.save_table_potential(potential_file)
-
-
 
     for state in states:
         state.save_runscript(table_potentials, engine=engine)

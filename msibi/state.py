@@ -36,8 +36,7 @@ class State(object):
     def save_runscript(self, table_potentials, engine='hoomd'):
         """ """
 
-        header = """
-        from hoomd_script import *
+        header = """from hoomd_script import *
 
         system = init.read_xml(filename="{0}")
 
