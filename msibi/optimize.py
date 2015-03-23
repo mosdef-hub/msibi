@@ -4,11 +4,8 @@ import os
 import numpy as np
 
 R_RANGE = [0.0, 2.0]
-DR = 0.01
+DR = 0.05
 R = np.arange(R_RANGE[0], R_RANGE[1] + 0.5 * DR, DR)
-
-from msibi.pair import Pair
-from msibi.state import State
 
 
 def optimize(states, pairs):
@@ -23,6 +20,7 @@ def optimize(states, pairs):
                 pair.compute_current_rdf(state)
             pair.update_potential()
         print("Finished iteration {0}".format(n))
+
 
 def initialize(states, pairs, engine='hoomd', potentials_dir=None):
     """
@@ -70,23 +68,4 @@ def run_queries(states):
         os.system('hoomd run.py > log.txt')
         os.chdir(os.pardir)
 
-
         state.reload_query_trajectory()
-
-
-if __name__ == "__main__":
-    # Load states
-    state0 = State(k=5, T=1.0, traj_file='query.dcd', top_file='query.pdb')
-    states = [state0, state1]
-
-    # Creating pairs
-    indices = [a.index for a in state0.traj.top._atoms]
-    target = np.loadtxt('rdf.txt')
-    pair0 = Pair('HC-CH', target)
-
-    pairs = [pair0, pair3]
-
-    # Add pairs to relevant states.
-    pair0.add_state(state0, target_rdf0, alpha0, pair_indices0)
-
-    msibi.optimize(states, pairs)

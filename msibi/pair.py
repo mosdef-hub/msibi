@@ -50,7 +50,7 @@ class Pair(object):
     def compute_current_rdf(self, state, save_txt=False):
         """ """
         pairs = self.states[state]['pair_indices']
-        r, g_r = md.compute_rdf(state.traj, pairs, r_range=R_RANGE, bin_width=DR)
+        r, g_r = md.compute_rdf(state.traj, pairs, r_range=R_RANGE * 10 , bin_width=DR * 10)
         rdf = np.vstack((r, g_r)).T
         self.states[state]['current_rdf'] = rdf
 
@@ -63,8 +63,8 @@ class Pair(object):
         for state in self.states:
             alpha = self.states[state]['alpha']
             kT = state.kT
-            current_rdf = self.states[state]['current_rdf']
-            target_rdf = self.states[state]['target_rdf']
+            current_rdf = self.states[state]['current_rdf'][1]
+            target_rdf = self.states[state]['target_rdf'][1]
 
             self.potential += kT * alpha * np.log(current_rdf / target_rdf)
 
