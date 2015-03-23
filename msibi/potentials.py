@@ -1,6 +1,6 @@
 import numpy as np
 
-from msibi.msibi import R
+from msibi.optimize import R
 
 
 def mie(eps, sig, m=12, n=6):

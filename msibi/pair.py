@@ -1,7 +1,7 @@
 import mdtraj as md
 import numpy as np
 
-from msibi.msibi import R_RANGE
+from msibi.optimize import R_RANGE
 
 
 class Pair(object):

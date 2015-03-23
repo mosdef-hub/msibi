@@ -25,8 +25,6 @@ def optimize(states, pairs):
 
 
 if __name__ == "__main__":
-    import msibi
-
     # Load states
     state0 = State(k=5, T=1.0, traj_path='query.dcd', top_path='query.pdb')
     states = [state0, state1]
