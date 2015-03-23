@@ -7,7 +7,7 @@ from msibi.optimize import R
 HOOMD_HEADER = """from hoomd_script import *
 
 system = init.read_xml(filename="{0}")
-T_final = {1:d}
+T_final = {1:.1f}
 
 pot_width = {2:d}
 table = pair.table(width=pot_width)
