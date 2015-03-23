@@ -65,7 +65,7 @@ def run_queries(states):
 
         proc = Popen('hoomd run.py', stdout=PIPE, stderr=PIPE, universal_newlines=True)
         out, err = proc.communicate()
-        
+
         print(out)
         print(err)
 

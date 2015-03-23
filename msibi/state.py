@@ -7,9 +7,11 @@ from msibi.optimize import R
 HOOMD_HEADER = """from hoomd_script import *
 
 system = init.read_xml(filename="{0}")
+T_final = {1:d}
 
-pot_width = {1:d}
+pot_width = {2:d}
 table = pair.table(width=pot_width)
+
 """
 
 
@@ -45,7 +47,7 @@ class State(object):
     def save_runscript(self, table_potentials, engine='hoomd',
                        runscript='hoomd_run_template.py'):
         """ """
-        header = HOOMD_HEADER.format('start.xml', len(R))
+        header = HOOMD_HEADER.format('start.xml', self.kT, len(R))
         for type1, type2, potential_file in table_potentials:
             command = "table.set_from_file('{0}', '{1}', filename='{2}')\n".format(
                type1, type2, potential_file)
