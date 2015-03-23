@@ -1,7 +1,14 @@
 import os
-from glob import glob
 
 import mdtraj as md
+
+HOOMD_HEADER = """from hoomd_script import *
+
+system = init.read_xml(filename="{0}")
+
+pot_width = {1:d}
+table = pair.table(width=pot_width)
+"""
 
 
 class State(object):
@@ -35,19 +42,10 @@ class State(object):
 
     def save_runscript(self, table_potentials, engine='hoomd'):
         """ """
-
-        header = """from hoomd_script import *
-
-        system = init.read_xml(filename="{0}")
-
-        pot_width = {1:d}
-        table = pair.table(width=pot_width)
-
-        """
         for type1, type2, potential_file in table_potentials:
             command = "table.set_from_file('{0}', '{1}', filename='{2}')\n".format(
                type1, type2, potential_file)
-            header += command
+            HOOMD_HEADER += command
 
         runscript_file = os.path.join(self.state_dir, 'run.py')
         with open(runscript_file, 'w') as fh:
