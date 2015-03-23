@@ -1,7 +1,9 @@
+import os
+
 import mdtraj as md
 import numpy as np
 
-from msibi.optimize import R_RANGE
+from msibi.optimize import R_RANGE, R, DR
 
 
 class Pair(object):
@@ -21,8 +23,10 @@ class Pair(object):
         Form of the potential function.
 
     """
-    def __init__(self, name, potential):
-        self.name = name
+    def __init__(self, type1, type2, potential):
+        self.type1 = str(type1)
+        self.type2 = str(type2)
+        self.name = '{0}-{1}'.format(self.type1, self.type2)
         self.potential = potential
         self.states = dict()
 
@@ -60,3 +64,17 @@ class Pair(object):
             target_rdf = self.states[state]['target_rdf']
 
             self.potential += kT * alpha * np.log(current_rdf / target_rdf)
+
+    def save_table_potential(self, filename, iteration=None):
+        """ """
+        V = self.potential
+        F = -1.0 * np.gradient(V, DR)
+        data = np.vstack([R, V, F])
+
+        if iteration:
+            assert isinstance(iteration, int)
+            basename = os.path.basename(filename)
+            basename = 'step{0:d}.{1}'.format(iteration, basename)
+            dirname = os.path.dirname(filename)
+            filename = os.path.join(dirname, basename)
+        np.savetxt(filename, data.T)

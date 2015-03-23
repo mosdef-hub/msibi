@@ -13,6 +13,7 @@ from msibi.state import State
 def optimize(states, pairs):
     """
     """
+    initialize(states, pairs, engine='hoomd')
     for n in range(10):
         for state in states:
             gather_potentials(pairs)
@@ -24,9 +25,37 @@ def optimize(states, pairs):
             pair.update_potential()
 
 
+def initialize(states, pairs, engine='hoomd', potentials_dir=None):
+    """
+    """
+    if not potentials_dir:
+        potentials_dir = os.path.join(os.getcwd(), 'potentials')
+    try:
+        os.mkdir(potentials_dir)
+    except OSError:
+        # TODO: warning and maybe a "make backups" feature
+        pass
+
+    table_potentials = []
+    for pair in pairs:
+        potential_file = os.path.join(potentials_dir, 'pot.{0}.txt'.format(pair.name))
+        table_potentials.append((pair.type1, pair.type2, potential_file))
+
+        # This file is written for later viewing of how the potential evolves.
+        pair.save_table_potential(potential_file, iteration=0)
+        # This file is overwritten at each iteration and actually used for the
+        # simulation.
+        pair.save_table_potential(potential_file)
+
+
+
+    for state in states:
+        state.save_runscript(table_potentials, engine=engine)
+
+
 if __name__ == "__main__":
     # Load states
-    state0 = State(k=5, T=1.0, traj_path='query.dcd', top_path='query.pdb')
+    state0 = State(k=5, T=1.0, traj_file='query.dcd', top_file='query.pdb')
     states = [state0, state1]
 
     # Creating pairs
