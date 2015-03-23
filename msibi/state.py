@@ -38,7 +38,10 @@ class State(object):
         if top_file:
             self.top_path = os.path.join(state_dir, top_file)
 
+        self.traj = None  # Will be set after first iteration.
+
     def reload_query_trajectory(self):
+        """ """
         if self.top_path:
             self.traj = md.load(self.traj_path, topology=self.top_path)
         else:

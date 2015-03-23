@@ -50,8 +50,8 @@ class Pair(object):
     def compute_current_rdf(self, state, save_txt=False):
         """ """
         pairs = self.states[state]['pair_indices']
-        r, g_r = md.compute_rdf(state.traj, pairs, r_range=R_RANGE)
-        rdf = np.vstack((r, g_r))
+        r, g_r = md.compute_rdf(state.traj, pairs, r_range=R_RANGE, bin_width=DR)
+        rdf = np.vstack((r, g_r)).T
         self.states[state]['current_rdf'] = rdf
 
         if save_txt:
