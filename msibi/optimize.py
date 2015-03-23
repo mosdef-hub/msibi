@@ -60,7 +60,7 @@ def initialize(states, pairs, engine='hoomd', potentials_dir=None):
 
 def run_queries(states):
     for state in states:
-        proc = Popen('hoomd run.py', cwd=state.state_dir, stdout=PIPE,
+        proc = Popen(['hoomd', 'run.py'], cwd=state.state_dir, stdout=PIPE,
                      stderr=PIPE, universal_newlines=True)
         out, err = proc.communicate()
 
