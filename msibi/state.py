@@ -42,13 +42,17 @@ class State(object):
         else:
             self.traj = md.load(traj_path)
 
-    def save_runscript(self, table_potentials, engine='hoomd'):
+    def save_runscript(self, table_potentials, engine='hoomd',
+                       runscript='hoomd_run_template.py'):
         """ """
         header = HOOMD_HEADER.format('start.xml', len(R))
         for type1, type2, potential_file in table_potentials:
             command = "table.set_from_file('{0}', '{1}', filename='{2}')\n".format(
                type1, type2, potential_file)
             header += command
+
+        with open(os.path.join(self.state_dir, runscript)) as fh:
+            body = fh.readlines()
 
         runscript_file = os.path.join(self.state_dir, 'run.py')
         with open(runscript_file, 'w') as fh:

@@ -26,6 +26,14 @@ def optimize(states, pairs):
 
 def initialize(states, pairs, engine='hoomd', potentials_dir=None):
     """
+
+    Parameters
+    ----------
+    states : list of States
+    pairs : list of Pairs
+    engine : str, optional, default='hoomd'
+    potentials_dir : path, optional, default="current_working_dir/potentials"
+
     """
     if not potentials_dir:
         potentials_dir = os.path.join(os.getcwd(), 'potentials')
