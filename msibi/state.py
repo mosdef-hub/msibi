@@ -43,7 +43,7 @@ class State(object):
     def reload_query_trajectory(self):
         """ """
         if self.top_path:
-            self.traj = md.load(self.traj_path, topology=self.top_path)
+            self.traj = md.load(self.traj_path, top=self.top_path)
         else:
             self.traj = md.load(self.traj_path)
 
