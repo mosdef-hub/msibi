@@ -38,9 +38,9 @@ class State(object):
 
     def reload_query_trajectory(self):
         if self.top_path:
-            self.traj = md.load(self.traj_path, topology=top_path)
+            self.traj = md.load(self.traj_path, topology=self.top_path)
         else:
-            self.traj = md.load(traj_path)
+            self.traj = md.load(self.traj_path)
 
     def save_runscript(self, table_potentials, engine='hoomd',
                        runscript='hoomd_run_template.py'):
@@ -52,7 +52,7 @@ class State(object):
             header += command
 
         with open(os.path.join(self.state_dir, runscript)) as fh:
-            body = fh.readlines()
+            body = ''.join(fh.readlines())
 
         runscript_file = os.path.join(self.state_dir, 'run.py')
         with open(runscript_file, 'w') as fh:

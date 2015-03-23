@@ -15,10 +15,7 @@ class Pair(object):
         Pair name.
     pairs : array-like, shape=(n_pairs, 2), dtype=int, optional, default=None
         Each row gives the indices of two atoms representing a pair.
-    target_rdf : np.ndarray, shape=(n_bins, 2), dtype=float
-        Coarse-grained target RDF.
-    current_rdf : np.ndarray, shape=(n_bins, 2), dtype=float
-        Coarse-grained RDF at the current iteration.
+
     potential : func, optional, default=lennard_jones_12_6
         Form of the potential function.
 
@@ -33,10 +30,16 @@ class Pair(object):
     def add_state(self, state, target_rdf, alpha, pair_indices):
         """Add a state to be used in optimizing this pair.
 
+        Parameters
+        ----------
         state : State
-        target_rdf : np.ndarray, shape=(n, 2), dtype=float
+            A state object.
+        target_rdf : np.ndarray, shape=(n_bins, 2), dtype=float
+            Coarse-grained target RDF.
         alpha : float
-        pair_indices :
+            The alpha value used to scale the weight of this state.
+        pair_indices : array-like, shape=(n_pairs, 2), dtype=int, optional, default=None
+            Each row gives the indices of two atoms representing a pair.
 
         """
         self.states[state] = {'target_rdf': target_rdf,

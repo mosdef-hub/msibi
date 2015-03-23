@@ -1,3 +1,4 @@
+from subprocess import Popen, PIPE
 import os
 
 import numpy as np
@@ -15,8 +16,7 @@ def optimize(states, pairs):
     """
     initialize(states, pairs, engine='hoomd')
     for n in range(10):
-        for state in states:
-            os.system('hoomd {0}'.format(input_script))
+        run_queries(states)
 
         for pair in pairs:
             for state in pair.states:
@@ -56,6 +56,17 @@ def initialize(states, pairs, engine='hoomd', potentials_dir=None):
 
     for state in states:
         state.save_runscript(table_potentials, engine=engine)
+
+
+def run_queries(states):
+    for state in states:
+        os.chdir(state.state_dir)
+
+        proc = Popen('hoomd run.py', stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
+        out, err = proc.communicate()
+
+        os.chdir(os.pardir)
+        state.reload_query_trajectory()
 
 
 if __name__ == "__main__":
