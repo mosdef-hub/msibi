@@ -2,6 +2,8 @@ import os
 
 import mdtraj as md
 
+from msibi.optimize import R
+
 HOOMD_HEADER = """from hoomd_script import *
 
 system = init.read_xml(filename="{0}")
@@ -42,10 +44,11 @@ class State(object):
 
     def save_runscript(self, table_potentials, engine='hoomd'):
         """ """
+        header = HOOMD_HEADER.format('start.xml', len(R))
         for type1, type2, potential_file in table_potentials:
             command = "table.set_from_file('{0}', '{1}', filename='{2}')\n".format(
                type1, type2, potential_file)
-            HOOMD_HEADER += command
+            header += command
 
         runscript_file = os.path.join(self.state_dir, 'run.py')
         with open(runscript_file, 'w') as fh:
