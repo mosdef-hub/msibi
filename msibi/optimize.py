@@ -22,7 +22,7 @@ def optimize(states, pairs):
             for state in pair.states:
                 pair.compute_current_rdf(state)
             pair.update_potential()
-
+        print("Finished iteration {0}".format(n))
 
 def initialize(states, pairs, engine='hoomd', potentials_dir=None):
     """
