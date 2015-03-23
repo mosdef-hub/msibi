@@ -3,7 +3,7 @@ import os
 
 import numpy as np
 
-R_RANGE = [0.0, 2.0]
+R_RANGE = np.array([0.0, 2.0])
 DR = 0.05
 R = np.arange(R_RANGE[0], R_RANGE[1] + 0.5 * DR, DR)
 
