@@ -1,4 +1,3 @@
-import collections
 import mdtraj as md
 
 

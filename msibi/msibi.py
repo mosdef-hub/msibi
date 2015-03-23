@@ -2,13 +2,12 @@ import os
 
 import numpy as np
 
-from msibi.pair import Pair
-from msibi.state import State
-
-
 R_RANGE = [0.0, 2.0]
 DR = 0.01
 R = np.arange(R_RANGE[0], R_RANGE[1] + 0.5 * DR, DR)
+
+from msibi.pair import Pair
+from msibi.state import State
 
 
 def optimize(states, pairs):
@@ -26,6 +25,8 @@ def optimize(states, pairs):
 
 
 if __name__ == "__main__":
+    import msibi
+
     # Load states
     state0 = State(k=5, T=1.0, traj_path='query.dcd', top_path='query.pdb')
     states = [state0, state1]
@@ -40,4 +41,4 @@ if __name__ == "__main__":
     # Add pairs to relevant states.
     pair0.add_state(state0, target_rdf0, alpha0, pair_indices0)
 
-    optimize(states, pairs)
+    msibi.optimize(states, pairs)

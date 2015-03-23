@@ -27,7 +27,14 @@ class Pair(object):
         self.states = dict()
 
     def add_state(self, state, target_rdf, alpha, pair_indices):
-        """ """
+        """Add a state to be used in optimizing this pair.
+
+        state : State
+        target_rdf : np.ndarray, shape=(n, 2), dtype=float
+        alpha : float
+        pair_indices :
+
+        """
         self.states[state] = {'target_rdf': target_rdf,
                               'current_rdf': None,
                               'alpha': alpha,
