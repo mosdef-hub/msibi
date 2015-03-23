@@ -60,9 +60,16 @@ def initialize(states, pairs, engine='hoomd', potentials_dir=None):
 
 def run_queries(states):
     for state in states:
-        proc = Popen(['hoomd', 'run.py'], cwd=state.state_dir, stdout=PIPE,
-                     stderr=PIPE, universal_newlines=True)
-        out, err = proc.communicate()
+        """
+        proc = Popen('hoomd', cwd=state.state_dir, stdout=PIPE,
+                     stderr=PIPE, universal_newlines=True, stdin=PIPE)
+        out, err = proc.communicate('run.py')
+        print out, err
+        """
+        os.chdir(state.state_dir)
+        os.system('hoomd run.py > log.txt')
+        os.chdir(os.pardir)
+
 
         state.reload_query_trajectory()
 
