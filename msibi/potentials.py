@@ -23,11 +23,12 @@ def tail_correction(r, V, r_switch):
     S_r = np.ones_like(r)
     # TODO: See HOOMD XPLOR smooth function reference.
     S_r[idx_r_switch:] = ((r_cut ** 2 - r[idx_r_switch:] ** 2) ** 2 *
-                      (r_cut ** 2 + 2 * r[idx_r_switch:] ** 2 - 3 * r_switch ** 2) /
-                      (r_cut ** 2 - r_switch ** 2) ** 3)
+                          (r_cut ** 2 + 2 * r[idx_r_switch:] ** 2 - 3 * r_switch ** 2) /
+                          (r_cut ** 2 - r_switch ** 2) ** 3)
 
     V *= S_r
     return V
+
 
 def head_correction(r, V, style='linear'):
     """ """
@@ -47,6 +48,7 @@ def head_correction(r, V, style='linear'):
         ValueError('Unsupported head correction style')
 
     return V
+
 
 def find_nearest(array, target):
     """Find array component whose numeric value is closest to 'target'. """

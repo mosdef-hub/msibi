@@ -1,0 +1,4 @@
+matplotlib
+mdtraj
+numpy
+seaborn
