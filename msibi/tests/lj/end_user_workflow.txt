@@ -1,0 +1,2 @@
+1. Load target data for each pair at each state
+2. 

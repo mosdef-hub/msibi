@@ -1,0 +1,68 @@
+HOOMD-blue v1.0.1 CUDA SINGLE SSE
+Compiled: 09/10/14
+Copyright 2009-2014 The Regents of the University of Michigan.
+-----
+All publications and presentations based on HOOMD-blue, including any reports
+or published results obtained, in whole or in part, with HOOMD-blue, will
+acknowledge its use according to the terms posted at the time of submission on:
+http://codeblue.umich.edu/hoomd-blue/citations.html
+
+At a minimum, this includes citations of:
+* http://codeblue.umich.edu/hoomd-blue/
+and:
+* Joshua A. Anderson, Chris D. Lorenz, and Alex Travesset - 'General
+  Purpose Molecular Dynamics Fully Implemented on Graphics Processing
+  Units', Journal of Computational Physics 227 (2008) 5342-5359
+-----
+run.py:003  |  system = init.read_xml(filename="start.xml")
+HOOMD-blue is running on the CPU
+notice(2): Reading start.xml...
+notice(2): Parser for node <acceleration> not defined, ignoring
+notice(2): --- hoomd_xml file read summary
+notice(2): 1468 positions at timestep 2100000
+notice(2): 1468 images
+notice(2): 1468 velocities
+notice(2): 1468 masses
+notice(2): 1468 diameters
+notice(2): 1 particle types
+notice(2): 1468 particle body values
+notice(2): 1468 charges
+notice(2): 1468 orientations
+notice(2): Group "all" created containing 1468 particles
+run.py:007  |  table = pair.table(width=pot_width)
+run.py:009  |  table.set_from_file('1', '1', filename='/Users/tcmoore3/programs/msibi/msibi/tests/lj/potentials/pot.1-1.txt')
+notice(2): -- Neighborlist exclusion statistics -- :
+notice(2): Particles with 0 exclusions             : 1468
+notice(2): Neighbors excluded by diameter (slj)    : no
+notice(2): Neighbors excluded when in the same body: no
+** starting run **
+Time 00:00:06 | Step 2101000 / 2101000 | TPS 151.257 | ETA 00:00:00
+Average TPS: 151.254
+---------
+-- Cell list stats:
+Dimension: 5, 5, 5
+n_min    : 7 / n_max: 17 / n_avg: 11.744
+-- Neighborlist stats:
+20 normal updates / 11 forced updates / 0 dangerous updates
+n_neigh_min: 0 / n_neigh_max: 40 / n_neigh_avg: 19.1819
+shortest rebuild period: 32
+** run complete **
+run.py:016  |  output_dcd = dump.dcd(filename='query.dcd', period=100, overwrite=True)
+run.py:017  |  run(1e3)
+** starting run **
+Time 00:00:11 | Step 2102000 / 2102000 | TPS 197.915 | ETA 00:00:00
+Average TPS: 197.911
+---------
+-- Cell list stats:
+Dimension: 5, 5, 5
+n_min    : 8 / n_max: 16 / n_avg: 11.744
+-- Neighborlist stats:
+20 normal updates / 10 forced updates / 0 dangerous updates
+n_neigh_min: 0 / n_neigh_max: 41 / n_neigh_avg: 19.1022
+shortest rebuild period: 36
+** run complete **
+run.py:019  |  output_xml = dump.xml()
+run.py:020  |  output_xml.set_params(all=True)
+run.py:021  |  output_xml.write(filename='final.xml')
+run.py:022  |  output_pdb = dump.pdb()
+run.py:023  |  output_pdb.write(filename='final.pdb')
