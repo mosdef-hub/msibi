@@ -3,7 +3,17 @@ from multiprocessing.dummy import Pool
 import os
 from subprocess import Popen
 
+import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
+sns.set_style('white', {'legend.frameon': True,
+                        'axes.edgecolor': '0.0',
+                        'axes.linewidth': 1.0,
+                        'xtick.direction': 'in',
+                        'ytick.direction': 'in',
+                        'xtick.major.size': 4.0,
+                        'ytick.major.size': 4.0})
+sns.color_palette("GnBu_d")
 
 from msibi.utils.exceptions import UnsupportedEngine
 
@@ -15,29 +25,33 @@ class MSIBI(object):
     def __init__(self, rdf_cutoff, dr, pot_cutoff=None):
         self.states = None
         self.pairs = None
+        self.n_iterations = 10
         self.rdf_cutoff = rdf_cutoff
         self.dr = dr
-        self.rdf_r = np.arange(0.0, rdf_cutoff + 0.5 * dr, dr)
+        self.rdf_r = np.arange(0.0, rdf_cutoff, dr)
 
         # TODO: description of use for pot vs rdf cutoff
         if not pot_cutoff:
             pot_cutoff = rdf_cutoff
         self.pot_cutoff = pot_cutoff
-        self.pot_r = np.arange(0.0, pot_cutoff + 0.5 * dr, dr)
+        # TODO: note on why the potential needs to be shortened to match the RDF
+        self.pot_r = np.arange(0.0, pot_cutoff - dr, dr)
 
-    def optimize(self, states, pairs, engine='hoomd'):
+    def optimize(self, states, pairs, n_iterations=10, engine='hoomd'):
         """
         """
         self.states = states
         self.pairs = pairs
+        self.n_iterations = n_iterations
         self.initialize(engine=engine)
-        for n in range(10):
+        for n in range(self.n_iterations):
             run_query_simulations(self.states, engine=engine)
 
             for pair in self.pairs:
                 for state in pair.states:
                     pair.compute_current_rdf(state, np.array([0.0, self.rdf_cutoff]), self.dr)
                 pair.update_potential()
+                pair.save_table_potential(self.pot_r, self.dr, iteration=n, engine=engine)
             print("Finished iteration {0}".format(n))
 
     def initialize(self, engine='hoomd', potentials_dir=None):
@@ -52,27 +66,43 @@ class MSIBI(object):
 
         """
         if not potentials_dir:
-            potentials_dir = os.path.join(os.getcwd(), 'potentials')
+            self.potentials_dir = os.path.join(os.getcwd(), 'potentials')
+        else:
+            self.potentials_dir = potentials_dir
         try:
-            os.mkdir(potentials_dir)
+            os.mkdir(self.potentials_dir)
         except OSError:
             # TODO: warning and maybe a "make backups" feature
             pass
 
         table_potentials = []
         for pair in self.pairs:
-            potential_file = os.path.join(potentials_dir, 'pot.{0}.txt'.format(pair.name))
+            potential_file = os.path.join(self.potentials_dir, 'pot.{0}.txt'.format(pair.name))
+            pair.potential_file = potential_file
+
             table_potentials.append((pair.type1, pair.type2, potential_file))
 
             # This file is written for later viewing of how the potential evolves.
-            pair.save_table_potential(potential_file, self.pot_r, self.dr, iteration=0, engine=engine)
+            pair.save_table_potential(self.pot_r, self.dr, iteration=0, engine=engine)
             # This file is overwritten at each iteration and actually used for the
             # simulation.
-            pair.save_table_potential(potential_file, self.pot_r, self.dr, engine=engine)
+            pair.save_table_potential(self.pot_r, self.dr, engine=engine)
 
         for state in self.states:
-            state.save_runscript(table_potentials, table_width=len(self.pot_r), engine=engine)
+            state.save_runscript(table_potentials, table_width=len(self.pot_r) + 1, engine=engine)
 
+    def plot(self):
+        """ """
+        for pair in self.pairs:
+            for n in range(self.n_iterations):
+                potential_file = os.path.join(self.potentials_dir, 'step{0:d}.{1}'.format(
+                    n, os.path.basename(pair.potential_file)))
+                data = np.loadtxt(potential_file)
+                plt.plot(data[:, 0], data[:, 1], label='n={0:d}'.format(n))
+            plt.xlabel('r')
+            plt.ylabel('V(r)')
+            plt.legend()
+            plt.savefig('figures/{0}.pdf'.format(pair.name))
 
 def run_query_simulations(states, engine='hoomd'):
     """Run all query simulations for a single iteration. """

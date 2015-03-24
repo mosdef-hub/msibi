@@ -4,6 +4,7 @@ import mdtraj as md
 import numpy as np
 
 from msibi.utils.exceptions import UnsupportedEngine
+from msibi.potentials import tail_correction
 
 
 class Pair(object):
@@ -24,6 +25,7 @@ class Pair(object):
         self.type2 = str(type2)
         self.name = '{0}-{1}'.format(self.type1, self.type2)
         self.potential = potential
+        self.potential_file = None
         self.states = dict()
 
     def add_state(self, state, target_rdf, alpha, pair_indices):
@@ -68,20 +70,21 @@ class Pair(object):
 
             self.potential += kT * alpha * np.log(current_rdf / target_rdf)
 
-    def save_table_potential(self, filename, r, dr, iteration=None, engine='hoomd'):
+    def save_table_potential(self, r, dr, iteration=None, engine='hoomd'):
         """ """
         V = self.potential
-        F = -1.0 * np.gradient(V, dr)
-        data = np.vstack([r, V, F])
+        data = np.vstack(tail_correction(r, dr, V))
 
-        if iteration:
+        if iteration is not None:
             assert isinstance(iteration, int)
-            basename = os.path.basename(filename)
+            basename = os.path.basename(self.potential_file)
             basename = 'step{0:d}.{1}'.format(iteration, basename)
-            dirname = os.path.dirname(filename)
-            filename = os.path.join(dirname, basename)
+            dirname = os.path.dirname(self.potential_file)
+            iteration_filename = os.path.join(dirname, basename)
 
         if engine.lower() == 'hoomd':
-            np.savetxt(filename, data.T)
+            np.savetxt(self.potential_file, data.T)
+            if iteration is not None:
+                np.savetxt(iteration_filename, data.T)
         else:
             raise UnsupportedEngine(engine)
