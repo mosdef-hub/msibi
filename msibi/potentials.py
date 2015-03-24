@@ -14,7 +14,7 @@ def morse(r, D, alpha, r0):
                 2 * np.exp(-alpha * (r - r0)))
 
 
-def tail_correction(r, dr, V, r_switch):
+def tail_correction(r, V, r_switch):
     """ """
     r_cut = r[-1]
 
@@ -27,8 +27,25 @@ def tail_correction(r, dr, V, r_switch):
                       (r_cut ** 2 - r_switch ** 2) ** 3)
 
     V *= S_r
-    return r, V
+    return V
 
+def head_correction(r, V, style='linear'):
+    """ """
+    last_nan = 0
+    for i, pot_value in enumerate(V):
+        if np.isnan(pot_value):
+            last_nan = i
+
+    if style == 'linear':
+        slope = ((V[last_nan+1] - V[last_nan+2]) / 
+            (r[last_nan+1] - r[last_nan+2]))
+
+        for i, pot_value in enumerate(V[:last_nan+1]):
+            V[i] = slope  * (r[i] - r[last_nan+1]) + V[last_nan+1]
+    else: 
+        ValueError('Unsupported head correction style')
+
+    return V
 
 def find_nearest(array, target):
     """Find array component whose numeric value is closest to 'target'. """
