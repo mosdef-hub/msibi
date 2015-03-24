@@ -110,11 +110,12 @@ class MSIBI(object):
                     potential_file = os.path.join(self.potentials_dir, 'step{0:d}.{1}'.format(
                         n, os.path.basename(pair.potential_file)))
                     data = np.loadtxt(potential_file)
-                    plt.plot(data[:, 0], data[:, 1], label='n={0:d}'.format(n))
+                    plt.plot(data[:, 0], data[:, 1], linewidth=1, label='n={0:d}'.format(n))
                 plt.xlabel('r')
                 plt.ylabel('V(r)')
                 plt.legend()
                 plt.savefig('figures/{0}.pdf'.format(pair.name))
+
 
 def run_query_simulations(states, engine='hoomd'):
     """Run all query simulations for a single iteration. """
