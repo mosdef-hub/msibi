@@ -3,7 +3,7 @@ import os
 import mdtraj as md
 import numpy as np
 
-from msibi.optimize import R_RANGE, R, DR
+from msibi.utils.exceptions import UnsupportedEngine
 
 
 class Pair(object):
@@ -15,9 +15,8 @@ class Pair(object):
         Pair name.
     pairs : array-like, shape=(n_pairs, 2), dtype=int, optional, default=None
         Each row gives the indices of two atoms representing a pair.
-
-    potential : func, optional, default=lennard_jones_12_6
-        Form of the potential function.
+    potential : func
+        Values of the potential at every pot_r.
 
     """
     def __init__(self, type1, type2, potential):
@@ -47,10 +46,11 @@ class Pair(object):
                               'alpha': alpha,
                               'pair_indices': pair_indices}
 
-    def compute_current_rdf(self, state, save_txt=False):
+    def compute_current_rdf(self, state, r_range, dr, save_txt=False):
         """ """
         pairs = self.states[state]['pair_indices']
-        r, g_r = md.compute_rdf(state.traj, pairs, r_range=R_RANGE / 10, bin_width=DR / 10)
+        # TODO: fix units
+        r, g_r = md.compute_rdf(state.traj, pairs, r_range=r_range / 10, bin_width=dr / 10)
         rdf = np.vstack((r, g_r)).T
         self.states[state]['current_rdf'] = rdf
 
@@ -68,11 +68,11 @@ class Pair(object):
 
             self.potential += kT * alpha * np.log(current_rdf / target_rdf)
 
-    def save_table_potential(self, filename, iteration=None):
+    def save_table_potential(self, filename, r, dr, iteration=None, engine='hoomd'):
         """ """
         V = self.potential
-        F = -1.0 * np.gradient(V, DR)
-        data = np.vstack([R, V, F])
+        F = -1.0 * np.gradient(V, dr)
+        data = np.vstack([r, V, F])
 
         if iteration:
             assert isinstance(iteration, int)
@@ -80,4 +80,8 @@ class Pair(object):
             basename = 'step{0:d}.{1}'.format(iteration, basename)
             dirname = os.path.dirname(filename)
             filename = os.path.join(dirname, basename)
-        np.savetxt(filename, data.T)
+
+        if engine.lower() == 'hoomd':
+            np.savetxt(filename, data.T)
+        else:
+            raise UnsupportedEngine(engine)

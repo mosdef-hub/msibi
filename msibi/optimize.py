@@ -1,61 +1,77 @@
 import multiprocessing as mp
 from multiprocessing.dummy import Pool
 import os
-from subprocess import Popen, PIPE
+from subprocess import Popen
 
 import numpy as np
 
-R_RANGE = np.array([0.0, 2.0])
-DR = 0.05
-R = np.arange(R_RANGE[0], R_RANGE[1] + 0.5 * DR, DR)
+from msibi.utils.exceptions import UnsupportedEngine
 
 
-def optimize(states, pairs, engine='hoomd'):
+class MSIBI(object):
     """
     """
-    initialize(states, pairs, engine=engine)
-    for n in range(10):
-        run_query_simulations(states, engine=engine)
 
-        for pair in pairs:
-            for state in pair.states:
-                pair.compute_current_rdf(state)
-            pair.update_potential()
-        print("Finished iteration {0}".format(n))
+    def __init__(self, rdf_cutoff, dr, pot_cutoff=None):
+        self.states = None
+        self.pairs = None
+        self.rdf_cutoff = rdf_cutoff
+        self.dr = dr
+        self.rdf_r = np.arange(0.0, rdf_cutoff + 0.5 * dr, dr)
 
+        # TODO: description of use for pot vs rdf cutoff
+        if not pot_cutoff:
+            pot_cutoff = rdf_cutoff
+        self.pot_cutoff = pot_cutoff
+        self.pot_r = np.arange(0.0, pot_cutoff + 0.5 * dr, dr)
 
-def initialize(states, pairs, engine='hoomd', potentials_dir=None):
-    """
+    def optimize(self, states, pairs, engine='hoomd'):
+        """
+        """
+        self.states = states
+        self.pairs = pairs
+        self.initialize(engine=engine)
+        for n in range(10):
+            run_query_simulations(self.states, engine=engine)
 
-    Parameters
-    ----------
-    states : list of States
-    pairs : list of Pairs
-    engine : str, optional, default='hoomd'
-    potentials_dir : path, optional, default="current_working_dir/potentials"
+            for pair in self.pairs:
+                for state in pair.states:
+                    pair.compute_current_rdf(state, np.array([0.0, self.rdf_cutoff]), self.dr)
+                pair.update_potential()
+            print("Finished iteration {0}".format(n))
 
-    """
-    if not potentials_dir:
-        potentials_dir = os.path.join(os.getcwd(), 'potentials')
-    try:
-        os.mkdir(potentials_dir)
-    except OSError:
-        # TODO: warning and maybe a "make backups" feature
-        pass
+    def initialize(self, engine='hoomd', potentials_dir=None):
+        """
 
-    table_potentials = []
-    for pair in pairs:
-        potential_file = os.path.join(potentials_dir, 'pot.{0}.txt'.format(pair.name))
-        table_potentials.append((pair.type1, pair.type2, potential_file))
+        Parameters
+        ----------
+        states : list of States
+        pairs : list of Pairs
+        engine : str, optional, default='hoomd'
+        potentials_dir : path, optional, default="current_working_dir/potentials"
 
-        # This file is written for later viewing of how the potential evolves.
-        pair.save_table_potential(potential_file, iteration=0)
-        # This file is overwritten at each iteration and actually used for the
-        # simulation.
-        pair.save_table_potential(potential_file)
+        """
+        if not potentials_dir:
+            potentials_dir = os.path.join(os.getcwd(), 'potentials')
+        try:
+            os.mkdir(potentials_dir)
+        except OSError:
+            # TODO: warning and maybe a "make backups" feature
+            pass
 
-    for state in states:
-        state.save_runscript(table_potentials, engine=engine)
+        table_potentials = []
+        for pair in self.pairs:
+            potential_file = os.path.join(potentials_dir, 'pot.{0}.txt'.format(pair.name))
+            table_potentials.append((pair.type1, pair.type2, potential_file))
+
+            # This file is written for later viewing of how the potential evolves.
+            pair.save_table_potential(potential_file, self.pot_r, self.dr, iteration=0, engine=engine)
+            # This file is overwritten at each iteration and actually used for the
+            # simulation.
+            pair.save_table_potential(potential_file, self.pot_r, self.dr, engine=engine)
+
+        for state in self.states:
+            state.save_runscript(table_potentials, table_width=len(self.pot_r), engine=engine)
 
 
 def run_query_simulations(states, engine='hoomd'):
@@ -63,8 +79,10 @@ def run_query_simulations(states, engine='hoomd'):
     # TODO: GPU count and proper "cluster management"
     pool = Pool(mp.cpu_count())
     print("Launching {0:d} threads...".format(mp.cpu_count()))
-    if engine == 'hoomd':
+    if engine.lower() == 'hoomd':
         worker = _hoomd_worker
+    else:
+        raise UnsupportedEngine(engine)
     pool.imap(worker, states)
     pool.close()
     pool.join()
@@ -81,6 +99,7 @@ def _hoomd_worker(state):
         proc.communicate()
         print("    Finished in {0}.".format(state.state_dir))
     _post_query(state)
+
 
 def _post_query(state):
     state.reload_query_trajectory()
