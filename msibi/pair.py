@@ -48,7 +48,7 @@ class Pair(object):
                               'alpha': alpha,
                               'pair_indices': pair_indices}
 
-    def compute_current_rdf(self, state, r_range, dr, save_txt=True):
+    def compute_current_rdf(self, state, r_range, dr):
         """ """
         pairs = self.states[state]['pair_indices']
         # TODO: fix units
@@ -57,12 +57,17 @@ class Pair(object):
         rdf = np.vstack((r, g_r)).T
         self.states[state]['current_rdf'] = rdf
 
-        if save_txt:
-            filename = 'rdfs/pair_{0}-state_{1}.txt'.format(self.name, state.name)
-            np.savetxt(filename, rdf)
+
+    def save_current_rdf(self, state, iteration):
+        filename = 'rdfs/pair_{0}-state_{1}-step{2}.txt'.format(
+                self.name, state.name, iteration)
+        rdf = self.states[state]['current_rdf']
+        np.savetxt(filename, rdf)
+
 
     def update_potential(self, pot_r, r_switch=None):
         """ """
+        self.previous_potential = np.copy(self.potential)
         for state in self.states:
             kT = state.kT
             alpha0 = self.states[state]['alpha']
@@ -79,7 +84,7 @@ class Pair(object):
                 len(self.states))
 
         V = tail_correction(pot_r, self.potential, r_switch)
-        V = head_correction(pot_r, self.potential)
+        V = head_correction(pot_r, self.potential, self.previous_potential)
         self.potential = V
 
     def save_table_potential(self, r, dr, iteration=None, engine='hoomd'):

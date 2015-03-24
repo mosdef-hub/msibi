@@ -30,23 +30,36 @@ def tail_correction(r, V, r_switch):
     return V
 
 
-def head_correction(r, V, style='linear'):
+def head_correction(r, V, old_V, style='linear'):
     """ """
-    last_nan = 0
-    for i, pot_value in enumerate(V):
-        if np.isnan(pot_value):
-            last_nan = i
-
     if style == 'linear':
-        slope = ((V[last_nan+1] - V[last_nan+2]) / 
-            (r[last_nan+1] - r[last_nan+2]))
-        print slope
+        correction_function = linear_head_correction
+    else:
+        raise ValueError('Unsupported head correction style')
 
-        for i, pot_value in enumerate(V[:last_nan+1]):
-            V[i] = slope  * (r[i] - r[last_nan+1]) + V[last_nan+1]
-    else: 
-        ValueError('Unsupported head correction style')
+    for i, pot_value in enumerate(V[::-1]):
+        # both current and target RDFs are 0
+        if np.isnan(pot_value):
+            last_nan = V.shape[0] - i - 1
+            return correction_function(r, V, last_nan)
+        # current rdf > 0, target rdf == 0
+        elif np.isposinf(pot_value):
+            last_posinf = V.shape[0] - i - 1
+            return correction_function(r, V, last_posinf)
+        # current rdf == 0, target rdf > 0, keep potential how it was at small r
+        elif np.isneginf(pot_value):
+            last_neginf = V.shape[0] - i - 1
+            for i, pot_value in enumerate(V[:last_neginf+1]):
+                V[i] = old_V[i]
+            return V
 
+def linear_head_correction(r, V, last_nan):
+    """ """
+    slope = ((V[last_nan+1] - V[last_nan+2]) / 
+        (r[last_nan+1] - r[last_nan+2]))
+
+    for i, pot_value in enumerate(V[:last_nan+1]):
+        V[i] = slope  * (r[i] - r[last_nan+1]) + V[last_nan+1]
     return V
 
 

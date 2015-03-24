@@ -12,9 +12,12 @@ r = np.arange(0.0, rdf_cutoff, dr)
 opt = MSIBI(rdf_cutoff=rdf_cutoff, dr=dr)
 
 # Specify states.
-state0 = State(k=1, T=0.5, state_dir='./state0', top_file='target.pdb')
-state1 = State(k=1, T=1.5, state_dir='./state1', top_file='target.pdb')
-state2 = State(k=1, T=2.0, state_dir='./state2', top_file='target.pdb')
+state0 = State(k=1, T=0.5, state_dir='./state0', top_file='target.pdb', 
+        name='state0')
+state1 = State(k=1, T=1.5, state_dir='./state1', top_file='target.pdb',
+        name='state1')
+state2 = State(k=1, T=2.0, state_dir='./state2', top_file='target.pdb',
+        name='state2')
 states = [state0, state1, state2]
 
 # Specify pairs.

@@ -53,9 +53,13 @@ class MSIBI(object):
 
             for pair in self.pairs:
                 for state in pair.states:
-                    pair.compute_current_rdf(state, np.array([0.0, self.rdf_cutoff + 2 * self.dr]), self.dr)
+                    pair.compute_current_rdf(state,
+                            np.array([0.0, self.rdf_cutoff + 2 * self.dr]), 
+                            self.dr)
+                    pair.save_current_rdf(state, iteration=n)
                 pair.update_potential(self.pot_r, self.r_switch)
-                pair.save_table_potential(self.pot_r, self.dr, iteration=n, engine=engine)
+                pair.save_table_potential(self.pot_r, self.dr, iteration=n, 
+                        engine=engine)
             print("Finished iteration {0}".format(n))
 
     def initialize(self, engine='hoomd', potentials_dir=None):

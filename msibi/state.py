@@ -26,7 +26,8 @@ class State(object):
         The trajectory associated with this state.
 
     """
-    def __init__(self, k, T, state_dir='', traj_file=None, top_file=None):
+    def __init__(self, k, T, state_dir='', traj_file=None, top_file=None, 
+            name=None):
         self.kT = k * T
         self.state_dir = state_dir
 
@@ -37,6 +38,9 @@ class State(object):
             self.top_path = os.path.join(state_dir, top_file)
 
         self.traj = None  # Will be set after first iteration.
+        if not name:
+            name = 'state-{0:.3f}'.format(self.kT)
+        self.name = name
 
     def reload_query_trajectory(self):
         """ """
