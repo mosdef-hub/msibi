@@ -39,6 +39,7 @@ def head_correction(r, V, style='linear'):
     if style == 'linear':
         slope = ((V[last_nan+1] - V[last_nan+2]) / 
             (r[last_nan+1] - r[last_nan+2]))
+        print slope
 
         for i, pot_value in enumerate(V[:last_nan+1]):
             V[i] = slope  * (r[i] - r[last_nan+1]) + V[last_nan+1]
