@@ -10,12 +10,12 @@ DR = 0.05
 R = np.arange(R_RANGE[0], R_RANGE[1] + 0.5 * DR, DR)
 
 
-def optimize(states, pairs):
+def optimize(states, pairs, engine='hoomd'):
     """
     """
-    initialize(states, pairs, engine='hoomd')
+    initialize(states, pairs, engine=engine)
     for n in range(10):
-        run_query_simulations(states)
+        run_query_simulations(states, engine=engine)
 
         for pair in pairs:
             for state in pair.states:
@@ -58,18 +58,20 @@ def initialize(states, pairs, engine='hoomd', potentials_dir=None):
         state.save_runscript(table_potentials, engine=engine)
 
 
-def run_query_simulations(states):
+def run_query_simulations(states, engine='hoomd'):
     """Run all query simulations for a single iteration. """
     # TODO: GPU count and proper "cluster management"
     pool = Pool(mp.cpu_count())
     print("Launching {0:d} threads...".format(mp.cpu_count()))
-    pool.imap(_query_simulation_worker, states)
+    if engine == 'hoomd':
+        worker = _hoomd_worker
+    pool.imap(worker, states)
     pool.close()
     pool.join()
 
 
-def _query_simulation_worker(state):
-    """Worker for managing a single simulation. """
+def _hoomd_worker(state):
+    """Worker for managing a single HOOMD-blue simulation. """
     log_file = os.path.join(state.state_dir, 'log.txt')
     err_file = os.path.join(state.state_dir, 'err.txt')
     with open(log_file, 'w') as log, open(err_file, 'w') as err:
@@ -78,5 +80,7 @@ def _query_simulation_worker(state):
         print("    Launched HOOMD in {0}...".format(state.state_dir))
         proc.communicate()
         print("    Finished in {0}.".format(state.state_dir))
+    _post_query(state)
 
+def _post_query(state):
     state.reload_query_trajectory()
