@@ -75,6 +75,7 @@ class Pair(object):
         V = self.potential
         data = np.vstack(tail_correction(r, dr, V))
 
+
         if iteration is not None:
             assert isinstance(iteration, int)
             basename = os.path.basename(self.potential_file)

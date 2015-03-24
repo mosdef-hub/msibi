@@ -13,7 +13,6 @@ sns.set_style('white', {'legend.frameon': True,
                         'ytick.direction': 'in',
                         'xtick.major.size': 4.0,
                         'ytick.major.size': 4.0})
-sns.color_palette("GnBu_d")
 
 from msibi.utils.exceptions import UnsupportedEngine
 
@@ -23,8 +22,8 @@ class MSIBI(object):
     """
 
     def __init__(self, rdf_cutoff, dr, pot_cutoff=None):
-        self.states = None
-        self.pairs = None
+        self.states = []
+        self.pairs = []
         self.n_iterations = 10
         self.rdf_cutoff = rdf_cutoff
         self.dr = dr
@@ -89,20 +88,22 @@ class MSIBI(object):
             pair.save_table_potential(self.pot_r, self.dr, engine=engine)
 
         for state in self.states:
+            # TODO: note on why we add the +1 to the pot_r length
             state.save_runscript(table_potentials, table_width=len(self.pot_r) + 1, engine=engine)
 
     def plot(self):
         """ """
         for pair in self.pairs:
-            for n in range(self.n_iterations):
-                potential_file = os.path.join(self.potentials_dir, 'step{0:d}.{1}'.format(
-                    n, os.path.basename(pair.potential_file)))
-                data = np.loadtxt(potential_file)
-                plt.plot(data[:, 0], data[:, 1], label='n={0:d}'.format(n))
-            plt.xlabel('r')
-            plt.ylabel('V(r)')
-            plt.legend()
-            plt.savefig('figures/{0}.pdf'.format(pair.name))
+            with sns.color_palette("GnBu_d", self.n_iterations):
+                for n in range(self.n_iterations):
+                    potential_file = os.path.join(self.potentials_dir, 'step{0:d}.{1}'.format(
+                        n, os.path.basename(pair.potential_file)))
+                    data = np.loadtxt(potential_file)
+                    plt.plot(data[:, 0], data[:, 1], label='n={0:d}'.format(n))
+                plt.xlabel('r')
+                plt.ylabel('V(r)')
+                plt.legend()
+                plt.savefig('figures/{0}.pdf'.format(pair.name))
 
 def run_query_simulations(states, engine='hoomd'):
     """Run all query simulations for a single iteration. """
