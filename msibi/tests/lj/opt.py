@@ -4,7 +4,6 @@ import pdb
 import numpy as np
 
 from msibi import *
-from msibi.potentials import mie
 
 # Load states
 state0 = State(k=1, T=0.5, state_dir='./state0', top_file='target.pdb')

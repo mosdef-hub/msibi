@@ -2,6 +2,8 @@ import numpy as np
 
 from msibi.optimize import R
 
+__all__ = ['mie', 'morse']
+
 
 def mie(eps, sig, m=12, n=6):
     """Mie pair potential. """
