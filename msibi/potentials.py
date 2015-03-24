@@ -53,6 +53,7 @@ def head_correction(r, V, old_V, style='linear'):
                 V[i] = old_V[i]
             return V
 
+
 def linear_head_correction(r, V, last_nan):
     """ """
     slope = ((V[last_nan+1] - V[last_nan+2]) / 

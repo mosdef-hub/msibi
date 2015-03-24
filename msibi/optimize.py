@@ -1,7 +1,4 @@
-import multiprocessing as mp
-from multiprocessing.dummy import Pool
 import os
-from subprocess import Popen
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,8 +12,9 @@ sns.set_style('white', {'legend.frameon': True,
                         'xtick.major.size': 4.0,
                         'ytick.major.size': 4.0})
 
-from msibi.utils.exceptions import UnsupportedEngine
+
 from msibi.potentials import tail_correction
+from msibi.workers import run_query_simulations
 
 
 class MSIBI(object):
@@ -63,12 +61,10 @@ class MSIBI(object):
             print("Finished iteration {0}".format(n))
 
     def initialize(self, engine='hoomd', potentials_dir=None):
-        """
+        """Create initial table potentials and the simulation input scripts.
 
         Parameters
         ----------
-        states : list of States
-        pairs : list of Pairs
         engine : str, optional, default='hoomd'
         potentials_dir : path, optional, default="current_working_dir/potentials"
 
@@ -85,68 +81,41 @@ class MSIBI(object):
 
         table_potentials = []
         for pair in self.pairs:
-            potential_file = os.path.join(self.potentials_dir, 'pot.{0}.txt'.format(pair.name))
+            potential_file = os.path.join(self.potentials_dir,
+                                          'pot.{0}.txt'.format(pair.name))
             pair.potential_file = potential_file
 
             table_potentials.append((pair.type1, pair.type2, potential_file))
 
             V = tail_correction(self.pot_r, pair.potential, self.r_switch)
             pair.potential = V
-            # This file is written for later viewing of how the potential evolves.
-            pair.save_table_potential(self.pot_r, self.dr, iteration=0, engine=engine)
-            # This file is overwritten at each iteration and actually used for the
-            # simulation.
+            # This file is written for viewing of how the potential evolves.
+            pair.save_table_potential(self.pot_r, self.dr, iteration=0,
+                                      engine=engine)
+            # This file is overwritten at each iteration and actually used for
+            # performing the query simulations.
             pair.save_table_potential(self.pot_r, self.dr, engine=engine)
 
         for state in self.states:
-            # TODO: note on why we add the +1 to the pot_r length
-            state.save_runscript(table_potentials, table_width=len(self.pot_r), engine=engine)
+            state.save_runscript(table_potentials, table_width=len(self.pot_r),
+                                 engine=engine)
 
     def plot(self):
-        """ """
+        """Generate plots showing the evolution of each pair potential. """
+        sns.set_palette(
+            sns.cubehelix_palette(self.n_iterations, start=.5, rot=-.75))
         try:
             os.mkdir('figures')
         except OSError:
             pass
         for pair in self.pairs:
-            with sns.color_palette("GnBu_d", self.n_iterations):
-                for n in range(self.n_iterations):
-                    potential_file = os.path.join(self.potentials_dir, 'step{0:d}.{1}'.format(
+            for n in range(self.n_iterations):
+                potential_file = os.path.join(self.potentials_dir, 'step{0:d}.{1}'.format(
                         n, os.path.basename(pair.potential_file)))
-                    data = np.loadtxt(potential_file)
-                    plt.plot(data[:, 0], data[:, 1], linewidth=1, label='n={0:d}'.format(n))
-                plt.xlabel('r')
-                plt.ylabel('V(r)')
-                plt.legend()
-                plt.savefig('figures/{0}.pdf'.format(pair.name))
-
-
-def run_query_simulations(states, engine='hoomd'):
-    """Run all query simulations for a single iteration. """
-    # TODO: GPU count and proper "cluster management"
-    pool = Pool(mp.cpu_count())
-    print("Launching {0:d} threads...".format(mp.cpu_count()))
-    if engine.lower() == 'hoomd':
-        worker = _hoomd_worker
-    else:
-        raise UnsupportedEngine(engine)
-    pool.imap(worker, states)
-    pool.close()
-    pool.join()
-
-
-def _hoomd_worker(state):
-    """Worker for managing a single HOOMD-blue simulation. """
-    log_file = os.path.join(state.state_dir, 'log.txt')
-    err_file = os.path.join(state.state_dir, 'err.txt')
-    with open(log_file, 'w') as log, open(err_file, 'w') as err:
-        proc = Popen(['hoomd', 'run.py'], cwd=state.state_dir, stdout=log,
-                     stderr=err, universal_newlines=True)
-        print("    Launched HOOMD in {0}...".format(state.state_dir))
-        proc.communicate()
-        print("    Finished in {0}.".format(state.state_dir))
-    _post_query(state)
-
-
-def _post_query(state):
-    state.reload_query_trajectory()
+                data = np.loadtxt(potential_file)
+                plt.plot(data[:, 0], data[:, 1],
+                         linewidth=1, label='n={0:d}'.format(n))
+            plt.xlabel('r')
+            plt.ylabel('V(r)')
+            plt.legend()
+            plt.savefig('figures/{0}.pdf'.format(pair.name))
