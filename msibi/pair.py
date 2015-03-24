@@ -4,7 +4,7 @@ import mdtraj as md
 import numpy as np
 
 from msibi.utils.exceptions import UnsupportedEngine
-from msibi.potentials import tail_correction
+from msibi.potentials import tail_correction, head_correction
 
 
 class Pair(object):
@@ -61,7 +61,7 @@ class Pair(object):
             filename = 'pair_{0}-state_{1}.txt'.format(self.name, state.name)
             np.savetxt(filename, rdf)
 
-    def update_potential(self, pot_r, dr, r_switch=None):
+    def update_potential(self, pot_r, r_switch=None):
         """ """
         for state in self.states:
             kT = state.kT
@@ -78,7 +78,8 @@ class Pair(object):
             self.potential += (kT * alpha * np.log(current_rdf / target_rdf) /
                 len(self.states))
 
-        _, V = tail_correction(pot_r, dr, self.potential, r_switch)
+        V = tail_correction(pot_r, self.potential, r_switch)
+        V = head_correction(pot_r, self.potential)
         self.potential = V
 
     def fix_beginning(self):

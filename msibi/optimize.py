@@ -54,7 +54,7 @@ class MSIBI(object):
             for pair in self.pairs:
                 for state in pair.states:
                     pair.compute_current_rdf(state, np.array([0.0, self.rdf_cutoff + 2 * self.dr]), self.dr)
-                pair.update_potential(self.pot_r, self.dr, self.r_switch)
+                pair.update_potential(self.pot_r, self.r_switch)
                 pair.save_table_potential(self.pot_r, self.dr, iteration=n, engine=engine)
             print("Finished iteration {0}".format(n))
 
@@ -86,13 +86,13 @@ class MSIBI(object):
 
             table_potentials.append((pair.type1, pair.type2, potential_file))
 
-            r, V = tail_correction(self.pot_r, self.dr, pair.potential, self.r_switch)
+            V = tail_correction(self.pot_r, pair.potential, self.r_switch)
             pair.potential = V
             # This file is written for later viewing of how the potential evolves.
-            pair.save_table_potential(r, self.dr, iteration=0, engine=engine)
+            pair.save_table_potential(self.pot_r, self.dr, iteration=0, engine=engine)
             # This file is overwritten at each iteration and actually used for the
             # simulation.
-            pair.save_table_potential(r, self.dr, engine=engine)
+            pair.save_table_potential(self.pot_r, self.dr, engine=engine)
 
         for state in self.states:
             # TODO: note on why we add the +1 to the pot_r length
@@ -100,6 +100,10 @@ class MSIBI(object):
 
     def plot(self):
         """ """
+        try:
+            os.mkdir('figures')
+        except OSError:
+            pass
         for pair in self.pairs:
             with sns.color_palette("GnBu_d", self.n_iterations):
                 for n in range(self.n_iterations):
