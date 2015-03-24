@@ -33,8 +33,7 @@ def tail_correction(r, dr, V, r_on=None):
                       (r_cut ** 2 - r_on ** 2) ** 3)
 
     V *= S_r
-    F = -1.0 * np.gradient(V, dr)
-    return r, V, F
+    return r, V
 
 
 def find_nearest(array, target):
