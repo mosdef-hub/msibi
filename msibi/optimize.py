@@ -1,5 +1,7 @@
-from subprocess import Popen, PIPE
+import multiprocessing as mp
+from multiprocessing.dummy import Pool
 import os
+from subprocess import Popen, PIPE
 
 import numpy as np
 
@@ -13,7 +15,7 @@ def optimize(states, pairs):
     """
     initialize(states, pairs, engine='hoomd')
     for n in range(10):
-        run_queries(states)
+        run_query_simulations(states)
 
         for pair in pairs:
             for state in pair.states:
@@ -56,16 +58,25 @@ def initialize(states, pairs, engine='hoomd', potentials_dir=None):
         state.save_runscript(table_potentials, engine=engine)
 
 
-def run_queries(states):
-    for state in states:
-        """
-        proc = Popen('hoomd', cwd=state.state_dir, stdout=PIPE,
-                     stderr=PIPE, universal_newlines=True, stdin=PIPE)
-        out, err = proc.communicate('run.py')
-        print out, err
-        """
-        os.chdir(state.state_dir)
-        os.system('hoomd run.py > log.txt')
-        os.chdir(os.pardir)
+def run_query_simulations(states):
+    """Run all query simulations for a single iteration. """
+    # TODO: GPU count and proper "cluster management"
+    pool = Pool(mp.cpu_count())
+    print("Launching {0:d} threads...".format(mp.cpu_count()))
+    pool.imap(_query_simulation_worker, states)
+    pool.close()
+    pool.join()
 
-        state.reload_query_trajectory()
+
+def _query_simulation_worker(state):
+    """Worker for managing a single simulation. """
+    log_file = os.path.join(state.state_dir, 'log.txt')
+    err_file = os.path.join(state.state_dir, 'err.txt')
+    with open(log_file, 'w') as log, open(err_file, 'w') as err:
+        proc = Popen(['hoomd', 'run.py'], cwd=state.state_dir, stdout=log,
+                     stderr=err, universal_newlines=True)
+        print("    Launched HOOMD in {0}...".format(state.state_dir))
+        proc.communicate()
+        print("    Finished in {0}.".format(state.state_dir))
+
+    state.reload_query_trajectory()
