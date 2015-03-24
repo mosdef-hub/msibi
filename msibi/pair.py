@@ -61,33 +61,35 @@ class Pair(object):
             filename = 'pair_{0}-state_{1}.txt'.format(self.name, state.name)
             np.savetxt(filename, rdf)
 
-    def update_potential(self, pot_r, dr, r_on=None):
+    def update_potential(self, pot_r, dr, r_switch=None):
         """ """
         for state in self.states:
-            alpha0 = self.states[state]['alpha']
             kT = state.kT
+            alpha0 = self.states[state]['alpha']
+            alpha = -alpha0 * (1 - pot_r / pot_r[-1])
+
             current_rdf = self.states[state]['current_rdf'][:, 1]
             target_rdf = self.states[state]['target_rdf'][:, 1]
-            alpha = np.empty_like(target_rdf)
-            alpha = -alpha0 * (1 - pot_r / pot_r[-1])
             unused_rdf_vals = current_rdf.shape[0] - self.potential.shape[0]
+            if unused_rdf_vals != 0:
+                current_rdf = current_rdf[:-unused_rdf_vals]
+                target_rdf = target_rdf[:-unused_rdf_vals]
 
-            self.potential += (kT * alpha * 
-                np.log(current_rdf[:unused_rdf_vals] / 
-                       target_rdf[:unused_rdf_vals]) /
+            self.potential += (kT * alpha * np.log(current_rdf / target_rdf) /
                 len(self.states))
 
-        r, V = tail_correction(pot_r, dr, self.potential, r_on=r_on) 
+        _, V = tail_correction(pot_r, dr, self.potential, r_switch)
+        self.potential = V
 
-    def fix_beginning():
+    def fix_beginning(self):
         """ """
+        pass
 
-    def save_table_potential(self, r, iteration=None, engine='hoomd'):
+    def save_table_potential(self, r, dr, iteration=None, engine='hoomd'):
         """ """
         V = self.potential
         F = -1.0 * np.gradient(V, dr)
-        data = np.vstack(r, V, F)
-
+        data = np.vstack([r, V, F])
 
         if iteration is not None:
             assert isinstance(iteration, int)

@@ -6,6 +6,7 @@ from subprocess import Popen
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+
 sns.set_style('white', {'legend.frameon': True,
                         'axes.edgecolor': '0.0',
                         'axes.linewidth': 1.0,
@@ -15,26 +16,30 @@ sns.set_style('white', {'legend.frameon': True,
                         'ytick.major.size': 4.0})
 
 from msibi.utils.exceptions import UnsupportedEngine
+from msibi.potentials import tail_correction
 
 
 class MSIBI(object):
     """
     """
 
-    def __init__(self, rdf_cutoff, dr, pot_cutoff=None):
+    def __init__(self, rdf_cutoff, dr, pot_cutoff=None, r_switch=None):
         self.states = []
         self.pairs = []
         self.n_iterations = 10
         self.rdf_cutoff = rdf_cutoff
         self.dr = dr
-        self.rdf_r = np.arange(0.0, rdf_cutoff, dr)
 
         # TODO: description of use for pot vs rdf cutoff
         if not pot_cutoff:
             pot_cutoff = rdf_cutoff
         self.pot_cutoff = pot_cutoff
         # TODO: note on why the potential needs to be shortened to match the RDF
-        self.pot_r = np.arange(0.0, pot_cutoff - dr, dr)
+        self.pot_r = np.arange(0.0, pot_cutoff + dr, dr)
+
+        if not r_switch:
+            r_switch = self.pot_r[-1] - 5 * dr
+        self.r_switch = r_switch
 
     def optimize(self, states, pairs, n_iterations=10, engine='hoomd'):
         """
@@ -48,8 +53,8 @@ class MSIBI(object):
 
             for pair in self.pairs:
                 for state in pair.states:
-                    pair.compute_current_rdf(state, np.array([0.0, self.rdf_cutoff]), self.dr)
-                pair.update_potential()
+                    pair.compute_current_rdf(state, np.array([0.0, self.rdf_cutoff + 2 * self.dr]), self.dr)
+                pair.update_potential(self.pot_r, self.dr, self.r_switch)
                 pair.save_table_potential(self.pot_r, self.dr, iteration=n, engine=engine)
             print("Finished iteration {0}".format(n))
 
@@ -81,15 +86,17 @@ class MSIBI(object):
 
             table_potentials.append((pair.type1, pair.type2, potential_file))
 
+            r, V = tail_correction(self.pot_r, self.dr, pair.potential, self.r_switch)
+            pair.potential = V
             # This file is written for later viewing of how the potential evolves.
-            pair.save_table_potential(self.pot_r, self.dr, iteration=0, engine=engine)
+            pair.save_table_potential(r, self.dr, iteration=0, engine=engine)
             # This file is overwritten at each iteration and actually used for the
             # simulation.
-            pair.save_table_potential(self.pot_r, self.dr, engine=engine)
+            pair.save_table_potential(r, self.dr, engine=engine)
 
         for state in self.states:
             # TODO: note on why we add the +1 to the pot_r length
-            state.save_runscript(table_potentials, table_width=len(self.pot_r) + 1, engine=engine)
+            state.save_runscript(table_potentials, table_width=len(self.pot_r), engine=engine)
 
     def plot(self):
         """ """
