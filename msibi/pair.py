@@ -52,7 +52,8 @@ class Pair(object):
         """ """
         pairs = self.states[state]['pair_indices']
         # TODO: fix units
-        r, g_r = md.compute_rdf(state.traj, pairs, r_range=r_range / 10, bin_width=dr / 10)
+        r, g_r = md.compute_rdf(state.traj, pairs, r_range=r_range / 10,
+                bin_width=dr / 10)
         rdf = np.vstack((r, g_r)).T
         self.states[state]['current_rdf'] = rdf
 
@@ -60,20 +61,32 @@ class Pair(object):
             filename = 'pair_{0}-state_{1}.txt'.format(self.name, state.name)
             np.savetxt(filename, rdf)
 
-    def update_potential(self):
+    def update_potential(self, pot_r, dr, r_on=None):
         """ """
         for state in self.states:
-            alpha = self.states[state]['alpha']
+            alpha0 = self.states[state]['alpha']
             kT = state.kT
             current_rdf = self.states[state]['current_rdf'][:, 1]
             target_rdf = self.states[state]['target_rdf'][:, 1]
+            alpha = np.empty_like(target_rdf)
+            alpha = -alpha0 * (1 - pot_r / pot_r[-1])
+            unused_rdf_vals = current_rdf.shape[0] - self.potential.shape[0]
 
-            self.potential += kT * alpha * np.log(current_rdf / target_rdf)
+            self.potential += (kT * alpha * 
+                np.log(current_rdf[:unused_rdf_vals] / 
+                       target_rdf[:unused_rdf_vals]) /
+                len(self.states))
 
-    def save_table_potential(self, r, dr, iteration=None, engine='hoomd'):
+        r, V = tail_correction(pot_r, dr, self.potential, r_on=r_on) 
+
+    def fix_beginning():
+        """ """
+
+    def save_table_potential(self, r, iteration=None, engine='hoomd'):
         """ """
         V = self.potential
-        data = np.vstack(tail_correction(r, dr, V))
+        F = -1.0 * np.gradient(V, dr)
+        data = np.vstack(r, V, F)
 
 
         if iteration is not None:
