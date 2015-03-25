@@ -6,7 +6,7 @@ try:
     import mdtraj
 except ImportError:
     print('Building and running msibi requires mdtraj. See '
-          'http://mdtraj.org/latest/installation.html for help!', file=sys.stderr)
+          'http://mdtraj.org/latest/installation.html for help!')
     sys.exit(1)
 
 requirements = [line.strip() for line in open('requirements.txt').readlines()]
