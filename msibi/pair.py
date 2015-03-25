@@ -72,8 +72,6 @@ class Pair(object):
             kT = state.kT
             alpha0 = self.states[state]['alpha']
             alpha = alpha0 * (1 - pot_r / pot_r[-1])
-            import pdb
-            pdb.set_trace()
 
             current_rdf = self.states[state]['current_rdf'][:, 1]
             target_rdf = self.states[state]['target_rdf'][:, 1]
