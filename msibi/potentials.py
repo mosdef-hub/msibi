@@ -68,3 +68,10 @@ def find_nearest(array, target):
     """Find array component whose numeric value is closest to 'target'. """
     idx = np.abs(array - target).argmin()
     return idx, array[idx]
+
+def calc_alpha_array(alpha0, pot_r, form='linear'):
+    """ """
+    if form == 'linear':
+        return alpha0 * (1.0 - pot_r / pot_r[-1])
+    else:
+        raise ValueError('Unsupported alpha form')

@@ -24,11 +24,16 @@ class Pair(object):
         self.type1 = str(type1)
         self.type2 = str(type2)
         self.name = '{0}-{1}'.format(self.type1, self.type2)
-        self.potential = potential
         self.potential_file = ''
         self.states = dict()
+        if isinstance(potential, string_types):
+            self.potential = np.loadtxt(potential)[:, 1]
+            #TODO: this could be dangerous
+        else:
+            self.potential = potential
 
-    def add_state(self, state, target_rdf, alpha, pair_indices):
+    def add_state(self, state, target_rdf, alpha, pair_indices,
+            alpha_form='linear'):
         """Add a state to be used in optimizing this pair.
 
         Parameters
@@ -46,7 +51,9 @@ class Pair(object):
         self.states[state] = {'target_rdf': target_rdf,
                               'current_rdf': None,
                               'alpha': alpha,
-                              'pair_indices': pair_indices}
+                              'alpha_form': alpha_form,
+                              'pair_indices': pair_indices,
+                              'f_fit': []}
 
     def compute_current_rdf(self, state, r_range, dr):
         """ """
@@ -54,6 +61,7 @@ class Pair(object):
         # TODO: fix units
         r, g_r = md.compute_rdf(state.traj, pairs, r_range=r_range / 10,
                 bin_width=dr / 10)
+        r *= 10
         rdf = np.vstack((r, g_r)).T
         self.states[state]['current_rdf'] = rdf
 
@@ -71,10 +79,13 @@ class Pair(object):
         for state in self.states:
             kT = state.kT
             alpha0 = self.states[state]['alpha']
-            alpha = alpha0 * (1 - pot_r / pot_r[-1])
+            form = self.states[state]['alpha_form']
+            alpha = calc_alpha_array(alpha0, pot_r, form=form)
 
             current_rdf = self.states[state]['current_rdf'][:, 1]
             target_rdf = self.states[state]['target_rdf'][:, 1]
+            f_fit = calc_similarity(current_rdf, target_rdf)
+            pair.states[state]['f_fit'].append(f_fit)
             unused_rdf_vals = current_rdf.shape[0] - self.potential.shape[0]
             if unused_rdf_vals != 0:
                 current_rdf = current_rdf[:-unused_rdf_vals]
