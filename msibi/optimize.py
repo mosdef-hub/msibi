@@ -16,7 +16,7 @@ sns.set_style('white', {'legend.frameon': True,
                         'ytick.major.size': 4.0})
 
 
-class MSIBI(object):
+class MSIBI(object, status_filename='f_fits.log'):
     """Management class for orchestrating an MSIBI optimization.
 
     Attributes
@@ -58,6 +58,7 @@ class MSIBI(object):
         if not r_switch:
             r_switch = self.pot_r[-1] - 5 * dr
         self.r_switch = r_switch
+        self.logfile = open(status_filename, 'w')
 
     def optimize(self, states, pairs, n_iterations=10, engine='hoomd'):
         """
@@ -79,6 +80,11 @@ class MSIBI(object):
                 pair.update_potential(self.pot_r, self.r_switch)
                 pair.save_table_potential(self.pot_r, self.dr, iteration=n, 
                         engine=engine)
+            for pair in self.pairs:
+                for state in pair.states:
+                    logfile.write('f_fit for pair {0} at state {1}: {2:f}'.format(
+                        (pair.name, state.name, pair.states[state]['f_fit'][n])))
+
             print("Finished iteration {0}".format(n))
 
     def initialize(self, engine='hoomd', potentials_dir=None):
