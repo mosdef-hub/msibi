@@ -1,11 +1,17 @@
 import os
 
+import matplotlib as mpl
+try:
+    os.environ['DISPLAY']
+except KeyError:
+    mpl.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
 from msibi.potentials import tail_correction
 from msibi.workers import run_query_simulations
+
 
 sns.set_style('white', {'legend.frameon': True,
                         'axes.edgecolor': '0.0',
@@ -16,7 +22,7 @@ sns.set_style('white', {'legend.frameon': True,
                         'ytick.major.size': 4.0})
 
 
-class MSIBI(object, status_filename='f_fits.log'):
+class MSIBI(object):
     """Management class for orchestrating an MSIBI optimization.
 
     Attributes
@@ -40,7 +46,8 @@ class MSIBI(object, status_filename='f_fits.log'):
 
     """
 
-    def __init__(self, rdf_cutoff, dr, pot_cutoff=None, r_switch=None):
+    def __init__(self, rdf_cutoff, dr, pot_cutoff=None, r_switch=None,
+            status_filename='f_fits.log'):
         self.states = []
         self.pairs = []
         self.n_iterations = 10
@@ -82,8 +89,9 @@ class MSIBI(object, status_filename='f_fits.log'):
                         engine=engine)
             for pair in self.pairs:
                 for state in pair.states:
-                    logfile.write('f_fit for pair {0} at state {1}: {2:f}'.format(
-                        (pair.name, state.name, pair.states[state]['f_fit'][n])))
+                    #TODO: replace with logger
+                    self.logfile.write('f_fit for pair {0} at state {1}: {2:f}\n'.format(
+                        pair.name, state.name, pair.states[state]['f_fit'][n]))
 
             print("Finished iteration {0}".format(n))
 
