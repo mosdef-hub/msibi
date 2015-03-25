@@ -1,11 +1,17 @@
 import os
 
+import matplotlib as mpl
+try:
+    os.environ['DISPLAY']
+except KeyError:
+    mpl.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
 from msibi.potentials import tail_correction
 from msibi.workers import run_query_simulations
+
 
 sns.set_style('white', {'legend.frameon': True,
                         'axes.edgecolor': '0.0',
