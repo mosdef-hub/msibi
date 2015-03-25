@@ -90,8 +90,8 @@ class MSIBI(object):
             for pair in self.pairs:
                 for state in pair.states:
                     #TODO: replace with logger
-                    logfile.write('f_fit for pair {0} at state {1}: {2:f}'.format(
-                        (pair.name, state.name, pair.states[state]['f_fit'][n])))
+                    self.logfile.write('f_fit for pair {0} at state {1}: {2:f}\n'.format(
+                        pair.name, state.name, pair.states[state]['f_fit'][n]))
 
             print("Finished iteration {0}".format(n))
 

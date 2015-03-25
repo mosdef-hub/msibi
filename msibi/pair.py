@@ -5,6 +5,7 @@ import numpy as np
 
 from six import string_types
 from msibi.utils.exceptions import UnsupportedEngine
+from msibi.utils.error_calculation import calc_similarity
 from msibi.potentials import tail_correction, head_correction, calc_alpha_array
 
 
@@ -86,7 +87,7 @@ class Pair(object):
             current_rdf = self.states[state]['current_rdf'][:, 1]
             target_rdf = self.states[state]['target_rdf'][:, 1]
             f_fit = calc_similarity(current_rdf, target_rdf)
-            pair.states[state]['f_fit'].append(f_fit)
+            self.states[state]['f_fit'].append(f_fit)
             unused_rdf_vals = current_rdf.shape[0] - self.potential.shape[0]
             if unused_rdf_vals != 0:
                 current_rdf = current_rdf[:-unused_rdf_vals]

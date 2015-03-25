@@ -7,8 +7,8 @@ integrate.mode_standard(dt=0.001)
 
 
 run(1e3)
-output_dcd = dump.dcd(filename='query.dcd', period=1000, overwrite=True)
-run(1e5)
+output_dcd = dump.dcd(filename='query.dcd', period=100, overwrite=True)
+run(1e3)
 
 output_xml = dump.xml()
 output_xml.set_params(all=True)
