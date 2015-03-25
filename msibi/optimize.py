@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
+from msibi.potentials import tail_correction
+from msibi.workers import run_query_simulations
+
 sns.set_style('white', {'legend.frameon': True,
                         'axes.edgecolor': '0.0',
                         'axes.linewidth': 1.0,
@@ -13,12 +16,28 @@ sns.set_style('white', {'legend.frameon': True,
                         'ytick.major.size': 4.0})
 
 
-from msibi.potentials import tail_correction
-from msibi.workers import run_query_simulations
-
-
 class MSIBI(object):
-    """
+    """Management class for orchestrating an MSIBI optimization.
+
+    Attributes
+    ----------
+    states : list of States
+        All states to be used in the optimization procedure.
+    pairs : list of Pairs
+        All pairs to be used in the optimization procedure.
+    n_iterations : int, optional, default=10
+        The number of MSIBI iterations to perform.
+    rdf_cutoff : float
+        The upper cutoff value for the RDF calculation.
+    dr : float
+        The
+    pot_r : np.ndarray, shape=(int((rdf_cutoff + dr) / dr),)
+        The radius values at which the potential is computed.
+    pot_cutoff : float, optional, default=rdf_cutoff
+        The upper cutoff value for the potential.
+    r_switch : float, optional, default=
+        The radius after which a tail correction is applied.
+
     """
 
     def __init__(self, rdf_cutoff, dr, pot_cutoff=None, r_switch=None):
@@ -32,7 +51,8 @@ class MSIBI(object):
         if not pot_cutoff:
             pot_cutoff = rdf_cutoff
         self.pot_cutoff = pot_cutoff
-        # TODO: note on why the potential needs to be shortened to match the RDF
+        # TODO: note on why the potential needs to be messed with to match the
+        # RDF
         self.pot_r = np.arange(0.0, pot_cutoff + dr, dr)
 
         if not r_switch:
@@ -44,7 +64,8 @@ class MSIBI(object):
         """
         self.states = states
         self.pairs = pairs
-        self.n_iterations = n_iterations
+        if n_iterations:
+            self.n_iterations = n_iterations
         self.initialize(engine=engine)
         for n in range(self.n_iterations):
             run_query_simulations(self.states, engine=engine)
