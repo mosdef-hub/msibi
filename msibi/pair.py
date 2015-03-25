@@ -3,6 +3,7 @@ import os
 import mdtraj as md
 import numpy as np
 
+from six import string_types
 from msibi.utils.exceptions import UnsupportedEngine
 from msibi.potentials import tail_correction, head_correction
 

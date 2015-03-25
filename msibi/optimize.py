@@ -22,7 +22,7 @@ sns.set_style('white', {'legend.frameon': True,
                         'ytick.major.size': 4.0})
 
 
-class MSIBI(object, status_filename='f_fits.log'):
+class MSIBI(object):
     """Management class for orchestrating an MSIBI optimization.
 
     Attributes
@@ -46,7 +46,8 @@ class MSIBI(object, status_filename='f_fits.log'):
 
     """
 
-    def __init__(self, rdf_cutoff, dr, pot_cutoff=None, r_switch=None):
+    def __init__(self, rdf_cutoff, dr, pot_cutoff=None, r_switch=None,
+            status_filename='f_fits.log'):
         self.states = []
         self.pairs = []
         self.n_iterations = 10
