@@ -89,6 +89,7 @@ class MSIBI(object):
                         engine=engine)
             for pair in self.pairs:
                 for state in pair.states:
+                    #TODO: replace with logger
                     logfile.write('f_fit for pair {0} at state {1}: {2:f}'.format(
                         (pair.name, state.name, pair.states[state]['f_fit'][n])))
 
