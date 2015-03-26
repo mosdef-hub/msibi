@@ -92,16 +92,15 @@ class MSIBI(object):
 
             for pair in self.pairs:
                 for state in pair.states:
-                    pair.compute_current_rdf(state,
-                            np.array([0.0, self.rdf_cutoff + 2 * self.dr]), 
-                            self.dr)
+                    r_range = np.array([0.0, self.rdf_cutoff + 2 * self.dr])
+                    pair.compute_current_rdf(state, r_range, self.dr)
                     pair.save_current_rdf(state, iteration=n)
                 pair.update_potential(self.pot_r, self.r_switch)
-                pair.save_table_potential(self.pot_r, self.dr, iteration=n, 
-                        engine=engine)
+                pair.save_table_potential(self.pot_r, self.dr, iteration=n,
+                                          engine=engine)
             for pair in self.pairs:
                 for state in pair.states:
-                    #TODO: replace with logger
+                    # TODO: replace with logger
                     self.logfile.write('f_fit for pair {0} at state {1}: {2:f}\n'.format(
                         pair.name, state.name, pair.states[state]['f_fit'][n]))
 
@@ -113,7 +112,7 @@ class MSIBI(object):
         Parameters
         ----------
         engine : str, optional, default='hoomd'
-        potentials_dir : path, optional, default="current_working_dir/potentials"
+        potentials_dir : path, optional, default="'working_dir'/potentials"
 
         """
         if not potentials_dir:
@@ -157,8 +156,9 @@ class MSIBI(object):
             pass
         for pair in self.pairs:
             for n in range(self.n_iterations):
-                potential_file = os.path.join(self.potentials_dir, 'step{0:d}.{1}'.format(
-                        n, os.path.basename(pair.potential_file)))
+                filename = 'step{0:d}.{1}'.format(
+                    n, os.path.basename(pair.potential_file))
+                potential_file = os.path.join(self.potentials_dir, filename)
                 data = np.loadtxt(potential_file)
                 plt.plot(data[:, 0], data[:, 1],
                          linewidth=1, label='n={0:d}'.format(n))

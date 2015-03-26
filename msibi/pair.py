@@ -30,12 +30,13 @@ class Pair(object):
         self.states = dict()
         if isinstance(potential, string_types):
             self.potential = np.loadtxt(potential)[:, 1]
-            #TODO: this could be dangerous
+            # TODO: this could be dangerous
         else:
             self.potential = potential
+        self.previous_potential = None
 
     def add_state(self, state, target_rdf, alpha, pair_indices,
-            alpha_form='linear'):
+                  alpha_form='linear'):
         """Add a state to be used in optimizing this pair.
 
         Parameters
@@ -62,7 +63,7 @@ class Pair(object):
         pairs = self.states[state]['pair_indices']
         # TODO: fix units
         r, g_r = md.compute_rdf(state.traj, pairs, r_range=r_range / 10,
-                bin_width=dr / 10)
+                                bin_width=dr / 10)
         r *= 10
         rdf = np.vstack((r, g_r)).T
         self.states[state]['current_rdf'] = rdf
@@ -85,22 +86,32 @@ class Pair(object):
 
             current_rdf = self.states[state]['current_rdf'][:, 1]
             target_rdf = self.states[state]['target_rdf'][:, 1]
+
+            # Compute fitness function comparing the two RDFs.
             f_fit = calc_similarity(current_rdf, target_rdf)
             self.states[state]['f_fit'].append(f_fit)
+
+            # For cases where rdf_cutoff != pot_cutoff, only update the
+            # potential using RDF values < pot_cutoff.
             unused_rdf_vals = current_rdf.shape[0] - self.potential.shape[0]
             if unused_rdf_vals != 0:
                 current_rdf = current_rdf[:-unused_rdf_vals]
                 target_rdf = target_rdf[:-unused_rdf_vals]
 
+            # The actual IBI step.
             self.potential += (kT * alpha * np.log(current_rdf / target_rdf) /
-                len(self.states))
+                               len(self.states))
 
+        # Apply corrections to ensure continuous, well-behaved potentials.
         V = tail_correction(pot_r, self.potential, r_switch)
         V = head_correction(pot_r, self.potential, self.previous_potential)
         self.potential = V
 
     def save_table_potential(self, r, dr, iteration=None, engine='hoomd'):
-        """ """
+        """Save the table potential to a file usable by the MD engine.
+
+        TODO: factor out for separate engines.
+        """
         V = self.potential
         F = -1.0 * np.gradient(V, dr)
         data = np.vstack([r, V, F])
