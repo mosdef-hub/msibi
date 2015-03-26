@@ -2,6 +2,7 @@ import os
 import tempfile
 
 import numpy as np
+
 from msibi.potentials import mie
 from msibi.pair import Pair
 

@@ -2,7 +2,8 @@ import os
 
 import mdtraj as md
 
-HOOMD_HEADER = """from hoomd_script import *
+HOOMD_HEADER = """
+from hoomd_script import *
 
 system = init.read_xml(filename="{0}")
 T_final = {1:.1f}
@@ -10,6 +11,9 @@ T_final = {1:.1f}
 pot_width = {2:d}
 table = pair.table(width=pot_width)
 
+"""
+HOOMD_TABLE_ENTRY = """
+table.set_from_file('{type1}', '{type2}', filename='{potential_file}')
 """
 
 
@@ -26,8 +30,8 @@ class State(object):
         The trajectory associated with this state.
 
     """
-    def __init__(self, k, T, state_dir='', traj_file=None, top_file=None, 
-            name=None):
+    def __init__(self, k, T, state_dir='', traj_file=None, top_file=None,
+                 name=None):
         self.kT = k * T
         self.state_dir = state_dir
 
@@ -52,12 +56,11 @@ class State(object):
     def save_runscript(self, table_potentials, table_width, engine='hoomd',
                        runscript='hoomd_run_template.py'):
         """ """
-        header = HOOMD_HEADER.format('start.xml', self.kT, table_width)
+        header = list()
+        header.append(HOOMD_HEADER.format('start.xml', self.kT, table_width))
         for type1, type2, potential_file in table_potentials:
-            command = "table.set_from_file('{0}', '{1}', filename='{2}')\n".format(
-               type1, type2, potential_file)
-            header += command
-
+            header.append(HOOMD_TABLE_ENTRY.format(**locals()))
+        header = ''.join(header)
         with open(os.path.join(self.state_dir, runscript)) as fh:
             body = ''.join(fh.readlines())
 
@@ -65,5 +68,3 @@ class State(object):
         with open(runscript_file, 'w') as fh:
             fh.write(header)
             fh.write(body)
-
-

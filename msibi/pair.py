@@ -67,13 +67,12 @@ class Pair(object):
         rdf = np.vstack((r, g_r)).T
         self.states[state]['current_rdf'] = rdf
 
-
     def save_current_rdf(self, state, iteration):
+        """ """
         filename = 'rdfs/pair_{0}-state_{1}-step{2}.txt'.format(
                 self.name, state.name, iteration)
         rdf = self.states[state]['current_rdf']
         np.savetxt(filename, rdf)
-
 
     def update_potential(self, pot_r, r_switch=None):
         """ """

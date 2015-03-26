@@ -1,10 +1,11 @@
 import os
 
 import matplotlib as mpl
-try:
+try:  # For use on clusters where the $DISPLAY value may not be set.
     os.environ['DISPLAY']
 except KeyError:
     mpl.use('Agg')
+
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
@@ -25,6 +26,17 @@ sns.set_style('white', {'legend.frameon': True,
 class MSIBI(object):
     """Management class for orchestrating an MSIBI optimization.
 
+    Parameters
+    ----------
+    rdf_cutoff : float
+        The upper cutoff value for the RDF calculation.
+    dr : float
+        The spacing of radius values.
+    pot_cutoff : float, optional, default=rdf_cutoff
+        The upper cutoff value for the potential.
+    r_switch : float, optional, default=pot_r[-1] - 5 * dr
+        The radius after which a tail correction is applied.
+
     Attributes
     ----------
     states : list of States
@@ -36,18 +48,18 @@ class MSIBI(object):
     rdf_cutoff : float
         The upper cutoff value for the RDF calculation.
     dr : float
-        The
+        The spacing of radius values.
     pot_r : np.ndarray, shape=(int((rdf_cutoff + dr) / dr),)
         The radius values at which the potential is computed.
     pot_cutoff : float, optional, default=rdf_cutoff
         The upper cutoff value for the potential.
-    r_switch : float, optional, default=
+    r_switch : float, optional, default=pot_r[-1] - 5 * dr
         The radius after which a tail correction is applied.
 
     """
 
     def __init__(self, rdf_cutoff, dr, pot_cutoff=None, r_switch=None,
-            status_filename='f_fits.log'):
+                 status_filename='f_fits.log'):
         self.states = []
         self.pairs = []
         self.n_iterations = 10
