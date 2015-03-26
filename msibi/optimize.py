@@ -1,10 +1,11 @@
 import os
 
 import matplotlib as mpl
-try:
+try:  # For use on clusters where the $DISPLAY value may not be set.
     os.environ['DISPLAY']
 except KeyError:
     mpl.use('Agg')
+
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
@@ -25,6 +26,17 @@ sns.set_style('white', {'legend.frameon': True,
 class MSIBI(object):
     """Management class for orchestrating an MSIBI optimization.
 
+    Parameters
+    ----------
+    rdf_cutoff : float
+        The upper cutoff value for the RDF calculation.
+    dr : float
+        The spacing of radius values.
+    pot_cutoff : float, optional, default=rdf_cutoff
+        The upper cutoff value for the potential.
+    r_switch : float, optional, default=pot_r[-1] - 5 * dr
+        The radius after which a tail correction is applied.
+
     Attributes
     ----------
     states : list of States
@@ -36,18 +48,18 @@ class MSIBI(object):
     rdf_cutoff : float
         The upper cutoff value for the RDF calculation.
     dr : float
-        The
+        The spacing of radius values.
     pot_r : np.ndarray, shape=(int((rdf_cutoff + dr) / dr),)
         The radius values at which the potential is computed.
     pot_cutoff : float, optional, default=rdf_cutoff
         The upper cutoff value for the potential.
-    r_switch : float, optional, default=
+    r_switch : float, optional, default=pot_r[-1] - 5 * dr
         The radius after which a tail correction is applied.
 
     """
 
     def __init__(self, rdf_cutoff, dr, pot_cutoff=None, r_switch=None,
-            status_filename='f_fits.log'):
+                 status_filename='f_fits.log'):
         self.states = []
         self.pairs = []
         self.n_iterations = 10
@@ -80,16 +92,15 @@ class MSIBI(object):
 
             for pair in self.pairs:
                 for state in pair.states:
-                    pair.compute_current_rdf(state,
-                            np.array([0.0, self.rdf_cutoff + 2 * self.dr]), 
-                            self.dr)
+                    r_range = np.array([0.0, self.rdf_cutoff + 2 * self.dr])
+                    pair.compute_current_rdf(state, r_range, self.dr)
                     pair.save_current_rdf(state, iteration=n)
                 pair.update_potential(self.pot_r, self.r_switch)
-                pair.save_table_potential(self.pot_r, self.dr, iteration=n, 
-                        engine=engine)
+                pair.save_table_potential(self.pot_r, self.dr, iteration=n,
+                                          engine=engine)
             for pair in self.pairs:
                 for state in pair.states:
-                    #TODO: replace with logger
+                    # TODO: replace with logger
                     self.logfile.write('f_fit for pair {0} at state {1}: {2:f}\n'.format(
                         pair.name, state.name, pair.states[state]['f_fit'][n]))
 
@@ -101,7 +112,7 @@ class MSIBI(object):
         Parameters
         ----------
         engine : str, optional, default='hoomd'
-        potentials_dir : path, optional, default="current_working_dir/potentials"
+        potentials_dir : path, optional, default="'working_dir'/potentials"
 
         """
         if not potentials_dir:
@@ -145,8 +156,9 @@ class MSIBI(object):
             pass
         for pair in self.pairs:
             for n in range(self.n_iterations):
-                potential_file = os.path.join(self.potentials_dir, 'step{0:d}.{1}'.format(
-                        n, os.path.basename(pair.potential_file)))
+                filename = 'step{0:d}.{1}'.format(
+                    n, os.path.basename(pair.potential_file))
+                potential_file = os.path.join(self.potentials_dir, filename)
                 data = np.loadtxt(potential_file)
                 plt.plot(data[:, 0], data[:, 1],
                          linewidth=1, label='n={0:d}'.format(n))

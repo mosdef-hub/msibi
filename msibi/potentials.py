@@ -1,10 +1,12 @@
 import numpy as np
 
+from msibi.utils.general import find_nearest
+
 __all__ = ['mie', 'morse']
 
 
 def mie(r, eps, sig, m=12, n=6):
-    """Mie pair potential. """
+    """Mie pair potential.  """
     return 4 * eps * ((sig / r) ** m - (sig / r) ** n)
 
 
@@ -15,59 +17,75 @@ def morse(r, D, alpha, r0):
 
 
 def tail_correction(r, V, r_switch):
-    """ """
-    r_cut = r[-1]
+    """Apply a tail correction to a potential making it go to zero smoothly.
 
+    Parameters
+    ----------
+    r : np.ndarray, shape=(n_points,), dtype=float
+        The radius values at which the potential is given.
+    V : np.ndarray, shape=r.shape, dtype=float
+        The potential values at each radius value.
+    r_switch : float, optional, default=pot_r[-1] - 5 * dr
+        The radius after which a tail correction is applied.
+
+    References
+    ----------
+    .. [1] https://codeblue.umich.edu/hoomd-blue/doc/classhoomd__script_1_1pair_1_1pair.html
+
+    """
+    r_cut = r[-1]
     idx_r_switch, r_switch = find_nearest(r, r_switch)
 
     S_r = np.ones_like(r)
-    # TODO: See HOOMD XPLOR smooth function reference.
-    S_r[idx_r_switch:] = ((r_cut ** 2 - r[idx_r_switch:] ** 2) ** 2 *
-                          (r_cut ** 2 + 2 * r[idx_r_switch:] ** 2 - 3 * r_switch ** 2) /
+    r = r[idx_r_switch:]
+    S_r[idx_r_switch:] = ((r_cut ** 2 - r ** 2) ** 2 *
+                          (r_cut ** 2 + 2 * r ** 2 - 3 * r_switch ** 2) /
                           (r_cut ** 2 - r_switch ** 2) ** 3)
-
-    V *= S_r
-    return V
+    return V * S_r
 
 
-def head_correction(r, V, old_V, style='linear'):
-    """ """
-    if style == 'linear':
+def head_correction(r, V, previous_V, form='linear'):
+    """Apply head correction to V making it go to a finite value at V(0).
+
+    Parameters
+    ----------
+    r : np.ndarray, shape=(n_points,), dtype=float
+        The radius values at which the potential is given.
+    V : np.ndarray, shape=r.shape, dtype=float
+        The potential values at each radius value.
+    previous_V : np.ndarray, shape=r.shape, dtype=float
+        The potential from the previous iteration.
+    form : str, optional, default='linear'
+        The form of the smoothing function used.
+
+    """
+    if form == 'linear':
         correction_function = linear_head_correction
     else:
-        raise ValueError('Unsupported head correction style')
+        raise ValueError('Unsupported head correction form: "{0}"'.format(form))
 
     for i, pot_value in enumerate(V[::-1]):
-        # both current and target RDFs are 0
-        if np.isnan(pot_value):
-            last_nan = V.shape[0] - i - 1
-            return correction_function(r, V, last_nan)
-        # current rdf > 0, target rdf == 0
-        elif np.isposinf(pot_value):
-            last_posinf = V.shape[0] - i - 1
-            return correction_function(r, V, last_posinf)
-        # current rdf == 0, target rdf > 0, keep potential how it was at small r
+        # Apply correction function because either of the following is true:
+        #   * both current and target RDFs are 0 --> nan values in potential.
+        #   * current rdf > 0, target rdf = 0 --> +inf values in potential.
+        if np.isnan(pot_value) or np.isposinf(pot_value):
+            last_real = V.shape[0] - i - 1
+            return correction_function(r, V, last_real)
+        # Retain old potential at small r because:
+        #   * current rdf = 0, target rdf > 0 --> -inf values in potential.
         elif np.isneginf(pot_value):
             last_neginf = V.shape[0] - i - 1
             for i, pot_value in enumerate(V[:last_neginf+1]):
-                V[i] = old_V[i]
+                V[i] = previous_V[i]
             return V
 
 
-def linear_head_correction(r, V, last_nan):
-    """ """
-    slope = ((V[last_nan+1] - V[last_nan+2]) / 
-        (r[last_nan+1] - r[last_nan+2]))
-
-    for i, pot_value in enumerate(V[:last_nan+1]):
-        V[i] = slope  * (r[i] - r[last_nan+1]) + V[last_nan+1]
+def linear_head_correction(r, V, cutoff):
+    """Use a linear function to smoothly force V to a finite value at V(0). """
+    slope = ((V[cutoff+1] - V[cutoff+2]) / (r[cutoff+1] - r[cutoff+2]))
+    V[:cutoff + 1] = slope * (r[:cutoff + 1] - r[cutoff + 1]) + V[cutoff + 1]
     return V
 
-
-def find_nearest(array, target):
-    """Find array component whose numeric value is closest to 'target'. """
-    idx = np.abs(array - target).argmin()
-    return idx, array[idx]
 
 def calc_alpha_array(alpha0, pot_r, form='linear'):
     """ """

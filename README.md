@@ -4,10 +4,10 @@ MultiState Iterative Boltzmann Inversion
 [![Coverage Status](https://coveralls.io/repos/ctk3b/msibi/badge.svg?branch=master)](https://coveralls.io/r/ctk3b/msibi?branch=master)
 
 A package to help you manage and run pair potential optimizations using the
-MultiState Iterative Boltzmann Inversion procedure.
+multistate iterative Boltzmann inversion procedure.
 
-#### Citation 
-Details of the underlying method and its validation can be found here: [![Citing MS-IBI](https://img.shields.io/badge/DOI-10.1063%2F1.4880555-blue.svg)](http://dx.doi.org/10.1063/1.4880555 )
+#### Citation [![Citing MSIBI](https://img.shields.io/badge/DOI-10.1063%2F1.4880555-blue.svg)](http://dx.doi.org/10.1063/1.4880555)
+Details of the underlying method and its validation can be found [here](http://dx.doi.org/10.1063/1.4880555)
 
 If you use this package please cite the above paper. The BibTeX reference is
 ```
