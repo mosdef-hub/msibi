@@ -1,7 +1,7 @@
-from velocity import init_velocity
+#from velocity import init_velocity
 
 all = group.all()
-init_velocity(group=all, T=T_final)
+#init_velocity(group=all, T=T_final)
 nvt_int = integrate.bdnvt(group=all, T=T_final)
 integrate.mode_standard(dt=0.001)
 
