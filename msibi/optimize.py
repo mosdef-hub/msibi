@@ -1,3 +1,4 @@
+import logging
 import os
 
 import matplotlib as mpl
@@ -65,6 +66,8 @@ class MSIBI(object):
         self.n_iterations = 10
         self.rdf_cutoff = rdf_cutoff
         self.dr = dr
+        logging.basicConfig(filename=status_filename, level=logging.INFO, 
+                            format='%(message)s')
 
         # TODO: description of use for pot vs rdf cutoff
         if not pot_cutoff:
@@ -95,14 +98,12 @@ class MSIBI(object):
                     r_range = np.array([0.0, self.rdf_cutoff + 2 * self.dr])
                     pair.compute_current_rdf(state, r_range, self.dr)
                     pair.save_current_rdf(state, iteration=n)
+                    logging.info('pair {0}; state {1}; iteration {2}: {3:f}'.format(
+                                 pair.name, state.name, n, 
+                                 pair.states[state]['f_fit'][n]))
                 pair.update_potential(self.pot_r, self.r_switch)
                 pair.save_table_potential(self.pot_r, self.dr, iteration=n,
                                           engine=engine)
-            for pair in self.pairs:
-                for state in pair.states:
-                    # TODO: replace with logger
-                    self.logfile.write('f_fit for pair {0} at state {1}: {2:f}\n'.format(
-                        pair.name, state.name, pair.states[state]['f_fit'][n]))
 
             print("Finished iteration {0}".format(n))
 

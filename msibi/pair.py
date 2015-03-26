@@ -68,6 +68,11 @@ class Pair(object):
         rdf = np.vstack((r, g_r)).T
         self.states[state]['current_rdf'] = rdf
 
+        # Compute fitness function comparing the two RDFs.
+        f_fit = calc_similarity(rdf[:, 1], self.states[state]['target_rdf'][:, 1])
+        self.states[state]['f_fit'].append(f_fit)
+
+
     def save_current_rdf(self, state, iteration):
         """ """
         filename = 'rdfs/pair_{0}-state_{1}-step{2}.txt'.format(
@@ -86,10 +91,6 @@ class Pair(object):
 
             current_rdf = self.states[state]['current_rdf'][:, 1]
             target_rdf = self.states[state]['target_rdf'][:, 1]
-
-            # Compute fitness function comparing the two RDFs.
-            f_fit = calc_similarity(current_rdf, target_rdf)
-            self.states[state]['f_fit'].append(f_fit)
 
             # For cases where rdf_cutoff != pot_cutoff, only update the
             # potential using RDF values < pot_cutoff.
