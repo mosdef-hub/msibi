@@ -1,6 +1,8 @@
+import glob
 import multiprocessing as mp
 from multiprocessing.dummy import Pool
 import os
+import shutil
 from subprocess import Popen
 
 
@@ -36,3 +38,15 @@ def _hoomd_worker(state):
 
 def _post_query(state):
     state.reload_query_trajectory()
+    if state.save_trajectory:
+        # get query file name
+        query_file = os.path.split(state.traj_path)
+        query_filename = os.path.basename(state.traj_path)
+        # check for query file backups, figure out how many exist
+        backup_files = ''.join(['_', query_file[1], '.*_'])
+        n_backups = len(glob.glob(os.path.join(query_file[0], backup_files)))
+        # make backups + 1
+        new_backup = ''.join(['_', query_file[1], '.{0:d}_'.format(n_backups)])
+        new_backup = os.path.join(query_file[0], new_backup)
+        shutil.copy(os.path.join(*query_file), new_backup)
+

@@ -28,10 +28,12 @@ class State(object):
         Temperature in kelvin.
     traj : md.Trajectory
         The trajectory associated with this state.
+    save_trajectory : bool
+        True if each query trajectory is backed up (default=False)
 
     """
     def __init__(self, k, T, state_dir='', traj_file=None, top_file=None,
-                 name=None):
+                 name=None, save_trajectory=False):
         self.kT = k * T
         self.state_dir = state_dir
 
@@ -45,6 +47,8 @@ class State(object):
         if not name:
             name = 'state-{0:.3f}'.format(self.kT)
         self.name = name
+
+        self.save_trajectory = save_trajectory  # save trajectories?
 
     def reload_query_trajectory(self):
         """ """

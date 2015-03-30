@@ -13,11 +13,11 @@ opt = MSIBI(rdf_cutoff=rdf_cutoff, dr=dr)
 
 # Specify states.
 state0 = State(k=1, T=0.5, state_dir='./state0', top_file='target.pdb',
-               name='state0')
+               name='state0', save_trajectory=True)
 state1 = State(k=1, T=1.5, state_dir='./state1', top_file='target.pdb',
-               name='state1')
+               name='state1', save_trajectory=True)
 state2 = State(k=1, T=2.0, state_dir='./state2', top_file='target.pdb',
-               name='state2')
+               name='state2', save_trajectory=True)
 states = [state0, state1, state2]
 
 # Specify pairs.

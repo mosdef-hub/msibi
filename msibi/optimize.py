@@ -1,4 +1,5 @@
 import logging
+import shutil
 import os
 
 import matplotlib as mpl
