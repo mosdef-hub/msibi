@@ -1,0 +1,368 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>msibi.optimize &mdash; Multistate Iterative Boltzmann Inversion 0.1 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Multistate Iterative Boltzmann Inversion 0.1 documentation" href="../../index.html"/>
+        <link rel="up" title="msibi" href="../msibi.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+          <a href="../../index.html" class="fa fa-home"> Multistate Iterative Boltzmann Inversion</a>
+        
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../installation.html#install-with-pip">Install with pip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../installation.html#install-from-source">Install from source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../installation.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../installation.html#testing-your-installation">Testing your installation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/tutorials.html">Tutorials</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../msibi.html">msibi package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.html#module-msibi.optimize">msibi.optimize module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.html#module-msibi.pair">msibi.pair module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.html#module-msibi.potentials">msibi.potentials module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.html#module-msibi.state">msibi.state module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.html#module-msibi.workers">msibi.workers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.html#module-msibi">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../msibi.utils.html">msibi.utils package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.utils.html#module-msibi.utils.error_calculation">msibi.utils.error_calculation module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.utils.html#module-msibi.utils.exceptions">msibi.utils.exceptions module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.utils.html#module-msibi.utils.general">msibi.utils.general module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.utils.html#module-msibi.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">Multistate Iterative Boltzmann Inversion</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+          <li><a href="../msibi.html">msibi</a> &raquo;</li>
+      
+    <li>msibi.optimize</li>
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <h1>Source code for msibi.optimize</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib</span> <span class="kn">as</span> <span class="nn">mpl</span>
+<span class="k">try</span><span class="p">:</span>  <span class="c"># For use on clusters where the $DISPLAY value may not be set.</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;DISPLAY&#39;</span><span class="p">]</span>
+<span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+    <span class="n">mpl</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s">&#39;Agg&#39;</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="kn">as</span> <span class="nn">sns</span>
+
+<span class="kn">from</span> <span class="nn">msibi.potentials</span> <span class="kn">import</span> <span class="n">tail_correction</span>
+<span class="kn">from</span> <span class="nn">msibi.workers</span> <span class="kn">import</span> <span class="n">run_query_simulations</span>
+
+
+<span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s">&#39;white&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;legend.frameon&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+                        <span class="s">&#39;axes.edgecolor&#39;</span><span class="p">:</span> <span class="s">&#39;0.0&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;axes.linewidth&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+                        <span class="s">&#39;xtick.direction&#39;</span><span class="p">:</span> <span class="s">&#39;in&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;ytick.direction&#39;</span><span class="p">:</span> <span class="s">&#39;in&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;xtick.major.size&#39;</span><span class="p">:</span> <span class="mf">4.0</span><span class="p">,</span>
+                        <span class="s">&#39;ytick.major.size&#39;</span><span class="p">:</span> <span class="mf">4.0</span><span class="p">})</span>
+
+
+<div class="viewcode-block" id="MSIBI"><a class="viewcode-back" href="../../msibi.html#msibi.optimize.MSIBI">[docs]</a><span class="k">class</span> <span class="nc">MSIBI</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Management class for orchestrating an MSIBI optimization.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rdf_cutoff : float</span>
+<span class="sd">        The upper cutoff value for the RDF calculation.</span>
+<span class="sd">    n_points : int</span>
+<span class="sd">        The number of radius values.</span>
+<span class="sd">    pot_cutoff : float, optional, default=rdf_cutoff</span>
+<span class="sd">        The upper cutoff value for the potential.</span>
+<span class="sd">    r_switch : float, optional, default=pot_r[-1] - 5 * dr</span>
+<span class="sd">        The radius after which a tail correction is applied.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    states : list of States</span>
+<span class="sd">        All states to be used in the optimization procedure.</span>
+<span class="sd">    pairs : list of Pairs</span>
+<span class="sd">        All pairs to be used in the optimization procedure.</span>
+<span class="sd">    n_iterations : int, optional, default=10</span>
+<span class="sd">        The number of MSIBI iterations to perform.</span>
+<span class="sd">    rdf_cutoff : float</span>
+<span class="sd">        The upper cutoff value for the RDF calculation.</span>
+<span class="sd">    n_points : int</span>
+<span class="sd">        The number of radius values.</span>
+<span class="sd">    dr : float, default=rdf_cutoff / (n_points - 1)</span>
+<span class="sd">        The spacing of radius values.</span>
+<span class="sd">    pot_r : np.ndarray, shape=(int((rdf_cutoff + dr) / dr),)</span>
+<span class="sd">        The radius values at which the potential is computed.</span>
+<span class="sd">    pot_cutoff : float, optional, default=rdf_cutoff</span>
+<span class="sd">        The upper cutoff value for the potential.</span>
+<span class="sd">    r_switch : float, optional, default=pot_r[-1] - 5 * dr</span>
+<span class="sd">        The radius after which a tail correction is applied.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rdf_cutoff</span><span class="p">,</span> <span class="n">n_points</span><span class="p">,</span> <span class="n">pot_cutoff</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">r_switch</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">status_filename</span><span class="o">=</span><span class="s">&#39;f_fits.log&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pairs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_iterations</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rdf_cutoff</span> <span class="o">=</span> <span class="n">rdf_cutoff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_points</span> <span class="o">=</span> <span class="n">n_points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dr</span> <span class="o">=</span> <span class="n">rdf_cutoff</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">status_filename</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+                            <span class="n">format</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%(message)s</span><span class="s">&#39;</span><span class="p">)</span>
+
+        <span class="c"># TODO: description of use for pot vs rdf cutoff</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pot_cutoff</span><span class="p">:</span>
+            <span class="n">pot_cutoff</span> <span class="o">=</span> <span class="n">rdf_cutoff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pot_cutoff</span> <span class="o">=</span> <span class="n">pot_cutoff</span>
+        <span class="c"># TODO: note on why the potential needs to be messed with to match the</span>
+        <span class="c"># RDF</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pot_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">pot_cutoff</span><span class="p">,</span> <span class="n">n_points</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">r_switch</span><span class="p">:</span>
+            <span class="n">r_switch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot_r</span><span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">r_switch</span> <span class="o">=</span> <span class="n">r_switch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">status_filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MSIBI.optimize"><a class="viewcode-back" href="../../msibi.html#msibi.optimize.MSIBI.optimize">[docs]</a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">states</span><span class="p">,</span> <span class="n">pairs</span><span class="p">,</span> <span class="n">n_iterations</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s">&#39;hoomd&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="n">states</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pairs</span> <span class="o">=</span> <span class="n">pairs</span>
+        <span class="k">if</span> <span class="n">n_iterations</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_iterations</span> <span class="o">=</span> <span class="n">n_iterations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_iterations</span><span class="p">):</span>
+            <span class="n">run_query_simulations</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pairs</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">pair</span><span class="o">.</span><span class="n">states</span><span class="p">:</span>
+                    <span class="n">r_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rdf_cutoff</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dr</span><span class="p">])</span>
+                    <span class="n">pair</span><span class="o">.</span><span class="n">compute_current_rdf</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">r_range</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dr</span><span class="p">)</span>
+                    <span class="n">pair</span><span class="o">.</span><span class="n">save_current_rdf</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">iteration</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;pair {0}; state {1}; iteration {2}: {3:f}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                 <span class="n">pair</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> 
+                                 <span class="n">pair</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">state</span><span class="p">][</span><span class="s">&#39;f_fit&#39;</span><span class="p">][</span><span class="n">n</span><span class="p">]))</span>
+                <span class="n">pair</span><span class="o">.</span><span class="n">update_potential</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pot_r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_switch</span><span class="p">)</span>
+                <span class="n">pair</span><span class="o">.</span><span class="n">save_table_potential</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pot_r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dr</span><span class="p">,</span> <span class="n">iteration</span><span class="o">=</span><span class="n">n</span><span class="p">,</span>
+                                          <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;Finished iteration {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="MSIBI.initialize"><a class="viewcode-back" href="../../msibi.html#msibi.optimize.MSIBI.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s">&#39;hoomd&#39;</span><span class="p">,</span> <span class="n">potentials_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create initial table potentials and the simulation input scripts.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        engine : str, optional, default=&#39;hoomd&#39;</span>
+<span class="sd">        potentials_dir : path, optional, default=&quot;&#39;working_dir&#39;/potentials&quot;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">potentials_dir</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">potentials_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s">&#39;potentials&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">potentials_dir</span> <span class="o">=</span> <span class="n">potentials_dir</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potentials_dir</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="c"># TODO: warning and maybe a &quot;make backups&quot; feature</span>
+            <span class="k">pass</span>
+
+        <span class="n">table_potentials</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pairs</span><span class="p">:</span>
+            <span class="n">potential_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potentials_dir</span><span class="p">,</span>
+                                          <span class="s">&#39;pot.{0}.txt&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pair</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+            <span class="n">pair</span><span class="o">.</span><span class="n">potential_file</span> <span class="o">=</span> <span class="n">potential_file</span>
+
+            <span class="n">table_potentials</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">pair</span><span class="o">.</span><span class="n">type1</span><span class="p">,</span> <span class="n">pair</span><span class="o">.</span><span class="n">type2</span><span class="p">,</span> <span class="n">potential_file</span><span class="p">))</span>
+
+            <span class="n">V</span> <span class="o">=</span> <span class="n">tail_correction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pot_r</span><span class="p">,</span> <span class="n">pair</span><span class="o">.</span><span class="n">potential</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_switch</span><span class="p">)</span>
+            <span class="n">pair</span><span class="o">.</span><span class="n">potential</span> <span class="o">=</span> <span class="n">V</span>
+            <span class="c"># This file is written for viewing of how the potential evolves.</span>
+            <span class="n">pair</span><span class="o">.</span><span class="n">save_table_potential</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pot_r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dr</span><span class="p">,</span> <span class="n">iteration</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                      <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+            <span class="c"># This file is overwritten at each iteration and actually used for</span>
+            <span class="c"># performing the query simulations.</span>
+            <span class="n">pair</span><span class="o">.</span><span class="n">save_table_potential</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pot_r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dr</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">:</span>
+            <span class="n">state</span><span class="o">.</span><span class="n">save_runscript</span><span class="p">(</span><span class="n">table_potentials</span><span class="p">,</span> <span class="n">table_width</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pot_r</span><span class="p">),</span>
+                                 <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="MSIBI.plot"><a class="viewcode-back" href="../../msibi.html#msibi.optimize.MSIBI.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate plots showing the evolution of each pair potential. &quot;&quot;&quot;</span>
+        <span class="n">sns</span><span class="o">.</span><span class="n">set_palette</span><span class="p">(</span>
+            <span class="n">sns</span><span class="o">.</span><span class="n">cubehelix_palette</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_iterations</span><span class="p">,</span> <span class="n">start</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span> <span class="n">rot</span><span class="o">=-.</span><span class="mi">75</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s">&#39;figures&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pairs</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_iterations</span><span class="p">):</span>
+                <span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;step{0:d}.{1}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">n</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">pair</span><span class="o">.</span><span class="n">potential_file</span><span class="p">))</span>
+                <span class="n">potential_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potentials_dir</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">potential_file</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+                         <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;n={0:d}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;V(r)&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s">&#39;figures/{0}.pdf&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pair</span><span class="o">.</span><span class="n">name</span><span class="p">))</span></div></div>
+</pre></div>
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Christoph Klein, Timothy C. Moore.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
