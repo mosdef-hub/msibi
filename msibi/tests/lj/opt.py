@@ -5,6 +5,10 @@ import numpy as np
 
 from msibi import MSIBI, State, Pair, mie
 
+# Clear out the temp files
+import os
+os.system('rm state*/_* rdfs/pair* potentials/* f_fits.log')
+
 # Set up global parameters.
 rdf_cutoff = 5.0
 dr = 0.05

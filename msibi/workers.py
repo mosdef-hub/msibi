@@ -6,6 +6,8 @@ import shutil
 from subprocess import Popen
 
 
+from msibi.utils.general import *
+from msibi.utils.general import _backup
 from msibi.utils.exceptions import UnsupportedEngine
 
 
@@ -38,15 +40,9 @@ def _hoomd_worker(state):
 
 def _post_query(state):
     state.reload_query_trajectory()
-    if state.save_trajectory:
-        # get query file name
-        query_file = os.path.split(state.traj_path)
-        query_filename = os.path.basename(state.traj_path)
-        # check for query file backups, figure out how many exist
-        backup_files = ''.join(['_', query_file[1], '.*_'])
-        n_backups = len(glob.glob(os.path.join(query_file[0], backup_files)))
-        # make backups + 1
-        new_backup = ''.join(['_', query_file[1], '.{0:d}_'.format(n_backups)])
-        new_backup = os.path.join(query_file[0], new_backup)
-        shutil.copy(os.path.join(*query_file), new_backup)
+    _backup(os.path.join(state.state_dir, 'log.txt'))
+    _backup(os.path.join(state.state_dir, 'err.txt'))
+    if state.save_trajectory: # backup trajectory if True
+        print('backing up in %s' % state.state_dir)
+        _backup(state.traj_path)
 
