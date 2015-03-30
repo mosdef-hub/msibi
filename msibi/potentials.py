@@ -70,6 +70,10 @@ def head_correction(r, V, previous_V, form='linear'):
         #   * current rdf > 0, target rdf = 0 --> +inf values in potential.
         if np.isnan(pot_value) or np.isposinf(pot_value):
             last_real = V.shape[0] - i - 1
+            if last_real > len(V) - 2:
+                raise RuntimeError('Undefined values in tail of potential.'
+                                   'This probably means you need better '
+                                   'sampling at this state point.')
             return correction_function(r, V, last_real)
         # Retain old potential at small r because:
         #   * current rdf = 0, target rdf > 0 --> -inf values in potential.

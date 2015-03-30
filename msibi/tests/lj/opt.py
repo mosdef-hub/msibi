@@ -11,9 +11,7 @@ os.system('rm state*/_* rdfs/pair* potentials/* f_fits.log')
 
 # Set up global parameters.
 rdf_cutoff = 5.0
-n_points = 100
-r = np.linspace(0.0, rdf_cutoff, n_points)
-opt = MSIBI(rdf_cutoff=rdf_cutoff, n_points=n_points)
+opt = MSIBI(rdf_cutoff=rdf_cutoff, n_points=101, pot_cutoff=3.0)
 
 # Specify states.
 state0 = State(k=1, T=0.5, state_dir='./state0', top_file='target.pdb',

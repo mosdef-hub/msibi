@@ -1,5 +1,6 @@
+from __future__ import division
+
 import logging
-import shutil
 import os
 
 import matplotlib as mpl
@@ -51,7 +52,7 @@ class MSIBI(object):
         The upper cutoff value for the RDF calculation.
     n_points : int
         The number of radius values.
-    dr : float
+    dr : float, default=rdf_cutoff / (n_points - 1)
         The spacing of radius values.
     pot_r : np.ndarray, shape=(int((rdf_cutoff + dr) / dr),)
         The radius values at which the potential is computed.
@@ -69,6 +70,7 @@ class MSIBI(object):
         self.n_iterations = 10
         self.rdf_cutoff = rdf_cutoff
         self.n_points = n_points
+        self.dr = rdf_cutoff / (n_points - 1)
         logging.basicConfig(filename=status_filename, level=logging.INFO,
                             format='%(message)s')
 
@@ -79,7 +81,6 @@ class MSIBI(object):
         # TODO: note on why the potential needs to be messed with to match the
         # RDF
         self.pot_r = np.linspace(0.0, pot_cutoff, n_points)
-        self.dr = self.pot_r[1] - self.pot_r[0]
 
         if not r_switch:
             r_switch = self.pot_r[-5]
