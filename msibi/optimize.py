@@ -32,8 +32,8 @@ class MSIBI(object):
     ----------
     rdf_cutoff : float
         The upper cutoff value for the RDF calculation.
-    dr : float
-        The spacing of radius values.
+    n_points : int
+        The number of radius values.
     pot_cutoff : float, optional, default=rdf_cutoff
         The upper cutoff value for the potential.
     r_switch : float, optional, default=pot_r[-1] - 5 * dr
@@ -49,6 +49,8 @@ class MSIBI(object):
         The number of MSIBI iterations to perform.
     rdf_cutoff : float
         The upper cutoff value for the RDF calculation.
+    n_points : int
+        The number of radius values.
     dr : float
         The spacing of radius values.
     pot_r : np.ndarray, shape=(int((rdf_cutoff + dr) / dr),)
@@ -60,14 +62,14 @@ class MSIBI(object):
 
     """
 
-    def __init__(self, rdf_cutoff, dr, pot_cutoff=None, r_switch=None,
+    def __init__(self, rdf_cutoff, n_points, pot_cutoff=None, r_switch=None,
                  status_filename='f_fits.log'):
         self.states = []
         self.pairs = []
         self.n_iterations = 10
         self.rdf_cutoff = rdf_cutoff
-        self.dr = dr
-        logging.basicConfig(filename=status_filename, level=logging.INFO, 
+        self.n_points = n_points
+        logging.basicConfig(filename=status_filename, level=logging.INFO,
                             format='%(message)s')
 
         # TODO: description of use for pot vs rdf cutoff
@@ -76,10 +78,11 @@ class MSIBI(object):
         self.pot_cutoff = pot_cutoff
         # TODO: note on why the potential needs to be messed with to match the
         # RDF
-        self.pot_r = np.arange(0.0, pot_cutoff + dr, dr)
+        self.pot_r = np.linspace(0.0, pot_cutoff, n_points)
+        self.dr = self.pot_r[1] - self.pot_r[0]
 
         if not r_switch:
-            r_switch = self.pot_r[-1] - 5 * dr
+            r_switch = self.pot_r[-5]
         self.r_switch = r_switch
         self.logfile = open(status_filename, 'w')
 
