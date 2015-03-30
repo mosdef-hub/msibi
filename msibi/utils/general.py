@@ -10,6 +10,7 @@ def find_nearest(array, target):
     idx = np.abs(array - target).argmin()
     return idx, array[idx]
 
+
 def _count_backups(filename):
     """Count the number of backups of a file in a directory
     
@@ -19,6 +20,7 @@ def _count_backups(filename):
     head, tail = os.path.split(filename)
     backup_files = ''.join(['_.*.', tail])
     return len(glob.glob(os.path.join(head, backup_files)))
+
 
 def _backup_name(filename, n_backups):
     """Return backup filename based on the filename and number of existing backups
@@ -31,7 +33,8 @@ def _backup_name(filename, n_backups):
     new_backup = ''.join(['_.{0:d}.'.format(n_backups), tail])
     return os.path.join(head, new_backup)
 
-def _backup(filename):
+
+def backup_file(filename):
     """Backup a file based on the number of backups in the file's directory
 
     Args:

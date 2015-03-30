@@ -72,7 +72,6 @@ class Pair(object):
         f_fit = calc_similarity(rdf[:, 1], self.states[state]['target_rdf'][:, 1])
         self.states[state]['f_fit'].append(f_fit)
 
-
     def save_current_rdf(self, state, iteration):
         """ """
         filename = 'rdfs/pair_{0}-state_{1}-step{2}.txt'.format(

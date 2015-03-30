@@ -1,13 +1,10 @@
-import glob
 import multiprocessing as mp
 from multiprocessing.dummy import Pool
-import os
-import shutil
 from subprocess import Popen
 
 
 from msibi.utils.general import *
-from msibi.utils.general import _backup
+from msibi.utils.general import backup_file
 from msibi.utils.exceptions import UnsupportedEngine
 
 
@@ -40,9 +37,8 @@ def _hoomd_worker(state):
 
 def _post_query(state):
     state.reload_query_trajectory()
-    _backup(os.path.join(state.state_dir, 'log.txt'))
-    _backup(os.path.join(state.state_dir, 'err.txt'))
-    if state.save_trajectory: # backup trajectory if True
-        print('backing up in %s' % state.state_dir)
-        _backup(state.traj_path)
+    backup_file(os.path.join(state.state_dir, 'log.txt'))
+    backup_file(os.path.join(state.state_dir, 'err.txt'))
+    if state.backup_trajectory:
+        backup_file(state.traj_path)
 
