@@ -1,9 +1,8 @@
 import multiprocessing as mp
 from multiprocessing.dummy import Pool
+import os
 from subprocess import Popen
 
-
-from msibi.utils.general import *
 from msibi.utils.general import backup_file
 from msibi.utils.exceptions import UnsupportedEngine
 
