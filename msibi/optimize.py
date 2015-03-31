@@ -65,8 +65,7 @@ class MSIBI(object):
     """
 
     def __init__(self, rdf_cutoff, n_rdf_points, pot_cutoff=None, 
-                 n_pot_points=None, r_switch=None, status_filename='f_fits.log',
-                 smooth_rdfs=False):
+                 r_switch=None, status_filename='f_fits.log', smooth_rdfs=False):
         self.states = []
         self.pairs = []
         self.n_iterations = 10
@@ -82,10 +81,9 @@ class MSIBI(object):
             pot_cutoff = rdf_cutoff
             n_pot_points = n_rdf_points
         self.pot_cutoff = pot_cutoff
-        self.n_pot_points = n_pot_points
         # TODO: note on why the potential needs to be messed with to match the
         # RDF
-        self.pot_r = np.linspace(0.0, self.pot_cutoff, n_pot_points)
+        self.pot_r = np.arange(0.0, self.pot_cutoff + self.dr, self.dr)
 
         if not r_switch:
             r_switch = self.pot_r[-5]
@@ -163,8 +161,8 @@ class MSIBI(object):
 
     def plot(self):
         """Generate plots showing the evolution of each pair potential. """
-        sns.set_palette(
-            sns.cubehelix_palette(self.n_iterations, start=.5, rot=-.75))
+        #sns.set_palette(
+        #    sns.cubehelix_palette(self.n_iterations, start=.5, rot=-.75))
         try:
             os.mkdir('figures')
         except OSError:
