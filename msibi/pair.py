@@ -58,12 +58,12 @@ class Pair(object):
                               'pair_indices': pair_indices,
                               'f_fit': []}
 
-    def compute_current_rdf(self, state, r_range, dr):
+    def compute_current_rdf(self, state, r_range, n_bins):
         """ """
         pairs = self.states[state]['pair_indices']
         # TODO: fix units
         r, g_r = md.compute_rdf(state.traj, pairs, r_range=r_range / 10,
-                                bin_width=dr / 10)
+                                n_bins=n_bins)
         r *= 10
         rdf = np.vstack((r, g_r)).T
         self.states[state]['current_rdf'] = rdf
@@ -72,11 +72,12 @@ class Pair(object):
         f_fit = calc_similarity(rdf[:, 1], self.states[state]['target_rdf'][:, 1])
         self.states[state]['f_fit'].append(f_fit)
 
-    def save_current_rdf(self, state, iteration):
+    def save_current_rdf(self, state, iteration, dr):
         """ """
         filename = 'rdfs/pair_{0}-state_{1}-step{2}.txt'.format(
                 self.name, state.name, iteration)
         rdf = self.states[state]['current_rdf']
+        rdf[:, 0] -= dr / 2
         np.savetxt(filename, rdf)
 
     def update_potential(self, pot_r, r_switch=None):

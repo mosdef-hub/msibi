@@ -103,13 +103,13 @@ class MSIBI(object):
 
             for pair in self.pairs:
                 for state in pair.states:
-                    r_range = np.array([0.0, self.rdf_cutoff + 2 * self.dr])
-                    pair.compute_current_rdf(state, r_range, self.dr)
+                    r_range = np.array([0.0, self.rdf_cutoff + self.dr])
+                    pair.compute_current_rdf(state, r_range, n_bins=self.n_rdf_points+1)
                     if self.smooth_rdfs:
                         pair.states[state]['current_rdf'][:, 1] = savitzky_golay(
                                 pair.states[state]['current_rdf'][:, 1],
                                 5, 1, deriv=0, rate=1)
-                    pair.save_current_rdf(state, iteration=n)
+                    pair.save_current_rdf(state, iteration=n, dr=self.dr)
                     logging.info('pair {0}; state {1}; iteration {2}: {3:f}'.format(
                                  pair.name, state.name, n, 
                                  pair.states[state]['f_fit'][n]))
