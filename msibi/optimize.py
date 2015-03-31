@@ -15,6 +15,7 @@ import seaborn as sns
 
 from msibi.potentials import tail_correction
 from msibi.workers import run_query_simulations
+from msibi.utils.smoothing import savitzky_golay
 
 
 sns.set_style('white', {'legend.frameon': True,
@@ -63,24 +64,28 @@ class MSIBI(object):
 
     """
 
-    def __init__(self, rdf_cutoff, n_points, pot_cutoff=None, r_switch=None,
-                 status_filename='f_fits.log'):
+    def __init__(self, rdf_cutoff, n_rdf_points, pot_cutoff=None, 
+                 n_pot_points=None, r_switch=None, status_filename='f_fits.log',
+                 smooth_rdfs=False):
         self.states = []
         self.pairs = []
         self.n_iterations = 10
         self.rdf_cutoff = rdf_cutoff
-        self.n_points = n_points
-        self.dr = rdf_cutoff / (n_points - 1)
+        self.n_rdf_points = n_rdf_points
+        self.dr = rdf_cutoff / (n_rdf_points - 1)
+        self.smooth_rdfs = smooth_rdfs
         logging.basicConfig(filename=status_filename, level=logging.INFO,
                             format='%(message)s')
 
         # TODO: description of use for pot vs rdf cutoff
         if not pot_cutoff:
             pot_cutoff = rdf_cutoff
+            n_pot_points = n_rdf_points
         self.pot_cutoff = pot_cutoff
+        self.n_pot_points = n_pot_points
         # TODO: note on why the potential needs to be messed with to match the
         # RDF
-        self.pot_r = np.linspace(0.0, pot_cutoff, n_points)
+        self.pot_r = np.linspace(0.0, self.pot_cutoff, n_pot_points)
 
         if not r_switch:
             r_switch = self.pot_r[-5]
@@ -102,6 +107,10 @@ class MSIBI(object):
                 for state in pair.states:
                     r_range = np.array([0.0, self.rdf_cutoff + 2 * self.dr])
                     pair.compute_current_rdf(state, r_range, self.dr)
+                    if self.smooth_rdfs:
+                        pair.states[state]['current_rdf'][:, 1] = savitzky_golay(
+                                pair.states[state]['current_rdf'][:, 1],
+                                5, 1, deriv=0, rate=1)
                     pair.save_current_rdf(state, iteration=n)
                     logging.info('pair {0}; state {1}; iteration {2}: {3:f}'.format(
                                  pair.name, state.name, n, 
