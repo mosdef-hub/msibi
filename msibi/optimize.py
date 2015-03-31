@@ -37,7 +37,7 @@ class MSIBI(object):
         The number of radius values.
     pot_cutoff : float, optional, default=rdf_cutoff
         The upper cutoff value for the potential.
-    r_switch : float, optional, default=pot_r[-1] - 5 * dr
+    r_switch : float, optional, default=pot_r[-5]
         The radius after which a tail correction is applied.
 
     Attributes
