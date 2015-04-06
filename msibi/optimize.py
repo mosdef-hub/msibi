@@ -74,7 +74,8 @@ class MSIBI(object):
         self.dr = rdf_cutoff / (n_rdf_points - 1)
         self.smooth_rdfs = smooth_rdfs
         logging.basicConfig(filename=status_filename, level=logging.INFO,
-                            format='%(message)s')
+                            format='%(message)s',
+                            filemode='a')
 
         # TODO: description of use for pot vs rdf cutoff
         if not pot_cutoff:
@@ -90,7 +91,8 @@ class MSIBI(object):
         self.r_switch = r_switch
         self.logfile = open(status_filename, 'w')
 
-    def optimize(self, states, pairs, n_iterations=10, engine='hoomd'):
+    def optimize(self, states, pairs, n_iterations=10, engine='hoomd',
+            start_iteration=0):
         """
         """
         self.states = states
@@ -98,7 +100,7 @@ class MSIBI(object):
         if n_iterations:
             self.n_iterations = n_iterations
         self.initialize(engine=engine)
-        for n in range(self.n_iterations):
+        for n in range(start_iteration+self.n_iterations):
             run_query_simulations(self.states, engine=engine)
 
             for pair in self.pairs:
