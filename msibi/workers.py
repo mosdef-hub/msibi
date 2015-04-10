@@ -17,16 +17,16 @@ USE_GPU = True
 def run_query_simulations(states, engine='hoomd'):
     """Run all query simulations for a single iteration. """
     # TODO: GPU count and proper "cluster management"
-    n_gpus = _get_gpu_info()
+    gpus = _get_gpu_info()
 
     global N_PROCS
-    if not n_gpus:
+    if n_gpus is None:
         N_PROCS = cpu_count()
         global USE_GPU
         USE_GPU = False
         print("Launching {0:d} CPU threads...".format(cpu_count()))
     else:
-        N_PROCS = n_gpus
+        N_PROCS = len(n_gpus)
         print("Launching {0:d} GPU threads...".format(n_gpus))
     pool = Pool(N_PROCS)
 
@@ -35,7 +35,9 @@ def run_query_simulations(states, engine='hoomd'):
     else:
         raise UnsupportedEngine(engine)
 
-    pool.imap(worker, zip(states, range(len(states))), ceil(len(states) / N_PROCS))
+    L = len(states)
+    pool.imap(worker, zip(states, range(L), L * gpus) ceil(len(states) / N_PROCS))
+    #pool.imap(worker, zip(states, range(len(states))), ceil(len(states) / N_PROCS))
     pool.close()
     pool.join()
 
@@ -44,12 +46,13 @@ def _hoomd_worker(args):
     """Worker for managing a single HOOMD-blue simulation. """
     state = args[0]
     idx = args[1]
+    gpus = args[2][0]  # a list of the gpus available
     log_file = os.path.join(state.state_dir, 'log.txt')
     err_file = os.path.join(state.state_dir, 'err.txt')
     with open(log_file, 'w') as log, open(err_file, 'w') as err:
         if USE_GPU:
-            print('Running state {0} on GPU {1:d}'.format(state.name, idx % N_PROCS))
-            card = idx % N_PROCS
+            card = gpus[idx % len(gpus)]
+            print('Running state {0} on GPU {1:d}'.format(state.name, card_no))
             proc = Popen(['hoomd', 'run.py', '--gpu=%d' % (card)],
                          cwd=state.state_dir, stdout=log, stderr=err,
                          universal_newlines=True)
@@ -74,9 +77,15 @@ def _post_query(state):
 
 
 def _get_gpu_info():
-    nvidia_settings = find_executable('nvidia-settings')
-    if not nvidia_settings:
+    nvidia_smi = find_executable('nvidia-smi')
+    if not nvidia_smi:
         return
     else:
-        print('FIGURE OUT GPU NUMBERS')
-
+        smi_out = os.popen('nvidia-smi').readlines()
+        card_numbers = []
+        for i, line in enumerate(smi_out[7:]):
+            if not line.strip():
+                break
+            if i % 3 == 0:
+                card_numbers.append(line.split()[1])
+        return card_numbers
