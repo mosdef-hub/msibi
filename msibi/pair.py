@@ -68,6 +68,7 @@ class Pair(object):
                                 n_bins=n_bins)
         r *= 10
         rdf = np.vstack((r, g_r)).T
+        self.states[state]['current_rdf'] = rdf
 
         # Compute fitness function comparing the two RDFs.
         f_fit = calc_similarity(rdf[:, 1], self.states[state]['target_rdf'][:, 1])
