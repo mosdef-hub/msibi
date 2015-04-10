@@ -2,11 +2,12 @@ import os
 
 import mdtraj as md
 import numpy as np
-
 from six import string_types
+
 from msibi.utils.exceptions import UnsupportedEngine
 from msibi.utils.error_calculation import calc_similarity
 from msibi.potentials import tail_correction, head_correction, calc_alpha_array
+from msibi.utils.smoothing import savitzky_golay
 
 
 class Pair(object):
@@ -58,19 +59,23 @@ class Pair(object):
                               'pair_indices': pair_indices,
                               'f_fit': []}
 
-    def compute_current_rdf(self, state, r_range, n_bins):
+    def compute_current_rdf(self, state, r_range, n_bins, smooth=True):
         """ """
         pairs = self.states[state]['pair_indices']
-        # TODO: fix units
+        # TODO: More elegant way to handle units.
+        #       See https://github.com/ctk3b/msibi/issues/2
         r, g_r = md.compute_rdf(state.traj, pairs, r_range=r_range / 10,
                                 n_bins=n_bins)
         r *= 10
         rdf = np.vstack((r, g_r)).T
-        self.states[state]['current_rdf'] = rdf
 
         # Compute fitness function comparing the two RDFs.
         f_fit = calc_similarity(rdf[:, 1], self.states[state]['target_rdf'][:, 1])
         self.states[state]['f_fit'].append(f_fit)
+
+        if smooth:
+            self.states[state]['current_rdf'][:, 1] = savitzky_golay(
+                self.states[state]['current_rdf'][:, 1], 5, 1, deriv=0, rate=1)
 
     def save_current_rdf(self, state, iteration, dr):
         """ """

@@ -1,6 +1,8 @@
 from __future__ import print_function, division
 
 from distutils.spawn import find_executable
+import itertools
+import logging
 from math import ceil
 from multiprocessing import cpu_count
 from multiprocessing.dummy import Pool
@@ -10,69 +12,56 @@ from subprocess import Popen
 from msibi.utils.general import backup_file
 from msibi.utils.exceptions import UnsupportedEngine
 
-N_PROCS = 0
-USE_GPU = True
-
-import logging
-logging.basicConfig(level=logging.DEBUG,
-        format='[%(levelname)s] %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(message)s')
 
 
 def run_query_simulations(states, engine='hoomd'):
     """Run all query simulations for a single iteration. """
-    # TODO: GPU count and proper "cluster management"
-    gpus = _get_gpu_info()
 
-    global N_PROCS
+    # Gather hardware info.
+    gpus = _get_gpu_info()
     if gpus is None:
-        N_PROCS = cpu_count()
-        global USE_GPU
-        USE_GPU = False
+        n_procs = cpu_count()
         gpus = []
-        print("Launching {0:d} CPU threads...".format(cpu_count()))
+        logging.info("Launching {n_procs} CPU threads...".format(**locals()))
     else:
-        N_PROCS = len(gpus)
-        print("Launching {0:d} GPU threads...".format(gpus))
-    pool = Pool(N_PROCS)
+        n_procs = len(gpus)
+        logging.info("Launching {n_procs} GPU threads...".format(**locals()))
 
     if engine.lower() == 'hoomd':
         worker = _hoomd_worker
     else:
         raise UnsupportedEngine(engine)
 
-    L = len(states)
-    print(ceil(L / N_PROCS))
-    logging.debug('pool.imap')
-    pool.imap(worker, zip(states, range(L), L * list(gpus)), ceil(L / N_PROCS))
-    logging.debug(L * list(gpus))
-    #pool.imap(worker, zip(states, range(len(states))), ceil(len(states) / N_PROCS))
+    n_states = len(states)
+    worker_args = zip(states, range(n_states), itertools.repeat(gpus))
+    chunk_size = ceil(n_states / n_procs)
+
+    pool = Pool(n_procs)
+    pool.imap(worker, worker_args, chunk_size)
     pool.close()
     pool.join()
 
 
 def _hoomd_worker(args):
     """Worker for managing a single HOOMD-blue simulation. """
-    state = args[0]
-    idx = args[1]
-    gpus = args[2][0]  # a list of the gpus available
-    logging.debug(gpus)
+    state, idx, gpus = args
     log_file = os.path.join(state.state_dir, 'log.txt')
     err_file = os.path.join(state.state_dir, 'err.txt')
     with open(log_file, 'w') as log, open(err_file, 'w') as err:
-        if USE_GPU:
+        if gpus:
             card = gpus[idx % len(gpus)]
-            print('Running state {0} on GPU {1:d}'.format(state.name, card_no))
-            proc = Popen(['hoomd', 'run.py', '--gpu=%d' % (card)],
-                         cwd=state.state_dir, stdout=log, stderr=err,
-                         universal_newlines=True)
+            logging.info('    Running state {state.name} on GPU {card}'.format(**locals()))
+            cmds = ['hoomd', 'run.py', '--gpu={card}'.format(**locals())]
         else:
-            proc = Popen(['hoomd', 'run.py'],
-                         cwd=state.state_dir, stdout=log, stderr=err,
-                         universal_newlines=True)
+            logging.info('    Running state {state.name} on CPU'.format(**locals()))
+            cmds = ['hoomd', 'run.py']
 
-        print("    Launched HOOMD in {0}...".format(state.state_dir))
+        proc = Popen(cmds, cwd=state.state_dir, stdout=log, stderr=err,
+                     universal_newlines=True)
+        logging.info("    Launched HOOMD in {state.state_dir}".format(**locals()))
         proc.communicate()
-        print("    Finished in {0}.".format(state.state_dir))
+        logging.info("    Finished in {state.state_dir}.".format(**locals()))
     _post_query(state)
 
 
@@ -86,6 +75,7 @@ def _post_query(state):
 
 
 def _get_gpu_info():
+    """ """
     nvidia_smi = find_executable('nvidia-smi')
     if not nvidia_smi:
         return
