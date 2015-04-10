@@ -92,7 +92,7 @@ class MSIBI(object):
         self.logfile = open(status_filename, 'w')
 
     def optimize(self, states, pairs, n_iterations=10, engine='hoomd',
-            start_iteration=0):
+                 start_iteration=0):
         """
         """
         self.states = states
@@ -100,7 +100,7 @@ class MSIBI(object):
         if n_iterations:
             self.n_iterations = n_iterations
         self.initialize(engine=engine)
-        for n in range(start_iteration+self.n_iterations):
+        for n in range(start_iteration + self.n_iterations):
             run_query_simulations(self.states, engine=engine)
 
             for pair in self.pairs:
@@ -109,8 +109,8 @@ class MSIBI(object):
                     pair.compute_current_rdf(state, r_range, n_bins=self.n_rdf_points+1)
                     if self.smooth_rdfs:
                         pair.states[state]['current_rdf'][:, 1] = savitzky_golay(
-                                pair.states[state]['current_rdf'][:, 1],
-                                5, 1, deriv=0, rate=1)
+                            pair.states[state]['current_rdf'][:, 1], 5, 1,
+                            deriv=0, rate=1)
                     pair.save_current_rdf(state, iteration=n, dr=self.dr)
                     logging.info('pair {0}; state {1}; iteration {2}: {3:f}'.format(
                                  pair.name, state.name, n, 
@@ -163,12 +163,11 @@ class MSIBI(object):
 
     def plot(self):
         """Generate plots showing the evolution of each pair potential. """
-        #sns.set_palette(
-        #    sns.cubehelix_palette(self.n_iterations, start=.5, rot=-.75))
         try:
             os.mkdir('figures')
         except OSError:
             pass
+
         for pair in self.pairs:
             for n in range(self.n_iterations):
                 filename = 'step{0:d}.{1}'.format(

@@ -1,13 +1,13 @@
 import itertools
-import pdb
+
 
 import numpy as np
+import os
 
 from msibi import MSIBI, State, Pair, mie
 
 # Clear out the temp files
-import os
-#os.system('rm state*/_* rdfs/pair* potentials/* f_fits.log')
+os.system('rm state*/_* rdfs/pair* potentials/* f_fits.log')
 
 # Set up global parameters.
 rdf_cutoff = 5.0
@@ -27,8 +27,8 @@ indices = list(itertools.combinations(range(1468), 2))  # all-all for 1468 atoms
 initial_guess = mie(opt.pot_r, 1.0, 1.0)  # 1-D array of potential values.
 rdf_targets = [np.loadtxt('rdfs/rdf.target{0:d}.t1t1.txt'.format(i))
                for i in range(3)]
-#pair0 = Pair('1', '1', initial_guess)
-pair0 = Pair('1', '1', 'potentials/step3.pot.1-1.txt')
+
+pair0 = Pair('1', '1', initial_guess)
 alphas = [1.0, 1.0, 1.0]
 
 # Add targets to pair.
