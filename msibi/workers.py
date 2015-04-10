@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function, division
 
 from distutils.spawn import find_executable
 from math import ceil
@@ -13,6 +13,10 @@ from msibi.utils.exceptions import UnsupportedEngine
 N_PROCS = 0
 USE_GPU = True
 
+import logging
+logging.basicConfig(level=logging.DEBUG,
+        format='[%(levelname)s] %(message)s')
+
 
 def run_query_simulations(states, engine='hoomd'):
     """Run all query simulations for a single iteration. """
@@ -20,14 +24,15 @@ def run_query_simulations(states, engine='hoomd'):
     gpus = _get_gpu_info()
 
     global N_PROCS
-    if n_gpus is None:
+    if gpus is None:
         N_PROCS = cpu_count()
         global USE_GPU
         USE_GPU = False
+        gpus = []
         print("Launching {0:d} CPU threads...".format(cpu_count()))
     else:
-        N_PROCS = len(n_gpus)
-        print("Launching {0:d} GPU threads...".format(n_gpus))
+        N_PROCS = len(gpus)
+        print("Launching {0:d} GPU threads...".format(gpus))
     pool = Pool(N_PROCS)
 
     if engine.lower() == 'hoomd':
@@ -36,7 +41,10 @@ def run_query_simulations(states, engine='hoomd'):
         raise UnsupportedEngine(engine)
 
     L = len(states)
-    pool.imap(worker, zip(states, range(L), L * gpus) ceil(len(states) / N_PROCS))
+    print(ceil(L / N_PROCS))
+    logging.debug('pool.imap')
+    pool.imap(worker, zip(states, range(L), L * list(gpus)), ceil(L / N_PROCS))
+    logging.debug(L * list(gpus))
     #pool.imap(worker, zip(states, range(len(states))), ceil(len(states) / N_PROCS))
     pool.close()
     pool.join()
@@ -47,6 +55,7 @@ def _hoomd_worker(args):
     state = args[0]
     idx = args[1]
     gpus = args[2][0]  # a list of the gpus available
+    logging.debug(gpus)
     log_file = os.path.join(state.state_dir, 'log.txt')
     err_file = os.path.join(state.state_dir, 'err.txt')
     with open(log_file, 'w') as log, open(err_file, 'w') as err:

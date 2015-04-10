@@ -7,7 +7,8 @@ import os
 from msibi import MSIBI, State, Pair, mie
 
 # Clear out the temp files
-os.system('rm state*/_* rdfs/pair* potentials/* f_fits.log')
+os.system('rm state*/_* rdfs/pair* potentials/* f_fits.log state*/log.txt')
+os.system('rm state*/err.txt')
 
 # Set up global parameters.
 rdf_cutoff = 5.0
