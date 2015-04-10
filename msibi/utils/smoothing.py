@@ -1,3 +1,5 @@
+from __future__ import division
+
 from math import factorial
 
 import numpy as np

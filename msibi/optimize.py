@@ -15,7 +15,6 @@ import seaborn as sns
 
 from msibi.potentials import tail_correction
 from msibi.workers import run_query_simulations
-from msibi.utils.smoothing import savitzky_golay
 
 
 sns.set_style('white', {'legend.frameon': True,

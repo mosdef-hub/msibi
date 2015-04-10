@@ -1,3 +1,5 @@
+from __future__ import division
+
 import numpy as np
 
 from msibi.utils.general import find_nearest
