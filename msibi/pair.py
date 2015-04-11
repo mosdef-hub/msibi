@@ -87,7 +87,7 @@ class Pair(object):
         np.savetxt(filename, rdf)
 
     def update_potential(self, pot_r, r_switch=None):
-        """ """
+        """Update the potential using all states. """
         self.previous_potential = np.copy(self.potential)
         for state in self.states:
             kT = state.kT
@@ -110,29 +110,26 @@ class Pair(object):
                                len(self.states))
 
         # Apply corrections to ensure continuous, well-behaved potentials.
-        V = tail_correction(pot_r, self.potential, r_switch)
-        V = head_correction(pot_r, self.potential, self.previous_potential)
-        self.potential = V
+        self.potential = tail_correction(pot_r, self.potential, r_switch)
+        self.potential = head_correction(pot_r, self.potential, self.previous_potential)
 
-    def save_table_potential(self, r, dr, iteration=None, engine='hoomd'):
-        """Save the table potential to a file usable by the MD engine.
-
-        TODO: factor out for separate engines.
-        """
+    def save_table_potential(self, r, dr, iteration=0, engine='hoomd'):
+        """Save the table potential to a file usable by the MD engine. """
         V = self.potential
         F = -1.0 * np.gradient(V, dr)
         data = np.vstack([r, V, F])
 
-        if iteration is not None:
-            assert isinstance(iteration, int)
-            basename = os.path.basename(self.potential_file)
-            basename = 'step{0:d}.{1}'.format(iteration, basename)
-            dirname = os.path.dirname(self.potential_file)
-            iteration_filename = os.path.join(dirname, basename)
+        basename = os.path.basename(self.potential_file)
+        basename = 'step{0:d}.{1}'.format(iteration, basename)
+        dirname = os.path.dirname(self.potential_file)
+        iteration_filename = os.path.join(dirname, basename)
 
+        # TODO: Factor out for separate engines.
         if engine.lower() == 'hoomd':
+            # This file is overwritten at each iteration and actually used for
+            # performing the query simulations.
             np.savetxt(self.potential_file, data.T)
-            if iteration is not None:
-                np.savetxt(iteration_filename, data.T)
+            # This file is written for viewing of how the potential evolves.
+            np.savetxt(iteration_filename, data.T)
         else:
             raise UnsupportedEngine(engine)
