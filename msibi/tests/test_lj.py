@@ -8,8 +8,9 @@ from msibi import MSIBI, State, Pair, mie
 
 def test_full_lj():
     """Test the full Lennard-Jones optimization. """
-
+    # Root directory for the Lennard-Jones optimization.
     lj = os.path.join(os.path.dirname(__file__), 'lj')
+
     # Set up global parameters.
     rdf_cutoff = 5.0
     opt = MSIBI(rdf_cutoff=rdf_cutoff, n_rdf_points=101, pot_cutoff=3.0, smooth_rdfs=True)
