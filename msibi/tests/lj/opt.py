@@ -6,6 +6,7 @@ import os
 
 from msibi import MSIBI, State, Pair, mie
 
+
 # Clear out the temp files
 os.system('rm state*/_* rdfs/pair* potentials/* f_fits.log state*/log.txt')
 os.system('rm state*/err.txt')
@@ -40,3 +41,4 @@ pairs = [pair0]
 # Do magic.
 opt.optimize(states, pairs, n_iterations=5, engine='hoomd')
 opt.plot()
+

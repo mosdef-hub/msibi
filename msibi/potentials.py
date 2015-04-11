@@ -14,8 +14,7 @@ def mie(r, eps, sig, m=12, n=6):
 
 def morse(r, D, alpha, r0):
     """Morse pair potential. """
-    return D * (np.exp(-2 * alpha * (r - r0)) -
-                2 * np.exp(-alpha * (r - r0)))
+    return D * (np.exp(-2 * alpha * (r - r0)) - 2 * np.exp(-alpha * (r - r0)))
 
 
 def tail_correction(r, V, r_switch):
@@ -84,6 +83,10 @@ def head_correction(r, V, previous_V, form='linear'):
             for i, pot_value in enumerate(V[:last_neginf+1]):
                 V[i] = previous_V[i]
             return V
+    else:
+        # TODO: Raise error?
+        #       This means that all potential values are well behaved.
+        pass
 
 
 def linear_head_correction(r, V, cutoff):
@@ -93,8 +96,8 @@ def linear_head_correction(r, V, cutoff):
     return V
 
 
-def calc_alpha_array(alpha0, pot_r, form='linear'):
-    """ """
+def alpha_array(alpha0, pot_r, form='linear'):
+    """Generate an array of alpha values used for scaling in the IBI step. """
     if form == 'linear':
         return alpha0 * (1.0 - pot_r / pot_r[-1])
     else:

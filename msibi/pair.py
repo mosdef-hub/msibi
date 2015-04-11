@@ -6,7 +6,7 @@ from six import string_types
 
 from msibi.utils.exceptions import UnsupportedEngine
 from msibi.utils.error_calculation import calc_similarity
-from msibi.potentials import tail_correction, head_correction, calc_alpha_array
+from msibi.potentials import tail_correction, head_correction, alpha_array
 from msibi.utils.smoothing import savitzky_golay
 
 
@@ -93,7 +93,7 @@ class Pair(object):
             kT = state.kT
             alpha0 = self.states[state]['alpha']
             form = self.states[state]['alpha_form']
-            alpha = calc_alpha_array(alpha0, pot_r, form=form)
+            alpha = alpha_array(alpha0, pot_r, form=form)
 
             current_rdf = self.states[state]['current_rdf'][:, 1]
             target_rdf = self.states[state]['target_rdf'][:, 1]

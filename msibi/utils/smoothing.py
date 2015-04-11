@@ -18,6 +18,7 @@ def savitzky_golay(y, window_size, order, deriv=0, rate=1):
 
     Returns
     -------
+
     """
     try: 
         window_size = np.abs(np.int(window_size))

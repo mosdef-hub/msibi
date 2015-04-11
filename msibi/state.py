@@ -52,7 +52,7 @@ class State(object):
         self.backup_trajectory = backup_trajectory  # save trajectories?
 
     def reload_query_trajectory(self):
-        """ """
+        """Reload the query trajectory. """
         if self.top_path:
             self.traj = md.load(self.traj_path, top=self.top_path)
         else:
@@ -60,7 +60,9 @@ class State(object):
 
     def save_runscript(self, table_potentials, table_width, engine='hoomd',
                        runscript='hoomd_run_template.py'):
-        """ """
+        """Save the input script for the MD engine. """
+
+        # TODO: Factor out for separate engines.
         header = list()
         header.append(HOOMD_HEADER.format('start.xml', self.kT, table_width))
         for type1, type2, potential_file in table_potentials:
