@@ -6,7 +6,7 @@ import mdtraj as md
 HOOMD_HEADER = """
 from hoomd_script import *
 
-system = init.read_xml(filename="{0}")
+system = init.read_xml(filename="{0}", wrap_coordinates=True)
 T_final = {1:.1f}
 
 pot_width = {2:d}

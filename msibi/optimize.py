@@ -11,12 +11,13 @@ except KeyError:
 
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
+#import seaborn as sns
 
 from msibi.potentials import tail_correction
 from msibi.workers import run_query_simulations
 
 
+"""
 sns.set_style('white', {'legend.frameon': True,
                         'axes.edgecolor': '0.0',
                         'axes.linewidth': 1.0,
@@ -24,6 +25,7 @@ sns.set_style('white', {'legend.frameon': True,
                         'ytick.direction': 'in',
                         'xtick.major.size': 4.0,
                         'ytick.major.size': 4.0})
+"""
 
 
 class MSIBI(object):
@@ -109,6 +111,8 @@ class MSIBI(object):
         for n in range(start_iteration + self.n_iterations):
             logging.info("-------- Iteration {n} --------".format(**locals()))
             run_query_simulations(self.states, engine=engine)
+            #for state in states:
+            #    state.reload_query_trajectory()
             self._update_potentials(n, engine)
 
     def _update_potentials(self, iteration, engine):
@@ -122,6 +126,8 @@ class MSIBI(object):
     def _recompute_rdfs(self, pair, iteration):
         """Recompute the current RDFs for every state used for a given pair. """
         for state in pair.states:
+            logging.info('calculating rdf for %s at state %s' 
+                    % (pair.name, state.name))
             pair.compute_current_rdf(state, self.rdf_r_range,
                                      n_bins=self.rdf_n_bins,
                                      smooth=self.smooth_rdfs)
