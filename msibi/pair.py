@@ -79,8 +79,20 @@ class Pair(object):
                 self.states[state]['current_rdf'][:, 1], 5, 1, deriv=0, rate=1)
 
     def save_current_rdf(self, state, iteration, dr):
-        """ """
-        filename = 'rdfs/pair_{0}-state_{1}-step{2}.txt'.format(
+        """Save the current rdf
+
+        Parameters
+        ----------
+        state : State
+            A state object
+        iteration : int
+            Current iteration step, used in the filename
+        dr : float
+            The RDF bin size
+        """
+        if not os.path.isdir('./rdfs'):
+            os.makedirs('./rdfs')
+        filename = './rdfs/pair_{0}-state_{1}-step{2}.txt'.format(
                 self.name, state.name, iteration)
         rdf = self.states[state]['current_rdf']
         rdf[:, 0] -= dr / 2
