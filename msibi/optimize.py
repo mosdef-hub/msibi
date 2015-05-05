@@ -41,8 +41,6 @@ class MSIBI(object):
         The upper cutoff value for the potential.
     r_switch : float, optional, default=pot_r[-5]
         The radius after which a tail correction is applied.
-    status_filename : str, optional, default='f_fits.log'
-        A log file for tracking the quality of fits at every iteration.
     smooth_rdfs : bool, optional, default=False
         Use a smoothing function to reduce the noise in the RDF data.
 
@@ -70,7 +68,7 @@ class MSIBI(object):
     """
 
     def __init__(self, rdf_cutoff, n_rdf_points, pot_cutoff=None, r_switch=None,
-                 status_filename='f_fits.log', smooth_rdfs=False):
+                 smooth_rdfs=False):
         self.states = []
         self.pairs = []
         self.n_iterations = 10  # Can be overridden in optimize().
@@ -93,10 +91,6 @@ class MSIBI(object):
         if not r_switch:
             r_switch = self.pot_r[-5]
         self.r_switch = r_switch
-
-        logging.basicConfig(filename=status_filename, level=logging.INFO,
-                            format='%(message)s', filemode='a')
-        self.logfile = open(status_filename, 'w')
 
     def optimize(self, states, pairs, n_iterations=10, engine='hoomd',
                  start_iteration=0):
