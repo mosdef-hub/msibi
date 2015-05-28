@@ -1,3 +1,4 @@
+import logging
 import os
 
 import mdtraj as md
@@ -59,13 +60,22 @@ class Pair(object):
                               'pair_indices': pair_indices,
                               'f_fit': []}
 
-    def compute_current_rdf(self, state, r_range, n_bins, smooth=True):
+    def compute_current_rdf(self, state, r_range, n_bins, smooth=True,
+            max_frames=1e3):
         """ """
         pairs = self.states[state]['pair_indices']
         # TODO: More elegant way to handle units.
         #       See https://github.com/ctk3b/msibi/issues/2
-        r, g_r = md.compute_rdf(state.traj, pairs, r_range=r_range / 10,
-                                n_bins=n_bins)
+        g_r_all = None
+        first_frame = 0
+        for last_frame in range(max_frames, state.traj.n_frames + max_frames,
+                max_frames):
+            r, g_r = md.compute_rdf(state.traj[first_frame:last_frame],
+                    pairs, r_range=r_range / 10, n_bins=n_bins)
+            if g_r_all == None:
+                g_r_all = np.zeros_like(g_r)
+            g_r_all += g_r / len(state.traj[first_frame:last_frame])
+            first_frame = last_frame
         r *= 10
         rdf = np.vstack((r, g_r)).T
         self.states[state]['current_rdf'] = rdf
@@ -76,7 +86,7 @@ class Pair(object):
 
         if smooth:
             self.states[state]['current_rdf'][:, 1] = savitzky_golay(
-                self.states[state]['current_rdf'][:, 1], 5, 1, deriv=0, rate=1)
+                self.states[state]['current_rdf'][:, 1], 3, 1, deriv=0, rate=1)
 
     def save_current_rdf(self, state, iteration, dr):
         """Save the current rdf

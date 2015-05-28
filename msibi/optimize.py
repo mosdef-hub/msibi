@@ -43,6 +43,8 @@ class MSIBI(object):
         The radius after which a tail correction is applied.
     smooth_rdfs : bool, optional, default=False
         Use a smoothing function to reduce the noise in the RDF data.
+    max_frames : int
+        The maximum number of frames to include at once in RDF calculation
 
     Attributes
     ----------
@@ -68,10 +70,11 @@ class MSIBI(object):
     """
 
     def __init__(self, rdf_cutoff, n_rdf_points, pot_cutoff=None, r_switch=None,
-                 smooth_rdfs=False):
+                 smooth_rdfs=False, max_frames=1e3):
         self.states = []
         self.pairs = []
         self.n_iterations = 10  # Can be overridden in optimize().
+        self.max_frames = max_frames
 
         self.rdf_cutoff = rdf_cutoff
         self.n_rdf_points = n_rdf_points
@@ -122,7 +125,8 @@ class MSIBI(object):
         for state in pair.states:
             pair.compute_current_rdf(state, self.rdf_r_range,
                                      n_bins=self.rdf_n_bins,
-                                     smooth=self.smooth_rdfs)
+                                     smooth=self.smooth_rdfs,
+                                     max_frames=self.max_frames)
             pair.save_current_rdf(state, iteration=iteration, dr=self.dr)
             logging.info('pair {0}, state {1}, iteration {2}: {3:f}'.format(
                          pair.name, state.name, iteration,
