@@ -80,13 +80,13 @@ class Pair(object):
         rdf = np.vstack((r, g_r)).T
         self.states[state]['current_rdf'] = rdf
 
-        # Compute fitness function comparing the two RDFs.
-        f_fit = calc_similarity(rdf[:, 1], self.states[state]['target_rdf'][:, 1])
-        self.states[state]['f_fit'].append(f_fit)
-
         if smooth:
             self.states[state]['current_rdf'][:, 1] = savitzky_golay(
                 self.states[state]['current_rdf'][:, 1], 3, 1, deriv=0, rate=1)
+
+        # Compute fitness function comparing the two RDFs.
+        f_fit = calc_similarity(rdf[:, 1], self.states[state]['target_rdf'][:, 1])
+        self.states[state]['f_fit'].append(f_fit)
 
     def save_current_rdf(self, state, iteration, dr):
         """Save the current rdf

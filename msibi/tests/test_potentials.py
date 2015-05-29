@@ -28,4 +28,5 @@ def test_calc_alpha_array():
 
 if __name__ == "__main__":
     test_tail_correction()
+    test_calc_alpha_array()
 
