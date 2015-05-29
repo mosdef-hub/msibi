@@ -8,7 +8,6 @@ def test_tail_correction():
     dr = 0.05
     r = np.arange(0, 2.5, dr)
     V = mie(r, 1, 1)
-
     smooth_V = tail_correction(r, V, r_switch=2.25)
     assert smooth_V[-1] == 0.0
 
@@ -29,4 +28,3 @@ def test_calc_alpha_array():
 if __name__ == "__main__":
     test_tail_correction()
     test_calc_alpha_array()
-
