@@ -68,8 +68,8 @@ class Pair(object):
         #       See https://github.com/ctk3b/msibi/issues/2
         g_r_all = None
         first_frame = 0
-        for last_frame in range(max_frames, state.traj.n_frames + max_frames,
-                max_frames):
+        for last_frame in range(int(max_frames), 
+                int(state.traj.n_frames + max_frames), int(max_frames)):
             r, g_r = md.compute_rdf(state.traj[first_frame:last_frame],
                     pairs, r_range=r_range / 10, n_bins=n_bins)
             if g_r_all == None:
