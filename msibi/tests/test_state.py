@@ -14,7 +14,7 @@ def test_init():
     pass
 
 def test_reload_query_trajectory():
-    state = State(1.987e-3, 500.0, state_dir='./state/', top_file='sys.hoomdxml',
+    state = State(1.987e-3, 500.0, state_dir='state/', top_file='sys.hoomdxml',
         name='state0')
     state.reload_query_trajectory()
     assert(state.traj)
