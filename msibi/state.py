@@ -40,7 +40,6 @@ class State(object):
 
         if not traj_file:
             self.traj_path = os.path.join(state_dir, 'query.dcd')
-        # TODO: check if .pdb with same name exists.
         if top_file:
             self.top_path = os.path.join(state_dir, top_file)
 

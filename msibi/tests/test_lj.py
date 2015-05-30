@@ -1,11 +1,13 @@
 from itertools import combinations
 import os
+import pytest
 
 import numpy as np
 
 from msibi import MSIBI, State, Pair, mie
 
 
+@pytest.mark.skipif(True, reason='simulation not running on Travis-CI')
 def test_full_lj():
     """Test the full Lennard-Jones optimization. """
     # Root directory for the Lennard-Jones optimization.
