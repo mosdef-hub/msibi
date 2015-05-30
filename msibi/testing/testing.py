@@ -1,6 +1,7 @@
 import os
 from pkg_resources import resource_filename
 
+
 def get_fn(name):
     """Get the full path to one of the reference files shopped for testing
 
