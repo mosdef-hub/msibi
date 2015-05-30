@@ -124,7 +124,7 @@ class MSIBI(object):
         else:
             self.potentials_dir = potentials_dir
         if not os.path.isdir(self.potentials_dir):
-            os.mkdir(potentials_dir)
+            os.mkdir(self.potentials_dir)
 
         table_potentials = []
         for pair in self.pairs:
