@@ -15,7 +15,7 @@ def test_calc_similarity():
     assert(calc_similarity(a, b) == 0.0)
 
 def test_find_nearest():
-    a = np.asarray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    a = np.arange(10)
     idx, nearest = find_nearest(a, 2.1)
     assert(idx == 2)
     assert(nearest == 2)
