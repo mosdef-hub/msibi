@@ -19,7 +19,7 @@ n_bins = 151
 @pytest.mark.skipif(True, reason='This function used for setting up tests')
 def init_state():
     pair = Pair('0', '1', potential=mie(r, 1.0, 1.0))
-    t = md.load('state/query.dcd', top='state/sys.hoomdxml')
+    t = md.load('state/query.dcd', top='final.hoomdxml')
     pair_list = t.top.select_pairs('name "0"', 'name "1"')
     rdf = np.loadtxt('./state/rdf.txt')
     alpha = 0.5
