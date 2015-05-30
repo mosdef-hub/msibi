@@ -8,7 +8,7 @@ import numpy as np
 from msibi.potentials import mie
 from msibi.pair import Pair
 from msibi.state import State
-from msibi.testing import get_fn
+from msibi.testing.testing import get_fn
 
 
 dr = 0.1/6.0
@@ -19,7 +19,7 @@ n_bins = 151
 k_B = 1.9872041e-3  # kcal/mol-K
 T = 298.0  # K
 
-@pytest.mark.skipif(True, reason='This function is used for setting up tests')
+@pytest.fixture
 def init_state():
     pair = Pair('0', '1', potential=mie(r, 1.0, 1.0))
     topology_filename = get_fn('final.hoomdxml')
@@ -33,15 +33,11 @@ def init_state():
     state = State(k_B, T, state_dir=state_dir, 
             top_file='sys.hoomdxml', name='state0')
     pair.add_state(state, rdf, alpha, pair_list)
-    return pair, state, rdf
+    return (pair, state, rdf)
 
 def test_pair_name():
     pair, state, rdf = init_state()
     assert(pair.name == '0-1')
-
-def test_state_kT():
-    pair, state, rdf = init_state()
-    assert(pair.states[state].kT = k_B * T
 
 def test_save_table_potential():
     pair = Pair('A', 'B', potential=mie(r, 1.0, 1.0))

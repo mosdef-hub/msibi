@@ -8,6 +8,7 @@ import numpy as np
 from msibi.potentials import mie
 from msibi.pair import Pair
 from msibi.state import State
+from msibi.testing.testing import get_fn
 
 
 def test_init():
