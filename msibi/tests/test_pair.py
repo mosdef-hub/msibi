@@ -20,11 +20,22 @@ n_bins = 151
 def init_state():
     pair = Pair('0', '1', potential=mie(r, 1.0, 1.0))
     topology_filename = os.path.join(os.getcwd(), 'final.hoomdxml')
-    t = md.load('state/query.dcd', top=topology_filename)
+    if not os.path.isfile(topology_filename):
+        topology_filename = 'msibi/tests/state/sys.hoomdxml'
+    traj_filename = 'state/query.dcd'
+    if not os.path.isfile(traj_filename):
+        traj_filename = 'msibi/tests/state/query.dcd'
+    t = md.load(traj_filename, top=topology_filename)
     pair_list = t.top.select_pairs('name "0"', 'name "1"')
-    rdf = np.loadtxt('./state/rdf.txt')
+    rdf_filename = 'state/rdf.txt'
+    if not os.path.isfile(rdf_filename):
+        rdf_filename = 'msibi/tests/state/rdf.txt'
+    rdf = np.loadtxt(rdf_filename)
     alpha = 0.5
-    state = State(1.987e-3, 305.0, state_dir='state/', 
+    state_dir = 'state/'
+    if not os.path.isdir(state_dir):
+        state_dir = 'msibi/tests/state/'
+    state = State(1.987e-3, 305.0, state_dir=state_dir, 
             top_file='sys.hoomdxml', name='state0')
     pair.add_state(state, rdf, alpha, pair_list)
     return pair, state, rdf
@@ -66,7 +77,9 @@ def test_save_current_rdf():
     state.reload_query_trajectory()
     pair.compute_current_rdf(state, r_range, n_bins+1, smooth=True, max_frames=1e3)
     pair.save_current_rdf(state, 0, 0.1/6.0)
-    assert os.path.isfile('./rdfs/pair_0-1-state_state0-step0.txt')
+    if not os.path.isdir('rdfs'):
+        os.system('mkdir rdfs')
+    assert os.path.isfile('rdfs/pair_0-1-state_state0-step0.txt')
 
 def test_update_potential():
     pair, state, rdf = init_state()

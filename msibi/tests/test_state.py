@@ -14,6 +14,9 @@ def test_init():
     pass
 
 def test_reload_query_trajectory():
+    state_dir = 'state/'
+    if not os.path.isdir(state_dir):
+        state_dir = 'msibi/tests/state/'
     state = State(1.987e-3, 500.0, state_dir='state/', top_file='sys.hoomdxml',
         name='state0')
     state.reload_query_trajectory()
