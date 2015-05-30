@@ -20,23 +20,23 @@ k_B = 1.9872041e-3  # kcal/mol-K
 T = 298.0  # K
 
 @pytest.fixture
-def init_state():
+def init_state(state_number):
     pair = Pair('0', '1', potential=mie(r, 1.0, 1.0))
     topology_filename = get_fn('final.hoomdxml')
-    traj_filename = get_fn('state/query.dcd')
+    traj_filename = get_fn('state{0}/query.dcd'.format(state_number))
     t = md.load(traj_filename, top=topology_filename)
     pair_list = t.top.select_pairs('name "0"', 'name "1"')
-    rdf_filename = get_fn('state/target-rdf.txt')
+    rdf_filename = get_fn('state{0}/target-rdf.txt'.format(state_number))
     rdf = np.loadtxt(rdf_filename)
     alpha = 0.5
-    state_dir = get_fn('state/')
+    state_dir = get_fn('state{0}/'.format(state_number))
     state = State(k_B, T, state_dir=state_dir, 
             top_file='sys.hoomdxml', name='state0')
     pair.add_state(state, rdf, alpha, pair_list)
     return (pair, state, rdf)
 
 def test_pair_name():
-    pair, state, rdf = init_state()
+    pair, state, rdf = init_state(0)
     assert(pair.name == '0-1')
 
 def test_save_table_potential():
@@ -46,7 +46,7 @@ def test_save_table_potential():
     assert os.path.isfile(pair.potential_file)
 
 def test_add_state():
-    pair, state, rdf = init_state()
+    pair, state, rdf = init_state(0)
     assert(np.array_equal(pair.states[state]['target_rdf'], rdf))
     assert(pair.states[state]['current_rdf'] == None)
     assert(pair.states[state]['alpha'] == 0.5)
@@ -54,21 +54,21 @@ def test_add_state():
     assert(len(pair.states[state]['f_fit']) == 0)
 
 def test_calc_current_rdf_no_smooth():
-    pair, state, rdf = init_state()
+    pair, state, rdf = init_state(0)
     state.reload_query_trajectory()
     pair.compute_current_rdf(state, r_range, n_bins+1, smooth=False, max_frames=1e3)
     assert(pair.states[state]['current_rdf']) != None
     assert(len(pair.states[state]['f_fit']) > 0)
 
 def test_calc_current_rdf_smooth():
-    pair, state, rdf = init_state()
+    pair, state, rdf = init_state(0)
     state.reload_query_trajectory()
     pair.compute_current_rdf(state, r_range, n_bins+1, smooth=True, max_frames=1e3)
     assert(pair.states[state]['current_rdf']) != None
     assert(len(pair.states[state]['f_fit']) > 0)
 
 def test_save_current_rdf():
-    pair, state, rdf = init_state()
+    pair, state, rdf = init_state(0)
     state.reload_query_trajectory()
     pair.compute_current_rdf(state, r_range, n_bins+1, smooth=True, max_frames=1e3)
     pair.save_current_rdf(state, 0, 0.1/6.0)
@@ -78,7 +78,7 @@ def test_save_current_rdf():
 
 def test_update_potential():
     """Make sure the potential changes after calculating RDF"""
-    pair, state, rdf = init_state()
+    pair, state, rdf = init_state(0)
     state.reload_query_trajectory()
     pair.compute_current_rdf(state, r_range, n_bins+1, smooth=True, max_frames=1e3)
     pair.update_potential(np.arange(0, 2.5+dr, dr), r_switch=1.8)
