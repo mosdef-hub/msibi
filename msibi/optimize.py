@@ -82,15 +82,12 @@ class MSIBI(object):
         """
         self.states = states
         self.pairs = pairs
-        if n_iterations:
-            self.n_iterations = n_iterations
+        self.n_iterations = n_iterations
         self.initialize(engine=engine)
 
         for n in range(start_iteration + self.n_iterations):
             logging.info("-------- Iteration {n} --------".format(**locals()))
             run_query_simulations(self.states, engine=engine)
-            #for state in states:
-            #    state.reload_query_trajectory()
             self._update_potentials(n, engine)
 
     def _update_potentials(self, iteration, engine):
@@ -126,11 +123,6 @@ class MSIBI(object):
             self.potentials_dir = os.path.join(os.getcwd(), 'potentials')
         else:
             self.potentials_dir = potentials_dir
-        try:
-            os.mkdir(self.potentials_dir)
-        except OSError:
-            # TODO: Warning and maybe a make backups.
-            pass
 
         table_potentials = []
         for pair in self.pairs:

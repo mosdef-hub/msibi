@@ -51,7 +51,6 @@ def _hoomd_worker(args):
     with open(log_file, 'w') as log, open(err_file, 'w') as err:
         if gpus:
             card = gpus[idx % len(gpus)]
-            logging.info('    Running state {state.name} on GPU {card}'.format(**locals()))
             cmds = ['hoomd', 'run.py', '--gpu={card}'.format(**locals())]
         else:
             logging.info('    Running state {state.name} on CPU'.format(**locals()))
@@ -80,11 +79,6 @@ def _get_gpu_info():
     if not nvidia_smi:
         return
     else:
-        smi_out = os.popen('nvidia-smi').readlines()
-        card_numbers = []
-        for i, line in enumerate(smi_out[7:]):
-            if not line.strip():
-                break
-            if i % 3 == 0:
-                card_numbers.append(line.split()[1])
-        return card_numbers
+        gpus = [line.split()[1].replace(':', '') for
+                line in os.popen('nvidia-smi -L').readlines()]
+        return gpus

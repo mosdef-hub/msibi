@@ -29,3 +29,10 @@ def test_savitzky_golay():
     y = x**3.0
     y2 = savitzky_golay(y, 3, 1)
     assert(calc_similarity(y, y2) > 0.99)
+    with pytest.raises(ValueError):
+        y2 = savitzky_golay(y, 3.1, 1)
+    with pytest.raises(TypeError):
+        y2 = savitzky_golay(y, 2, 1)
+        y2 = savitzky_golay(y, 4, 1)
+        y2 = savitzky_golay(y, 3, 3)
+        y2 = savitzky_golay(y, 3, 2)

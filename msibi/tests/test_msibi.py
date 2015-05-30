@@ -1,15 +1,8 @@
-import os
 import pytest
-import tempfile
 
-import mdtraj as md
 import numpy as np
 
 from msibi.optimize import MSIBI
-from msibi.potentials import mie
-from msibi.pair import Pair
-from msibi.state import State
-from msibi.testing import get_fn
 from msibi.tests.test_pair import init_state
 
 
@@ -43,3 +36,9 @@ def test_msibi_init_multiple_cutoff():
     assert(opt.rdf_r_range.shape[0] == 2)
     assert(opt.pot_r.shape[0] != n_bins)
     assert(opt.pot_r.shape[0] == 121)
+
+def test_msibi_optimize_states():
+    pair, state0, rdf = init_state(0)
+    opt = MSIBI(2.5, n_bins, pot_cutoff=2.5)
+    opt.optimize([state0], [pair], n_iterations=0, engine='hoomd')
+    
