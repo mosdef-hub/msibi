@@ -13,7 +13,8 @@ os.system('rm state*/err.txt')
 
 # Set up global parameters.
 rdf_cutoff = 5.0
-opt = MSIBI(rdf_cutoff=rdf_cutoff, n_rdf_points=101, pot_cutoff=3.0, smooth_rdfs=True)
+opt = MSIBI(rdf_cutoff=rdf_cutoff, n_rdf_points=101, pot_cutoff=3.0,
+        smooth_rdfs=True)
 
 # Specify states.
 state0 = State(k=1, T=0.5, state_dir='./state0', top_file='target.pdb',
@@ -36,9 +37,7 @@ alphas = [1.0, 1.0, 1.0]
 # Add targets to pair.
 for state, target, alpha in zip(states, rdf_targets, alphas):
     pair0.add_state(state, target, alpha, indices)
-pairs = [pair0]
+pairs = [pair0]  # optimize() expects a list of pairs
 
 # Do magic.
 opt.optimize(states, pairs, n_iterations=5, engine='hoomd')
-opt.plot()
-

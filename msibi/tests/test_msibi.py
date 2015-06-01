@@ -41,4 +41,3 @@ def test_msibi_optimize_states():
     pair, state0, rdf = init_state(0)
     opt = MSIBI(2.5, n_bins, pot_cutoff=2.5)
     opt.optimize([state0], [pair], n_iterations=0, engine='hoomd')
-    

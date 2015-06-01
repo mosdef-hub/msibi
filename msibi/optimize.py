@@ -126,6 +126,9 @@ class MSIBI(object):
         if not os.path.isdir(self.potentials_dir):
             os.mkdir(self.potentials_dir)
 
+        if not os.path.isdir('rdfs'):
+            os.mkdir('rdfs')
+
         table_potentials = []
         for pair in self.pairs:
             potential_file = os.path.join(self.potentials_dir,
