@@ -33,6 +33,9 @@ def test_savitzky_golay():
         y2 = savitzky_golay(y, 3.1, 1)
     with pytest.raises(TypeError):
         y2 = savitzky_golay(y, 2, 1)
+    with pytest.raises(TypeError):
         y2 = savitzky_golay(y, 4, 1)
+    with pytest.raises(TypeError):
         y2 = savitzky_golay(y, 3, 3)
+    with pytest.raises(TypeError):
         y2 = savitzky_golay(y, 3, 2)

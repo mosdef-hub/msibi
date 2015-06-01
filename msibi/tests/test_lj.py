@@ -8,7 +8,7 @@ from msibi import MSIBI, State, Pair, mie
 
 
 @pytest.mark.skipif(True, reason='simulation not running on Travis-CI')
-def test_full_lj():
+def test_full_lj():  # pragma: no cover
     """Test the full Lennard-Jones optimization. """
     # Root directory for the Lennard-Jones optimization.
     lj = os.path.join(os.path.dirname(__file__), 'lj')
