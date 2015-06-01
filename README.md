@@ -7,9 +7,9 @@ A package to help you manage and run pair potential optimizations using the
 multistate iterative Boltzmann inversion procedure.
 
 #### Citation [![Citing MSIBI](https://img.shields.io/badge/DOI-10.1063%2F1.4880555-blue.svg)](http://dx.doi.org/10.1063/1.4880555)
-Details of the underlying method and its validation can be found [here](http://dx.doi.org/10.1063/1.4880555)
+Details of the underlying method and its validation can be found [here](http://dx.doi.org/10.1063/1.4880555).
 
-If you use this package please cite the above paper. The BibTeX reference is
+If you use this package, please cite the above paper. The BibTeX reference is
 ```
 @article{Moore2014,
       author = "Moore, Timothy C. and Iacovella, Christopher R. and McCabe, Clare",
