@@ -51,7 +51,8 @@ class Pair(object):
             The alpha value used to scale the weight of this state.
         pair_indices : array-like, shape=(n_pairs, 2), dtype=int, optional, default=None
             Each row gives the indices of two atoms representing a pair.
-
+        alpha_form : str
+            For alpha as a function of r, gives form of alpha function
         """
         self.states[state] = {'target_rdf': target_rdf,
                               'current_rdf': None,
