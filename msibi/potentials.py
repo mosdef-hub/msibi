@@ -9,7 +9,8 @@ __all__ = ['mie', 'morse']
 
 def mie(r, eps, sig, m=12, n=6):
     """Mie pair potential.  """
-    return 4 * eps * ((sig / r) ** m - (sig / r) ** n)
+    prefactor = (m  / (m - n)) * (m / n)**(n / (m - n))
+    return prefactor * eps * ((sig / r) ** m - (sig / r) ** n)
 
 
 def morse(r, D, alpha, r0):
