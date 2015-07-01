@@ -66,6 +66,7 @@ def _hoomd_worker(args):
 
 def _post_query(state):
     """Reload the query trajectory and make backups. """
+
     state.reload_query_trajectory()
     backup_file(os.path.join(state.state_dir, 'log.txt'))
     backup_file(os.path.join(state.state_dir, 'err.txt'))

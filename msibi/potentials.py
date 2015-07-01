@@ -63,6 +63,8 @@ def head_correction(r, V, previous_V, form='linear'):
     """
     if form == 'linear':
         correction_function = linear_head_correction
+    elif form == 'exponential':
+        correction_function = exponential_head_correction
     else:
         raise ValueError('Unsupported head correction form: "{0}"'.format(form))
 
@@ -96,6 +98,25 @@ def linear_head_correction(r, V, cutoff):
     V[:cutoff + 1] = slope * (r[:cutoff + 1] - r[cutoff + 1]) + V[cutoff + 1]
     return V
 
+def exponential_head_correction(r, V, cutoff):
+    """Use an exponential function to smoothly force V to a finite value at V(0)
+
+    Parameters
+    ----------
+    r : np.ndarray
+        Separation values
+    V : np.ndarray
+        Potential at each of the separation values
+    cutoff : int
+        The last real value of V when iterating backwards
+
+    This function fits the small part of the potential to the form:
+    V(r) = A*exp(-Br)
+    """
+    dr = r[cutoff+2] = r[cutoff+1]
+    B = np.log(V[cutoff+1] / V[cutoff+2]) / dr
+    A = V[cutoff+1] * np.exp(B * r[cutoff+1])
+    V[:cutoff+1] = A * np.exp(-B * r[:cutoff+1])
 
 def alpha_array(alpha0, pot_r, form='linear'):
     """Generate an array of alpha values used for scaling in the IBI step. """

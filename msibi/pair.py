@@ -24,7 +24,7 @@ class Pair(object):
         Values of the potential at every pot_r.
 
     """
-    def __init__(self, type1, type2, potential):
+    def __init__(self, type1, type2, potential, head_correction_form):
         self.type1 = str(type1)
         self.type2 = str(type2)
         self.name = '{0}-{1}'.format(self.type1, self.type2)
@@ -36,6 +36,7 @@ class Pair(object):
         else:
             self.potential = potential
         self.previous_potential = None
+        self.head_correction_form = head_correction_form
 
     def add_state(self, state, target_rdf, alpha, pair_indices,
                   alpha_form='linear'):
@@ -69,6 +70,7 @@ class Pair(object):
         #       See https://github.com/ctk3b/msibi/issues/2
         g_r_all = None
         first_frame = 0
+        print len(pairs)
         for last_frame in range(int(max_frames), 
                 int(state.traj.n_frames + max_frames), int(max_frames)):
             r, g_r = md.compute_rdf(state.traj[first_frame:last_frame],
@@ -83,7 +85,9 @@ class Pair(object):
 
         if smooth:
             self.states[state]['current_rdf'][:, 1] = savitzky_golay(
-                self.states[state]['current_rdf'][:, 1], 3, 1, deriv=0, rate=1)
+                self.states[state]['current_rdf'][:, 1], 5, 3, deriv=0, rate=1)
+            for row in self.states[state]['current_rdf']:
+                row[1] = np.maximum(row[1], 0)
 
         # Compute fitness function comparing the two RDFs.
         f_fit = calc_similarity(rdf[:, 1], self.states[state]['target_rdf'][:, 1])
@@ -134,7 +138,8 @@ class Pair(object):
 
         # Apply corrections to ensure continuous, well-behaved potentials.
         self.potential = tail_correction(pot_r, self.potential, r_switch)
-        self.potential = head_correction(pot_r, self.potential, self.previous_potential)
+        self.potential = head_correction(pot_r, self.potential,
+                self.previous_potential, self.head_correction_form)
 
     def save_table_potential(self, r, dr, iteration=0, engine='hoomd'):
         """Save the table potential to a file usable by the MD engine. """
