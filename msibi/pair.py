@@ -2,6 +2,9 @@ import logging
 import os
 
 import mdtraj as md
+import networkx as nx
+from networkx import NetworkXNoPath
+
 import numpy as np
 from six import string_types
 
@@ -9,6 +12,7 @@ from msibi.utils.exceptions import UnsupportedEngine
 from msibi.utils.error_calculation import calc_similarity
 from msibi.potentials import tail_correction, head_correction, alpha_array
 from msibi.utils.smoothing import savitzky_golay
+from msibi.utils.find_exclusions import find_1_n_exclusions
 
 
 class Pair(object):
@@ -37,7 +41,7 @@ class Pair(object):
             self.potential = potential
         self.previous_potential = None
 
-    def add_state(self, state, target_rdf, alpha, pair_indices,
+    def add_state(self, state, target_rdf, alpha, pair_indices=None,
                   alpha_form='linear'):
         """Add a state to be used in optimizing this pair.
 
@@ -60,6 +64,25 @@ class Pair(object):
                               'alpha_form': alpha_form,
                               'pair_indices': pair_indices,
                               'f_fit': []}
+
+    def select_pairs(self, state, exclude_up_to=0):
+        """Select pairs based on a topology and exclusions.
+
+        Parameters
+        ----------
+        state : State
+            A state object, contains a topology from which to select pairs
+        exclude_up_to : int
+            Exclude pairs separated by exclude_up_to or fewer bonds, default=0
+        """
+        if state.top_path:
+            top = md.load(state.top_path).topology
+        else:
+            top = md.load(state.traj_path).topology
+        pairs = top.select_pairs("name '{0}'".format(self.type1),
+                "name '{0}'".format(self.type2))
+        to_delete = find_exclusions(top, pairs, exclude_up_to)
+        self.states[state][pair_indices] = np.delete(pairs, to_delete, axis=0)
 
     def compute_current_rdf(self, state, r_range, n_bins, smooth=True,
             max_frames=1e3):
