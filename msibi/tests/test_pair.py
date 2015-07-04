@@ -83,3 +83,17 @@ def test_update_potential():
     pair.compute_current_rdf(state, r_range, n_bins+1, smooth=True, max_frames=1e3)
     pair.update_potential(np.arange(0, 2.5+dr, dr), r_switch=1.8)
     assert(not np.array_equal(pair.potential, pair.previous_potential))
+
+def test_select_pairs():
+    """Test selecting pairs with exclusions"""
+    pair = Pair('tail', 'tail', potential=mie(r, 1.0, 1.0))
+    topology_filename = get_fn('2chains.hoomdxml')
+    alpha = 0.5
+    state_dir = get_fn('state0/')
+    state = State(k_B, T, state_dir=state_dir, 
+            top_file=get_fn('2chains.hoomdxml'), name='state0')
+    rdf_filename = get_fn('state0/target-rdf.txt')
+    rdf = np.loadtxt(rdf_filename)
+    pair.add_state(state, rdf, alpha)
+    pair.select_pairs(state, exclude_up_to=3)
+    assert(pair.states[state]['pair_indices'].shape[0] == 162)

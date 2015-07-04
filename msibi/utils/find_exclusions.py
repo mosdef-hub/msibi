@@ -1,5 +1,6 @@
 import networkx as nx
 from networkx import NetworkXNoPath
+import numpy as np
 
 def find_1_n_exclusions(top, pairs, n):
     """Find exclusions in a trajectory based on an exculsion principle
@@ -19,7 +20,7 @@ def find_1_n_exclusions(top, pairs, n):
     bonds_by_index = [(b[0].index, b[1].index) for b in bonds]
     G.add_edges_from(bonds_by_index)
     to_exclude = []
-    for pair in pairs:
+    for i, pair in enumerate(pairs):
         if is_1_n(pair, n, G) == True:
             to_exclude.append(i)
     return np.asarray(to_exclude)
