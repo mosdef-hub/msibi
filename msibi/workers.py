@@ -51,7 +51,7 @@ def _hoomd_worker(args):
     with open(log_file, 'w') as log, open(err_file, 'w') as err:
         if gpus:
             card = gpus[idx % len(gpus)]
-            cmds = ['hoomd', 'run.py', '--gpu={card}'.format(**locals())]
+            cmds = ['mpiexec', '-n', '1', 'hoomd', 'run.py', '--gpu={card}'.format(**locals())]
         else:
             logging.info('    Running state {state.name} on CPU'.format(**locals()))
             cmds = ['hoomd', 'run.py']
@@ -66,6 +66,7 @@ def _hoomd_worker(args):
 
 def _post_query(state):
     """Reload the query trajectory and make backups. """
+
     state.reload_query_trajectory()
     backup_file(os.path.join(state.state_dir, 'log.txt'))
     backup_file(os.path.join(state.state_dir, 'err.txt'))
