@@ -1,134 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>msibi package &mdash; Multistate Iterative Boltzmann Inversion 0.1 documentation</title>
-  
-
-  
-  
-
-  
-  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
-
-  
-  
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-
-  
-
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-    <link rel="top" title="Multistate Iterative Boltzmann Inversion 0.1 documentation" href="index.html"/>
-        <link rel="next" title="msibi.utils package" href="msibi.utils.html"/>
-        <link rel="prev" title="Tutorials" href="tutorials/tutorials.html"/> 
-
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
-
-</head>
-
-<body class="wy-body-for-nav" role="document">
-
-  <div class="wy-grid-for-nav">
-
+    <title>msibi package &mdash; msibi 0.1 documentation</title>
     
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-nav-search">
-        
-          <a href="index.html" class="fa fa-home"> Multistate Iterative Boltzmann Inversion</a>
-        
-        
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-      </div>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="msibi 0.1 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="index2.html">msibi 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-        
-          
-          
-              <ul>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#install-with-pip">Install with pip</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#install-from-source">Install from source</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#dependencies">Dependencies</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#testing-your-installation">Testing your installation</a></li>
-</ul>
-</li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="tutorials/tutorials.html">Tutorials</a></li>
-</ul>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="">msibi package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-msibi.optimize">msibi.optimize module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-msibi.pair">msibi.pair module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-msibi.potentials">msibi.potentials module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-msibi.state">msibi.state module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-msibi.workers">msibi.workers module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-msibi">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="msibi.utils.html">msibi.utils package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="msibi.utils.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="msibi.utils.html#module-msibi.utils.error_calculation">msibi.utils.error_calculation module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="msibi.utils.html#module-msibi.utils.exceptions">msibi.utils.exceptions module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="msibi.utils.html#module-msibi.utils.general">msibi.utils.general module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="msibi.utils.html#module-msibi.utils">Module contents</a></li>
-</ul>
-</li>
-</ul>
-
-          
-        
-      </div>
-      &nbsp;
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">Multistate Iterative Boltzmann Inversion</a>
-      </nav>
-
-
-      
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="breadcrumbs navigation">
-  <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>msibi package</li>
-      <li class="wy-breadcrumbs-aside">
-        
-          <a href="_sources/msibi.txt" rel="nofollow"> View page source</a>
-        
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main" class="document">
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
             
   <div class="section" id="msibi-package">
 <h1>msibi package<a class="headerlink" href="#msibi-package" title="Permalink to this headline">¶</a></h1>
@@ -138,10 +49,10 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="msibi.utils.html">msibi.utils package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="msibi.utils.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="msibi.utils.html#module-msibi.utils.error_calculation">msibi.utils.error_calculation module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="msibi.utils.html#module-msibi.utils.exceptions">msibi.utils.exceptions module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="msibi.utils.html#module-msibi.utils.general">msibi.utils.general module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="msibi.utils.html#module-msibi.utils">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="msibi.utils.html#msibi-utils-error-calculation-module">msibi.utils.error_calculation module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="msibi.utils.html#msibi-utils-exceptions-module">msibi.utils.exceptions module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="msibi.utils.html#msibi-utils-general-module">msibi.utils.general module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="msibi.utils.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -150,393 +61,81 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-msibi.optimize">
-<span id="msibi-optimize-module"></span><h2>msibi.optimize module<a class="headerlink" href="#module-msibi.optimize" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="msibi.optimize.MSIBI">
-<em class="property">class </em><tt class="descclassname">msibi.optimize.</tt><tt class="descname">MSIBI</tt><big>(</big><em>rdf_cutoff</em>, <em>n_points</em>, <em>pot_cutoff=None</em>, <em>r_switch=None</em>, <em>status_filename='f_fits.log'</em><big>)</big><a class="reference internal" href="_modules/msibi/optimize.html#MSIBI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msibi.optimize.MSIBI" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></a></p>
-<p>Management class for orchestrating an MSIBI optimization.</p>
-<dl class="docutils">
-<dt>rdf_cutoff <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd>The upper cutoff value for the RDF calculation.</dd>
-<dt>n_points <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd>The number of radius values.</dd>
-<dt>pot_cutoff <span class="classifier-delimiter">:</span> <span class="classifier">float, optional, default=rdf_cutoff</span></dt>
-<dd>The upper cutoff value for the potential.</dd>
-<dt>r_switch <span class="classifier-delimiter">:</span> <span class="classifier">float, optional, default=pot_r[-1] - 5 * dr</span></dt>
-<dd>The radius after which a tail correction is applied.</dd>
-</dl>
-<dl class="docutils">
-<dt>states <span class="classifier-delimiter">:</span> <span class="classifier">list of States</span></dt>
-<dd>All states to be used in the optimization procedure.</dd>
-<dt>pairs <span class="classifier-delimiter">:</span> <span class="classifier">list of Pairs</span></dt>
-<dd>All pairs to be used in the optimization procedure.</dd>
-<dt>n_iterations <span class="classifier-delimiter">:</span> <span class="classifier">int, optional, default=10</span></dt>
-<dd>The number of MSIBI iterations to perform.</dd>
-<dt>rdf_cutoff <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd>The upper cutoff value for the RDF calculation.</dd>
-<dt>n_points <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd>The number of radius values.</dd>
-<dt>dr <span class="classifier-delimiter">:</span> <span class="classifier">float, default=rdf_cutoff / (n_points - 1)</span></dt>
-<dd>The spacing of radius values.</dd>
-<dt>pot_r <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, shape=(int((rdf_cutoff + dr) / dr),)</span></dt>
-<dd>The radius values at which the potential is computed.</dd>
-<dt>pot_cutoff <span class="classifier-delimiter">:</span> <span class="classifier">float, optional, default=rdf_cutoff</span></dt>
-<dd>The upper cutoff value for the potential.</dd>
-<dt>r_switch <span class="classifier-delimiter">:</span> <span class="classifier">float, optional, default=pot_r[-1] - 5 * dr</span></dt>
-<dd>The radius after which a tail correction is applied.</dd>
-</dl>
-<dl class="method">
-<dt id="msibi.optimize.MSIBI.initialize">
-<tt class="descname">initialize</tt><big>(</big><em>engine='hoomd'</em>, <em>potentials_dir=None</em><big>)</big><a class="reference internal" href="_modules/msibi/optimize.html#MSIBI.initialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msibi.optimize.MSIBI.initialize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create initial table potentials and the simulation input scripts.</p>
-<p>engine : str, optional, default=&#8217;hoomd&#8217;
-potentials_dir : path, optional, default=&#8220;&#8216;working_dir&#8217;/potentials&#8221;</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="msibi.optimize.MSIBI.optimize">
-<tt class="descname">optimize</tt><big>(</big><em>states</em>, <em>pairs</em>, <em>n_iterations=10</em>, <em>engine='hoomd'</em><big>)</big><a class="reference internal" href="_modules/msibi/optimize.html#MSIBI.optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msibi.optimize.MSIBI.optimize" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="msibi.optimize.MSIBI.plot">
-<tt class="descname">plot</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/msibi/optimize.html#MSIBI.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msibi.optimize.MSIBI.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate plots showing the evolution of each pair potential.</p>
-</dd></dl>
-
-</dd></dl>
-
+<div class="section" id="msibi-optimize-module">
+<h2>msibi.optimize module<a class="headerlink" href="#msibi-optimize-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-msibi.pair">
-<span id="msibi-pair-module"></span><h2>msibi.pair module<a class="headerlink" href="#module-msibi.pair" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="msibi.pair.Pair">
-<em class="property">class </em><tt class="descclassname">msibi.pair.</tt><tt class="descname">Pair</tt><big>(</big><em>type1</em>, <em>type2</em>, <em>potential</em><big>)</big><a class="reference internal" href="_modules/msibi/pair.html#Pair"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msibi.pair.Pair" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></a></p>
-<p>A pair interaction to be optimized.</p>
-<dl class="docutils">
-<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Pair name.</dd>
-<dt>pairs <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape=(n_pairs, 2), dtype=int, optional, default=None</span></dt>
-<dd>Each row gives the indices of two atoms representing a pair.</dd>
-<dt>potential <span class="classifier-delimiter">:</span> <span class="classifier">func</span></dt>
-<dd>Values of the potential at every pot_r.</dd>
-</dl>
-<dl class="method">
-<dt id="msibi.pair.Pair.add_state">
-<tt class="descname">add_state</tt><big>(</big><em>state</em>, <em>target_rdf</em>, <em>alpha</em>, <em>pair_indices</em>, <em>alpha_form='linear'</em><big>)</big><a class="reference internal" href="_modules/msibi/pair.html#Pair.add_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msibi.pair.Pair.add_state" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a state to be used in optimizing this pair.</p>
-<dl class="docutils">
-<dt>state <span class="classifier-delimiter">:</span> <span class="classifier">State</span></dt>
-<dd>A state object.</dd>
-<dt>target_rdf <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, shape=(n_bins, 2), dtype=float</span></dt>
-<dd>Coarse-grained target RDF.</dd>
-<dt>alpha <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd>The alpha value used to scale the weight of this state.</dd>
-<dt>pair_indices <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape=(n_pairs, 2), dtype=int, optional, default=None</span></dt>
-<dd>Each row gives the indices of two atoms representing a pair.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="msibi.pair.Pair.compute_current_rdf">
-<tt class="descname">compute_current_rdf</tt><big>(</big><em>state</em>, <em>r_range</em>, <em>dr</em><big>)</big><a class="reference internal" href="_modules/msibi/pair.html#Pair.compute_current_rdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msibi.pair.Pair.compute_current_rdf" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="msibi.pair.Pair.save_current_rdf">
-<tt class="descname">save_current_rdf</tt><big>(</big><em>state</em>, <em>iteration</em><big>)</big><a class="reference internal" href="_modules/msibi/pair.html#Pair.save_current_rdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msibi.pair.Pair.save_current_rdf" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="msibi.pair.Pair.save_table_potential">
-<tt class="descname">save_table_potential</tt><big>(</big><em>r</em>, <em>dr</em>, <em>iteration=None</em>, <em>engine='hoomd'</em><big>)</big><a class="reference internal" href="_modules/msibi/pair.html#Pair.save_table_potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msibi.pair.Pair.save_table_potential" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the table potential to a file usable by the MD engine.</p>
-<p>TODO: factor out for separate engines.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="msibi.pair.Pair.update_potential">
-<tt class="descname">update_potential</tt><big>(</big><em>pot_r</em>, <em>r_switch=None</em><big>)</big><a class="reference internal" href="_modules/msibi/pair.html#Pair.update_potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msibi.pair.Pair.update_potential" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+<div class="section" id="msibi-pair-module">
+<h2>msibi.pair module<a class="headerlink" href="#msibi-pair-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-msibi.potentials">
-<span id="msibi-potentials-module"></span><h2>msibi.potentials module<a class="headerlink" href="#module-msibi.potentials" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="msibi.potentials.mie">
-<tt class="descclassname">msibi.potentials.</tt><tt class="descname">mie</tt><big>(</big><em>r</em>, <em>eps</em>, <em>sig</em>, <em>m=12</em>, <em>n=6</em><big>)</big><a class="reference internal" href="_modules/msibi/potentials.html#mie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msibi.potentials.mie" title="Permalink to this definition">¶</a></dt>
-<dd><p>Mie pair potential.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="msibi.potentials.morse">
-<tt class="descclassname">msibi.potentials.</tt><tt class="descname">morse</tt><big>(</big><em>r</em>, <em>D</em>, <em>alpha</em>, <em>r0</em><big>)</big><a class="reference internal" href="_modules/msibi/potentials.html#morse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msibi.potentials.morse" title="Permalink to this definition">¶</a></dt>
-<dd><p>Morse pair potential.</p>
-</dd></dl>
-
+<div class="section" id="msibi-potentials-module">
+<h2>msibi.potentials module<a class="headerlink" href="#msibi-potentials-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-msibi.state">
-<span id="msibi-state-module"></span><h2>msibi.state module<a class="headerlink" href="#module-msibi.state" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="msibi.state.State">
-<em class="property">class </em><tt class="descclassname">msibi.state.</tt><tt class="descname">State</tt><big>(</big><em>k</em>, <em>T</em>, <em>state_dir=''</em>, <em>traj_file=None</em>, <em>top_file=None</em>, <em>name=None</em>, <em>backup_trajectory=False</em><big>)</big><a class="reference internal" href="_modules/msibi/state.html#State"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msibi.state.State" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></a></p>
-<p>A single state used as part of a multistate optimization.</p>
-<dl class="docutils">
-<dt>k <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd>Boltzmann&#8217;s  constant in specified units.</dd>
-<dt>T <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd>Temperature in kelvin.</dd>
-<dt>traj <span class="classifier-delimiter">:</span> <span class="classifier">md.Trajectory</span></dt>
-<dd>The trajectory associated with this state.</dd>
-<dt>backup_trajectory <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
-<dd>True if each query trajectory is backed up (default=False)</dd>
-</dl>
-<dl class="method">
-<dt id="msibi.state.State.reload_query_trajectory">
-<tt class="descname">reload_query_trajectory</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/msibi/state.html#State.reload_query_trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msibi.state.State.reload_query_trajectory" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="msibi.state.State.save_runscript">
-<tt class="descname">save_runscript</tt><big>(</big><em>table_potentials</em>, <em>table_width</em>, <em>engine='hoomd'</em>, <em>runscript='hoomd_run_template.py'</em><big>)</big><a class="reference internal" href="_modules/msibi/state.html#State.save_runscript"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msibi.state.State.save_runscript" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+<div class="section" id="msibi-state-module">
+<h2>msibi.state module<a class="headerlink" href="#msibi-state-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-msibi.workers">
-<span id="msibi-workers-module"></span><h2>msibi.workers module<a class="headerlink" href="#module-msibi.workers" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="msibi.workers.run_query_simulations">
-<tt class="descclassname">msibi.workers.</tt><tt class="descname">run_query_simulations</tt><big>(</big><em>states</em>, <em>engine='hoomd'</em><big>)</big><a class="reference internal" href="_modules/msibi/workers.html#run_query_simulations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msibi.workers.run_query_simulations" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run all query simulations for a single iteration.</p>
-</dd></dl>
-
+<div class="section" id="msibi-workers-module">
+<h2>msibi.workers module<a class="headerlink" href="#msibi-workers-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-msibi">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-msibi" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="msibi.MSIBI">
-<em class="property">class </em><tt class="descclassname">msibi.</tt><tt class="descname">MSIBI</tt><big>(</big><em>rdf_cutoff</em>, <em>n_points</em>, <em>pot_cutoff=None</em>, <em>r_switch=None</em>, <em>status_filename='f_fits.log'</em><big>)</big><a class="headerlink" href="#msibi.MSIBI" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></a></p>
-<p>Management class for orchestrating an MSIBI optimization.</p>
-<dl class="docutils">
-<dt>rdf_cutoff <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd>The upper cutoff value for the RDF calculation.</dd>
-<dt>n_points <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd>The number of radius values.</dd>
-<dt>pot_cutoff <span class="classifier-delimiter">:</span> <span class="classifier">float, optional, default=rdf_cutoff</span></dt>
-<dd>The upper cutoff value for the potential.</dd>
-<dt>r_switch <span class="classifier-delimiter">:</span> <span class="classifier">float, optional, default=pot_r[-1] - 5 * dr</span></dt>
-<dd>The radius after which a tail correction is applied.</dd>
-</dl>
-<dl class="docutils">
-<dt>states <span class="classifier-delimiter">:</span> <span class="classifier">list of States</span></dt>
-<dd>All states to be used in the optimization procedure.</dd>
-<dt>pairs <span class="classifier-delimiter">:</span> <span class="classifier">list of Pairs</span></dt>
-<dd>All pairs to be used in the optimization procedure.</dd>
-<dt>n_iterations <span class="classifier-delimiter">:</span> <span class="classifier">int, optional, default=10</span></dt>
-<dd>The number of MSIBI iterations to perform.</dd>
-<dt>rdf_cutoff <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd>The upper cutoff value for the RDF calculation.</dd>
-<dt>n_points <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd>The number of radius values.</dd>
-<dt>dr <span class="classifier-delimiter">:</span> <span class="classifier">float, default=rdf_cutoff / (n_points - 1)</span></dt>
-<dd>The spacing of radius values.</dd>
-<dt>pot_r <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, shape=(int((rdf_cutoff + dr) / dr),)</span></dt>
-<dd>The radius values at which the potential is computed.</dd>
-<dt>pot_cutoff <span class="classifier-delimiter">:</span> <span class="classifier">float, optional, default=rdf_cutoff</span></dt>
-<dd>The upper cutoff value for the potential.</dd>
-<dt>r_switch <span class="classifier-delimiter">:</span> <span class="classifier">float, optional, default=pot_r[-1] - 5 * dr</span></dt>
-<dd>The radius after which a tail correction is applied.</dd>
-</dl>
-<dl class="method">
-<dt id="msibi.MSIBI.initialize">
-<tt class="descname">initialize</tt><big>(</big><em>engine='hoomd'</em>, <em>potentials_dir=None</em><big>)</big><a class="headerlink" href="#msibi.MSIBI.initialize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create initial table potentials and the simulation input scripts.</p>
-<p>engine : str, optional, default=&#8217;hoomd&#8217;
-potentials_dir : path, optional, default=&#8220;&#8216;working_dir&#8217;/potentials&#8221;</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="msibi.MSIBI.optimize">
-<tt class="descname">optimize</tt><big>(</big><em>states</em>, <em>pairs</em>, <em>n_iterations=10</em>, <em>engine='hoomd'</em><big>)</big><a class="headerlink" href="#msibi.MSIBI.optimize" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="msibi.MSIBI.plot">
-<tt class="descname">plot</tt><big>(</big><big>)</big><a class="headerlink" href="#msibi.MSIBI.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate plots showing the evolution of each pair potential.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="msibi.Pair">
-<em class="property">class </em><tt class="descclassname">msibi.</tt><tt class="descname">Pair</tt><big>(</big><em>type1</em>, <em>type2</em>, <em>potential</em><big>)</big><a class="headerlink" href="#msibi.Pair" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></a></p>
-<p>A pair interaction to be optimized.</p>
-<dl class="docutils">
-<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Pair name.</dd>
-<dt>pairs <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape=(n_pairs, 2), dtype=int, optional, default=None</span></dt>
-<dd>Each row gives the indices of two atoms representing a pair.</dd>
-<dt>potential <span class="classifier-delimiter">:</span> <span class="classifier">func</span></dt>
-<dd>Values of the potential at every pot_r.</dd>
-</dl>
-<dl class="method">
-<dt id="msibi.Pair.add_state">
-<tt class="descname">add_state</tt><big>(</big><em>state</em>, <em>target_rdf</em>, <em>alpha</em>, <em>pair_indices</em>, <em>alpha_form='linear'</em><big>)</big><a class="headerlink" href="#msibi.Pair.add_state" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a state to be used in optimizing this pair.</p>
-<dl class="docutils">
-<dt>state <span class="classifier-delimiter">:</span> <span class="classifier">State</span></dt>
-<dd>A state object.</dd>
-<dt>target_rdf <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, shape=(n_bins, 2), dtype=float</span></dt>
-<dd>Coarse-grained target RDF.</dd>
-<dt>alpha <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd>The alpha value used to scale the weight of this state.</dd>
-<dt>pair_indices <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape=(n_pairs, 2), dtype=int, optional, default=None</span></dt>
-<dd>Each row gives the indices of two atoms representing a pair.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="msibi.Pair.compute_current_rdf">
-<tt class="descname">compute_current_rdf</tt><big>(</big><em>state</em>, <em>r_range</em>, <em>dr</em><big>)</big><a class="headerlink" href="#msibi.Pair.compute_current_rdf" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="msibi.Pair.save_current_rdf">
-<tt class="descname">save_current_rdf</tt><big>(</big><em>state</em>, <em>iteration</em><big>)</big><a class="headerlink" href="#msibi.Pair.save_current_rdf" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="msibi.Pair.save_table_potential">
-<tt class="descname">save_table_potential</tt><big>(</big><em>r</em>, <em>dr</em>, <em>iteration=None</em>, <em>engine='hoomd'</em><big>)</big><a class="headerlink" href="#msibi.Pair.save_table_potential" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the table potential to a file usable by the MD engine.</p>
-<p>TODO: factor out for separate engines.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="msibi.Pair.update_potential">
-<tt class="descname">update_potential</tt><big>(</big><em>pot_r</em>, <em>r_switch=None</em><big>)</big><a class="headerlink" href="#msibi.Pair.update_potential" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="msibi.State">
-<em class="property">class </em><tt class="descclassname">msibi.</tt><tt class="descname">State</tt><big>(</big><em>k</em>, <em>T</em>, <em>state_dir=''</em>, <em>traj_file=None</em>, <em>top_file=None</em>, <em>name=None</em>, <em>backup_trajectory=False</em><big>)</big><a class="headerlink" href="#msibi.State" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></a></p>
-<p>A single state used as part of a multistate optimization.</p>
-<dl class="docutils">
-<dt>k <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd>Boltzmann&#8217;s  constant in specified units.</dd>
-<dt>T <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd>Temperature in kelvin.</dd>
-<dt>traj <span class="classifier-delimiter">:</span> <span class="classifier">md.Trajectory</span></dt>
-<dd>The trajectory associated with this state.</dd>
-<dt>backup_trajectory <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
-<dd>True if each query trajectory is backed up (default=False)</dd>
-</dl>
-<dl class="method">
-<dt id="msibi.State.reload_query_trajectory">
-<tt class="descname">reload_query_trajectory</tt><big>(</big><big>)</big><a class="headerlink" href="#msibi.State.reload_query_trajectory" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="msibi.State.save_runscript">
-<tt class="descname">save_runscript</tt><big>(</big><em>table_potentials</em>, <em>table_width</em>, <em>engine='hoomd'</em>, <em>runscript='hoomd_run_template.py'</em><big>)</big><a class="headerlink" href="#msibi.State.save_runscript" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="msibi.mie">
-<tt class="descclassname">msibi.</tt><tt class="descname">mie</tt><big>(</big><em>r</em>, <em>eps</em>, <em>sig</em>, <em>m=12</em>, <em>n=6</em><big>)</big><a class="headerlink" href="#msibi.mie" title="Permalink to this definition">¶</a></dt>
-<dd><p>Mie pair potential.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="msibi.morse">
-<tt class="descclassname">msibi.</tt><tt class="descname">morse</tt><big>(</big><em>r</em>, <em>D</em>, <em>alpha</em>, <em>r0</em><big>)</big><a class="headerlink" href="#msibi.morse" title="Permalink to this definition">¶</a></dt>
-<dd><p>Morse pair potential.</p>
-</dd></dl>
-
+<div class="section" id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
 
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="msibi.utils.html" class="btn btn-neutral float-right" title="msibi.utils package">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="tutorials/tutorials.html" class="btn btn-neutral" title="Tutorials"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
-  
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>
-        &copy; Copyright 2015, Christoph Klein, Timothy C. Moore.
-    </p>
-  </div>
-
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
-  
-</footer>
         </div>
       </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index2.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">msibi package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#msibi-optimize-module">msibi.optimize module</a></li>
+<li><a class="reference internal" href="#msibi-pair-module">msibi.pair module</a></li>
+<li><a class="reference internal" href="#msibi-potentials-module">msibi.potentials module</a></li>
+<li><a class="reference internal" href="#msibi-state-module">msibi.state module</a></li>
+<li><a class="reference internal" href="#msibi-workers-module">msibi.workers module</a></li>
+<li><a class="reference internal" href="#module-contents">Module contents</a></li>
+</ul>
+</li>
+</ul>
 
-    </section>
-
-  </div>
-  
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'0.1',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
-      jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
-      });
-  </script>
-   
-
-</body>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/msibi.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="index2.html">msibi 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Christoph Klein, Timothy C. Moore.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
 </html>

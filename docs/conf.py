@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Multistate Iterative Boltzmann Inversion documentation build configuration file, created by
-# sphinx-quickstart on Mon Mar 30 14:37:56 2015.
+# msibi documentation build configuration file, created by
+# sphinx-quickstart on Sun Jul  5 15:23:47 2015.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -16,12 +15,10 @@
 import sys
 import os
 
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../msibi'))
+#sys.path.insert(0, os.path.abspath('.'))
 
 # -- General configuration ------------------------------------------------
 
@@ -32,12 +29,9 @@ sys.path.insert(0, os.path.abspath('../msibi'))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
-    'sphinx.ext.intersphinx',
+    'sphinx.ext.todo',
     'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.viewcode',
+    'sphinx.ext.pngmath',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -50,11 +44,11 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = 'index2'
 
 # General information about the project.
-project = 'Multistate Iterative Boltzmann Inversion'
-copyright = '2015, Christoph Klein, Timothy C. Moore'
+project = u'msibi'
+copyright = u'2015, Christoph Klein, Timothy C. Moore'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -108,12 +102,7 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#html_theme = 'default'
-
-if not on_rtd:  # only import and set the theme if we're building docs locally
-    import sphinx_rtd_theme
-    html_theme = 'sphinx_rtd_theme'
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+html_theme = 'default'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -191,7 +180,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'MultistateIterativeBoltzmannInversiondoc'
+htmlhelp_basename = 'msibidoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -211,8 +200,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'MultistateIterativeBoltzmannInversion.tex', 'Multistate Iterative Boltzmann Inversion Documentation',
-   'Christoph Klein, Timothy C. Moore', 'manual'),
+  ('index2', 'msibi.tex', u'msibi Documentation',
+   u'Christoph Klein, Timothy C. Moore', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -241,8 +230,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'multistateiterativeboltzmanninversion', 'Multistate Iterative Boltzmann Inversion Documentation',
-     ['Christoph Klein, Timothy C. Moore'], 1)
+    ('index2', 'msibi', u'msibi Documentation',
+     [u'Christoph Klein, Timothy C. Moore'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -255,8 +244,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'MultistateIterativeBoltzmannInversion', 'Multistate Iterative Boltzmann Inversion Documentation',
-   'Christoph Klein, Timothy C. Moore', 'MultistateIterativeBoltzmannInversion', 'One line description of project.',
+  ('index2', 'msibi', u'msibi Documentation',
+   u'Christoph Klein, Timothy C. Moore', 'msibi', 'One line description of project.',
    'Miscellaneous'),
 ]
 
@@ -271,7 +260,3 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
-
-
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/': None}

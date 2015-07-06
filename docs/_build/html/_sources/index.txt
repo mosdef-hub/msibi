@@ -35,7 +35,6 @@ If you use this package please cite the above paper. The BibTeX reference is::
           doi = "http://dx.doi.org/10.1063/1.4880555"
     }
 
-
 API Reference
 -------------
 .. toctree::
