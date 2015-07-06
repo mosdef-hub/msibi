@@ -93,7 +93,6 @@ class Pair(object):
         #       See https://github.com/ctk3b/msibi/issues/2
         g_r_all = None
         first_frame = 0
-        print len(pairs)
         for last_frame in range(int(max_frames), 
                 int(state.traj.n_frames + max_frames), int(max_frames)):
             r, g_r = md.compute_rdf(state.traj[first_frame:last_frame],
