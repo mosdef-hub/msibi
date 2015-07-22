@@ -34,7 +34,8 @@ install:
   - source activate test-environment
   - pip install coveralls coverage pytest
   # Users need to have MDTraj pre-installed.
-  - conda install -c https://conda.binstar.org/omnia mdtraj-dev=1.4.0
+  - conda install -c omnia mdtraj
+  - conda install networkx
   # Install "actual" dependencies from requirements.txt
   - python setup.py install
 
