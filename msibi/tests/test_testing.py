@@ -1,5 +1,5 @@
 import pytest
-from msibi.testing import get_fn
+from msibi.utils.general import get_fn
 
 
 with pytest.raises(ValueError):

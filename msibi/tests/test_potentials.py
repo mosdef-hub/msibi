@@ -11,6 +11,7 @@ def test_tail_correction():
     smooth_V = tail_correction(r, V, r_switch=2.25)
     assert smooth_V[-1] == 0.0
 
+
 def test_calc_alpha_array():
     alpha0 = 1.0
     dr = 0.1
@@ -20,11 +21,7 @@ def test_calc_alpha_array():
     assert alpha[0] == alpha0
     assert alpha[-1] == 0.0
 
-    form = 'linearlkjlkdasfj'
+    form = 'margaret-thatcher'
     with pytest.raises(ValueError):
         alpha = alpha_array(alpha0, r, form)
 
-
-if __name__ == "__main__":
-    test_tail_correction()
-    test_calc_alpha_array()
