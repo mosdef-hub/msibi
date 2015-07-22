@@ -1,12 +1,17 @@
 language: python
 
+sudo: false
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+
 python:
   # We don't actually use the Travis Python, but this keeps it organized.
   - "2.7"
   - "3.3"
   - "3.4"
 install:
-  - sudo apt-get update
   # You may want to periodically update this, although the conda update
   # conda line below will keep everything up-to-date.  We do this
   # conditionally because it saves us some downloading if the version is
@@ -29,7 +34,8 @@ install:
   - source activate test-environment
   - pip install coveralls coverage pytest
   # Users need to have MDTraj pre-installed.
-  - conda install -c https://conda.binstar.org/omnia mdtraj-dev=1.4.0
+  - conda install -c omnia mdtraj
+  - conda install networkx
   # Install "actual" dependencies from requirements.txt
   - python setup.py install
 
