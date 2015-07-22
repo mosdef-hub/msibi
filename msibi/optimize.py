@@ -64,7 +64,6 @@ class MSIBI(object):
         self.rdf_r_range = np.array([0.0, self.rdf_cutoff + self.dr])
         self.rdf_n_bins = self.n_rdf_points + 1
 
-
         # TODO: Description of use for pot vs rdf cutoff.
         if not pot_cutoff:
             pot_cutoff = rdf_cutoff

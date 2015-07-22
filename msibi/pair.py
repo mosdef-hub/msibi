@@ -1,9 +1,6 @@
-import logging
 import os
 
 import mdtraj as md
-import networkx as nx
-from networkx import NetworkXNoPath
 
 import numpy as np
 from six import string_types
@@ -81,7 +78,7 @@ class Pair(object):
         else:
             top = md.load(state.traj_path).topology
         pairs = top.select_pairs("name '{0}'".format(self.type1),
-                "name '{0}'".format(self.type2))
+                                 "name '{0}'".format(self.type2))
         to_delete = find_1_n_exclusions(top, pairs, exclude_up_to)
         self.states[state]['pair_indices'] = np.delete(pairs, to_delete, axis=0)
 
@@ -108,9 +105,9 @@ class Pair(object):
         self.states[state]['current_rdf'] = rdf
 
         if smooth:
-            self.states[state]['current_rdf'][:, 1] = savitzky_golay(
-                self.states[state]['current_rdf'][:, 1], 5, 3, deriv=0, rate=1)
-            for row in self.states[state]['current_rdf']:
+            current_rdf = self.states[state]['current_rdf']
+            current_rdf[:, 1] = savitzky_golay(current_rdf[:, 1], 5, 3, deriv=0, rate=1)
+            for row in current_rdf:
                 row[1] = np.maximum(row[1], 0)
 
         # Compute fitness function comparing the two RDFs.

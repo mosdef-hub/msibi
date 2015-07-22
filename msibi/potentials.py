@@ -98,6 +98,7 @@ def linear_head_correction(r, V, cutoff):
     V[:cutoff + 1] = slope * (r[:cutoff + 1] - r[cutoff + 1]) + V[cutoff + 1]
     return V
 
+
 def exponential_head_correction(r, V, cutoff):
     """Use an exponential function to smoothly force V to a finite value at V(0)
 
@@ -117,6 +118,7 @@ def exponential_head_correction(r, V, cutoff):
     B = np.log(V[cutoff+1] / V[cutoff+2]) / dr
     A = V[cutoff+1] * np.exp(B * r[cutoff+1])
     V[:cutoff+1] = A * np.exp(-B * r[:cutoff+1])
+
 
 def alpha_array(alpha0, pot_r, form='linear'):
     """Generate an array of alpha values used for scaling in the IBI step. """
