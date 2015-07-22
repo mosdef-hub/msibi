@@ -13,7 +13,7 @@ def test_unsupported_engine():
         run_query_simulations(['margaret', 'thatcher'], engine=engine)
 
 
-def test__post_query():
+def test_post_query():
     pair, state0, rdf = init_state(0)
     _post_query(state0)
     assert state0.traj is not None
