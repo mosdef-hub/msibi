@@ -98,7 +98,8 @@ class Pair(object):
                                     pairs, r_range=r_range / 10, n_bins=n_bins)
             if g_r_all is None:
                 g_r_all = np.zeros_like(g_r)
-            g_r_all += g_r / len(state.traj[first_frame:last_frame])
+            g_r_all += g_r * len(state.traj[first_frame:last_frame]) / (
+                float(state.traj.n_frames))
             first_frame = last_frame
         r *= 10
         rdf = np.vstack((r, g_r)).T
