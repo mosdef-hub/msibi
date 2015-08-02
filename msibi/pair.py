@@ -107,7 +107,7 @@ class Pair(object):
 
         if smooth:
             current_rdf = self.states[state]['current_rdf']
-            current_rdf[:, 1] = savitzky_golay(current_rdf[:, 1], 5, 3, deriv=0, rate=1)
+            current_rdf[:, 1] = savitzky_golay(current_rdf[:, 1], 9, 2, deriv=0, rate=1)
             for row in current_rdf:
                 row[1] = np.maximum(row[1], 0)
 
