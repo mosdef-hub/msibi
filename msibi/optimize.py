@@ -79,6 +79,12 @@ class MSIBI(object):
                  start_iteration=0):
         """
         """
+        for pair in pairs:
+            for state, data in pair.states.items():
+                if len(data['target_rdf']) != self.n_rdf_points:
+                    raise ValueError('Target RDF in {} of pair {} is not the '
+                                     'same length as n_rdf_points.'.format(
+                        state.name, pair.name))
         self.states = states
         self.pairs = pairs
         self.n_iterations = n_iterations
