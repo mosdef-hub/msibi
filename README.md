@@ -6,6 +6,14 @@ MultiState Iterative Boltzmann Inversion
 A package to help you manage and run pair potential optimizations using
 multistate iterative Boltzmann inversion.
 
+Install from source:
+```python
+git clone https://github.com/ctk3b/msibi.git
+cd msibi
+pip install .
+```
+
+
 #### Citation [![Citing MSIBI](https://img.shields.io/badge/DOI-10.1063%2F1.4880555-blue.svg)](http://dx.doi.org/10.1063/1.4880555)
 Details of the underlying method and its validation can be found [here](http://dx.doi.org/10.1063/1.4880555).
 
