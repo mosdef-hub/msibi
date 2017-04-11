@@ -1,0 +1,15 @@
+neighbor	2 bin
+neigh_modify check yes
+
+timestep 1
+
+thermo 10000
+
+fix 1 all nvt temp 300.0 300.0 100.0
+
+velocity	all create 300 234858
+
+dump mydcd all dcd 1000 query.dcd
+dump_modify mydcd flush yes
+
+run 1000000

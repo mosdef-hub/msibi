@@ -1,5 +1,4 @@
 import os
-
 import mdtraj as md
 
 
@@ -17,6 +16,10 @@ HOOMD_TABLE_ENTRY = """
 table.set_from_file('{type1}', '{type2}', filename='{potential_file}')
 """
 
+LAMMPS_TABLE_ENTRY = """
+pair_style table linear 1500
+pair_coeff 1 1 {potential_file} POT
+"""
 
 class State(object):
     """A single state used as part of a multistate optimization.
@@ -40,6 +43,8 @@ class State(object):
 
         if not traj_file:
             self.traj_path = os.path.join(state_dir, 'query.dcd')
+        else:
+            self.traj_path = os.path.join(state_dir, traj_file)
         if top_file:
             self.top_path = os.path.join(state_dir, top_file)
 
@@ -62,15 +67,32 @@ class State(object):
         """Save the input script for the MD engine. """
 
         # TODO: Factor out for separate engines.
-        header = list()
-        header.append(HOOMD_HEADER.format('start.xml', self.kT, table_width))
-        for type1, type2, potential_file in table_potentials:
-            header.append(HOOMD_TABLE_ENTRY.format(**locals()))
-        header = ''.join(header)
-        with open(os.path.join(self.state_dir, runscript)) as fh:
-            body = ''.join(fh.readlines())
 
-        runscript_file = os.path.join(self.state_dir, 'run.py')
-        with open(runscript_file, 'w') as fh:
-            fh.write(header)
-            fh.write(body)
+        if engine.lower() == 'hoomd':
+            header = list()
+            header.append(HOOMD_HEADER.format('start.xml', self.kT, table_width))
+            for type1, type2, potential_file in table_potentials:
+                header.append(HOOMD_TABLE_ENTRY.format(**locals()))
+            header = ''.join(header)
+            with open(os.path.join(self.state_dir, runscript)) as fh:
+                body = ''.join(fh.readlines())
+
+            runscript_file = os.path.join(self.state_dir, 'run.py')
+            with open(runscript_file, 'w') as fh:
+                fh.write(header)
+                fh.write(body)
+
+        if engine.lower() == 'lammps':
+            table_entry = list()
+            for type1, type2, potential_file in table_potentials:
+                table_entry.append(LAMMPS_TABLE_ENTRY.format(**locals()))
+                table_entry = ''.join(table_entry)
+            with open(os.path.join(self.state_dir, 'in.header')) as fh:
+                header = ''.join(fh.readlines())
+            with open(os.path.join(self.state_dir, 'in.tail')) as fh:
+                tail = ''.join(fh.readlines())
+            runscript_file = os.path.join(self.state_dir, 'in.run')
+            with open(runscript_file, 'w') as fh:
+                fh.write(header)
+                fh.write(table_entry)
+                fh.write(tail)

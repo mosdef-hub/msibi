@@ -1,0 +1,22 @@
+units real
+atom_style full
+boundary p p p
+
+read_data data.lj3000
+
+pair_style table linear 1500
+pair_coeff 1 1 /Users/mwt/software/msibi/msibi/tutorials/lj/potentials/pot.1-1.txt POT
+neighbor	2 bin
+neigh_modify check yes
+
+timestep 1
+
+thermo 1000
+
+fix 1 all nvt temp 300.0 300.0 100.0
+
+velocity	all create 300 234858
+
+dump mydcd all dcd 1000 target.dcd
+dump mytrj all atom 1000 target.lammpstrj
+run 1000000

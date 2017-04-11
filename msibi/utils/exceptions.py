@@ -1,4 +1,4 @@
-SUPPORTED_ENGINES = ['hoomd']
+SUPPORTED_ENGINES = ['hoomd', 'lammps']
 
 
 class UnsupportedEngine(Exception):

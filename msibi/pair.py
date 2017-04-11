@@ -92,16 +92,14 @@ class Pair(object):
         g_r_all = None
         first_frame = 0
         max_frames = int(max_frames)
-        for last_frame in range(max_frames,
-                                state.traj.n_frames + max_frames,
-                                max_frames):
-            r, g_r = md.compute_rdf(state.traj[first_frame:last_frame],
-                                    pairs, r_range=r_range / 10, n_bins=n_bins)
+        for last_frame in range(max_frames,state.traj.n_frames + max_frames, max_frames):
+            r, g_r = md.compute_rdf(state.traj[first_frame:last_frame], pairs, r_range= r_range, n_bins=n_bins)
             if g_r_all is None:
                 g_r_all = np.zeros_like(g_r)
             g_r_all += g_r * len(state.traj[first_frame:last_frame]) / state.traj.n_frames
             first_frame = last_frame
-        r *= 10
+        r *= 10.0
+
         rdf = np.vstack((r, g_r)).T
         self.states[state]['current_rdf'] = rdf
 
@@ -143,7 +141,7 @@ class Pair(object):
             alpha0 = self.states[state]['alpha']
             form = self.states[state]['alpha_form']
             alpha = alpha_array(alpha0, pot_r, form=form)
-
+    
             current_rdf = self.states[state]['current_rdf'][:, 1]
             target_rdf = self.states[state]['target_rdf'][:, 1]
 
@@ -155,8 +153,7 @@ class Pair(object):
                 target_rdf = target_rdf[:-unused_rdf_vals]
 
             # The actual IBI step.
-            self.potential += (kT * alpha * np.log(current_rdf / target_rdf) /
-                               len(self.states))
+            self.potential += (kT * alpha * np.log(current_rdf / target_rdf) / len(self.states))
 
         # Apply corrections to ensure continuous, well-behaved potentials.
         self.potential = tail_correction(pot_r, self.potential, r_switch)
@@ -167,7 +164,10 @@ class Pair(object):
         """Save the table potential to a file usable by the MD engine. """
         V = self.potential
         F = -1.0 * np.gradient(V, dr)
-        data = np.vstack([r, V, F])
+        if engine == 'hoomd':
+            data = np.vstack([r, V, F])
+        elif engine == 'lammps':
+            data = np.vstack([[x for x in range(len(r))], r, V, F])
 
         basename = os.path.basename(self.potential_file)
         basename = 'step{0:d}.{1}'.format(iteration, basename)
@@ -175,11 +175,15 @@ class Pair(object):
         iteration_filename = os.path.join(dirname, basename)
 
         # TODO: Factor out for separate engines.
-        if engine.lower() == 'hoomd':
+        if engine == 'hoomd':
             # This file is overwritten at each iteration and actually used for
             # performing the query simulations.
             np.savetxt(self.potential_file, data.T)
             # This file is written for viewing of how the potential evolves.
             np.savetxt(iteration_filename, data.T)
-        else:
-            raise UnsupportedEngine(engine)
+        elif engine == 'lammps':
+            header='POT\nN {0} R {1} {2}\n\n'.format(len(r), dr, max(r))
+            np.savetxt(self.potential_file, data.T, header=header,
+                       comments='', fmt='%d\t%.3f\t%.8f\t%.8f')
+            np.savetxt(iteration_filename, data.T, header=header,
+                       comments='', fmt='%d\t%.3f\t%.8f\t%.8f')

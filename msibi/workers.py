@@ -30,6 +30,8 @@ def run_query_simulations(states, engine='hoomd'):
 
     if engine.lower() == 'hoomd':
         worker = _hoomd_worker
+    if engine.lower() == 'lammps':
+        worker = _lammps_worker
     else:
         raise UnsupportedEngine(engine)
 
@@ -41,7 +43,8 @@ def run_query_simulations(states, engine='hoomd'):
     pool.imap(worker, worker_args, chunk_size)
     pool.close()
     pool.join()
-
+    for state in states:
+        _post_query(state)
 
 def _hoomd_worker(args):
     """Worker for managing a single HOOMD-blue simulation. """
@@ -61,8 +64,22 @@ def _hoomd_worker(args):
         logging.info("    Launched HOOMD in {state.state_dir}".format(**locals()))
         proc.communicate()
         logging.info("    Finished in {state.state_dir}.".format(**locals()))
-    _post_query(state)
+    #_post_query(state)
 
+
+def _lammps_worker(args):
+    """Worker for managing a single LAMMPS simulation. """
+    state, idx, gpus = args
+    log_file = os.path.join(state.state_dir, 'log.txt')
+    err_file = os.path.join(state.state_dir, 'err.txt')
+    cmds = ['mpirun', '-n', '{}'.format(12+0*cpu_count()), 'lammps-31Mar17', '-i', 'in.run']
+    with open(log_file, 'w') as log, open(err_file, 'w') as err:
+        proc = Popen(cmds, cwd=state.state_dir, stdout=log, stderr=err,
+                    universal_newlines=True)
+        logging.info("    Launched LAMMPS in {state.state_dir}".format(**locals()))
+        proc.communicate()
+        logging.info("    Finished in {state.state_dir}.".format(**locals()))
+    #_post_query(state)
 
 def _post_query(state):
     """Reload the query trajectory and make backups. """
@@ -72,7 +89,6 @@ def _post_query(state):
     backup_file(os.path.join(state.state_dir, 'err.txt'))
     if state.backup_trajectory:
         backup_file(state.traj_path)
-
 
 def _get_gpu_info():
     """ """

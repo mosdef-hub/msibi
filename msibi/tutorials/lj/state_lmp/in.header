@@ -1,0 +1,5 @@
+units real
+atom_style full
+boundary p p p
+
+read_data data.lj3000

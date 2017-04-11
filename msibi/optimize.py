@@ -29,6 +29,8 @@ class MSIBI(object):
 
     Attributes
     ----------
+    engine : str
+        Simulation engine to run in.
     states : list of States
         All states to be used in the optimization procedure.
     pairs : list of Pairs
@@ -51,11 +53,12 @@ class MSIBI(object):
     """
 
     def __init__(self, rdf_cutoff, n_rdf_points, pot_cutoff=None, r_switch=None,
-                 smooth_rdfs=False, max_frames=1e3):
+                 smooth_rdfs=False, max_frames=1e3, engine='hoomd'):
         self.states = []
         self.pairs = []
         self.n_iterations = 10  # Can be overridden in optimize().
         self.max_frames = max_frames
+        self.engine = engine.lower()
 
         self.rdf_cutoff = rdf_cutoff
         self.n_rdf_points = n_rdf_points
@@ -69,45 +72,49 @@ class MSIBI(object):
             pot_cutoff = rdf_cutoff
         self.pot_cutoff = pot_cutoff
         # TODO: Describe why potential needs to be messed with to match the RDF.
-        self.pot_r = np.arange(0.0, self.pot_cutoff + self.dr, self.dr)
+        if self.engine == 'hoomd': 
+            self.pot_r = np.arange(0.0, self.pot_cutoff + self.dr, self.dr)
+        elif self.engine == 'lammps': # LAMMPS starts potential files at dr, not 0
+            self.pot_r = np.arange(self.dr, self.pot_cutoff + self.dr, self.dr) 
+        else:
+            raise UnsupportedEngine(engine)
 
         if not r_switch:
             r_switch = self.pot_r[-5]
         self.r_switch = r_switch
 
-    def optimize(self, states, pairs, n_iterations=10, engine='hoomd',
-                 start_iteration=0):
+    def optimize(self, states, pairs, n_iterations=10, start_iteration=0):
         """
         """
         for pair in pairs:
             for state, data in pair.states.items():
                 if len(data['target_rdf']) != self.n_rdf_points:
                     raise ValueError('Target RDF in {} of pair {} is not the '
-                                     'same length as n_rdf_points.'.format(
-                        state.name, pair.name))
+                                     'same length as n_rdf_points; {} vs {}.'.format(
+                        state.name, pair.name, len(data['target_rdf']), self.n_rdf_points))
         self.states = states
         self.pairs = pairs
         self.n_iterations = n_iterations
-        self.initialize(engine=engine)
+        self.initialize()#(engine=self.engine)
 
         for n in range(start_iteration + self.n_iterations):
             logging.info("-------- Iteration {n} --------".format(**locals()))
-            run_query_simulations(self.states, engine=engine)
-            self._update_potentials(n, engine)
+            run_query_simulations(self.states, engine=self.engine)
+            self._update_potentials(n)
 
-    def _update_potentials(self, iteration, engine):
+    def _update_potentials(self, iteration):
         """Update the potentials for each pair. """
         for pair in self.pairs:
             self._recompute_rdfs(pair, iteration)
             pair.update_potential(self.pot_r, self.r_switch)
             pair.save_table_potential(self.pot_r, self.dr, iteration=iteration,
-                                      engine=engine)
+                                      engine=self.engine)
 
     def _recompute_rdfs(self, pair, iteration):
         """Recompute the current RDFs for every state used for a given pair. """
         for state in pair.states:
-            pair.compute_current_rdf(state, self.rdf_r_range,
-                                     n_bins=self.rdf_n_bins,
+            pair.compute_current_rdf(state, self.rdf_r_range/10,
+                                     n_bins=self.rdf_n_bins-1,
                                      smooth=self.smooth_rdfs,
                                      max_frames=self.max_frames)
             pair.save_current_rdf(state, iteration=iteration, dr=self.dr)
@@ -115,12 +122,11 @@ class MSIBI(object):
                          pair.name, state.name, iteration,
                          pair.states[state]['f_fit'][iteration]))
 
-    def initialize(self, engine='hoomd', potentials_dir=None):
+    def initialize(self, potentials_dir=None):
         """Create initial table potentials and the simulation input scripts.
 
         Parameters
         ----------
-        engine : str, optional, default='hoomd'
         potentials_dir : path, optional, default="'working_dir'/potentials"
 
         """
@@ -145,11 +151,15 @@ class MSIBI(object):
             pair.potential = V
             # This file is written for viewing of how the potential evolves.
             pair.save_table_potential(self.pot_r, self.dr, iteration=0,
-                                      engine=engine)
+                                      engine=self.engine)
             # This file is overwritten at each iteration and actually used for
             # performing the query simulations.
-            pair.save_table_potential(self.pot_r, self.dr, engine=engine)
+            pair.save_table_potential(self.pot_r, self.dr, engine=self.engine)
 
         for state in self.states:
-            state.save_runscript(table_potentials, table_width=len(self.pot_r),
-                                 engine=engine)
+            if self.engine.lower() == 'hoomd':
+                state.save_runscript(table_potentials, table_width=len(self.pot_r),
+                                    engine=self.engine)
+            if self.engine.lower() == 'lammps':
+                state.save_runscript(table_potentials=table_potentials, table_width=0,
+                                    engine=self.engine)
