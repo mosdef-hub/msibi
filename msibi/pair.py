@@ -101,7 +101,7 @@ class Pair(object):
                 g_r_all = np.zeros_like(g_r)
             g_r_all += g_r * len(state.traj[first_frame:last_frame]) / state.traj.n_frames
             first_frame = last_frame
-        r *= 10.0
+        #r *= 10.0
 
         rdf = np.vstack((r, g_r)).T
         self.states[state]['current_rdf'] = rdf
@@ -171,7 +171,7 @@ class Pair(object):
         if engine == 'hoomd':
             data = np.vstack([r, V, F])
         elif engine == 'lammps':
-            data = np.vstack([[x for x in range(len(r))], r, V, F])
+            data = np.vstack([[x for x in range(len(r))], [val*10.0 for val in r], V, F])
 
         basename = os.path.basename(self.potential_file)
         basename = 'step{0:d}.{1}'.format(iteration, basename)
@@ -186,7 +186,7 @@ class Pair(object):
             # This file is written for viewing of how the potential evolves.
             np.savetxt(iteration_filename, data.T)
         elif engine == 'lammps':
-            header='POT\nN {0} R {1} {2}\n\n'.format(len(r), dr, max(r))
+            header='POT\nN {0} R {1} {2}\n\n'.format(len(r), dr*10.0, 10.0*max(r))
             np.savetxt(self.potential_file, data.T, header=header,
                        comments='', fmt='%d\t%.3f\t%.8f\t%.8f')
             np.savetxt(iteration_filename, data.T, header=header,

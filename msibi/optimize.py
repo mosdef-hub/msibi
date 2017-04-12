@@ -62,10 +62,15 @@ class MSIBI(object):
 
         self.rdf_cutoff = rdf_cutoff
         self.n_rdf_points = n_rdf_points
-        self.dr = rdf_cutoff / (n_rdf_points - 1)
+        if self.engine == 'hoomd':
+            self.dr = rdf_cutoff / (n_rdf_points - 1)
+            self.rdf_n_bins = self.n_rdf_points + 1
+        if self.engine == 'lammps':
+            self.dr = rdf_cutoff / (n_rdf_points)
+            self.rdf_n_bins = self.n_rdf_points + 0
         self.smooth_rdfs = smooth_rdfs
         self.rdf_r_range = np.array([0.0, self.rdf_cutoff + self.dr])
-        self.rdf_n_bins = self.n_rdf_points + 1
+        #self.rdf_n_bins = self.n_rdf_points + 1
 
         # TODO: Description of use for pot vs rdf cutoff.
         if not pot_cutoff:
@@ -75,7 +80,7 @@ class MSIBI(object):
         if self.engine == 'hoomd': 
             self.pot_r = np.arange(0.0, self.pot_cutoff + self.dr, self.dr)
         elif self.engine == 'lammps': # LAMMPS starts potential files at dr, not 0
-            self.pot_r = np.arange(self.dr, self.pot_cutoff + self.dr, self.dr) 
+            self.pot_r = np.arange(self.dr, self.pot_cutoff + self.dr, self.dr)
         else:
             raise UnsupportedEngine(engine)
 

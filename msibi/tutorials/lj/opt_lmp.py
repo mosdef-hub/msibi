@@ -12,8 +12,8 @@ os.system('rm state*/_* rdfs/pair* potentials/* f_fits.log state*/log.txt')
 os.system('rm state*/err.txt')
 
 # Set up global parameters.
-rdf_cutoff = 10.0
-opt = MSIBI(engine='lammps', rdf_cutoff=rdf_cutoff, n_rdf_points=100, pot_cutoff=10.0,
+rdf_cutoff = 1.0
+opt = MSIBI(engine='lammps', rdf_cutoff=rdf_cutoff, n_rdf_points=100, pot_cutoff=1.0,
         smooth_rdfs=True, max_frames=50)
 
 # Specify states.
@@ -23,7 +23,7 @@ states = [state0]
 
 # Specify pairs.
 indices = list(itertools.combinations(range(3000), 2))  # all-all for 1468 atoms
-initial_guess = mie(opt.pot_r, 0.01, 2)  # 1-D array of potential values.
+initial_guess = mie(opt.pot_r, 0.01, 0.2)  # 1-D array of potential values.
 #rdf_target = np.loadtxt('rdfs/lmp.rdf')
 rdf_target = np.loadtxt('rdfs/lmp.target.txt')
 
