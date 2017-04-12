@@ -92,8 +92,11 @@ class Pair(object):
         g_r_all = None
         first_frame = 0
         max_frames = int(max_frames)
-        for last_frame in range(max_frames,state.traj.n_frames + max_frames, max_frames):
-            r, g_r = md.compute_rdf(state.traj[first_frame:last_frame], pairs, r_range= r_range, n_bins=n_bins)
+        for last_frame in range(max_frames,
+                                state.traj.n_frames + max_frames,
+                                max_frames):
+            r, g_r = md.compute_rdf(state.traj[first_frame:last_frame],
+                                    pairs, r_range= r_range, n_bins=n_bins)
             if g_r_all is None:
                 g_r_all = np.zeros_like(g_r)
             g_r_all += g_r * len(state.traj[first_frame:last_frame]) / state.traj.n_frames
