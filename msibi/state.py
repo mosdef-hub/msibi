@@ -1,4 +1,5 @@
 import os
+
 import mdtraj as md
 
 
@@ -68,7 +69,7 @@ class State(object):
 
         # TODO: Factor out for separate engines.
 
-        if engine.lower() == 'hoomd':
+        if engine == 'hoomd':
             header = list()
             header.append(HOOMD_HEADER.format('start.xml', self.kT, table_width))
             for type1, type2, potential_file in table_potentials:
@@ -82,7 +83,7 @@ class State(object):
                 fh.write(header)
                 fh.write(body)
 
-        if engine.lower() == 'lammps':
+        elif engine == 'lammps':
             table_entry = list()
             for type1, type2, potential_file in table_potentials:
                 table_entry.append(LAMMPS_TABLE_ENTRY.format(**locals()))

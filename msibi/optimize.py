@@ -95,7 +95,7 @@ class MSIBI(object):
         self.states = states
         self.pairs = pairs
         self.n_iterations = n_iterations
-        self.initialize()#(engine=self.engine)
+        self.initialize()
 
         for n in range(start_iteration + self.n_iterations):
             logging.info("-------- Iteration {n} --------".format(**locals()))
@@ -157,9 +157,9 @@ class MSIBI(object):
             pair.save_table_potential(self.pot_r, self.dr, engine=self.engine)
 
         for state in self.states:
-            if self.engine.lower() == 'hoomd':
+            if self.engine == 'hoomd':
                 state.save_runscript(table_potentials, table_width=len(self.pot_r),
                                     engine=self.engine)
-            if self.engine.lower() == 'lammps':
+            elif self.engine == 'lammps':
                 state.save_runscript(table_potentials=table_potentials, table_width=0,
                                     engine=self.engine)

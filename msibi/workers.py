@@ -64,7 +64,6 @@ def _hoomd_worker(args):
         logging.info("    Launched HOOMD in {state.state_dir}".format(**locals()))
         proc.communicate()
         logging.info("    Finished in {state.state_dir}.".format(**locals()))
-    #_post_query(state)
 
 
 def _lammps_worker(args):
@@ -79,7 +78,6 @@ def _lammps_worker(args):
         logging.info("    Launched LAMMPS in {state.state_dir}".format(**locals()))
         proc.communicate()
         logging.info("    Finished in {state.state_dir}.".format(**locals()))
-    #_post_query(state)
 
 def _post_query(state):
     """Reload the query trajectory and make backups. """

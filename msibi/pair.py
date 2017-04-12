@@ -141,7 +141,7 @@ class Pair(object):
             alpha0 = self.states[state]['alpha']
             form = self.states[state]['alpha_form']
             alpha = alpha_array(alpha0, pot_r, form=form)
-    
+
             current_rdf = self.states[state]['current_rdf'][:, 1]
             target_rdf = self.states[state]['target_rdf'][:, 1]
 
@@ -153,7 +153,8 @@ class Pair(object):
                 target_rdf = target_rdf[:-unused_rdf_vals]
 
             # The actual IBI step.
-            self.potential += (kT * alpha * np.log(current_rdf / target_rdf) / len(self.states))
+            self.potential += (kT * alpha * np.log(current_rdf / target_rdf) /
+                               len(self.states))
 
         # Apply corrections to ensure continuous, well-behaved potentials.
         self.potential = tail_correction(pot_r, self.potential, r_switch)
