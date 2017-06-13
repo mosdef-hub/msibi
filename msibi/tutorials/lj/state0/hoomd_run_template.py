@@ -1,14 +1,14 @@
-all = group.all()
-nvt_int = integrate.bdnvt(group=all, T=T_final)
-integrate.mode_standard(dt=0.001)
+# **** 2017_05_31 Notes ******
+# update file to correct hoomd 2.0 syntax
+# look up docs
+# combine with state.py in main folder
 
 
-run(1e2)
-output_dcd = dump.dcd(filename='query.dcd', period=100, overwrite=True)
-run(1e3)
+all = hoomd.group.all()
+nvt_int = hoomd.md.integrate.langevin(group=all, kT=T_final, seed=1) # possibly use kT instead of T???
+hoomd.md.integrate.mode_standard(dt=0.001) #integrate.\*_rigid() no longer exists. Use a standard integrator on group.rigid_center(), and define rigid bodies using constrain.rigid()
 
-output_xml = dump.xml()
-output_xml.set_params(all=True)
-output_xml.write(filename='final.xml')
-output_pdb = dump.pdb()
-output_pdb.write(filename='final.pdb')
+
+hoomd.run(1e2)
+output_dcd = hoomd.dump.dcd(filename='query.dcd', period=100, overwrite=True)
+hoomd.run(1e4)
