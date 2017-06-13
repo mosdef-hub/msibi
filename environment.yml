@@ -1,0 +1,22 @@
+name: test-environment
+channels:
+- mosdef
+- bioconda
+- omnia
+- glotzer
+- janschulz
+- defaults
+dependencies:
+- numpy
+- mdtraj
+- foyer
+- gsd
+- openbabel
+# Testing Deps
+- pytest >=3.0
+- jupyter
+- nbformat
+- ipykernel
+- ipyext
+- python-coveralls
+- pytest-cov
