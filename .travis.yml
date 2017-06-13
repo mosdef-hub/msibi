@@ -1,46 +1,31 @@
-language: python
+language: generic
 
 sudo: false
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
 
-python:
-  # We don't actually use the Travis Python, but this keeps it organized.
-  - "2.7"
-  - "3.3"
-  - "3.4"
+matrix:
+  include:
+    - { os: linux, env: PYTHON_VERSION=2.7 }
+    - { os: linux, env: PYTHON_VERSION=3.5 }
+    - { os: linux, env: PYTHON_VERSION=3.6 }
+    - { os: osx, env: PYTHON_VERSION=2.7 }
+    - { os: osx, env: PYTHON_VERSION=3.5 }
+
+#env:
+#  global:
+#  - ENCRYPTION_LABEL: "898e0934cf65"
+#  - COMMIT_AUTHOR_EMAIL: "janos.sallai@vanderbilt.edu"
+
 install:
-  # You may want to periodically update this, although the conda update
-  # conda line below will keep everything up-to-date.  We do this
-  # conditionally because it saves us some downloading if the version is
-  # the same.
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      wget http://repo.continuum.io/miniconda/Miniconda-3.4.2-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget http://repo.continuum.io/miniconda/Miniconda3-3.4.2-Linux-x86_64.sh -O miniconda.sh;
-    fi
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install md5sha1sum; fi
+  - source devtools/travis-ci/install.sh
   - conda config --set always_yes yes --set changeps1 no
-  - conda update -q conda
-  # Useful for debugging any issues with conda
-  - conda info -a
-
-  # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
+  - conda env create -n test-environment python=$PYTHON_VERSION -f environment.yml
   - source activate test-environment
-  - pip install coveralls coverage pytest
-  # Users need to have MDTraj pre-installed.
-  - conda install -c omnia mdtraj
-  - conda install networkx
-  # Install "actual" dependencies from requirements.txt
-  - python setup.py install
+  - pip install -e .
 
 script:
-  - coverage run --rcfile=.coveragerc --source=msibi setup.py test
+  - py.test -v --cov=mbuild  --cov-report= --pyargs mbuild
 
 after_success:
   - coveralls
+#  - if [[ $PYTHON_VERSION == 3.5 ]] && [[ "$TRAVIS_OS_NAME" == "linux" ]]; then source devtools/travis-ci/update_gh_pages.sh; fi
