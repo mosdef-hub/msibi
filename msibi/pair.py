@@ -80,8 +80,10 @@ class Pair(object):
             top = md.load(state.traj_path).topology
         pairs = top.select_pairs("name '{0}'".format(self.type1),
                                  "name '{0}'".format(self.type2))
-        to_delete = find_1_n_exclusions(top, pairs, exclude_up_to)
-        self.states[state]['pair_indices'] = np.delete(pairs, to_delete, axis=0)
+        if exclude_up_to is not None:
+            to_delete = find_1_n_exclusions(top, pairs, exclude_up_to)
+            pairs = np.delete(pairs, to_delete, axis=0)
+        self.states[state]['pair_indices'] = pairs
 
     def compute_current_rdf(self, state, r_range, n_bins, smooth=True,
                             max_frames=1e3):
