@@ -62,7 +62,8 @@ class MSIBI(object):
         self.dr = rdf_cutoff / (n_rdf_points - 1)
         self.smooth_rdfs = smooth_rdfs
         self.rdf_r_range = np.array([0.0, self.rdf_cutoff + self.dr])
-        self.rdf_n_bins = self.n_rdf_points + 1
+        # got rid of +1 because mdtraj now # does this as we expect
+        self.rdf_n_bins = self.n_rdf_points
 
         # TODO: Description of use for pot vs rdf cutoff.
         if not pot_cutoff:
@@ -75,16 +76,43 @@ class MSIBI(object):
             r_switch = self.pot_r[-5]
         self.r_switch = r_switch
 
-    def optimize(self, states, pairs, n_iterations=10, engine='hoomd',
+    def optimize(self, states, pairs, n_iterations=10, engine='hoomd', #keyword hoomd
                  start_iteration=0):
         """
+        #add docstring
+
         """
+        #try import hoomd
+        #check engine
+        if engine=='hoomd':
+            try:
+                import hoomd #check syntax
+                HOOMD_VERSION=2 #pass down to states
+            except ImportError:
+                try:
+                    import hoomd_script
+                    HOOMD_VERSION=1
+                except ImportError: #custom error
+                    raise UnsupportedEngine #import
+        else:
+            HOOMD_VERSION=None
+
+
+            #read PEP8 for reference
+            #clean up syntax
+
+
         for pair in pairs:
             for state, data in pair.states.items():
                 if len(data['target_rdf']) != self.n_rdf_points:
                     raise ValueError('Target RDF in {} of pair {} is not the '
                                      'same length as n_rdf_points.'.format(
                         state.name, pair.name))
+
+        for state in states:
+            state.HOOMD_VERSION=HOOMD_VERSION  #clean up later, pass down to states
+            #logic inside states to use correct headers
+
         self.states = states
         self.pairs = pairs
         self.n_iterations = n_iterations

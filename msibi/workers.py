@@ -48,13 +48,17 @@ def _hoomd_worker(args):
     state, idx, gpus = args
     log_file = os.path.join(state.state_dir, 'log.txt')
     err_file = os.path.join(state.state_dir, 'err.txt')
+    if state.HOOMD_VERSION == 1:
+        executable = 'hoomd'
+    elif state.HOOMD_VERSION == 2:
+        executable = 'python'
     with open(log_file, 'w') as log, open(err_file, 'w') as err:
         if gpus:
             card = gpus[idx % len(gpus)]
-            cmds = ['mpiexec', '-n', '1', 'hoomd', 'run.py', '--gpu={card}'.format(**locals())]
+            cmds = ['mpiexec', '-n', '1', executable, 'run.py', '--gpu={card}'.format(**locals())]
         else:
             logging.info('    Running state {state.name} on CPU'.format(**locals()))
-            cmds = ['hoomd', 'run.py']
+            cmds = [executable, 'run.py']
 
         proc = Popen(cmds, cwd=state.state_dir, stdout=log, stderr=err,
                      universal_newlines=True)
