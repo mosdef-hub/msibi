@@ -1,17 +1,13 @@
 name: test-environment
 channels:
 - mosdef
-- bioconda
 - omnia
 - glotzer
-- janschulz
 - defaults
 dependencies:
 - numpy
 - mdtraj
-- foyer
-- gsd
-- openbabel
+- hoomd
 # Testing Deps
 - pytest >=3.0
 - jupyter
