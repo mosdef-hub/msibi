@@ -10,11 +10,6 @@ matrix:
     - { os: osx, env: PYTHON_VERSION=2.7 }
     - { os: osx, env: PYTHON_VERSION=3.5 }
 
-#env:
-#  global:
-#  - ENCRYPTION_LABEL: "898e0934cf65"
-#  - COMMIT_AUTHOR_EMAIL: "janos.sallai@vanderbilt.edu"
-
 install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install md5sha1sum; fi
   - source devtools/travis-ci/install.sh
@@ -24,8 +19,7 @@ install:
   - pip install -e .
 
 script:
-    #- py.test -v --cov=msibi  --cov-report= --pyargs msibi
-  - py.test -v --pyargs msibi
+  - py.test -v --cov=msibi  --cov-report= --pyargs msibi
 
 after_success:
   - coveralls
