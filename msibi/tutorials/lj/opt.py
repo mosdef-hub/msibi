@@ -1,15 +1,14 @@
 import itertools
-
+import os
 
 import numpy as np
-import os
 
 from msibi import MSIBI, State, Pair, mie
 
 
-# Clear out the temp files
 os.system('rm state*/_* rdfs/pair* potentials/* f_fits.log state*/log.txt')
 os.system('rm state*/err.txt')
+os.system('rm state*/query.dcd')
 
 # Set up global parameters.
 rdf_cutoff = 5.0
@@ -17,11 +16,11 @@ opt = MSIBI(rdf_cutoff=rdf_cutoff, n_rdf_points=101, pot_cutoff=3.0,
         smooth_rdfs=True)
 
 # Specify states.
-state0 = State(k=1, T=0.5, state_dir='./state0', top_file='target.pdb',
+state0 = State(kT=0.5, state_dir='./state0', top_file='start.hoomdxml',
                name='state0', backup_trajectory=True)
-state1 = State(k=1, T=1.5, state_dir='./state1', top_file='target.pdb',
+state1 = State(kT=1.5, state_dir='./state1', top_file='start.hoomdxml',
                name='state1', backup_trajectory=True)
-state2 = State(k=1, T=2.0, state_dir='./state2', top_file='target.pdb',
+state2 = State(kT=2.0, state_dir='./state2', top_file='start.hoomdxml',
                name='state2', backup_trajectory=True)
 states = [state0, state1, state2]
 

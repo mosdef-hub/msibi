@@ -1,3 +1,8 @@
+""""MSIBI: A package for optimizing coarse-grained force fields using multistate
+iterative Boltzmann inversion.
+
+"""
+
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
 import sys
