@@ -5,8 +5,8 @@
 
 
 all = hoomd.group.all()
-nvt_int = hoomd.md.integrate.langevin(group=all, kT=T_final, seed=1) # possibly use kT instead of T???
-hoomd.md.integrate.mode_standard(dt=0.001) #integrate.\*_rigid() no longer exists. Use a standard integrator on group.rigid_center(), and define rigid bodies using constrain.rigid()
+nvt_int = hoomd.md.integrate.langevin(group=all, kT=T_final, seed=1)
+hoomd.md.integrate.mode_standard(dt=0.001)
 
 
 hoomd.run(1e2)
