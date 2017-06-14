@@ -1,16 +1,11 @@
 import itertools
-
+import os
 
 import numpy as np
-import os
 
 from msibi import MSIBI, State, Pair, mie
 
 
-# **** 2017_05_31 Notes ******
-# Clear out the temp files
-# back up, not hard coded, not file-based (development dependent)
-# later - storing data (backups potentially), some fiels may not exist in future
 os.system('rm state*/_* rdfs/pair* potentials/* f_fits.log state*/log.txt')
 os.system('rm state*/err.txt')
 os.system('rm state*/query.dcd')
