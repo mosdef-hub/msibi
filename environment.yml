@@ -1,6 +1,5 @@
 name: test-environment
 channels:
-- mosdef
 - omnia
 - glotzer
 - defaults
