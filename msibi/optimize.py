@@ -2,7 +2,6 @@ from __future__ import division
 
 import logging
 import os
-
 import numpy as np
 
 from msibi.potentials import tail_correction
@@ -52,6 +51,7 @@ class MSIBI(object):
 
     def __init__(self, rdf_cutoff, n_rdf_points, pot_cutoff=None, r_switch=None,
                  smooth_rdfs=False, max_frames=1e3):
+
         self.states = []
         self.pairs = []
         self.n_iterations = 10  # Can be overridden in optimize().
@@ -62,56 +62,69 @@ class MSIBI(object):
         self.dr = rdf_cutoff / (n_rdf_points - 1)
         self.smooth_rdfs = smooth_rdfs
         self.rdf_r_range = np.array([0.0, self.rdf_cutoff + self.dr])
-        # got rid of +1 because mdtraj now # does this as we expect
         self.rdf_n_bins = self.n_rdf_points
 
-        # TODO: Description of use for pot vs rdf cutoff.
+        # Sometimes the pot_cutoff and rdf_cutoff have different ranges,
+        # e.g. to look at long-range correlations
         if not pot_cutoff:
             pot_cutoff = rdf_cutoff
         self.pot_cutoff = pot_cutoff
-        # TODO: Describe why potential needs to be messed with to match the RDF.
+
         self.pot_r = np.arange(0.0, self.pot_cutoff + self.dr, self.dr)
 
         if not r_switch:
             r_switch = self.pot_r[-5]
         self.r_switch = r_switch
 
-    def optimize(self, states, pairs, n_iterations=10, engine='hoomd', #keyword hoomd
+    def optimize(self, states, pairs, n_iterations=10, engine='hoomd',
                  start_iteration=0):
-        """
-        #add docstring
+        """Optimize the pair potentials
+
+        Parameters
+        ----------
+        states : array_like, len=n_states, dtype=msibi.State
+            List of states used to optimize pair potentials.
+        pairs : array_like, len=n_pairs, dtype=msibi.Pair
+            List of pairs being optimized.
+        n_iterations : int, optional
+            Number of iterations.
+        engine : str, optional
+            Engine that runs the simulations.
+        start_iteration : int, optional
+            Start optimization at start_iteration, useful for restarting.
+
+        References
+        ----------
+        Please cite the following paper:
+
+        .. [1] T.C. Moore et al., "Derivation of coarse-grained potentials via
+           multistate iterative Boltzmann inversion," Journal of Chemical
+           Physics, vol. 140, pp. 224104, 2014.
 
         """
-        #try import hoomd
-        #check engine
-        if engine=='hoomd':
+
+        if engine == 'hoomd':
             try:
-                import hoomd #check syntax
-                HOOMD_VERSION=2 #pass down to states
+                import hoomd
+                HOOMD_VERSION = 2
             except ImportError:
                 try:
                     import hoomd_script
-                    HOOMD_VERSION=1
-                except ImportError: #custom error
-                    raise UnsupportedEngine #import
-        else:
-            HOOMD_VERSION=None
-
-
-            #read PEP8 for reference
-            #clean up syntax
-
+                    HOOMD_VERSION = 1
+                except ImportError:
+                    raise UnsupportedEngine
+        else:  # Cannot find hoomd
+            HOOMD_VERSION = None
 
         for pair in pairs:
             for state, data in pair.states.items():
                 if len(data['target_rdf']) != self.n_rdf_points:
                     raise ValueError('Target RDF in {} of pair {} is not the '
                                      'same length as n_rdf_points.'.format(
-                        state.name, pair.name))
+                                     state.name, pair.name))
 
         for state in states:
-            state.HOOMD_VERSION=HOOMD_VERSION  #clean up later, pass down to states
-            #logic inside states to use correct headers
+            state.HOOMD_VERSION = HOOMD_VERSION
 
         self.states = states
         self.pairs = pairs
@@ -144,18 +157,23 @@ class MSIBI(object):
                          pair.states[state]['f_fit'][iteration]))
 
     def initialize(self, engine='hoomd', potentials_dir=None):
-        """Create initial table potentials and the simulation input scripts.
+        """
+        Create initial table potentials and the simulation input scripts.
 
         Parameters
         ----------
         engine : str, optional, default='hoomd'
+            Engine used to run simulations
         potentials_dir : path, optional, default="'working_dir'/potentials"
+            Directory to store potential files
 
         """
+
         if not potentials_dir:
             self.potentials_dir = os.path.join(os.getcwd(), 'potentials')
         else:
             self.potentials_dir = potentials_dir
+
         if not os.path.isdir(self.potentials_dir):
             os.mkdir(self.potentials_dir)
 
@@ -171,9 +189,11 @@ class MSIBI(object):
 
             V = tail_correction(self.pot_r, pair.potential, self.r_switch)
             pair.potential = V
+
             # This file is written for viewing of how the potential evolves.
             pair.save_table_potential(self.pot_r, self.dr, iteration=0,
                                       engine=engine)
+
             # This file is overwritten at each iteration and actually used for
             # performing the query simulations.
             pair.save_table_potential(self.pot_r, self.dr, engine=engine)
