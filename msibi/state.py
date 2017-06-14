@@ -2,19 +2,17 @@ import os
 
 import mdtraj as md
 
-# **** 2017_05_31 Notes ******
-############### update section start
 
 HOOMD1_HEADER = """
 from hoomd_script import *
 
-system = read_xml(filename="{0}", wrap_coordinates=True)
+system = init.read_xml(filename="{0}", wrap_coordinates=True)
+
 T_final = {1:.1f}
 
 pot_width = {2:d}
 table = pair.table(width=pot_width)
 """
-
 
 HOOMD2_HEADER = """
 import hoomd
@@ -30,11 +28,11 @@ nl = hoomd.md.nlist.cell()
 table = hoomd.md.pair.table(width=pot_width, nlist=nl)
 
 """
+
 HOOMD_TABLE_ENTRY = """
 table.set_from_file('{type1}', '{type2}', filename='{potential_file}')
 """
 
-##################### update section end
 
 class State(object):
     """A single state used as part of a multistate optimization.
@@ -51,6 +49,7 @@ class State(object):
         True if each query trajectory is backed up (default=False)
 
     """
+
     def __init__(self, kT, state_dir='', traj_file=None, top_file=None,
                  name=None, backup_trajectory=False):
         self.kT = kT
@@ -61,12 +60,12 @@ class State(object):
         if top_file:
             self.top_path = os.path.join(state_dir, top_file)
 
-        self.traj = None  # Will be set after first iteration.
+        self.traj = None
         if not name:
             name = 'state-{0:.3f}'.format(self.kT)
         self.name = name
 
-        self.backup_trajectory = backup_trajectory  # save trajectories?
+        self.backup_trajectory = backup_trajectory
 
     def reload_query_trajectory(self):
         """Reload the query trajectory. """
@@ -75,12 +74,10 @@ class State(object):
         else:
             self.traj = md.load(self.traj_path)
 
-            #differentiate hoomd verion headers here - maybe new class members
     def save_runscript(self, table_potentials, table_width, engine='hoomd',
                        runscript='hoomd_run_template.py'):
         """Save the input script for the MD engine. """
-
-        # TODO: Factor out for separate engines.
+        
         header = list()
 
         if self.HOOMD_VERSION == 1:
