@@ -6,6 +6,7 @@ import numpy as np
 
 from msibi.potentials import tail_correction
 from msibi.workers import run_query_simulations
+from msibi.utils.exceptions import UnsupportedEngine
 
 
 class MSIBI(object):
@@ -112,8 +113,8 @@ class MSIBI(object):
                     import hoomd_script
                     HOOMD_VERSION = 1
                 except ImportError:
-                    raise UnsupportedEngine
-        else:  # Cannot find hoomd
+                    raise ImportError('Cannot import hoomd')
+        else:  # don't need a hoomd version if not using hoomd
             HOOMD_VERSION = None
 
         for pair in pairs:
