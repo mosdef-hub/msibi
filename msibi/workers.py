@@ -4,6 +4,7 @@
 # Copyright (c) 2017 Vanderbilt University and the Authors
 #
 # Authors: Christoph Klein, Timothy C. Moore
+# Contributors: Davy Yue
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files, to deal
