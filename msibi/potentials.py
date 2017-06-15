@@ -1,10 +1,10 @@
 ##############################################################################
 # MSIBI: A package for optimizing coarse-grained force fields using multistate
 #   iterative Boltzmann inversion.
-# Copyright (c) 2017 MIT University and the Authors
+# Copyright (c) 2017 Vanderbilt University and the Authors
 #
-# Authors: Christoph Klein
-# Contributors: Timothy C. Moore
+# Authors: Christoph Klein, Timothy C. Moore
+# Contributors: Davy Yue
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files, to deal
@@ -21,7 +21,7 @@
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH MSIBI OR THE USE OR OTHER DEALINGS IN THE
+# OUT OF OR IN CONNECTION WITH MSIBI OR THE USE OR OTHER DEALINGS ALONG WITH
 # MSIBI.
 #
 # You should have received a copy of the MIT license.
