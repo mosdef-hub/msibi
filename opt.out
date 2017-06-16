@@ -1,0 +1,107 @@
+(msibi) dh-129-59-37-154:propane davyyue$ python opt.py
+/Users/davyyue/Research/msibi/msibi/potentials.py:42: RuntimeWarning: divide by zero encountered in true_divide
+  return prefactor * eps * ((sig / r) ** m - (sig / r) ** n)
+/Users/davyyue/Research/msibi/msibi/potentials.py:42: RuntimeWarning: invalid value encountered in subtract
+  return prefactor * eps * ((sig / r) ** m - (sig / r) ** n)
+[INFO] -------- Iteration 0 --------
+[INFO] Launching 4 CPU threads...
+[INFO]     Running state state_B on CPU
+[INFO]     Running state state_C on CPU
+[INFO]     Running state state_A on CPU
+[INFO]     Launched HOOMD in ./state_B
+[INFO]     Launched HOOMD in ./state_A
+[INFO]     Launched HOOMD in ./state_C
+[INFO]     Finished in ./state_A.
+[INFO]     Finished in ./state_B.
+[INFO]     Finished in ./state_C.
+[INFO] pair C3-C3, state state_C, iteration 0: 0.873540
+[INFO] pair C3-C3, state state_B, iteration 0: 0.898434
+[INFO] pair C3-C3, state state_A, iteration 0: 0.861480
+/Users/davyyue/Research/msibi/msibi/pair.py:188: RuntimeWarning: divide by zero encountered in true_divide
+  self.potential += (kT * alpha * np.log(current_rdf / target_rdf) /
+/Users/davyyue/Research/msibi/msibi/pair.py:188: RuntimeWarning: invalid value encountered in true_divide
+  self.potential += (kT * alpha * np.log(current_rdf / target_rdf) /
+[INFO] -------- Iteration 1 --------
+[INFO] Launching 4 CPU threads...
+[INFO]     Running state state_A on CPU
+[INFO]     Running state state_C on CPU
+[INFO]     Running state state_B on CPU
+[INFO]     Launched HOOMD in ./state_A
+[INFO]     Launched HOOMD in ./state_C
+[INFO]     Launched HOOMD in ./state_B
+[INFO]     Finished in ./state_A.
+[INFO]     Finished in ./state_B.
+[INFO]     Finished in ./state_C.
+[INFO] pair C3-C3, state state_C, iteration 1: 0.888963
+[INFO] pair C3-C3, state state_B, iteration 1: 0.911933
+[INFO] pair C3-C3, state state_A, iteration 1: 0.972307
+/Users/davyyue/Research/msibi/msibi/pair.py:188: RuntimeWarning: divide by zero encountered in true_divide
+  self.potential += (kT * alpha * np.log(current_rdf / target_rdf) /
+/Users/davyyue/Research/msibi/msibi/pair.py:188: RuntimeWarning: invalid value encountered in true_divide
+  self.potential += (kT * alpha * np.log(current_rdf / target_rdf) /
+/Users/davyyue/Research/msibi/msibi/pair.py:188: RuntimeWarning: divide by zero encountered in log
+  self.potential += (kT * alpha * np.log(current_rdf / target_rdf) /
+/Users/davyyue/Research/msibi/msibi/pair.py:189: RuntimeWarning: invalid value encountered in add
+  len(self.states))
+[INFO] -------- Iteration 2 --------
+[INFO] Launching 4 CPU threads...
+[INFO]     Running state state_A on CPU
+[INFO]     Running state state_B on CPU
+[INFO]     Running state state_C on CPU
+[INFO]     Launched HOOMD in ./state_A
+[INFO]     Launched HOOMD in ./state_C
+[INFO]     Launched HOOMD in ./state_B
+[INFO]     Finished in ./state_A.
+[INFO]     Finished in ./state_B.
+[INFO]     Finished in ./state_C.
+[INFO] pair C3-C3, state state_C, iteration 2: 0.892486
+[INFO] pair C3-C3, state state_B, iteration 2: 0.918342
+[INFO] pair C3-C3, state state_A, iteration 2: 0.959021
+/Users/davyyue/Research/msibi/msibi/pair.py:188: RuntimeWarning: divide by zero encountered in true_divide
+  self.potential += (kT * alpha * np.log(current_rdf / target_rdf) /
+/Users/davyyue/Research/msibi/msibi/pair.py:188: RuntimeWarning: invalid value encountered in true_divide
+  self.potential += (kT * alpha * np.log(current_rdf / target_rdf) /
+/Users/davyyue/Research/msibi/msibi/pair.py:188: RuntimeWarning: divide by zero encountered in log
+  self.potential += (kT * alpha * np.log(current_rdf / target_rdf) /
+/Users/davyyue/Research/msibi/msibi/pair.py:189: RuntimeWarning: invalid value encountered in add
+  len(self.states))
+[INFO] -------- Iteration 3 --------
+[INFO] Launching 4 CPU threads...
+[INFO]     Running state state_B on CPU
+[INFO]     Running state state_A on CPU
+[INFO]     Running state state_C on CPU
+[INFO]     Launched HOOMD in ./state_B
+[INFO]     Launched HOOMD in ./state_C
+[INFO]     Launched HOOMD in ./state_A
+[INFO]     Finished in ./state_A.
+[INFO]     Finished in ./state_B.
+[INFO]     Finished in ./state_C.
+[INFO] pair C3-C3, state state_C, iteration 3: 0.896874
+[INFO] pair C3-C3, state state_B, iteration 3: 0.923437
+[INFO] pair C3-C3, state state_A, iteration 3: 0.952515
+/Users/davyyue/Research/msibi/msibi/pair.py:188: RuntimeWarning: divide by zero encountered in true_divide
+  self.potential += (kT * alpha * np.log(current_rdf / target_rdf) /
+/Users/davyyue/Research/msibi/msibi/pair.py:188: RuntimeWarning: invalid value encountered in true_divide
+  self.potential += (kT * alpha * np.log(current_rdf / target_rdf) /
+[INFO] -------- Iteration 4 --------
+[INFO] Launching 4 CPU threads...
+[INFO]     Running state state_C on CPU
+[INFO]     Running state state_A on CPU
+[INFO]     Running state state_B on CPU
+[INFO]     Launched HOOMD in ./state_B
+[INFO]     Launched HOOMD in ./state_C
+[INFO]     Launched HOOMD in ./state_A
+[INFO]     Finished in ./state_A.
+[INFO]     Finished in ./state_B.
+[INFO]     Finished in ./state_C.
+[INFO] pair C3-C3, state state_C, iteration 4: 0.894328
+[INFO] pair C3-C3, state state_B, iteration 4: 0.920365
+[INFO] pair C3-C3, state state_A, iteration 4: 0.950756
+/Users/davyyue/Research/msibi/msibi/pair.py:188: RuntimeWarning: divide by zero encountered in true_divide
+  self.potential += (kT * alpha * np.log(current_rdf / target_rdf) /
+/Users/davyyue/Research/msibi/msibi/pair.py:188: RuntimeWarning: invalid value encountered in true_divide
+  self.potential += (kT * alpha * np.log(current_rdf / target_rdf) /
+/Users/davyyue/Research/msibi/msibi/pair.py:188: RuntimeWarning: divide by zero encountered in log
+  self.potential += (kT * alpha * np.log(current_rdf / target_rdf) /
+/Users/davyyue/Research/msibi/msibi/pair.py:189: RuntimeWarning: invalid value encountered in add
+  len(self.states))
