@@ -1,0 +1,325 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>msibi.pair &mdash; Multistate Iterative Boltzmann Inversion 0.1 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Multistate Iterative Boltzmann Inversion 0.1 documentation" href="../../index.html"/>
+        <link rel="up" title="msibi" href="../msibi.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+          <a href="../../index.html" class="fa fa-home"> Multistate Iterative Boltzmann Inversion</a>
+        
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../installation.html#install-with-pip">Install with pip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../installation.html#install-from-source">Install from source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../installation.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../installation.html#testing-your-installation">Testing your installation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/tutorials.html">Tutorials</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../msibi.html">msibi package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.html#module-msibi.optimize">msibi.optimize module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.html#module-msibi.pair">msibi.pair module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.html#module-msibi.potentials">msibi.potentials module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.html#module-msibi.state">msibi.state module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.html#module-msibi.workers">msibi.workers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.html#module-msibi">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../msibi.utils.html">msibi.utils package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.utils.html#module-msibi.utils.error_calculation">msibi.utils.error_calculation module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.utils.html#module-msibi.utils.exceptions">msibi.utils.exceptions module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.utils.html#module-msibi.utils.general">msibi.utils.general module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../msibi.utils.html#module-msibi.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">Multistate Iterative Boltzmann Inversion</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+          <li><a href="../msibi.html">msibi</a> &raquo;</li>
+      
+    <li>msibi.pair</li>
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <h1>Source code for msibi.pair</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">mdtraj</span> <span class="kn">as</span> <span class="nn">md</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">six</span> <span class="kn">import</span> <span class="n">string_types</span>
+<span class="kn">from</span> <span class="nn">msibi.utils.exceptions</span> <span class="kn">import</span> <span class="n">UnsupportedEngine</span>
+<span class="kn">from</span> <span class="nn">msibi.utils.error_calculation</span> <span class="kn">import</span> <span class="n">calc_similarity</span>
+<span class="kn">from</span> <span class="nn">msibi.potentials</span> <span class="kn">import</span> <span class="n">tail_correction</span><span class="p">,</span> <span class="n">head_correction</span><span class="p">,</span> <span class="n">alpha_array</span>
+
+
+<div class="viewcode-block" id="Pair"><a class="viewcode-back" href="../../msibi.html#msibi.pair.Pair">[docs]</a><span class="k">class</span> <span class="nc">Pair</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A pair interaction to be optimized.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        Pair name.</span>
+<span class="sd">    pairs : array-like, shape=(n_pairs, 2), dtype=int, optional, default=None</span>
+<span class="sd">        Each row gives the indices of two atoms representing a pair.</span>
+<span class="sd">    potential : func</span>
+<span class="sd">        Values of the potential at every pot_r.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type1</span><span class="p">,</span> <span class="n">type2</span><span class="p">,</span> <span class="n">potential</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type1</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">type1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type2</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">type2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#39;{0}-{1}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">type2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">potential_file</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="n">string_types</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">potential</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">potential</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="c"># TODO: this could be dangerous</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">potential</span> <span class="o">=</span> <span class="n">potential</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">previous_potential</span> <span class="o">=</span> <span class="bp">None</span>
+
+<div class="viewcode-block" id="Pair.add_state"><a class="viewcode-back" href="../../msibi.html#msibi.pair.Pair.add_state">[docs]</a>    <span class="k">def</span> <span class="nf">add_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">target_rdf</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">pair_indices</span><span class="p">,</span>
+                  <span class="n">alpha_form</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a state to be used in optimizing this pair.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        state : State</span>
+<span class="sd">            A state object.</span>
+<span class="sd">        target_rdf : np.ndarray, shape=(n_bins, 2), dtype=float</span>
+<span class="sd">            Coarse-grained target RDF.</span>
+<span class="sd">        alpha : float</span>
+<span class="sd">            The alpha value used to scale the weight of this state.</span>
+<span class="sd">        pair_indices : array-like, shape=(n_pairs, 2), dtype=int, optional, default=None</span>
+<span class="sd">            Each row gives the indices of two atoms representing a pair.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">state</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;target_rdf&#39;</span><span class="p">:</span> <span class="n">target_rdf</span><span class="p">,</span>
+                              <span class="s">&#39;current_rdf&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
+                              <span class="s">&#39;alpha&#39;</span><span class="p">:</span> <span class="n">alpha</span><span class="p">,</span>
+                              <span class="s">&#39;alpha_form&#39;</span><span class="p">:</span> <span class="n">alpha_form</span><span class="p">,</span>
+                              <span class="s">&#39;pair_indices&#39;</span><span class="p">:</span> <span class="n">pair_indices</span><span class="p">,</span>
+                              <span class="s">&#39;f_fit&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+</div>
+<div class="viewcode-block" id="Pair.compute_current_rdf"><a class="viewcode-back" href="../../msibi.html#msibi.pair.Pair.compute_current_rdf">[docs]</a>    <span class="k">def</span> <span class="nf">compute_current_rdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">r_range</span><span class="p">,</span> <span class="n">dr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
+        <span class="n">pairs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">state</span><span class="p">][</span><span class="s">&#39;pair_indices&#39;</span><span class="p">]</span>
+        <span class="c"># TODO: fix units</span>
+        <span class="n">r</span><span class="p">,</span> <span class="n">g_r</span> <span class="o">=</span> <span class="n">md</span><span class="o">.</span><span class="n">compute_rdf</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">traj</span><span class="p">,</span> <span class="n">pairs</span><span class="p">,</span> <span class="n">r_range</span><span class="o">=</span><span class="n">r_range</span> <span class="o">/</span> <span class="mi">10</span><span class="p">,</span>
+                                <span class="n">bin_width</span><span class="o">=</span><span class="n">dr</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">*=</span> <span class="mi">10</span>
+        <span class="n">rdf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">r</span><span class="p">,</span> <span class="n">g_r</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">state</span><span class="p">][</span><span class="s">&#39;current_rdf&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rdf</span>
+
+        <span class="c"># Compute fitness function comparing the two RDFs.</span>
+        <span class="n">f_fit</span> <span class="o">=</span> <span class="n">calc_similarity</span><span class="p">(</span><span class="n">rdf</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">state</span><span class="p">][</span><span class="s">&#39;target_rdf&#39;</span><span class="p">][:,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">state</span><span class="p">][</span><span class="s">&#39;f_fit&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f_fit</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Pair.save_current_rdf"><a class="viewcode-back" href="../../msibi.html#msibi.pair.Pair.save_current_rdf">[docs]</a>    <span class="k">def</span> <span class="nf">save_current_rdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">iteration</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;rdfs/pair_{0}-state_{1}-step{2}.txt&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">iteration</span><span class="p">)</span>
+        <span class="n">rdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">state</span><span class="p">][</span><span class="s">&#39;current_rdf&#39;</span><span class="p">]</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">rdf</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Pair.update_potential"><a class="viewcode-back" href="../../msibi.html#msibi.pair.Pair.update_potential">[docs]</a>    <span class="k">def</span> <span class="nf">update_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pot_r</span><span class="p">,</span> <span class="n">r_switch</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">previous_potential</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">:</span>
+            <span class="n">kT</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">kT</span>
+            <span class="n">alpha0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">state</span><span class="p">][</span><span class="s">&#39;alpha&#39;</span><span class="p">]</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">state</span><span class="p">][</span><span class="s">&#39;alpha_form&#39;</span><span class="p">]</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha_array</span><span class="p">(</span><span class="n">alpha0</span><span class="p">,</span> <span class="n">pot_r</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">)</span>
+
+            <span class="n">current_rdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">state</span><span class="p">][</span><span class="s">&#39;current_rdf&#39;</span><span class="p">][:,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">target_rdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">state</span><span class="p">][</span><span class="s">&#39;target_rdf&#39;</span><span class="p">][:,</span> <span class="mi">1</span><span class="p">]</span>
+
+            <span class="c"># For cases where rdf_cutoff != pot_cutoff, only update the</span>
+            <span class="c"># potential using RDF values &lt; pot_cutoff.</span>
+            <span class="n">unused_rdf_vals</span> <span class="o">=</span> <span class="n">current_rdf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">unused_rdf_vals</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">current_rdf</span> <span class="o">=</span> <span class="n">current_rdf</span><span class="p">[:</span><span class="o">-</span><span class="n">unused_rdf_vals</span><span class="p">]</span>
+                <span class="n">target_rdf</span> <span class="o">=</span> <span class="n">target_rdf</span><span class="p">[:</span><span class="o">-</span><span class="n">unused_rdf_vals</span><span class="p">]</span>
+
+            <span class="c"># The actual IBI step.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">potential</span> <span class="o">+=</span> <span class="p">(</span><span class="n">kT</span> <span class="o">*</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">current_rdf</span> <span class="o">/</span> <span class="n">target_rdf</span><span class="p">)</span> <span class="o">/</span>
+                               <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">))</span>
+
+        <span class="c"># Apply corrections to ensure continuous, well-behaved potentials.</span>
+        <span class="n">V</span> <span class="o">=</span> <span class="n">tail_correction</span><span class="p">(</span><span class="n">pot_r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="p">,</span> <span class="n">r_switch</span><span class="p">)</span>
+        <span class="n">V</span> <span class="o">=</span> <span class="n">head_correction</span><span class="p">(</span><span class="n">pot_r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">previous_potential</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">potential</span> <span class="o">=</span> <span class="n">V</span>
+</div>
+<div class="viewcode-block" id="Pair.save_table_potential"><a class="viewcode-back" href="../../msibi.html#msibi.pair.Pair.save_table_potential">[docs]</a>    <span class="k">def</span> <span class="nf">save_table_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">dr</span><span class="p">,</span> <span class="n">iteration</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s">&#39;hoomd&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Save the table potential to a file usable by the MD engine.</span>
+
+<span class="sd">        TODO: factor out for separate engines.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">V</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential</span>
+        <span class="n">F</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">dr</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">r</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">F</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">iteration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iteration</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+            <span class="n">basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential_file</span><span class="p">)</span>
+            <span class="n">basename</span> <span class="o">=</span> <span class="s">&#39;step{0:d}.{1}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">iteration</span><span class="p">,</span> <span class="n">basename</span><span class="p">)</span>
+            <span class="n">dirname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential_file</span><span class="p">)</span>
+            <span class="n">iteration_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">basename</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">engine</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;hoomd&#39;</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential_file</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">iteration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">iteration_filename</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">UnsupportedEngine</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Christoph Klein, Timothy C. Moore.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,9 @@
+[vmp840:19487] mca: base: component_find: unable to open /usr/local/openmpi/1.4.4/x86_64/gcc46/lib/openmpi/mca_plm_tm: perhaps a missing symbol, or compiled for a different version of Open MPI? (ignored)
+[vmp840:19487] mca: base: component_find: unable to open /usr/local/openmpi/1.4.4/x86_64/gcc46/lib/openmpi/mca_ras_tm: perhaps a missing symbol, or compiled for a different version of Open MPI? (ignored)
+*Warning*: Syntax bond.harmonic.set_coeff deprecated.
+*Warning*: Syntax bond.harmonic.set_coeff deprecated.
+*Warning*: Syntax bond.harmonic.set_coeff deprecated.
+*Warning*: Syntax bond.harmonic.set_coeff deprecated.
+*Warning*: Syntax bond.harmonic.set_coeff deprecated.
+*Warning*: Syntax bond.harmonic.set_coeff deprecated.
+*Warning*: Syntax bond.harmonic.set_coeff deprecated.
