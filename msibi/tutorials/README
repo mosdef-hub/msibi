@@ -5,4 +5,9 @@ code works as expected.
 LJ : recover known LJ potential
     - This test, as described in the original paper, is recovering a
       known potential to show that the methodology works. The target
-      data was derived from LJ fluids at three different states. 
+      data was derived from LJ fluids at three different states.
+
+PROPANE : recover known propane potential
+    - This test, as described in the original 2014 paper, is recovering a
+      known potential to show that the methodology works. The target
+      data was derived from propane at three different states.
