@@ -8,7 +8,7 @@ LJ : recover known LJ potential
       known potential to show that the methodology works. The target
       data was derived from LJ fluids at three different states.
 
-PROPANE : recover known propane potential
+PROPANE : optimize pair potentials for a single-site propane model
     - This test, as described in the original 2014 paper, performs further
       optimizations on propane using a coarse-graining 3-1 mapping. The 3-site
       propane is mapped to the single-site propane and the generated data can be
