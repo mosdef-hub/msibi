@@ -1,6 +1,7 @@
 This directory contains several tests.
 It is advisable, at the minimum, to run the LJ test to make sure the
-code works as expected.
+code works as expected. To run plot.py, downloading and installing msibi_utils
+is highly recommended for proper functionality.
 
 LJ : recover known LJ potential
     - This test, as described in the original paper, is recovering a
@@ -8,6 +9,7 @@ LJ : recover known LJ potential
       data was derived from LJ fluids at three different states.
 
 PROPANE : recover known propane potential
-    - This test, as described in the original 2014 paper, is recovering a
-      known potential to show that the methodology works. The target
-      data was derived from propane at three different states.
+    - This test, as described in the original 2014 paper, performs further
+      optimizations on propane using a coarse-graining 3-1 mapping. The 3-site
+      propane is mapped to the single-site propane and the generated data can be
+      compared to known LJ graphs from literature.

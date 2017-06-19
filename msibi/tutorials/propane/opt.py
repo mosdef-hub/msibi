@@ -7,12 +7,6 @@ import numpy as np
 from msibi import MSIBI, State, Pair, mie
 
 
-# Code below from opt.py for lj tutorial
-# Need for similar code uncertain
-# os.system('rm state*/* rdfs/C3* f_fits.log state*/log.txt')
-# os.system('rm state*/err.txt')
-# os.system('rm state*/query.dcd')
-
 # Set up global parameters.
 rdf_cutoff = 5.0
 opt = MSIBI(rdf_cutoff=rdf_cutoff, n_rdf_points=201, pot_cutoff=3.0,
@@ -28,7 +22,7 @@ stateC = State(kT=2.0, state_dir='./state_C', top_file='start.hoomdxml',
 states = [stateA, stateB, stateC]
 
 # Specify pairs.
-indices = list(itertools.combinations(range(1024), 2))  # all-all for 1468 atoms
+indices = list(itertools.combinations(range(1024), 2))  # all-all for 1024 atoms
 
 initial_guess = mie(opt.pot_r, 1.0, 1.0)  # 1-D array of potential values.
 alphabet = ['A', 'B', 'C']
