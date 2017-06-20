@@ -1,5 +1,4 @@
 # Default files
-*.txt
 *.pyc
 *.dcd
 .DS_Store
