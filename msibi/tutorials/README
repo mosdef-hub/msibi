@@ -1,7 +1,7 @@
 This directory contains several tests.
 It is advisable, at the minimum, to run the LJ test to make sure the
 code works as expected. To run plot.py, downloading and installing msibi_utils
-is highly recommended for proper functionality.
+is highly recommended to visualize the results.
 
 LJ : recover known LJ potential
     - This test, as described in the original paper, is recovering a
@@ -12,4 +12,11 @@ PROPANE : optimize pair potentials for a single-site propane model
     - This test, as described in the original 2014 paper, performs further
       optimizations on propane using a coarse-graining 3-1 mapping. The 3-site
       propane is mapped to the single-site propane and the generated data can be
-      compared to known LJ graphs from literature.
+      compared to known LJ potentials from literature.
+
+Additional citation:
+      P. Liu et al., “Reconstructing atomistic detail for coarse-grained models
+        with resolution exchange,” J. Chem. Phys. 129,
+        114103 (2008).
+
+        Refer to: https://doi.org/10.1063/1.2976663
