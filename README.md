@@ -8,7 +8,7 @@ multistate iterative Boltzmann inversion.
 
 Install from source:
 ```python
-git clone https://github.com/ctk3b/msibi.git
+git clone https://github.com/mosdef-hub/msibi.git
 cd msibi
 pip install .
 ```
