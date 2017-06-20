@@ -6,6 +6,9 @@ import numpy as np
 
 from msibi import MSIBI, State, Pair, mie
 
+os.system('rm rdfs/pair_C3*_state*-step*.txt f_fits.log')
+os.system('rm state_*/*.txt state*/run.py state*/*query.dcd')
+
 
 # Set up global parameters.
 rdf_cutoff = 5.0
