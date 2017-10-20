@@ -1,0 +1,4 @@
+rdfs/pair*
+potentials/
+state*/*.txt
+state*/run.py

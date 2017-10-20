@@ -1,3 +1,32 @@
+##############################################################################
+# MSIBI: A package for optimizing coarse-grained force fields using multistate
+#   iterative Boltzmann inversion.
+# Copyright (c) 2017 Vanderbilt University and the Authors
+#
+# Authors: Christoph Klein, Timothy C. Moore
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files, to deal
+# in MSIBI without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# # copies of MSIBI, and to permit persons to whom MSIBI is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of MSIBI.
+#
+# MSIBI IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH MSIBI OR THE USE OR OTHER DEALINGS ALONG WITH
+# MSIBI.
+#
+# You should have received a copy of the MIT license.
+# If not, see <https://opensource.org/licenses/MIT/>.
+##############################################################################
+
 from __future__ import division
 import os
 
@@ -80,8 +109,10 @@ class Pair(object):
             top = md.load(state.traj_path).topology
         pairs = top.select_pairs("name '{0}'".format(self.type1),
                                  "name '{0}'".format(self.type2))
-        to_delete = find_1_n_exclusions(top, pairs, exclude_up_to)
-        self.states[state]['pair_indices'] = np.delete(pairs, to_delete, axis=0)
+        if exclude_up_to is not None:
+            to_delete = find_1_n_exclusions(top, pairs, exclude_up_to)
+            pairs = np.delete(pairs, to_delete, axis=0)
+        self.states[state]['pair_indices'] = pairs
 
     def compute_current_rdf(self, state, r_range, n_bins, smooth=True,
                             max_frames=1e3):

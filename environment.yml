@@ -1,0 +1,11 @@
+name: test-environment
+channels:
+- omnia
+- glotzer
+- defaults
+dependencies:
+- numpy
+- mdtraj
+- hoomd
+- pytest >=3.0
+- pytest-cov

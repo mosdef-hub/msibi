@@ -1,6 +1,6 @@
 MultiState Iterative Boltzmann Inversion
 ----------------------------------------
-[![Linux Build Status](https://travis-ci.org/ctk3b/msibi.svg?branch=master)](https://travis-ci.org/ctk3b/msibi)
+[![Build Status](https://travis-ci.org/mosdef-hub/msibi.svg?branch=master)](https://travis-ci.org/mosdef-hub/msibi)
 [![Coverage Status](https://coveralls.io/repos/ctk3b/msibi/badge.svg?branch=master)](https://coveralls.io/r/ctk3b/msibi?branch=master)
 
 A package to help you manage and run pair potential optimizations using
@@ -8,7 +8,7 @@ multistate iterative Boltzmann inversion.
 
 Install from source:
 ```python
-git clone https://github.com/ctk3b/msibi.git
+git clone https://github.com/mosdef-hub/msibi.git
 cd msibi
 pip install .
 ```
