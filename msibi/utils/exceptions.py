@@ -6,4 +6,3 @@ class UnsupportedEngine(Exception):
         message = 'Unsupported engine: "{0}". Supported engines are: {1}'.format(
             engine, ', '.join(SUPPORTED_ENGINES))
         super(UnsupportedEngine, self).__init__(message)
-

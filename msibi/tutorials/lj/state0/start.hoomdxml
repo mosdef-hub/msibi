@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <hoomd_xml version="1.4">
 <configuration time_step="2100000" dimensions="3" natoms="1468" >
-<box lx="12" ly="12" lz="12"/>
+<box lx="13" ly="13" lz="13"/>
 <position num="1468">
 -4.72176265717 5.8477602005 2.7523958683
 -3.67994141579 -5.17200660706 3.88371992111

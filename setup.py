@@ -1,3 +1,8 @@
+""""MSIBI: A package for optimizing coarse-grained force fields using multistate
+iterative Boltzmann inversion.
+
+"""
+
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
 import sys
@@ -27,7 +32,7 @@ class PyTest(TestCommand):
 setup(name='msibi',
       version='0.1',
       description='',
-      url='http://github.com/ctk3b/misibi',
+      url='http://github.com/mosdef-hub/misibi',
       author='Christoph Klein, Timothy C. Moore',
       author_email='christoph.klein@vanderbilt.edu, timothy.c.moore@vanderbilt.edu',
       license='MIT',
