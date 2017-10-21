@@ -103,7 +103,7 @@ class Pair(object):
             first_frame = last_frame
         #r *= 10.0
 
-        rdf = np.vstack((r, g_r)).T
+        rdf = np.vstack((r, g_r_all)).T
         self.states[state]['current_rdf'] = rdf
 
         if smooth:

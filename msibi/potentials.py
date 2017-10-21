@@ -75,6 +75,7 @@ def head_correction(r, V, previous_V, form='linear'):
         if np.isnan(pot_value) or np.isposinf(pot_value):
             last_real = V.shape[0] - i - 1
             if last_real > len(V) - 2:
+                import pdb; pdb.set_trace()
                 raise RuntimeError('Undefined values in tail of potential.'
                                    'This probably means you need better '
                                    'sampling at this state point.')

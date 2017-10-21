@@ -66,8 +66,8 @@ class MSIBI(object):
             self.dr = rdf_cutoff / (n_rdf_points - 1)
             self.rdf_n_bins = self.n_rdf_points + 1
         if self.engine == 'lammps':
-            self.dr = rdf_cutoff / (n_rdf_points)
-            self.rdf_n_bins = self.n_rdf_points + 0
+            self.dr = rdf_cutoff / (n_rdf_points - 1)
+            self.rdf_n_bins = self.n_rdf_points + 1
         self.smooth_rdfs = smooth_rdfs
         self.rdf_r_range = np.array([0.0, self.rdf_cutoff + self.dr])
         #self.rdf_n_bins = self.n_rdf_points + 1
@@ -88,7 +88,7 @@ class MSIBI(object):
             r_switch = self.pot_r[-5]
         self.r_switch = r_switch
 
-    def optimize(self, states, pairs, n_iterations=10, start_iteration=0):
+    def optimize(self, states, pairs, n_iterations=10, start_iteration=0, engine='hoomd'):
         """
         """
         for pair in pairs:

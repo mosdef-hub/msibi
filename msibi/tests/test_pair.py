@@ -61,7 +61,7 @@ def test_add_state():
 def test_calc_current_rdf_no_smooth():
     pair, state, rdf = init_state(0)
     state.reload_query_trajectory()
-    pair.compute_current_rdf(state, r_range, n_bins+1, smooth=False, max_frames=1e3)
+    pair.compute_current_rdf(state, r_range, n_bins+0, smooth=False, max_frames=1e3)
     assert pair.states[state]['current_rdf'] is not None
     assert len(pair.states[state]['f_fit']) > 0
 
@@ -69,7 +69,7 @@ def test_calc_current_rdf_no_smooth():
 def test_calc_current_rdf_smooth():
     pair, state, rdf = init_state(0)
     state.reload_query_trajectory()
-    pair.compute_current_rdf(state, r_range, n_bins+1, smooth=True, max_frames=1e3)
+    pair.compute_current_rdf(state, r_range, n_bins+0, smooth=True, max_frames=1e3)
     assert pair.states[state]['current_rdf'] is not None
     assert len(pair.states[state]['f_fit']) > 0
 
@@ -77,7 +77,7 @@ def test_calc_current_rdf_smooth():
 def test_save_current_rdf():
     pair, state, rdf = init_state(0)
     state.reload_query_trajectory()
-    pair.compute_current_rdf(state, r_range, n_bins+1, smooth=True, max_frames=1e3)
+    pair.compute_current_rdf(state, r_range, n_bins+0, smooth=True, max_frames=1e3)
     pair.save_current_rdf(state, 0, 0.1/6.0)
     if not os.path.isdir('rdfs'):
         os.system('mkdir rdfs')
@@ -88,7 +88,7 @@ def test_update_potential():
     """Make sure the potential changes after calculating RDF"""
     pair, state, rdf = init_state(0)
     state.reload_query_trajectory()
-    pair.compute_current_rdf(state, r_range, n_bins+1, smooth=True, max_frames=1e3)
+    pair.compute_current_rdf(state, r_range, n_bins+0, smooth=True, max_frames=1e3)
     pair.update_potential(np.arange(0, 2.5+dr, dr), r_switch=1.8)
     assert not np.array_equal(pair.potential, pair.previous_potential)
 
