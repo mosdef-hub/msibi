@@ -1,7 +1,7 @@
-name: test-environment
+name: msibi
 channels:
+- conda-forge
 - omnia
-- glotzer
 - defaults
 dependencies:
 - numpy
@@ -9,3 +9,5 @@ dependencies:
 - hoomd
 - pytest >=3.0
 - pytest-cov
+- jupyterlab
+- nodejs >=10
