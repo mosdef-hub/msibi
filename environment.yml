@@ -11,3 +11,4 @@ dependencies:
 - pytest-cov
 - jupyterlab
 - nodejs >=10
+- mdanalysis
