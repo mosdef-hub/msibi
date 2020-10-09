@@ -86,8 +86,11 @@ class State(object):
 
     """
 
-    def __init__(self, kT, state_dir='', traj_file=None, top_file=None,
-                 name=None, backup_trajectory=False):
+    def __init__(
+            self, kT, state_dir='', traj_file=None,
+            top_file='start.hoomdxml', name=None, backup_trajectory=False
+            ):
+
         self.kT = kT
         self.state_dir = state_dir
 
@@ -121,7 +124,9 @@ class State(object):
         elif self.HOOMD_VERSION == 2:
             HOOMD_HEADER = HOOMD2_HEADER
 
-        header.append(HOOMD_HEADER.format('start.hoomdxml', self.kT, table_width))
+        header.append(HOOMD_HEADER.format(
+            self.top_path, self.kT, table_width
+            ))
         for type1, type2, potential_file in table_potentials:
             header.append(HOOMD_TABLE_ENTRY.format(**locals()))
         header = ''.join(header)
