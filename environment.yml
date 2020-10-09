@@ -7,8 +7,7 @@ dependencies:
 - numpy
 - mdtraj
 - hoomd
-- pytest >=3.0
-- pytest-cov
 - jupyterlab
 - nodejs >=10
 - mdanalysis
+- freud
