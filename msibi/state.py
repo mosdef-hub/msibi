@@ -48,9 +48,15 @@ HOOMD2_HEADER = """
 import hoomd
 import hoomd.md
 from hoomd.deprecated.init import read_xml
+from hoomd.init import read_snapshot
 
 hoomd.context.initialize("")
-system = read_xml(filename="{0}", wrap_coordinates=True)
+try:
+    system = read_xml(filename="{0}", wrap_coordinates=True)
+except RunTimeError:
+    with gsd.hoomd.open("{0}") as t:
+        snap = t[-1]
+    system = read_snapshot(snap)
 T_final = {1:.1f}
 
 pot_width = {2:d}
