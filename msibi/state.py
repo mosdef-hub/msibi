@@ -75,14 +75,20 @@ class State(object):
 
     Attributes
     ----------
-    k : float
-        Boltzmann's  constant in specified units.
-    T : float
-        Temperature in kelvin.
-    traj : md.Trajectory
-        The trajectory associated with this state.
+    kT : float
+        Unitless heat energy (product of Boltzmann's constant and temperature).
+    state_dir : path
+        Path to state directory (default '')
+    traj_file : path or md.Trajectory
+        The dcd or gsd trajectory associated with this state (default None)
+    top_file : path
+        hoomdxml or gsd file contain totpology information
+        (default start.hoomdxml')
+    name : str
+        State name. If no name is given, state will be named 'state-{kT:.3f}'
+        (default None)
     backup_trajectory : bool
-        True if each query trajectory is backed up (default=False)
+        True if each query trajectory is backed up (default False)
 
     """
 
