@@ -81,17 +81,21 @@ class Pair(object):
             Coarse-grained target RDF.
         alpha : float
             The alpha value used to scale the weight of this state.
-        pair_indices : array-like, shape=(n_pairs, 2), dtype=int, optional, default=None
-            Each row gives the indices of two atoms representing a pair.
+        pair_indices : array-like (n_pairs, 2) dtype=int
+            Each row gives the indices of two atoms representing a pair
+            (default None)
         alpha_form : str
             For alpha as a function of r, gives form of alpha function
+            (default 'linear')
         """
-        self.states[state] = {'target_rdf': target_rdf,
-                              'current_rdf': None,
-                              'alpha': alpha,
-                              'alpha_form': alpha_form,
-                              'pair_indices': pair_indices,
-                              'f_fit': []}
+        self.states[state] = {
+                'target_rdf': target_rdf,
+                'current_rdf': None,
+                'alpha': alpha,
+                'alpha_form': alpha_form,
+                'pair_indices': pair_indices,
+                'f_fit': []
+                }
 
     def select_pairs(self, state, exclude_up_to=0):
         """Select pairs based on a topology and exclusions.
@@ -101,7 +105,8 @@ class Pair(object):
         state : State
             A state object, contains a topology from which to select pairs
         exclude_up_to : int
-            Exclude pairs separated by exclude_up_to or fewer bonds, default=0
+            Exclude pairs separated by exclude_up_to or fewer bonds
+            (default 0)
         """
         if state.top_path:
             top = md.load(state.top_path).topology
@@ -114,8 +119,9 @@ class Pair(object):
             pairs = np.delete(pairs, to_delete, axis=0)
         self.states[state]['pair_indices'] = pairs
 
-    def compute_current_rdf(self, state, r_range, n_bins, smooth=True,
-                            max_frames=1e3):
+    def compute_current_rdf(
+            self, state, r_range, n_bins, smooth=True, max_frames=1e3
+            ):
         """ """
         pairs = self.states[state]['pair_indices']
         # TODO: More elegant way to handle units.
@@ -123,14 +129,23 @@ class Pair(object):
         g_r_all = None
         first_frame = 0
         max_frames = int(max_frames)
-        for last_frame in range(max_frames,
-                                state.traj.n_frames + max_frames,
-                                max_frames):
-            r, g_r = md.compute_rdf(state.traj[first_frame:last_frame],
-                                    pairs, r_range=r_range / 10, n_bins=n_bins)
+        for last_frame in range(
+                max_frames,
+                state.traj.n_frames + max_frames,
+                max_frames
+                ):
+            r, g_r = md.compute_rdf(
+                    state.traj[first_frame:last_frame],
+                    pairs,
+                    r_range = r_range / 10,
+                    n_bins = n_bins
+                    )
             if g_r_all is None:
                 g_r_all = np.zeros_like(g_r)
-            g_r_all += g_r * len(state.traj[first_frame:last_frame]) / state.traj.n_frames
+            g_r_all += g_r * (
+                    len(state.traj[first_frame:last_frame])
+                    / state.traj.n_frames
+                    )
             first_frame = last_frame
         r *= 10
         rdf = np.vstack((r, g_r_all)).T
@@ -138,12 +153,16 @@ class Pair(object):
 
         if smooth:
             current_rdf = self.states[state]['current_rdf']
-            current_rdf[:, 1] = savitzky_golay(current_rdf[:, 1], 9, 2, deriv=0, rate=1)
+            current_rdf[:, 1] = savitzky_golay(
+                    current_rdf[:, 1], 9, 2, deriv=0, rate=1
+                    )
             for row in current_rdf:
                 row[1] = np.maximum(row[1], 0)
 
         # Compute fitness function comparing the two RDFs.
-        f_fit = calc_similarity(rdf[:, 1], self.states[state]['target_rdf'][:, 1])
+        f_fit = calc_similarity(
+                rdf[:, 1], self.states[state]['target_rdf'][:, 1]
+                )
         self.states[state]['f_fit'].append(f_fit)
 
     def save_current_rdf(self, state, iteration, dr):
