@@ -80,7 +80,8 @@ class State(object):
     state_dir : path
         Path to state directory (default '')
     traj_file : path or md.Trajectory
-        The dcd or gsd trajectory associated with this state (default None)
+        The dcd or gsd trajectory associated with this state
+        (default 'query.dcd')
     top_file : path
         hoomdxml or gsd file contain totpology information
         (default start.hoomdxml')
@@ -93,15 +94,15 @@ class State(object):
     """
 
     def __init__(
-            self, kT, state_dir='', traj_file=None,
+            self, kT, state_dir='', traj_file='query.dcd',
             top_file='start.hoomdxml', name=None, backup_trajectory=False
             ):
 
         self.kT = kT
         self.state_dir = state_dir
 
-        if not traj_file:
-            self.traj_path = os.path.join(state_dir, 'query.dcd')
+        self.traj_path = os.path.join(state_dir, traj_file)
+
         if top_file:
             self.top_path = os.path.join(state_dir, top_file)
 
