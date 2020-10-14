@@ -52,7 +52,7 @@ from hoomd.init import read_snapshot
 hoomd.context.initialize("")
 try:
     system = read_xml(filename="{0}", wrap_coordinates=True)
-except RunTimeError:
+except RuntimeError:
     with gsd.hoomd.open("{0}") as t:
         snap = t[-1]
     system = read_snapshot(snap)
@@ -82,8 +82,8 @@ class State(object):
         The dcd or gsd trajectory associated with this state
         (default 'query.dcd')
     top_file : path
-        hoomdxml or gsd file contain totpology information
-        (default start.hoomdxml')
+        hoomdxml containing topology information (needed for dcd)
+        (default None)
     name : str
         State name. If no name is given, state will be named 'state-{kT:.3f}'
         (default None)
@@ -97,7 +97,7 @@ class State(object):
         kT,
         state_dir="",
         traj_file="query.dcd",
-        top_file="start.hoomdxml",
+        top_file=None,
         name=None,
         backup_trajectory=False,
     ):
