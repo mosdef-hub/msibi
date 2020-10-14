@@ -46,6 +46,8 @@ table = pair.table(width=pot_width)
 """
 
 HOOMD2_HEADER = """
+import gsd
+import gsd.hoomd
 import hoomd
 import hoomd.md
 from hoomd.deprecated.init import read_xml
@@ -150,11 +152,13 @@ class State(object):
             HOOMD_HEADER = HOOMD2_HEADER
 
         if self._is_gsd:
-            header.append(HOOMD_HEADER.format(
-                self.traj_path, self.kT, table_width
-                ))
+            header.append(
+                    HOOMD_HEADER.format(self.traj_path, self.kT, table_width)
+                    )
         else:
-            header.append(HOOMD_HEADER.format(self.top_path, self.kT, table_width))
+            header.append(
+                    HOOMD_HEADER.format(self.top_path, self.kT, table_width)
+                    )
         for type1, type2, potential_file in table_potentials:
             header.append(HOOMD_TABLE_ENTRY.format(**locals()))
         header = "".join(header)
