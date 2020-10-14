@@ -32,7 +32,6 @@ from __future__ import print_function, division
 
 from distutils.spawn import find_executable
 import itertools
-import logging
 from math import ceil
 from multiprocessing import cpu_count
 from multiprocessing.dummy import Pool
@@ -41,8 +40,6 @@ from subprocess import Popen
 
 from msibi.utils.general import backup_file
 from msibi.utils.exceptions import UnsupportedEngine
-
-logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(message)s')
 
 
 def run_query_simulations(states, engine='hoomd'):
@@ -53,10 +50,10 @@ def run_query_simulations(states, engine='hoomd'):
     if gpus is None:
         n_procs = cpu_count()
         gpus = []
-        logging.info("Launching {n_procs} CPU threads...".format(**locals()))
+        print("Launching {n_procs} CPU threads...".format(**locals()))
     else:
         n_procs = len(gpus)
-        logging.info("Launching {n_procs} GPU threads...".format(**locals()))
+        print("Launching {n_procs} GPU threads...".format(**locals()))
 
     if engine.lower() == 'hoomd':
         worker = _hoomd_worker
@@ -89,14 +86,14 @@ def _hoomd_worker(args):
             card = gpus[idx % len(gpus)]
             cmds = [executable, 'run.py', '--gpu={card}'.format(**locals())]
         else:
-            logging.info('    Running state {state.name} on CPU'.format(**locals()))
+            print('    Running state {state.name} on CPU'.format(**locals()))
             cmds = [executable, 'run.py']
 
         proc = Popen(cmds, cwd=state.state_dir, stdout=log, stderr=err,
                      universal_newlines=True)
-        logging.info("    Launched HOOMD in {state.state_dir}".format(**locals()))
+        print("    Launched HOOMD in {state.state_dir}".format(**locals()))
         proc.communicate()
-        logging.info("    Finished in {state.state_dir}.".format(**locals()))
+        print("    Finished in {state.state_dir}.".format(**locals()))
     _post_query(state)
 
 def _post_query(state):
