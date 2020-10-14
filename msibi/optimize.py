@@ -116,7 +116,8 @@ class MSIBI(object):
         self.r_switch = r_switch
 
     def optimize(
-        self, states, pairs, n_iterations=10, engine="hoomd", start_iteration=0
+        self, states, pairs, n_iterations=10, engine="hoomd",
+        start_iteration=0, verbose=False
     ):
         """Optimize the pair potentials
 
@@ -126,12 +127,15 @@ class MSIBI(object):
             List of states used to optimize pair potentials.
         pairs : array_like, len=n_pairs, dtype=msibi.Pair
             List of pairs being optimized.
-        n_iterations : int, optional
-            Number of iterations.
-        engine : str, optional
-            Engine that runs the simulations.
-        start_iteration : int, optional
+        n_iterations : int
+            Number of iterations. (default 10)
+        engine : str
+            Engine that runs the simulations. (default "hoomd")
+        start_iteration : int
             Start optimization at start_iteration, useful for restarting.
+            (default 0)
+        verbose : bool
+            Whether to provide more information for debugging (default False)
 
         References
         ----------
@@ -158,13 +162,16 @@ class MSIBI(object):
         else:  # don't need a hoomd version if not using hoomd
             HOOMD_VERSION = None
 
+        if verbose:
+            print(f"Using HOOMD version {HOOMD_VERSION}.")
+
         for pair in pairs:
             for state, data in pair.states.items():
                 if len(data["target_rdf"]) != self.n_rdf_points:
                     raise ValueError(
-                        "Target RDF in {} of pair {} is not the "
-                        "same length as n_rdf_points.".format(state.name, pair.name)
-                    )
+                            f"Target RDF in {state.name} of pair {pair.name}"
+                            "is not the same length as n_rdf_points."
+                            )
 
         for state in states:
             state.HOOMD_VERSION = HOOMD_VERSION
@@ -177,19 +184,21 @@ class MSIBI(object):
         for n in range(start_iteration + self.n_iterations):
             print("-------- Iteration {n} --------".format(**locals()))
             run_query_simulations(self.states, engine=engine)
-            self._update_potentials(n, engine)
+            self._update_potentials(n, engine, verbose)
 
-    def _update_potentials(self, iteration, engine):
+    def _update_potentials(self, iteration, engine, verbose):
         """Update the potentials for each pair. """
         for pair in self.pairs:
             self._recompute_rdfs(pair, iteration)
-            pair.update_potential(self.pot_r, self.r_switch)
+            pair.update_potential(self.pot_r, self.r_switch, verbose)
             pair.save_table_potential(
                 self.pot_r, self.dr, iteration=iteration, engine=engine
             )
 
     def _recompute_rdfs(self, pair, iteration):
-        """Recompute the current RDFs for every state used for a given pair. """
+        """
+        Recompute the current RDFs for every state used for a given pair.
+        """
         for state in pair.states:
             pair.compute_current_rdf(
                 state,
@@ -244,7 +253,9 @@ class MSIBI(object):
             pair.potential = V
 
             # This file is written for viewing of how the potential evolves.
-            pair.save_table_potential(self.pot_r, self.dr, iteration=0, engine=engine)
+            pair.save_table_potential(
+                    self.pot_r, self.dr, iteration=0, engine=engine
+                    )
 
             # This file is overwritten at each iteration and actually used for
             # performing the query simulations.

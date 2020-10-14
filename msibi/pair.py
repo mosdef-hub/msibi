@@ -33,6 +33,7 @@ import os
 
 import numpy as np
 from six import string_types
+import matplotlib.pyplot as plt
 
 import mdtraj as md
 from msibi.potentials import alpha_array, head_correction, tail_correction
@@ -122,7 +123,9 @@ class Pair(object):
             pairs = np.delete(pairs, to_delete, axis=0)
         self.states[state]["pair_indices"] = pairs
 
-    def compute_current_rdf(self, state, r_range, n_bins, smooth=True, max_frames=1e3):
+    def compute_current_rdf(
+            self, state, r_range, n_bins, smooth=True, max_frames=1e3
+            ):
         """ """
         pairs = self.states[state]["pair_indices"]
         # TODO: More elegant way to handle units.
@@ -180,7 +183,7 @@ class Pair(object):
         rdf[:, 0] -= dr / 2
         np.savetxt(filename, rdf)
 
-    def update_potential(self, pot_r, r_switch=None):
+    def update_potential(self, pot_r, verbose, r_switch=None):
         """Update the potential using all states. """
         self.previous_potential = np.copy(self.potential)
         for state in self.states:
@@ -199,16 +202,40 @@ class Pair(object):
                 current_rdf = current_rdf[:-unused_rdf_vals]
                 target_rdf = target_rdf[:-unused_rdf_vals]
 
+            if verbose:
+                plt.plot(current_rdf, label="current rdf")
+                plt.plot(target_rdf, label="target rdf")
+                plt.legend()
+                plt.show()
+
             # The actual IBI step.
             self.potential += (
                 kT * alpha * np.log(current_rdf / target_rdf) / len(self.states)
             )
 
+            if verbose:
+                plt.plot(
+                        pot_r, self.previous_potential,
+                        label="previous potential"
+                        )
+                plt.plot(pot_r, self.potential, label="potential")
+                plt.legend()
+                plt.show()
+
         # Apply corrections to ensure continuous, well-behaved potentials.
+        if verbose:
+            plt.plot(pot_r, self.potential, label="uncorrected potential")
         self.potential = tail_correction(pot_r, self.potential, r_switch)
+        if verbose:
+            plt.plot(pot_r, self.potential, label="tail correction")
         self.potential = head_correction(
-            pot_r, self.potential, self.previous_potential, self.head_correction_form
+            pot_r, self.potential, self.previous_potential,
+            self.head_correction_form
         )
+        if verbose:
+            plt.plot(pot_r, self.potential, label="head correction")
+            plt.legend()
+            plt.show()
 
     def save_table_potential(self, r, dr, iteration=0, engine="hoomd"):
         """Save the table potential to a file usable by the MD engine. """
