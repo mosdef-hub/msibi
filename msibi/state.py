@@ -107,13 +107,13 @@ class State(object):
         self.kT = kT
         self.state_dir = state_dir
 
+        self.traj_path = os.path.join(state_dir, traj_file)
+
         try:
-            with gsd.hoomd.open(traj_file) as t:
+            with gsd.hoomd.open(self.traj_path) as t:
                 self._is_gsd = isinstance(t, gsd.hoomd.HOOMDTrajectory)
         except RuntimeError:
             self._is_gsd = False
-
-        self.traj_path = os.path.join(state_dir, traj_file)
 
         if top_file:
             self.top_path = os.path.join(state_dir, top_file)
@@ -131,6 +131,7 @@ class State(object):
             self.traj = md.load(self.traj_path, top=self.top_path)
         else:
             self.traj = md.load(self.traj_path)
+            print("traj is ", type(self.traj))
 
     def save_runscript(
         self,
