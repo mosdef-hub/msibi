@@ -149,7 +149,12 @@ class State(object):
         elif self.HOOMD_VERSION == 2:
             HOOMD_HEADER = HOOMD2_HEADER
 
-        header.append(HOOMD_HEADER.format(self.top_path, self.kT, table_width))
+        if self._is_gsd:
+            header.append(HOOMD_HEADER.format(
+                self.traj_path, self.kT, table_width
+                ))
+        else:
+            header.append(HOOMD_HEADER.format(self.top_path, self.kT, table_width))
         for type1, type2, potential_file in table_potentials:
             header.append(HOOMD_TABLE_ENTRY.format(**locals()))
         header = "".join(header)
