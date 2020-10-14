@@ -38,15 +38,16 @@ import numpy as np
 def get_fn(name):
     """Get the full path to one of the reference files shipped for testing.
 
-    This function is taken straight from MDTraj (see https://github.com/mdtraj/mdtraj).
+    This function is taken straight from MDTraj
+    (see https://github.com/mdtraj/mdtraj).
     In the source distribution, these files are in ``msibi/utils/reference``,
-    but on istallation, they're moved to somewhere in the user's python
+    but on installation, they're moved to somewhere in the user's python
     site-packages directory.
 
     Parameters
     ----------
     name : str
-        Name of the file ot load (with respecto to the reference/ directory).
+        Name of the file to load (with respect to the reference directory).
 
     Examples
     ________
