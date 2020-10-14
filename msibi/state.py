@@ -30,6 +30,8 @@
 
 import os
 
+import gsd
+import gsd.hoomd
 import mdtraj as md
 
 HOOMD1_HEADER = """
@@ -104,6 +106,12 @@ class State(object):
 
         self.kT = kT
         self.state_dir = state_dir
+
+        try:
+            with gsd.hoomd.open(traj_file) as t:
+                self._is_gsd = isinstance(t, gsd.hoomd.HOOMDTrajectory)
+        except RuntimeError:
+            self._is_gsd = False
 
         self.traj_path = os.path.join(state_dir, traj_file)
 
