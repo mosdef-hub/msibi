@@ -32,7 +32,6 @@ import os
 
 import mdtraj as md
 
-
 HOOMD1_HEADER = """
 from hoomd_script import *
 

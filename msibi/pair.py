@@ -28,18 +28,18 @@
 ##############################################################################
 
 from __future__ import division
-import os
 
-import mdtraj as md
+import os
 
 import numpy as np
 from six import string_types
 
-from msibi.utils.exceptions import UnsupportedEngine
+import mdtraj as md
+from msibi.potentials import alpha_array, head_correction, tail_correction
 from msibi.utils.error_calculation import calc_similarity
-from msibi.potentials import tail_correction, head_correction, alpha_array
-from msibi.utils.smoothing import savitzky_golay
+from msibi.utils.exceptions import UnsupportedEngine
 from msibi.utils.find_exclusions import find_1_n_exclusions
+from msibi.utils.smoothing import savitzky_golay
 
 
 class Pair(object):

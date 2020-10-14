@@ -28,18 +28,18 @@
 # If not, see <https://opensource.org/licenses/MIT/>.
 ##############################################################################
 
-from __future__ import print_function, division
+from __future__ import division, print_function
 
-from distutils.spawn import find_executable
 import itertools
+import os
+from distutils.spawn import find_executable
 from math import ceil
 from multiprocessing import cpu_count
 from multiprocessing.dummy import Pool
-import os
 from subprocess import Popen
 
-from msibi.utils.general import backup_file
 from msibi.utils.exceptions import UnsupportedEngine
+from msibi.utils.general import backup_file
 
 
 def run_query_simulations(states, engine="hoomd"):

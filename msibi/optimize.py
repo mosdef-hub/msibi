@@ -33,11 +33,12 @@ from __future__ import division
 
 import logging
 import os
+
 import numpy as np
 
 from msibi.potentials import tail_correction
-from msibi.workers import run_query_simulations
 from msibi.utils.exceptions import UnsupportedEngine
+from msibi.workers import run_query_simulations
 
 
 class MSIBI(object):
