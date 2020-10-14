@@ -94,9 +94,14 @@ class State(object):
     """
 
     def __init__(
-            self, kT, state_dir='', traj_file='query.dcd',
-            top_file='start.hoomdxml', name=None, backup_trajectory=False
-            ):
+        self,
+        kT,
+        state_dir="",
+        traj_file="query.dcd",
+        top_file="start.hoomdxml",
+        name=None,
+        backup_trajectory=False,
+    ):
 
         self.kT = kT
         self.state_dir = state_dir
@@ -108,7 +113,7 @@ class State(object):
 
         self.traj = None
         if not name:
-            name = 'state-{0:.3f}'.format(self.kT)
+            name = "state-{0:.3f}".format(self.kT)
         self.name = name
 
         self.backup_trajectory = backup_trajectory
@@ -120,8 +125,13 @@ class State(object):
         else:
             self.traj = md.load(self.traj_path)
 
-    def save_runscript(self, table_potentials, table_width, engine='hoomd',
-                       runscript='hoomd_run_template.py'):
+    def save_runscript(
+        self,
+        table_potentials,
+        table_width,
+        engine="hoomd",
+        runscript="hoomd_run_template.py",
+    ):
         """Save the input script for the MD engine. """
 
         header = list()
@@ -131,16 +141,14 @@ class State(object):
         elif self.HOOMD_VERSION == 2:
             HOOMD_HEADER = HOOMD2_HEADER
 
-        header.append(HOOMD_HEADER.format(
-            self.top_path, self.kT, table_width
-            ))
+        header.append(HOOMD_HEADER.format(self.top_path, self.kT, table_width))
         for type1, type2, potential_file in table_potentials:
             header.append(HOOMD_TABLE_ENTRY.format(**locals()))
-        header = ''.join(header)
+        header = "".join(header)
         with open(os.path.join(self.state_dir, runscript)) as fh:
-            body = ''.join(fh.readlines())
+            body = "".join(fh.readlines())
 
-        runscript_file = os.path.join(self.state_dir, 'run.py')
-        with open(runscript_file, 'w') as fh:
+        runscript_file = os.path.join(self.state_dir, "run.py")
+        with open(runscript_file, "w") as fh:
             fh.write(header)
             fh.write(body)

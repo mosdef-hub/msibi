@@ -54,11 +54,13 @@ def get_fn(name):
     >>> t = md.load(get_fun('final.hoomdxml'))
     """
 
-    fn = resource_filename('msibi', os.path.join('utils', 'reference', name))
+    fn = resource_filename("msibi", os.path.join("utils", "reference", name))
 
     if not os.path.exists(fn):
-        raise ValueError('Sorry! %s does not exist. If you just '
-                         'added it, you\'ll have to re install' % fn)
+        raise ValueError(
+            "Sorry! %s does not exist. If you just "
+            "added it, you'll have to re install" % fn
+        )
 
     return fn
 
@@ -72,7 +74,7 @@ def find_nearest(array, target):
 def _count_backups(filename):
     """Count the number of backups of a file in a directory. """
     head, tail = os.path.split(filename)
-    backup_files = ''.join(['_.*.', tail])
+    backup_files = "".join(["_.*.", tail])
     return len(glob.glob(os.path.join(head, backup_files)))
 
 
@@ -88,7 +90,7 @@ def _backup_name(filename, n_backups):
 
     """
     head, tail = os.path.split(filename)
-    new_backup = ''.join(['_.{0:d}.'.format(n_backups), tail])
+    new_backup = "".join(["_.{0:d}.".format(n_backups), tail])
     return os.path.join(head, new_backup)
 
 

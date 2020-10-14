@@ -16,12 +16,11 @@ def test_calc_alpha_array():
     alpha0 = 1.0
     dr = 0.1
     r = np.arange(0, 2.5, dr)
-    form = 'linear'
+    form = "linear"
     alpha = alpha_array(alpha0, r, form)
     assert alpha[0] == alpha0
     assert alpha[-1] == 0.0
 
-    form = 'margaret-thatcher'
+    form = "margaret-thatcher"
     with pytest.raises(ValueError):
         alpha = alpha_array(alpha0, r, form)
-
