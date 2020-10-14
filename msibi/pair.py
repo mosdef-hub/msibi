@@ -154,12 +154,16 @@ class Pair(object):
 
         if smooth:
             current_rdf = self.states[state]["current_rdf"]
-            current_rdf[:, 1] = savitzky_golay(current_rdf[:, 1], 9, 2, deriv=0, rate=1)
+            current_rdf[:, 1] = savitzky_golay(
+                    current_rdf[:, 1], 9, 2, deriv=0, rate=1
+                    )
             for row in current_rdf:
                 row[1] = np.maximum(row[1], 0)
 
         # Compute fitness function comparing the two RDFs.
-        f_fit = calc_similarity(rdf[:, 1], self.states[state]["target_rdf"][:, 1])
+        f_fit = calc_similarity(
+                rdf[:, 1], self.states[state]["target_rdf"][:, 1]
+                )
         self.states[state]["f_fit"].append(f_fit)
 
     def save_current_rdf(self, state, iteration, dr):
