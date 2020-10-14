@@ -31,7 +31,6 @@
 
 from __future__ import division
 
-import logging
 import os
 
 import numpy as np
@@ -176,7 +175,7 @@ class MSIBI(object):
         self.initialize(engine=engine)
 
         for n in range(start_iteration + self.n_iterations):
-            logging.info("-------- Iteration {n} --------".format(**locals()))
+            print("-------- Iteration {n} --------".format(**locals()))
             run_query_simulations(self.states, engine=engine)
             self._update_potentials(n, engine)
 
@@ -200,14 +199,14 @@ class MSIBI(object):
                 max_frames=self.max_frames,
             )
             pair.save_current_rdf(state, iteration=iteration, dr=self.dr)
-            logging.info(
-                "pair {0}, state {1}, iteration {2}: {3:f}".format(
-                    pair.name,
-                    state.name,
-                    iteration,
-                    pair.states[state]["f_fit"][iteration],
-                )
-            )
+            print(
+                    "pair {0}, state {1}, iteration {2}: {3:f}".format(
+                        pair.name,
+                        state.name,
+                        iteration,
+                        pair.states[state]["f_fit"][iteration]
+                        )
+                    )
 
     def initialize(self, engine="hoomd", potentials_dir=None):
         """
