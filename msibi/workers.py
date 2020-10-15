@@ -90,7 +90,8 @@ def _hoomd_worker(args):
             cmds = [executable, "run.py"]
 
         proc = Popen(
-            cmds, cwd=state.state_dir, stdout=log, stderr=err, universal_newlines=True
+            cmds, cwd=state.state_dir, stdout=log, stderr=err,
+            universal_newlines=True
         )
         print("    Launched HOOMD in {state.state_dir}".format(**locals()))
         proc.communicate()
