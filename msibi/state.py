@@ -53,9 +53,9 @@ from hoomd.init import read_gsd
 
 hoomd.context.initialize("")
 try:
-    system = read_xml(filename="{0}", wrap_coordinates=True)
-except RuntimeError:
     system = read_gsd("{0}", frame=-1)
+except RuntimeError:
+    system = read_xml(filename="{0}", wrap_coordinates=True)
 T_final = {1:.1f}
 
 pot_width = {2:d}
