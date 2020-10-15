@@ -48,13 +48,13 @@ table = pair.table(width=pot_width)
 HOOMD2_HEADER = """
 import hoomd
 import hoomd.md
-from hoomd.deprecated.init import read_xml
 from hoomd.init import read_gsd
 
 hoomd.context.initialize("")
 try:
     system = read_gsd("{0}", frame=-1)
 except RuntimeError:
+    from hoomd.deprecated.init import read_xml
     system = read_xml(filename="{0}", wrap_coordinates=True)
 T_final = {1:.1f}
 
