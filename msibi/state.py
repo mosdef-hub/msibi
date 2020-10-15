@@ -110,6 +110,7 @@ class State(object):
         self.state_dir = state_dir
 
         self.traj_path = os.path.join(state_dir, traj_file)
+        self.traj_file = traj_file
 
         try:
             with gsd.hoomd.open(self.traj_path) as t:
@@ -153,7 +154,7 @@ class State(object):
 
         if self._is_gsd:
             header.append(
-                    HOOMD_HEADER.format(self.traj_path, self.kT, table_width)
+                    HOOMD_HEADER.format(self.traj_file, self.kT, table_width)
                     )
         else:
             header.append(
