@@ -57,7 +57,11 @@ class Pair(object):
 
     """
 
-    def __init__(self, type1, type2, potential, head_correction_form="linear"):
+    def __init__(
+            self, type1, type2, potential,
+            head_correction_form="linear", verbose=False
+            ):
+        self.verbose = verbose
         self.type1 = str(type1)
         self.type2 = str(type2)
         self.name = "{0}-{1}".format(self.type1, self.type2)
@@ -130,7 +134,6 @@ class Pair(object):
         pairs = self.states[state]["pair_indices"]
         # TODO: More elegant way to handle units.
         #       See https://github.com/ctk3b/msibi/issues/2
-        g_r_all = None
         max_frames = int(max_frames)
         r, g_r = md.compute_rdf(
             state.traj[-max_frames:],
@@ -138,12 +141,7 @@ class Pair(object):
             r_range=r_range,
             n_bins=n_bins,
         )
-        if g_r_all is None:
-            g_r_all = np.zeros_like(g_r)
-        g_r_all += g_r * (
-            len(state.traj[-max_frames:]) / state.traj.n_frames
-        )
-        rdf = np.vstack((r, g_r_all)).T
+        rdf = np.vstack((r, g_r)).T
         self.states[state]["current_rdf"] = rdf
 
         if smooth:
@@ -153,6 +151,11 @@ class Pair(object):
                     )
             for row in current_rdf:
                 row[1] = np.maximum(row[1], 0)
+            if self.verbose:
+                plt.title(f"rdf smoothing for {state}")
+                plt.plot(r, g_r, label="unsmoothed")
+                plt.plot(r, current_rdf, label="smoothed")
+                plt.show()
 
         # Compute fitness function comparing the two RDFs.
         f_fit = calc_similarity(
