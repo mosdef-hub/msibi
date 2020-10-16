@@ -191,9 +191,7 @@ class MSIBI(object):
         """Update the potentials for each pair. """
         for pair in self.pairs:
             self._recompute_rdfs(pair, iteration)
-            pair.update_potential(
-                    self.pot_r, self.r_switch, verbose=self.verbose
-                    )
+            pair.update_potential(self.pot_r, self.r_switch, self.verbose)
             pair.save_table_potential(
                 self.pot_r, self.dr, iteration=iteration, engine=engine
             )

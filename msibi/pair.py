@@ -184,7 +184,7 @@ class Pair(object):
         rdf[:, 0] -= dr / 2
         np.savetxt(filename, rdf)
 
-    def update_potential(self, pot_r, verbose=False, r_switch=None):
+    def update_potential(self, pot_r, r_switch=None, verbose=False):
         """Update the potential using all states. """
         self.previous_potential = np.copy(self.potential)
         for state in self.states:
