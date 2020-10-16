@@ -124,31 +124,25 @@ class Pair(object):
         self.states[state]["pair_indices"] = pairs
 
     def compute_current_rdf(
-            self, state, r_range, n_bins, smooth=True, max_frames=1e3
+            self, state, r_range, n_bins, smooth=True, max_frames=50
             ):
         """ """
         pairs = self.states[state]["pair_indices"]
         # TODO: More elegant way to handle units.
         #       See https://github.com/ctk3b/msibi/issues/2
         g_r_all = None
-        first_frame = 0
         max_frames = int(max_frames)
-        for last_frame in range(
-            max_frames, state.traj.n_frames + max_frames, max_frames
-        ):
-            r, g_r = md.compute_rdf(
-                state.traj[first_frame:last_frame],
-                pairs,
-                r_range=r_range / 10,
-                n_bins=n_bins,
-            )
-            if g_r_all is None:
-                g_r_all = np.zeros_like(g_r)
-            g_r_all += g_r * (
-                len(state.traj[first_frame:last_frame]) / state.traj.n_frames
-            )
-            first_frame = last_frame
-        r *= 10
+        r, g_r = md.compute_rdf(
+            state.traj[-max_frames:],
+            pairs,
+            r_range=r_range,
+            n_bins=n_bins,
+        )
+        if g_r_all is None:
+            g_r_all = np.zeros_like(g_r)
+        g_r_all += g_r * (
+            len(state.traj[-max_frames:]) / state.traj.n_frames
+        )
         rdf = np.vstack((r, g_r_all)).T
         self.states[state]["current_rdf"] = rdf
 
