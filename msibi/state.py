@@ -128,12 +128,10 @@ class State(object):
 
     def reload_query_trajectory(self):
         """Reload the query trajectory. """
-        print("in state.py reload_query_trajectory")
         if self.top_path:
             self.traj = md.load(self.traj_path, top=self.top_path)
         else:
             self.traj = md.load(self.traj_path)
-            print("traj is ", type(self.traj))
 
     def save_runscript(
         self,

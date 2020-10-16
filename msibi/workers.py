@@ -96,14 +96,12 @@ def _hoomd_worker(args):
         print("    Launched HOOMD in {state.state_dir}".format(**locals()))
         proc.communicate()
         print("    Finished in {state.state_dir}.".format(**locals()))
-    print("files closed")
     _post_query(state)
 
 
 def _post_query(state):
     """Reload the query trajectory and make backups. """
 
-    print("in workers.py _post_query")
     state.reload_query_trajectory()
     backup_file(os.path.join(state.state_dir, "log.txt"))
     backup_file(os.path.join(state.state_dir, "err.txt"))
