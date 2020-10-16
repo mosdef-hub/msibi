@@ -58,10 +58,8 @@ class Pair(object):
     """
 
     def __init__(
-            self, type1, type2, potential,
-            head_correction_form="linear", verbose=False
+            self, type1, type2, potential, head_correction_form="linear"
             ):
-        self.verbose = verbose
         self.type1 = str(type1)
         self.type2 = str(type2)
         self.name = "{0}-{1}".format(self.type1, self.type2)
@@ -128,7 +126,8 @@ class Pair(object):
         self.states[state]["pair_indices"] = pairs
 
     def compute_current_rdf(
-            self, state, r_range, n_bins, smooth=True, max_frames=50
+            self, state, r_range, n_bins, smooth=True,
+            max_frames=50, verbose=False
             ):
         """ """
         pairs = self.states[state]["pair_indices"]
@@ -151,7 +150,7 @@ class Pair(object):
                     )
             for row in current_rdf:
                 row[1] = np.maximum(row[1], 0)
-            if self.verbose:
+            if verbose:
                 plt.title(f"rdf smoothing for {state}")
                 plt.plot(r, g_r, label="unsmoothed")
                 plt.plot(r, current_rdf, label="smoothed")
@@ -184,7 +183,7 @@ class Pair(object):
         rdf[:, 0] -= dr / 2
         np.savetxt(filename, rdf)
 
-    def update_potential(self, pot_r, verbose, r_switch=None):
+    def update_potential(self, pot_r, verbose=False, r_switch=None):
         """Update the potential using all states. """
         self.previous_potential = np.copy(self.potential)
         for state in self.states:

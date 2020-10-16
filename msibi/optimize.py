@@ -57,6 +57,8 @@ class MSIBI(object):
         Use a smoothing function to reduce the noise in the RDF data.
     max_frames : int
         The maximum number of frames to include at once in RDF calculation
+    verbose : bool
+        Whether to provide more information for debugging (default False)
 
     Attributes
     ----------
@@ -89,8 +91,10 @@ class MSIBI(object):
         r_switch=None,
         smooth_rdfs=False,
         max_frames=1e3,
+        verbose=False
     ):
 
+        self.verbose = verbose
         self.states = []
         self.pairs = []
         self.n_iterations = 10  # Can be overridden in optimize().
@@ -116,8 +120,7 @@ class MSIBI(object):
         self.r_switch = r_switch
 
     def optimize(
-        self, states, pairs, n_iterations=10, engine="hoomd",
-        start_iteration=0, verbose=False
+        self, states, pairs, n_iterations=10, engine="hoomd", start_iteration=0
     ):
         """Optimize the pair potentials
 
@@ -134,8 +137,6 @@ class MSIBI(object):
         start_iteration : int
             Start optimization at start_iteration, useful for restarting.
             (default 0)
-        verbose : bool
-            Whether to provide more information for debugging (default False)
 
         References
         ----------
@@ -162,7 +163,7 @@ class MSIBI(object):
         else:  # don't need a hoomd version if not using hoomd
             HOOMD_VERSION = None
 
-        if verbose:
+        if self.verbose:
             print(f"Using HOOMD version {HOOMD_VERSION}.")
 
         for pair in pairs:
@@ -183,29 +184,29 @@ class MSIBI(object):
 
         for n in range(start_iteration + self.n_iterations):
             print("-------- Iteration {n} --------".format(**locals()))
-            if verbose:
+            if self.verbose:
                 print(
                         "state0 traj before run_query",
                         type(self.states[0].traj)
                         )
             run_query_simulations(self.states, engine=engine)
-            if verbose:
+            if self.verbose:
                 print(
                         "state0 traj after run_query",
                         type(self.states[0].traj)
                         )
-            self._update_potentials(n, engine, verbose)
+            self._update_potentials(n, engine, self.verbose)
 
     def _update_potentials(self, iteration, engine, verbose):
         """Update the potentials for each pair. """
         for pair in self.pairs:
-            self._recompute_rdfs(pair, iteration)
-            pair.update_potential(self.pot_r, self.r_switch, verbose)
+            self._recompute_rdfs(pair, iteration, verbose)
+            pair.update_potential(self.pot_r, self.r_switch, verbose=verbose)
             pair.save_table_potential(
                 self.pot_r, self.dr, iteration=iteration, engine=engine
             )
 
-    def _recompute_rdfs(self, pair, iteration):
+    def _recompute_rdfs(self, pair, iteration, verbose):
         """
         Recompute the current RDFs for every state used for a given pair.
         """
@@ -216,6 +217,7 @@ class MSIBI(object):
                 n_bins=self.rdf_n_bins,
                 smooth=self.smooth_rdfs,
                 max_frames=self.max_frames,
+                verbose=verbose
             )
             pair.save_current_rdf(state, iteration=iteration, dr=self.dr)
             print(
