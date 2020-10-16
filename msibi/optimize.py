@@ -184,17 +184,7 @@ class MSIBI(object):
 
         for n in range(start_iteration + self.n_iterations):
             print("-------- Iteration {n} --------".format(**locals()))
-            if self.verbose:
-                print(
-                        "state0 traj before run_query",
-                        type(self.states[0].traj)
-                        )
             run_query_simulations(self.states, engine=engine)
-            if self.verbose:
-                print(
-                        "state0 traj after run_query",
-                        type(self.states[0].traj)
-                        )
             self._update_potentials(n, engine, self.verbose)
 
     def _update_potentials(self, iteration, engine, verbose):

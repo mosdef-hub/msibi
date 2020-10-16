@@ -151,9 +151,10 @@ class Pair(object):
             for row in current_rdf:
                 row[1] = np.maximum(row[1], 0)
             if verbose:
-                plt.title(f"rdf smoothing for {state}")
+                plt.title(f"RDF smoothing for {state.name}")
                 plt.plot(r, g_r, label="unsmoothed")
-                plt.plot(r, current_rdf, label="smoothed")
+                plt.plot(r, current_rdf[:,1], label="smoothed")
+                plt.legend()
                 plt.show()
 
         # Compute fitness function comparing the two RDFs.
