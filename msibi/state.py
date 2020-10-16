@@ -1,4 +1,4 @@
-##############################################################################
+############################################################################
 # MSIBI: A package for optimizing coarse-grained force fields using multistate
 #   iterative Boltzmann inversion.
 # Copyright (c) 2017 Vanderbilt University and the Authors
@@ -116,6 +116,8 @@ class State(object):
 
         if top_file:
             self.top_path = os.path.join(state_dir, top_file)
+        else:
+            self.top_path = None
 
         self.traj = None
         if not name:
