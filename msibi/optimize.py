@@ -185,18 +185,20 @@ class MSIBI(object):
         for n in range(start_iteration + self.n_iterations):
             print("-------- Iteration {n} --------".format(**locals()))
             run_query_simulations(self.states, engine=engine)
-            self._update_potentials(n, engine, self.verbose)
+            self._update_potentials(n, engine)
 
-    def _update_potentials(self, iteration, engine, verbose):
+    def _update_potentials(self, iteration, engine):
         """Update the potentials for each pair. """
         for pair in self.pairs:
-            self._recompute_rdfs(pair, iteration, verbose)
-            pair.update_potential(self.pot_r, self.r_switch, verbose=verbose)
+            self._recompute_rdfs(pair, iteration)
+            pair.update_potential(
+                    self.pot_r, self.r_switch, verbose=self.verbose
+                    )
             pair.save_table_potential(
                 self.pot_r, self.dr, iteration=iteration, engine=engine
             )
 
-    def _recompute_rdfs(self, pair, iteration, verbose):
+    def _recompute_rdfs(self, pair, iteration):
         """
         Recompute the current RDFs for every state used for a given pair.
         """
@@ -207,7 +209,7 @@ class MSIBI(object):
                 n_bins=self.rdf_n_bins,
                 smooth=self.smooth_rdfs,
                 max_frames=self.max_frames,
-                verbose=verbose
+                verbose=self.verbose
             )
             pair.save_current_rdf(state, iteration=iteration, dr=self.dr)
             print(
