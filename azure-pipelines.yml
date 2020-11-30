@@ -1,0 +1,73 @@
+trigger:
+  branches:
+    include:
+    - master
+
+pr:
+  autoCancel: true
+  branches:
+    include:
+      - master
+
+schedules:
+- cron: "0 0 * * *"
+  displayName: Daily midnight build for master
+  branches:
+    include:
+    - master
+  always: true
+
+
+stages:
+  - stage: Test
+    jobs:
+      - job: NoBleeding
+        strategy:
+          matrix:
+            Python36Ubuntu:
+              imageName: 'ubuntu-latest'
+              python.version: 3.6
+            Python37Ubuntu:
+              imageName: 'ubuntu-latest'
+              python.version: 3.7
+            Python36macOS:
+              imageName: 'macOS-latest'
+              python.version: 3.6
+            Python37macOS:
+              imageName: 'macOS-latest'
+              python.version: 3.7
+
+        pool:
+          vmImage: $(imageName)
+
+        steps:
+          - bash: echo "##vso[task.prependpath]$CONDA/bin"
+            displayName: Add Conda to path
+
+          - bash: sudo chown -R $USER $CONDA
+            condition: eq( variables['Agent.OS'], 'Darwin' )
+            displayName: Take ownership of conda installation
+
+          - bash: |
+              conda config --set always_yes yes --set changeps1 no
+            displayName: Add relavent Channels
+
+          - bash: |
+              conda update -c defaults conda
+              conda update --all
+              conda env create -n test-environment python=$(python.version) --file environment.yml
+
+              source activate test-environment
+              pip install -e .
+            displayName: Create Conda env, Activate, Install dependencies, Install Branch
+
+          - bash: |
+              source activate test-environment
+              pip install pytest-azurepipelines
+              python -m pytest -v --pyargs msibi --cov=msibi
+            displayName: Run Tests
+
+          - bash: |
+              coveralls
+            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.7' ) )
+            displayName: Upload Coverage Report
