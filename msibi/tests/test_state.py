@@ -15,6 +15,7 @@ def test_reload_query_trajectory():
         1.987e-3 * 500.0,
         state_dir=state_dir,
         top_file="sys.hoomdxml",
+        traj_file = "query.dcd",
         name="state0",
     )
     state.reload_query_trajectory()

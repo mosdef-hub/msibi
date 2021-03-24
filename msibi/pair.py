@@ -115,9 +115,7 @@ class Pair(object):
             top = md.load(state.top_path).topology
         else:
             top = md.load(state.traj_path).topology
-        pairs = top.select_pairs(
-            "name '{0}'".format(self.type1), "name '{0}'".format(self.type2)
-        )
+        pairs = top.select_pairs(f"name '{self.type1}'", f"name '{self.type2}'")
         if exclude_up_to is not None:
             to_delete = find_1_n_exclusions(top, pairs, exclude_up_to)
             pairs = np.delete(pairs, to_delete, axis=0)
@@ -130,6 +128,8 @@ class Pair(object):
         pairs = self.states[state]["pair_indices"]
         # TODO: More elegant way to handle units.
         #       See https://github.com/ctk3b/msibi/issues/2
+        g_r_all = None
+        first_frame = 0
         max_frames = int(max_frames)
         for last_frame in range(
             max_frames, state.traj.n_frames + max_frames, max_frames
