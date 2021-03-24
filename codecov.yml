@@ -9,4 +9,5 @@ comment:
 ignore:
     - "msibi/tests"
     - "setup.py"
+    - "msibi/tutorials"
 
