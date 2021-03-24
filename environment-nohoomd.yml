@@ -4,7 +4,6 @@ channels:
 dependencies:
 - freud=2.4.1
 - gsd=2.4.1
-- hoomd=2.9.6
 - mdanalysis=1.0.1
 - mdtraj=1.9.5
 - numpy=1.20.1
