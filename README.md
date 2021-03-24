@@ -1,4 +1,4 @@
-# MultiState Iterative Boltzmann Inversion (MSIBI)
+# MultiState Iterative Boltzmann Inversion (MS-IBI)
 ----------------------------------------
 [![build_cpu](https://github.com/cmelab/msibi/actions/workflows/build_cpu.yml/badge.svg)](https://github.com/cmelab/msibi/actions/workflows/build_cpu.yml)
 [![build_gpu](https://github.com/cmelab/msibi/actions/workflows/build_gpu.yml/badge.svg)](https://github.com/cmelab/msibi/actions/workflows/build_gpu.yml)
