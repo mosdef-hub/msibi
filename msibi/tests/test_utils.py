@@ -1,6 +1,5 @@
-import pytest
-
 import numpy as np
+import pytest
 
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.general import find_nearest

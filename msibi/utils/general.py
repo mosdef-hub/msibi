@@ -29,10 +29,10 @@
 
 import glob
 import os
-from pkg_resources import resource_filename
 import shutil
 
 import numpy as np
+from pkg_resources import resource_filename
 
 
 def get_fn(name):

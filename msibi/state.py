@@ -96,12 +96,11 @@ class State(object):
         self,
         kT,
         state_dir="",
-        traj_file="query.dcd",
+        traj_file=None,
         top_file=None,
         name=None,
         backup_trajectory=False,
     ):
-
         self.kT = kT
         self.state_dir = state_dir
 

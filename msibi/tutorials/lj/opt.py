@@ -3,8 +3,7 @@ import os
 
 import numpy as np
 
-from msibi import MSIBI, State, Pair, mie
-
+from msibi import MSIBI, Pair, State, mie
 
 os.system("rm state*/_* rdfs/pair* potentials/* f_fits.log state*/log.txt")
 os.system("rm state*/err.txt")
@@ -12,7 +11,9 @@ os.system("rm state*/query.dcd")
 
 # Set up global parameters.
 rdf_cutoff = 5.0
-opt = MSIBI(rdf_cutoff=rdf_cutoff, n_rdf_points=101, pot_cutoff=3.0, smooth_rdfs=True)
+opt = MSIBI(
+    rdf_cutoff=rdf_cutoff, n_rdf_points=101, pot_cutoff=3.0, smooth_rdfs=True
+)
 
 # Specify states.
 state0 = State(
@@ -41,7 +42,9 @@ states = [state0, state1, state2]
 # Specify pairs.
 indices = list(itertools.combinations(range(1468), 2))  # all-all for 1468 atoms
 initial_guess = mie(opt.pot_r, 1.0, 1.0)  # 1-D array of potential values.
-rdf_targets = [np.loadtxt("rdfs/rdf.target{0:d}.t1t1.txt".format(i)) for i in range(3)]
+rdf_targets = [
+    np.loadtxt("rdfs/rdf.target{0:d}.t1t1.txt".format(i)) for i in range(3)
+]
 
 pair0 = Pair("1", "1", initial_guess)
 alphas = [1.0, 1.0, 1.0]

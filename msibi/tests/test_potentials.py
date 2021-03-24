@@ -1,7 +1,7 @@
-import pytest
 import numpy as np
+import pytest
 
-from msibi.potentials import tail_correction, mie, alpha_array
+from msibi.potentials import alpha_array, mie, tail_correction
 
 
 def test_tail_correction():

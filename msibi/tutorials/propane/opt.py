@@ -1,10 +1,10 @@
 import itertools
-import string
 import os
+import string
 
 import numpy as np
 
-from msibi import MSIBI, State, Pair, mie
+from msibi import MSIBI, Pair, State, mie
 
 os.system("rm rdfs/pair_C3*_state*-step*.txt f_fits.log")
 os.system("rm state_*/*.txt state*/run.py state*/*query.dcd")
@@ -12,7 +12,9 @@ os.system("rm state_*/*.txt state*/run.py state*/*query.dcd")
 
 # Set up global parameters.
 rdf_cutoff = 5.0
-opt = MSIBI(rdf_cutoff=rdf_cutoff, n_rdf_points=201, pot_cutoff=3.0, smooth_rdfs=True)
+opt = MSIBI(
+    rdf_cutoff=rdf_cutoff, n_rdf_points=201, pot_cutoff=3.0, smooth_rdfs=True
+)
 
 # Specify states.
 stateA = State(
@@ -43,7 +45,9 @@ indices = list(itertools.combinations(range(1024), 2))  # all-all for 1024 atoms
 
 initial_guess = mie(opt.pot_r, 1.0, 1.0)  # 1-D array of potential values.
 alphabet = ["A", "B", "C"]
-rdf_targets = [np.loadtxt("rdfs/C3-C3-state_{0}.txt".format(i)) for i in alphabet]
+rdf_targets = [
+    np.loadtxt("rdfs/C3-C3-state_{0}.txt".format(i)) for i in alphabet
+]
 
 pair0 = Pair("C3", "C3", initial_guess)
 alphas = [1.0, 1.0, 1.0]

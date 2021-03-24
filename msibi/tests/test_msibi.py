@@ -1,8 +1,8 @@
 import pytest
 
 from msibi.optimize import MSIBI
-from .base_test import BaseTest
 
+from .base_test import BaseTest
 
 n_bins = 151
 

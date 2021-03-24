@@ -1,9 +1,10 @@
 import os
+
 import pytest
 
 from msibi.utils.exceptions import UnsupportedEngine
-from msibi.workers import run_query_simulations
-from msibi.workers import _post_query
+from msibi.workers import _post_query, run_query_simulations
+
 from .base_test import BaseTest
 
 

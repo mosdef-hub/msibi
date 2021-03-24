@@ -256,8 +256,8 @@ class MSIBI(object):
 
             # This file is written for viewing of how the potential evolves.
             pair.save_table_potential(
-                    self.pot_r, self.dr, iteration=0, engine=engine
-                    )
+                self.pot_r, self.dr, iteration=0, engine=engine
+            )
 
             # This file is overwritten at each iteration and actually used for
             # performing the query simulations.

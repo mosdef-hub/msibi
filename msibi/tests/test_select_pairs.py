@@ -2,9 +2,8 @@ import mdtraj as md
 import networkx as nx
 import numpy as np
 
+from msibi.utils.find_exclusions import find_1_n_exclusions, is_1_n
 from msibi.utils.general import get_fn
-from msibi.utils.find_exclusions import find_1_n_exclusions
-from msibi.utils.find_exclusions import is_1_n
 
 
 def test_select_pair_no_exclusions():

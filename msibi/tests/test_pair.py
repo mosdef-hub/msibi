@@ -1,16 +1,16 @@
 import os
-import pytest
 import tempfile
 
 import mdtraj as md
 import numpy as np
+import pytest
 
-from msibi.potentials import mie
 from msibi.pair import Pair
+from msibi.potentials import mie
 from msibi.state import State
 from msibi.utils.general import get_fn
-from .base_test import BaseTest
 
+from .base_test import BaseTest
 
 dr = 0.1 / 6.0
 r = np.arange(0, 2.5 + dr, dr)

@@ -31,11 +31,11 @@ from __future__ import division
 
 import os
 
+import matplotlib.pyplot as plt
+import mdtraj as md
 import numpy as np
 from six import string_types
-import matplotlib.pyplot as plt
 
-import mdtraj as md
 from msibi.potentials import alpha_array, head_correction, tail_correction
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.exceptions import UnsupportedEngine
@@ -57,9 +57,7 @@ class Pair(object):
 
     """
 
-    def __init__(
-            self, type1, type2, potential, head_correction_form="linear"
-            ):
+    def __init__(self, type1, type2, potential, head_correction_form="linear"):
         self.type1 = str(type1)
         self.type2 = str(type2)
         self.name = "{0}-{1}".format(self.type1, self.type2)
@@ -126,28 +124,39 @@ class Pair(object):
         self.states[state]["pair_indices"] = pairs
 
     def compute_current_rdf(
-            self, state, r_range, n_bins, smooth=True,
-            max_frames=50, verbose=False
-            ):
+        self, state, r_range, n_bins, smooth=True, max_frames=50, verbose=False
+    ):
         """ """
         pairs = self.states[state]["pair_indices"]
         # TODO: More elegant way to handle units.
         #       See https://github.com/ctk3b/msibi/issues/2
         max_frames = int(max_frames)
-        r, g_r = md.compute_rdf(
-            state.traj[-max_frames:],
-            pairs,
-            r_range=r_range,
-            n_bins=n_bins,
-        )
-        rdf = np.vstack((r, g_r)).T
+        for last_frame in range(
+            max_frames, state.traj.n_frames + max_frames, max_frames
+        ):
+            r, g_r = md.compute_rdf(
+                state.traj[first_frame:last_frame],
+                pairs,
+                r_range=r_range / 10,
+                n_bins=n_bins,
+            )
+            if g_r_all is None:
+                g_r_all = np.zeros_like(g_r)
+            g_r_all += (
+                g_r
+                * len(state.traj[first_frame:last_frame])
+                / state.traj.n_frames
+            )
+            first_frame = last_frame
+        r *= 10
+        rdf = np.vstack((r, g_r_all)).T
         self.states[state]["current_rdf"] = rdf
 
         if smooth:
             current_rdf = self.states[state]["current_rdf"]
             current_rdf[:, 1] = savitzky_golay(
-                    current_rdf[:, 1], 9, 2, deriv=0, rate=1
-                    )
+                current_rdf[:, 1], 9, 2, deriv=0, rate=1
+            )
             for row in current_rdf:
                 row[1] = np.maximum(row[1], 0)
             if verbose:
@@ -159,8 +168,8 @@ class Pair(object):
 
         # Compute fitness function comparing the two RDFs.
         f_fit = calc_similarity(
-                rdf[:, 1], self.states[state]["target_rdf"][:, 1]
-                )
+            rdf[:, 1], self.states[state]["target_rdf"][:, 1]
+        )
         self.states[state]["f_fit"].append(f_fit)
 
     def save_current_rdf(self, state, iteration, dr):
@@ -230,7 +239,9 @@ class Pair(object):
         if verbose:
             plt.plot(pot_r, self.potential, label="tail correction")
         self.potential = head_correction(
-            pot_r, self.potential, self.previous_potential,
+            pot_r,
+            self.potential,
+            self.previous_potential,
             self.head_correction_form
         )
         if verbose:
