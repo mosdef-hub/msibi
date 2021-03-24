@@ -1,0 +1,8 @@
+FROM cmelab/gpuhoomdconda:latest
+
+# Create the environment
+COPY environment-nohoomd.yml ./
+
+# Install in base environment
+RUN conda env update -n base -f environment-nohoomd.yml && \
+    conda clean --all --yes -f 
