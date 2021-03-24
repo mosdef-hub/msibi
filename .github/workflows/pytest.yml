@@ -1,0 +1,31 @@
+name: pytest
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'msibi/*'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'msibi/*'
+  # Allows workflow to be manually triggered
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    container: 
+        image: cmelab/msibi_cpu:latest
+
+    steps:
+    - uses: actions/checkout@v2
+ 
+    - name: Run pytest with coverage report
+      run: python -m pytest --cov=./ --cov-report=xml -v
+          
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./coverage.xml

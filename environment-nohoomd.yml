@@ -4,7 +4,6 @@ channels:
 dependencies:
 - freud=2.4.1
 - gsd=2.4.1
-- hoomd=2.9.6
 - mdanalysis=1.0.1
 - mdtraj=1.9.5
 - numpy=1.20.1
@@ -12,6 +11,3 @@ dependencies:
 - python=3.7
 - pytest=6.2.2
 - pytest-cov=2.11.1
-- jupyterlab
-- ipython=7.10.0
-- nodejs >=10

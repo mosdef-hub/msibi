@@ -1,20 +1,24 @@
-MultiState Iterative Boltzmann Inversion
+# MultiState Iterative Boltzmann Inversion (MS-IBI)
 ----------------------------------------
-[![Build Status](https://travis-ci.org/mosdef-hub/msibi.svg?branch=master)](https://travis-ci.org/mosdef-hub/msibi)
-[![Coverage Status](https://coveralls.io/repos/ctk3b/msibi/badge.svg?branch=master)](https://coveralls.io/r/ctk3b/msibi?branch=master)
+[![build_cpu](https://github.com/cmelab/msibi/actions/workflows/build_cpu.yml/badge.svg)](https://github.com/cmelab/msibi/actions/workflows/build_cpu.yml)
+[![build_gpu](https://github.com/cmelab/msibi/actions/workflows/build_gpu.yml/badge.svg)](https://github.com/cmelab/msibi/actions/workflows/build_gpu.yml)
+[![pytest](https://github.com/cmelab/msibi/actions/workflows/pytest.yml/badge.svg)](https://github.com/cmelab/msibi/actions/workflows/pytest.yml)
+[![codecov](https://codecov.io/gh/cmelab/msibi/branch/master/graph/badge.svg?token=7NFPBMBN0I)](https://codecov.io/gh/cmelab/msibi)
 
-A package to help you manage and run pair potential optimizations using
-multistate iterative Boltzmann inversion.
+A package to help you manage and run pair potential optimizations using multistate iterative Boltzmann inversion.
 
-Install from source:
-```python
-git clone https://github.com/mosdef-hub/msibi.git
+
+### Install from source:
+```bash
+git clone https://github.com/cmelab/msibi.git
 cd msibi
+conda env create -f environment.yml
+conda activate msibi
 pip install .
 ```
 
 
-#### Citation [![Citing MSIBI](https://img.shields.io/badge/DOI-10.1063%2F1.4880555-blue.svg)](http://dx.doi.org/10.1063/1.4880555)
+### Citation [![Citing MSIBI](https://img.shields.io/badge/DOI-10.1063%2F1.4880555-blue.svg)](http://dx.doi.org/10.1063/1.4880555)
 Details of the underlying method and its validation can be found [here](http://dx.doi.org/10.1063/1.4880555).
 
 If you use this package, please cite the above paper. The BibTeX reference is
@@ -29,6 +33,4 @@ If you use this package, please cite the above paper. The BibTeX reference is
       doi = "http://dx.doi.org/10.1063/1.4880555" 
 }
 ```
-
-
 
