@@ -28,24 +28,24 @@
 # If not, see <https://opensource.org/licenses/MIT/>.
 ##############################################################################
 
-from __future__ import print_function, division
+from __future__ import division, print_function
 
-from distutils.spawn import find_executable
 import itertools
 import logging
+import os
+from distutils.spawn import find_executable
 from math import ceil
 from multiprocessing import cpu_count
 from multiprocessing.dummy import Pool
-import os
 from subprocess import Popen
 
-from msibi.utils.general import backup_file
 from msibi.utils.exceptions import UnsupportedEngine
+from msibi.utils.general import backup_file
 
-logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(message)s')
+logging.basicConfig(level=logging.DEBUG, format="[%(levelname)s] %(message)s")
 
 
-def run_query_simulations(states, engine='hoomd'):
+def run_query_simulations(states, engine="hoomd"):
     """Run all query simulations for a single iteration. """
 
     # Gather hardware info.
@@ -58,7 +58,7 @@ def run_query_simulations(states, engine='hoomd'):
         n_procs = len(gpus)
         logging.info("Launching {n_procs} GPU threads...".format(**locals()))
 
-    if engine.lower() == 'hoomd':
+    if engine.lower() == "hoomd":
         worker = _hoomd_worker
     else:
         raise UnsupportedEngine(engine)
@@ -77,43 +77,56 @@ def _hoomd_worker(args):
     """Worker for managing a single HOOMD-blue simulation. """
 
     state, idx, gpus = args
-    log_file = os.path.join(state.state_dir, 'log.txt')
-    err_file = os.path.join(state.state_dir, 'err.txt')
+    log_file = os.path.join(state.state_dir, "log.txt")
+    err_file = os.path.join(state.state_dir, "err.txt")
 
     if state.HOOMD_VERSION == 1:
-        executable = 'hoomd'
+        executable = "hoomd"
     elif state.HOOMD_VERSION == 2:
-        executable = 'python'
-    with open(log_file, 'w') as log, open(err_file, 'w') as err:
+        executable = "python"
+    with open(log_file, "w") as log, open(err_file, "w") as err:
         if gpus:
             card = gpus[idx % len(gpus)]
-            cmds = [executable, 'run.py', '--gpu={card}'.format(**locals())]
+            cmds = [executable, "run.py", "--gpu={card}".format(**locals())]
         else:
-            logging.info('    Running state {state.name} on CPU'.format(**locals()))
-            cmds = [executable, 'run.py']
+            logging.info(
+                "    Running state {state.name} on CPU".format(**locals())
+            )
+            cmds = [executable, "run.py"]
 
-        proc = Popen(cmds, cwd=state.state_dir, stdout=log, stderr=err,
-                     universal_newlines=True)
-        logging.info("    Launched HOOMD in {state.state_dir}".format(**locals()))
+        proc = Popen(
+            cmds,
+            cwd=state.state_dir,
+            stdout=log,
+            stderr=err,
+            universal_newlines=True,
+        )
+        logging.info(
+            "    Launched HOOMD in {state.state_dir}".format(**locals())
+        )
         proc.communicate()
         logging.info("    Finished in {state.state_dir}.".format(**locals()))
     _post_query(state)
+
 
 def _post_query(state):
     """Reload the query trajectory and make backups. """
 
     state.reload_query_trajectory()
-    backup_file(os.path.join(state.state_dir, 'log.txt'))
-    backup_file(os.path.join(state.state_dir, 'err.txt'))
+    backup_file(os.path.join(state.state_dir, "log.txt"))
+    backup_file(os.path.join(state.state_dir, "err.txt"))
     if state.backup_trajectory:
         backup_file(state.traj_path)
 
+
 def _get_gpu_info():
     """ """
-    nvidia_smi = find_executable('nvidia-smi')
+    nvidia_smi = find_executable("nvidia-smi")
     if not nvidia_smi:
         return
     else:
-        gpus = [line.split()[1].replace(':', '') for
-                line in os.popen('nvidia-smi -L').readlines()]
+        gpus = [
+            line.split()[1].replace(":", "")
+            for line in os.popen("nvidia-smi -L").readlines()
+        ]
         return gpus

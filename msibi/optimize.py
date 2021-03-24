@@ -33,11 +33,12 @@ from __future__ import division
 
 import logging
 import os
+
 import numpy as np
 
 from msibi.potentials import tail_correction
-from msibi.workers import run_query_simulations
 from msibi.utils.exceptions import UnsupportedEngine
+from msibi.workers import run_query_simulations
 
 
 class MSIBI(object):
@@ -81,8 +82,15 @@ class MSIBI(object):
 
     """
 
-    def __init__(self, rdf_cutoff, n_rdf_points, pot_cutoff=None, r_switch=None,
-                 smooth_rdfs=False, max_frames=1e3):
+    def __init__(
+        self,
+        rdf_cutoff,
+        n_rdf_points,
+        pot_cutoff=None,
+        r_switch=None,
+        smooth_rdfs=False,
+        max_frames=1e3,
+    ):
 
         self.states = []
         self.pairs = []
@@ -108,8 +116,9 @@ class MSIBI(object):
             r_switch = self.pot_r[-5]
         self.r_switch = r_switch
 
-    def optimize(self, states, pairs, n_iterations=10, engine='hoomd',
-                 start_iteration=0):
+    def optimize(
+        self, states, pairs, n_iterations=10, engine="hoomd", start_iteration=0
+    ):
         """Optimize the pair potentials
 
         Parameters
@@ -135,25 +144,30 @@ class MSIBI(object):
 
         """
 
-        if engine == 'hoomd':
+        if engine == "hoomd":
             try:
                 import hoomd
+
                 HOOMD_VERSION = 2
             except ImportError:
                 try:
                     import hoomd_script
+
                     HOOMD_VERSION = 1
                 except ImportError:
-                    raise ImportError('Cannot import hoomd')
+                    raise ImportError("Cannot import hoomd")
         else:  # don't need a hoomd version if not using hoomd
             HOOMD_VERSION = None
 
         for pair in pairs:
             for state, data in pair.states.items():
-                if len(data['target_rdf']) != self.n_rdf_points:
-                    raise ValueError('Target RDF in {} of pair {} is not the '
-                                     'same length as n_rdf_points.'.format(
-                                     state.name, pair.name))
+                if len(data["target_rdf"]) != self.n_rdf_points:
+                    raise ValueError(
+                        "Target RDF in {} of pair {} is not the "
+                        "same length as n_rdf_points.".format(
+                            state.name, pair.name
+                        )
+                    )
 
         for state in states:
             state.HOOMD_VERSION = HOOMD_VERSION
@@ -173,22 +187,31 @@ class MSIBI(object):
         for pair in self.pairs:
             self._recompute_rdfs(pair, iteration)
             pair.update_potential(self.pot_r, self.r_switch)
-            pair.save_table_potential(self.pot_r, self.dr, iteration=iteration,
-                                      engine=engine)
+            pair.save_table_potential(
+                self.pot_r, self.dr, iteration=iteration, engine=engine
+            )
 
     def _recompute_rdfs(self, pair, iteration):
         """Recompute the current RDFs for every state used for a given pair. """
         for state in pair.states:
-            pair.compute_current_rdf(state, self.rdf_r_range,
-                                     n_bins=self.rdf_n_bins,
-                                     smooth=self.smooth_rdfs,
-                                     max_frames=self.max_frames)
+            pair.compute_current_rdf(
+                state,
+                self.rdf_r_range,
+                n_bins=self.rdf_n_bins,
+                smooth=self.smooth_rdfs,
+                max_frames=self.max_frames,
+            )
             pair.save_current_rdf(state, iteration=iteration, dr=self.dr)
-            logging.info('pair {0}, state {1}, iteration {2}: {3:f}'.format(
-                         pair.name, state.name, iteration,
-                         pair.states[state]['f_fit'][iteration]))
+            logging.info(
+                "pair {0}, state {1}, iteration {2}: {3:f}".format(
+                    pair.name,
+                    state.name,
+                    iteration,
+                    pair.states[state]["f_fit"][iteration],
+                )
+            )
 
-    def initialize(self, engine='hoomd', potentials_dir=None):
+    def initialize(self, engine="hoomd", potentials_dir=None):
         """
         Create initial table potentials and the simulation input scripts.
 
@@ -202,20 +225,21 @@ class MSIBI(object):
         """
 
         if not potentials_dir:
-            self.potentials_dir = os.path.join(os.getcwd(), 'potentials')
+            self.potentials_dir = os.path.join(os.getcwd(), "potentials")
         else:
             self.potentials_dir = potentials_dir
 
         if not os.path.isdir(self.potentials_dir):
             os.mkdir(self.potentials_dir)
 
-        if not os.path.isdir('rdfs'):
-            os.mkdir('rdfs')
+        if not os.path.isdir("rdfs"):
+            os.mkdir("rdfs")
 
         table_potentials = []
         for pair in self.pairs:
-            potential_file = os.path.join(self.potentials_dir,
-                                          'pot.{0}.txt'.format(pair.name))
+            potential_file = os.path.join(
+                self.potentials_dir, "pot.{0}.txt".format(pair.name)
+            )
             pair.potential_file = potential_file
             table_potentials.append((pair.type1, pair.type2, potential_file))
 
@@ -223,13 +247,15 @@ class MSIBI(object):
             pair.potential = V
 
             # This file is written for viewing of how the potential evolves.
-            pair.save_table_potential(self.pot_r, self.dr, iteration=0,
-                                      engine=engine)
+            pair.save_table_potential(
+                self.pot_r, self.dr, iteration=0, engine=engine
+            )
 
             # This file is overwritten at each iteration and actually used for
             # performing the query simulations.
             pair.save_table_potential(self.pot_r, self.dr, engine=engine)
 
         for state in self.states:
-            state.save_runscript(table_potentials, table_width=len(self.pot_r),
-                                 engine=engine)
+            state.save_runscript(
+                table_potentials, table_width=len(self.pot_r), engine=engine
+            )
