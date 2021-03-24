@@ -14,7 +14,7 @@ except ImportError:
           'http://mdtraj.org/latest/installation.html for help!')
     sys.exit(1)
 
-requirements = [line.strip() for line in open('requirements.txt').readlines()]
+requirements = ['numpy', 'six', 'networkx']
 
 
 class PyTest(TestCommand):
