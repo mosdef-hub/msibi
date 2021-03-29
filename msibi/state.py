@@ -1,4 +1,4 @@
-##############################################################################
+############################################################################
 # MSIBI: A package for optimizing coarse-grained force fields using multistate
 #   iterative Boltzmann inversion.
 # Copyright (c) 2017 Vanderbilt University and the Authors
@@ -30,6 +30,8 @@
 
 import os
 
+import gsd
+import gsd.hoomd
 import mdtraj as md
 
 HOOMD1_HEADER = """
@@ -46,10 +48,14 @@ table = pair.table(width=pot_width)
 HOOMD2_HEADER = """
 import hoomd
 import hoomd.md
-from hoomd.deprecated.init import read_xml
+from hoomd.init import read_gsd
 
 hoomd.context.initialize("")
-system = read_xml(filename="{0}", wrap_coordinates=True)
+try:
+    system = read_gsd("{0}", frame=-1, time_step=0)
+except RuntimeError:
+    from hoomd.deprecated.init import read_xml
+    system = read_xml(filename="{0}", wrap_coordinates=True)
 T_final = {1:.1f}
 
 pot_width = {2:d}
@@ -68,14 +74,21 @@ class State(object):
 
     Attributes
     ----------
-    k : float
-        Boltzmann's  constant in specified units.
-    T : float
-        Temperature in kelvin.
-    traj : md.Trajectory
-        The trajectory associated with this state.
+    kT : float
+        Unitless heat energy (product of Boltzmann's constant and temperature).
+    state_dir : path
+        Path to state directory (default '')
+    traj_file : path or md.Trajectory
+        The dcd or gsd trajectory associated with this state
+        (default 'query.dcd')
+    top_file : path
+        hoomdxml containing topology information (needed for dcd)
+        (default None)
+    name : str
+        State name. If no name is given, state will be named 'state-{kT:.3f}'
+        (default None)
     backup_trajectory : bool
-        True if each query trajectory is backed up (default=False)
+        True if each query trajectory is backed up (default False)
 
     """
 
@@ -91,10 +104,19 @@ class State(object):
         self.kT = kT
         self.state_dir = state_dir
 
-        if not traj_file:
-            self.traj_path = os.path.join(state_dir, "query.dcd")
+        self.traj_path = os.path.join(state_dir, traj_file)
+        self.traj_file = traj_file
+
+        try:
+            with gsd.hoomd.open(self.traj_path) as t:
+                self._is_gsd = isinstance(t, gsd.hoomd.HOOMDTrajectory)
+        except RuntimeError:
+            self._is_gsd = False
+
         if top_file:
             self.top_path = os.path.join(state_dir, top_file)
+        else:
+            self.top_path = None
 
         self.traj = None
         if not name:
@@ -126,9 +148,14 @@ class State(object):
         elif self.HOOMD_VERSION == 2:
             HOOMD_HEADER = HOOMD2_HEADER
 
-        header.append(
-            HOOMD_HEADER.format("start.hoomdxml", self.kT, table_width)
-        )
+        if self._is_gsd:
+            header.append(
+                    HOOMD_HEADER.format(self.traj_file, self.kT, table_width)
+                    )
+        else:
+            header.append(
+                    HOOMD_HEADER.format(self.top_path, self.kT, table_width)
+                    )
         for type1, type2, potential_file in table_potentials:
             header.append(HOOMD_TABLE_ENTRY.format(**locals()))
         header = "".join(header)

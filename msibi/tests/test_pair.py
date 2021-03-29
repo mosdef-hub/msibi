@@ -87,6 +87,7 @@ class TestPair(BaseTest):
             k_B * T,
             state_dir=state_dir,
             top_file=get_fn("2chains.hoomdxml"),
+            traj_file = "query.dcd",
             name="state0",
         )
         rdf_filename = get_fn("state0/target-rdf.txt")

@@ -31,6 +31,7 @@ from __future__ import division
 
 import os
 
+import matplotlib.pyplot as plt
 import mdtraj as md
 import numpy as np
 from six import string_types
@@ -83,10 +84,12 @@ class Pair(object):
             Coarse-grained target RDF.
         alpha : float
             The alpha value used to scale the weight of this state.
-        pair_indices : array-like, shape=(n_pairs, 2), dtype=int, optional, default=None
-            Each row gives the indices of two atoms representing a pair.
+        pair_indices : array-like (n_pairs, 2) dtype=int
+            Each row gives the indices of two atoms representing a pair
+            (default None)
         alpha_form : str
             For alpha as a function of r, gives form of alpha function
+            (default 'linear')
         """
         self.states[state] = {
             "target_rdf": target_rdf,
@@ -105,22 +108,21 @@ class Pair(object):
         state : State
             A state object, contains a topology from which to select pairs
         exclude_up_to : int
-            Exclude pairs separated by exclude_up_to or fewer bonds, default=0
+            Exclude pairs separated by exclude_up_to or fewer bonds
+            (default 0)
         """
         if state.top_path:
             top = md.load(state.top_path).topology
         else:
             top = md.load(state.traj_path).topology
-        pairs = top.select_pairs(
-            "name '{0}'".format(self.type1), "name '{0}'".format(self.type2)
-        )
+        pairs = top.select_pairs(f"name '{self.type1}'", f"name '{self.type2}'")
         if exclude_up_to is not None:
             to_delete = find_1_n_exclusions(top, pairs, exclude_up_to)
             pairs = np.delete(pairs, to_delete, axis=0)
         self.states[state]["pair_indices"] = pairs
 
     def compute_current_rdf(
-        self, state, r_range, n_bins, smooth=True, max_frames=1e3
+        self, state, r_range, n_bins, smooth=True, max_frames=50, verbose=False
     ):
         """ """
         pairs = self.states[state]["pair_indices"]
@@ -157,6 +159,12 @@ class Pair(object):
             )
             for row in current_rdf:
                 row[1] = np.maximum(row[1], 0)
+            if verbose:  # pragma: no cover
+                plt.title(f"RDF smoothing for {state.name}")
+                plt.plot(r, g_r, label="unsmoothed")
+                plt.plot(r, current_rdf[:,1], label="smoothed")
+                plt.legend()
+                plt.show()
 
         # Compute fitness function comparing the two RDFs.
         f_fit = calc_similarity(
@@ -185,7 +193,7 @@ class Pair(object):
         rdf[:, 0] -= dr / 2
         np.savetxt(filename, rdf)
 
-    def update_potential(self, pot_r, r_switch=None):
+    def update_potential(self, pot_r, r_switch=None, verbose=False):
         """Update the potential using all states. """
         self.previous_potential = np.copy(self.potential)
         for state in self.states:
@@ -204,19 +212,42 @@ class Pair(object):
                 current_rdf = current_rdf[:-unused_rdf_vals]
                 target_rdf = target_rdf[:-unused_rdf_vals]
 
+            if verbose:  # pragma: no cover
+                plt.plot(current_rdf, label="current rdf")
+                plt.plot(target_rdf, label="target rdf")
+                plt.legend()
+                plt.show()
+
             # The actual IBI step.
             self.potential += (
                 kT * alpha * np.log(current_rdf / target_rdf) / len(self.states)
             )
 
+            if verbose:  # pragma: no cover
+                plt.plot(
+                        pot_r, self.previous_potential,
+                        label="previous potential"
+                        )
+                plt.plot(pot_r, self.potential, label="potential")
+                plt.legend()
+                plt.show()
+
         # Apply corrections to ensure continuous, well-behaved potentials.
+        if verbose:  # pragma: no cover
+            plt.plot(pot_r, self.potential, label="uncorrected potential")
         self.potential = tail_correction(pot_r, self.potential, r_switch)
+        if verbose:  # pragma: no cover
+            plt.plot(pot_r, self.potential, label="tail correction")
         self.potential = head_correction(
             pot_r,
             self.potential,
             self.previous_potential,
-            self.head_correction_form,
+            self.head_correction_form
         )
+        if verbose:  # pragma: no cover
+            plt.plot(pot_r, self.potential, label="head correction")
+            plt.legend()
+            plt.show()
 
     def save_table_potential(self, r, dr, iteration=0, engine="hoomd"):
         """Save the table potential to a file usable by the MD engine. """

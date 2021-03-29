@@ -12,3 +12,6 @@ dependencies:
 - python=3.7
 - pytest=6.2.2
 - pytest-cov=2.11.1
+- jupyterlab
+- ipython=7.10.0
+- nodejs >=10

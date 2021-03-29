@@ -33,7 +33,11 @@ class BaseTest:
         alpha = 0.5
         state_dir = get_fn(f"state{state_number}/")
         state = State(
-            k_B * T, state_dir=state_dir, top_file="sys.hoomdxml", name="state0"
+            k_B * T,
+            state_dir=state_dir,
+            traj_file=traj_filename,
+            top_file="sys.hoomdxml",
+            name="state0"
         )
         pair.add_state(state, rdf, alpha, pair_list)
         return pair, state, rdf

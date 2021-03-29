@@ -32,6 +32,7 @@ import numpy as np
 from networkx import NetworkXNoPath
 
 
+
 def find_1_n_exclusions(top, pairs, n):
     """Find exclusions in a trajectory based on an exculsion principle
 

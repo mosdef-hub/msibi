@@ -31,7 +31,6 @@
 
 from __future__ import division
 
-import logging
 import os
 
 import numpy as np
@@ -58,6 +57,8 @@ class MSIBI(object):
         Use a smoothing function to reduce the noise in the RDF data.
     max_frames : int
         The maximum number of frames to include at once in RDF calculation
+    verbose : bool
+        Whether to provide more information for debugging (default False)
 
     Attributes
     ----------
@@ -90,8 +91,10 @@ class MSIBI(object):
         r_switch=None,
         smooth_rdfs=False,
         max_frames=1e3,
+        verbose=False
     ):
 
+        self.verbose = verbose
         self.states = []
         self.pairs = []
         self.n_iterations = 10  # Can be overridden in optimize().
@@ -127,12 +130,13 @@ class MSIBI(object):
             List of states used to optimize pair potentials.
         pairs : array_like, len=n_pairs, dtype=msibi.Pair
             List of pairs being optimized.
-        n_iterations : int, optional
-            Number of iterations.
-        engine : str, optional
-            Engine that runs the simulations.
-        start_iteration : int, optional
+        n_iterations : int
+            Number of iterations. (default 10)
+        engine : str
+            Engine that runs the simulations. (default "hoomd")
+        start_iteration : int
             Start optimization at start_iteration, useful for restarting.
+            (default 0)
 
         References
         ----------
@@ -159,15 +163,16 @@ class MSIBI(object):
         else:  # don't need a hoomd version if not using hoomd
             HOOMD_VERSION = None
 
+        if self.verbose:
+            print(f"Using HOOMD version {HOOMD_VERSION}.")
+
         for pair in pairs:
             for state, data in pair.states.items():
                 if len(data["target_rdf"]) != self.n_rdf_points:
                     raise ValueError(
-                        "Target RDF in {} of pair {} is not the "
-                        "same length as n_rdf_points.".format(
-                            state.name, pair.name
-                        )
-                    )
+                            f"Target RDF in {state.name} of pair {pair.name}"
+                            "is not the same length as n_rdf_points."
+                            )
 
         for state in states:
             state.HOOMD_VERSION = HOOMD_VERSION
@@ -178,7 +183,7 @@ class MSIBI(object):
         self.initialize(engine=engine)
 
         for n in range(start_iteration + self.n_iterations):
-            logging.info("-------- Iteration {n} --------".format(**locals()))
+            print("-------- Iteration {n} --------".format(**locals()))
             run_query_simulations(self.states, engine=engine)
             self._update_potentials(n, engine)
 
@@ -186,13 +191,15 @@ class MSIBI(object):
         """Update the potentials for each pair. """
         for pair in self.pairs:
             self._recompute_rdfs(pair, iteration)
-            pair.update_potential(self.pot_r, self.r_switch)
+            pair.update_potential(self.pot_r, self.r_switch, self.verbose)
             pair.save_table_potential(
                 self.pot_r, self.dr, iteration=iteration, engine=engine
             )
 
     def _recompute_rdfs(self, pair, iteration):
-        """Recompute the current RDFs for every state used for a given pair. """
+        """
+        Recompute the current RDFs for every state used for a given pair.
+        """
         for state in pair.states:
             pair.compute_current_rdf(
                 state,
@@ -200,16 +207,17 @@ class MSIBI(object):
                 n_bins=self.rdf_n_bins,
                 smooth=self.smooth_rdfs,
                 max_frames=self.max_frames,
+                verbose=self.verbose
             )
             pair.save_current_rdf(state, iteration=iteration, dr=self.dr)
-            logging.info(
-                "pair {0}, state {1}, iteration {2}: {3:f}".format(
-                    pair.name,
-                    state.name,
-                    iteration,
-                    pair.states[state]["f_fit"][iteration],
-                )
-            )
+            print(
+                    "pair {0}, state {1}, iteration {2}: {3:f}".format(
+                        pair.name,
+                        state.name,
+                        iteration,
+                        pair.states[state]["f_fit"][iteration]
+                        )
+                    )
 
     def initialize(self, engine="hoomd", potentials_dir=None):
         """
