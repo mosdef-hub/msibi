@@ -159,7 +159,7 @@ class Pair(object):
             )
             for row in current_rdf:
                 row[1] = np.maximum(row[1], 0)
-            if verbose:
+            if verbose:  # pragma: no cover
                 plt.title(f"RDF smoothing for {state.name}")
                 plt.plot(r, g_r, label="unsmoothed")
                 plt.plot(r, current_rdf[:,1], label="smoothed")
@@ -212,7 +212,7 @@ class Pair(object):
                 current_rdf = current_rdf[:-unused_rdf_vals]
                 target_rdf = target_rdf[:-unused_rdf_vals]
 
-            if verbose:
+            if verbose:  # pragma: no cover
                 plt.plot(current_rdf, label="current rdf")
                 plt.plot(target_rdf, label="target rdf")
                 plt.legend()
@@ -223,7 +223,7 @@ class Pair(object):
                 kT * alpha * np.log(current_rdf / target_rdf) / len(self.states)
             )
 
-            if verbose:
+            if verbose:  # pragma: no cover
                 plt.plot(
                         pot_r, self.previous_potential,
                         label="previous potential"
@@ -233,10 +233,10 @@ class Pair(object):
                 plt.show()
 
         # Apply corrections to ensure continuous, well-behaved potentials.
-        if verbose:
+        if verbose:  # pragma: no cover
             plt.plot(pot_r, self.potential, label="uncorrected potential")
         self.potential = tail_correction(pot_r, self.potential, r_switch)
-        if verbose:
+        if verbose:  # pragma: no cover
             plt.plot(pot_r, self.potential, label="tail correction")
         self.potential = head_correction(
             pot_r,
@@ -244,7 +244,7 @@ class Pair(object):
             self.previous_potential,
             self.head_correction_form
         )
-        if verbose:
+        if verbose:  # pragma: no cover
             plt.plot(pot_r, self.potential, label="head correction")
             plt.legend()
             plt.show()
