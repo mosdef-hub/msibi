@@ -18,6 +18,10 @@ pip install .
 ```
 
 
+### Tutorials
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/cmelab/msibi/master?urlpath=tree/msibi/tutorials/lj/LJ_Tutorial.ipynb) - Tutorial showing how to recreate the Lennard Jones potential using MS-IBI
+
+
 ### Citation [![Citing MSIBI](https://img.shields.io/badge/DOI-10.1063%2F1.4880555-blue.svg)](http://dx.doi.org/10.1063/1.4880555)
 Details of the underlying method and its validation can be found [here](http://dx.doi.org/10.1063/1.4880555).
 
