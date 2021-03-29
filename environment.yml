@@ -15,3 +15,5 @@ dependencies:
 - jupyterlab
 - ipython=7.10.0
 - nodejs >=10
+- pip:
+    - git+https://github.com/cmelab/msibi@v0.2.0
