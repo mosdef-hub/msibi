@@ -17,8 +17,8 @@ dependencies:
 - pytest-cov=2.11.1
 - jupyterlab
 - ipython=7.10.0
-- nodejs >=10
+- nodejs>=10
 - pip:
     - "--editable=git+https://github.com/rsdefever/GAFF-foyer.git#egg=gafffoyer"
     - git+https://github.com/rsdefever/antefoyer.git
-    - git+https://github.com/cmelab/msibi@v0.2.0
+    - git+https://github.com/cmelab/msibi@v0.2.1

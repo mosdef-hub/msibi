@@ -16,4 +16,4 @@ dependencies:
 - pip:
     - "--editable=git+https://github.com/rsdefever/GAFF-foyer.git#egg=gafffoyer"
     - git+https://github.com/rsdefever/antefoyer.git
-    - git+https://github.com/cmelab/msibi@v0.2.0
+    - git+https://github.com/cmelab/msibi@v0.2.1
