@@ -2,8 +2,10 @@ name: msibi
 channels:
 - conda-forge
 dependencies:
+- foyer=0.8.0
 - freud=2.4.1
 - gsd=2.4.1
+- mbuild=0.10.13
 - mdanalysis=1.0.1
 - mdtraj=1.9.5
 - numpy=1.20.1
@@ -11,3 +13,7 @@ dependencies:
 - python=3.7
 - pytest=6.2.2
 - pytest-cov=2.11.1
+- pip:
+    - "--editable=git+https://github.com/rsdefever/GAFF-foyer.git#egg=gafffoyer"
+    - git+https://github.com/rsdefever/antefoyer.git
+    - git+https://github.com/cmelab/msibi@v0.2.0
