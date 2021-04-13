@@ -4,7 +4,7 @@ iterative Boltzmann inversion.
 """
 
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 import sys
 
@@ -52,7 +52,7 @@ setup(
         "christoph.klein@vanderbilt.edu, timothy.c.moore@vanderbilt.edu"
         ),
     license="MIT",
-    packages=["msibi"],
+    packages=find_packages(),
     install_requires=requirements,
     zip_safe=False,
     test_suite="tests",
