@@ -3,8 +3,8 @@ msibi/tutorials/lj/rdfs/pair*
 msibi/tutorials/lj/state*/*.txt
 msibi/tutorials/lj/potentials/
 msibi/tutorials/lj/state*/run.py
-
 # Default files
+*.ipynb
 *.pyc
 *.dcd
 .DS_Store
