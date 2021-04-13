@@ -10,18 +10,18 @@ Install from source
 -------------------
 ::
 
-    $ git clone https://github.com/ctk3b/msibi
+    $ git clone https://github.com/cmelab/msibi
     $ cd msibi
-    $ python setup.py install
+    $ conda env create -f environment.yml
+    $ conda activate msibi
+    $ pip install -e .
 
 Dependencies
 ------------
-To use mbuild, the following libraries and software will need to be installed.
+To use msibi, the following libraries and software will need to be installed.
 
     Linux, Mac OS X or Windows operating system
         We develop mainly on 64-bit OS X Yosemite and Windows 7 machines.
-        TravisCI is currently only set up to perform testing on Ubuntu 12.04
-        LTS Server Edition 64 bit
 
     `Python <http://python.org>`_ = 2.7 or 3.3+
         TravisCI currently tests on 2.7, 3.3 and 3.4.
