@@ -44,7 +44,7 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'index2'
+master_doc = 'index'
 
 # General information about the project.
 project = u'msibi'
@@ -200,7 +200,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index2', 'msibi.tex', u'msibi Documentation',
+  ('index', 'msibi.tex', u'msibi Documentation',
    u'Christoph Klein, Timothy C. Moore', 'manual'),
 ]
 
@@ -230,7 +230,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index2', 'msibi', u'msibi Documentation',
+    ('index', 'msibi', u'msibi Documentation',
      [u'Christoph Klein, Timothy C. Moore'], 1)
 ]
 
@@ -244,7 +244,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index2', 'msibi', u'msibi Documentation',
+  ('index', 'msibi', u'msibi Documentation',
    u'Christoph Klein, Timothy C. Moore', 'msibi', 'One line description of project.',
    'Miscellaneous'),
 ]
