@@ -120,15 +120,9 @@ class MSIBI(object):
         if engine == "hoomd":
             try:
                 import hoomd
-
                 HOOMD_VERSION = 2
             except ImportError:
-                try:
-                    import hoomd_script
-
-                    HOOMD_VERSION = 1
-                except ImportError:
-                    raise ImportError("Cannot import hoomd")
+                raise ImportError("Cannot import hoomd")
         else:  # don't need a hoomd version if not using hoomd
             HOOMD_VERSION = None
 

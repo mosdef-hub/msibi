@@ -4,16 +4,6 @@ import gsd
 import gsd.hoomd
 import mdtraj as md
 
-HOOMD1_HEADER = """
-from hoomd_script import *
-
-system = init.read_xml(filename="{0}", wrap_coordinates=True)
-
-T_final = {1:.1f}
-
-pot_width = {2:d}
-table = pair.table(width=pot_width)
-"""
 
 HOOMD2_HEADER = """
 import hoomd
@@ -113,10 +103,7 @@ class State(object):
 
         header = list()
 
-        if self.HOOMD_VERSION == 1:
-            HOOMD_HEADER = HOOMD1_HEADER
-        elif self.HOOMD_VERSION == 2:
-            HOOMD_HEADER = HOOMD2_HEADER
+        HOOMD_HEADER = HOOMD2_HEADER
 
         if self._is_gsd:
             header.append(

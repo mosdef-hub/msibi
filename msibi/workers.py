@@ -47,9 +47,7 @@ def _hoomd_worker(args):
     log_file = os.path.join(state.state_dir, "log.txt")
     err_file = os.path.join(state.state_dir, "err.txt")
 
-    if state.HOOMD_VERSION == 1:
-        executable = "hoomd"
-    elif state.HOOMD_VERSION == 2:
+    if state.HOOMD_VERSION == 2:
         executable = "python"
     with open(log_file, "w") as log, open(err_file, "w") as err:
         if gpus:
