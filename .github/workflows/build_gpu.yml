@@ -3,6 +3,7 @@ name: build_gpu
 on:
   push:
     branches: [ master ]
+      
     # Run when container or environment is changed
     paths:
         - 'containers/dockerfile_gpu'
@@ -12,6 +13,7 @@ on:
 
 jobs:
   build_gpu:
+    if: github.repository_owner == 'cmelab'
     runs-on: ubuntu-latest
 
     steps:
