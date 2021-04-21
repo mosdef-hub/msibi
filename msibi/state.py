@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import cmeutils as cme
 import gsd
@@ -58,39 +59,53 @@ class State(object):
 
     def __init__(
         self,
-        kT,
         name,
+        kT,
         traj_file,
         target_rdf=None,
-        state_dir="",
         top_file=None,
         backup_trajectory=False,
     ):
         
         self.name = name
         self.kT = kT
-        self.state_dir = _setup_dir(name, kT) 
+        self.dir = _setup_dir(name, kT) 
         self.traj_file = traj_file
         self.traj = None
-        self.target_rdf = None
         self.backup_trajectory = backup_trajectory
+
+        # Copy to self.dir, rename to target_rdf.txt
+        if os.path.isfile(target_rdf):
+            shutil.copyfile(target_rdf,
+                    os.path.join(self.dir, "target_rdf.txt")
+                    )
+        # Save in self.dir, name target_rdf.txt
+        elif isinstancae(target_rdf, np.array):
+            np.savetxt(os.path.join(self.dir, "target_rdf.txt"))
+
+
+
     
     def target_rdf_calc(self,
                         A_name,
                         B_name,
-                        exclude_bonded=False):
+                        exclude_bonded=False
+    ):
         """
         Calculate and store the RDF data from a trajectory file of a particular
         State. 
         """        
         rdf, norm = cme.structure.gsd_rdf(self.traj_file,
-                                          A_name,
-                                          B_name,
-                                          # TODO: These 3 come from MSIBI()
-                                          start = -5, 
-                                          r_max = 4, 
-                                          bins = 100,
-                                          )
+                                A_name,
+                                B_name,
+                                # TODO: These 3 come from MSIBI()
+                                start=-5, 
+                                r_max=4, 
+                                bins=100,
+                                exclude_bonded=exclude_bonded
+                                )
+        data = np.stack((rdf.bin_centers, rdf.rdf*norm)).T
+        np.savetxt(os.path.join(self.dir, "target_rdf.txt"), data)
 
 
     def reload_query_trajectory(self):

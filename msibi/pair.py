@@ -43,7 +43,7 @@ class Pair(object):
         self.head_correction_form = head_correction_form
 
     def add_state(
-        self, state, target_rdf, alpha, pair_indices=None, alpha_form="linear"
+        self, state, alpha, pair_indices=None, alpha_form="linear"
     ):
         """Add a state to be used in optimizing this pair.
 
@@ -51,8 +51,6 @@ class Pair(object):
         ----------
         state : State
             A state object.
-        target_rdf : np.ndarray, shape=(n_bins, 2), dtype=float
-            Coarse-grained target RDF.
         alpha : float
             The alpha value used to scale the weight of this state.
         pair_indices : array-like (n_pairs, 2) dtype=int
@@ -62,6 +60,7 @@ class Pair(object):
             For alpha as a function of r, gives form of alpha function
             (default 'linear')
         """
+        target_rdf = np.loadtxt(state.target_rdf)
         self.states[state] = {
             "target_rdf": target_rdf,
             "current_rdf": None,
@@ -173,8 +172,8 @@ class Pair(object):
             form = self.states[state]["alpha_form"]
             alpha = alpha_array(alpha0, pot_r, form=form)
 
-            current_rdf = self.states[state]["current_rdf"][:, 1]
-            target_rdf = self.states[state]["target_rdf"][:, 1]
+            current_rdf = self.states[state]["current_rdf"][:, 1] #nparray
+            target_rdf = self.states[state]["target_rdf"][:, 1] #nparray
 
             # For cases where rdf_cutoff != pot_cutoff, only update the
             # potential using RDF values < pot_cutoff.
