@@ -1,19 +1,10 @@
 import os
 
+import cmeutils as cme
 import gsd
 import gsd.hoomd
 import mdtraj as md
-
-HOOMD1_HEADER = """
-from hoomd_script import *
-
-system = init.read_xml(filename="{0}", wrap_coordinates=True)
-
-T_final = {1:.1f}
-
-pot_width = {2:d}
-table = pair.table(width=pot_width)
-"""
+import numpy as np
 
 HOOMD2_HEADER = """
 import hoomd
@@ -46,6 +37,12 @@ class State(object):
     ----------
     kT : float
         Unitless heat energy (product of Boltzmann's constant and temperature).
+    target_rdf : numpy array
+        Target RDF obtained from atomistic/ua system
+    name : str
+        State name. If no name is given, state will be named 'state-{kT:.3f}'
+        (default None)
+
     state_dir : path
         Path to state directory (default '')
     traj_file : path or md.Trajectory
@@ -53,9 +50,6 @@ class State(object):
         (default 'query.dcd')
     top_file : path
         hoomdxml containing topology information (needed for dcd)
-        (default None)
-    name : str
-        State name. If no name is given, state will be named 'state-{kT:.3f}'
         (default None)
     backup_trajectory : bool
         True if each query trajectory is backed up (default False)
@@ -65,35 +59,39 @@ class State(object):
     def __init__(
         self,
         kT,
+        name,
+        traj_file,
+        target_rdf=None,
         state_dir="",
-        traj_file=None,
         top_file=None,
-        name=None,
         backup_trajectory=False,
     ):
-        self.kT = kT
-        self.state_dir = state_dir
-
-        self.traj_path = os.path.join(state_dir, traj_file)
-        self.traj_file = traj_file
-
-        try:
-            with gsd.hoomd.open(self.traj_path) as t:
-                self._is_gsd = isinstance(t, gsd.hoomd.HOOMDTrajectory)
-        except RuntimeError:
-            self._is_gsd = False
-
-        if top_file:
-            self.top_path = os.path.join(state_dir, top_file)
-        else:
-            self.top_path = None
-
-        self.traj = None
-        if not name:
-            name = "state-{0:.3f}".format(self.kT)
+        
         self.name = name
-
+        self.kT = kT
+        self.state_dir = _setup_dir(name, kT) 
+        self.traj_file = traj_file
+        self.traj = None
+        self.target_rdf = None
         self.backup_trajectory = backup_trajectory
+    
+    def target_rdf_calc(self,
+                        A_name,
+                        B_name,
+                        exclude_bonded=False):
+        """
+        Calculate and store the RDF data from a trajectory file of a particular
+        State. 
+        """        
+        rdf, norm = cme.structure.gsd_rdf(self.traj_file,
+                                          A_name,
+                                          B_name,
+                                          # TODO: These 3 come from MSIBI()
+                                          start = -5, 
+                                          r_max = 4, 
+                                          bins = 100,
+                                          )
+
 
     def reload_query_trajectory(self):
         """Reload the query trajectory. """
@@ -136,3 +134,29 @@ class State(object):
         with open(runscript_file, "w") as fh:
             fh.write(header)
             fh.write(body)
+
+    def _setup_dir(name, kT):
+        """
+        Handle the creation of a state specific directory each time a new
+        State() object is created.
+        """
+        if not os.path.isdir("states"):
+            os.mkdir("states")
+
+        dir_name = f"{name}_{kT}"
+        try:
+            assert not os.path.isdir(os.path.join("states", dir_name))
+            os.mkdir(os.path.join("states", dir_name)
+        except:
+            raise AssertionError(f"A State object has already "+
+                            "been created with a name of {name} "+
+                            "and a kT of {kT}")
+        return os.path.abspath(os.path.join("states", dir_name)
+
+
+
+
+
+
+
+
