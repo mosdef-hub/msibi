@@ -4,11 +4,11 @@ on:
   push:
     branches: [ master ]
     paths:
-      - 'msibi/*'
+      - 'msibi/**'
   pull_request:
     branches: [ master ]
     paths:
-      - 'msibi/*'
+      - 'msibi/**'
   # Allows workflow to be manually triggered
   workflow_dispatch:
 
