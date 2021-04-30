@@ -43,7 +43,7 @@ class Pair(object):
         self.head_correction_form = head_correction_form
 
     def add_state(
-        self, state, alpha, pair_indices=None, alpha_form="linear"
+        self, state, pair_indices=None, alpha_form="linear"
     ):
         """Add a state to be used in optimizing this pair.
 
@@ -51,8 +51,6 @@ class Pair(object):
         ----------
         state : State
             A state object.
-        alpha : float
-            The alpha value used to scale the weight of this state.
         pair_indices : array-like (n_pairs, 2) dtype=int
             Each row gives the indices of two atoms representing a pair
             (default None)
@@ -64,7 +62,7 @@ class Pair(object):
         self.states[state] = {
             "target_rdf": target_rdf,
             "current_rdf": None,
-            "alpha": alpha,
+            "alpha": state.alpha,
             "alpha_form": alpha_form,
             "pair_indices": pair_indices,
             "f_fit": [],
@@ -154,14 +152,12 @@ class Pair(object):
         dr : float
             The RDF bin size
         """
-        if not os.path.isdir("./rdfs"):
-            os.makedirs("./rdfs")
-        filename = "./rdfs/pair_{0}-state_{1}-step{2}.txt".format(
-            self.name, state.name, iteration
-        )
         rdf = self.states[state]["current_rdf"]
         rdf[:, 0] -= dr / 2
-        np.savetxt(filename, rdf)
+        np.savetxt(os.path.join(
+            state.dir,
+            f"pair_{self.name}-state_{state.name}-steo{iteration}.txt"
+            )
 
     def update_potential(self, pot_r, r_switch=None, verbose=False):
         """Update the potential using all states. """
