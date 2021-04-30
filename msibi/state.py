@@ -2,6 +2,7 @@ import os
 import shutil
 
 import cmeutils as cme
+from cmeutils.structure import gsd_rdf
 import gsd
 import gsd.hoomd
 import mdtraj as md
@@ -69,41 +70,46 @@ class State(object):
         
         self.name = name
         self.kT = kT
-        self.dir = _setup_dir(name, kT) 
+        self.dir = self._setup_dir(name, kT) 
         self.traj_file = traj_file
         self.traj = None
         self.backup_trajectory = backup_trajectory
+        
+        if target_rdf is not None:
+            # Target RDF passed into State class in the form of a txt file
+            # Copy to self.dir, rename to target_rdf.txt
 
-        # Copy to self.dir, rename to target_rdf.txt
-        if os.path.isfile(target_rdf):
-            shutil.copyfile(target_rdf,
-                    os.path.join(self.dir, "target_rdf.txt")
-                    )
-        # Save in self.dir, name target_rdf.txt
-        elif isinstancae(target_rdf, np.array):
-            np.savetxt(os.path.join(self.dir, "target_rdf.txt"))
-
-
+            if os.path.isfile(target_rdf):
+                shutil.copyfile(target_rdf,
+                        os.path.join(self.dir, "target_rdf.txt")
+                        )
+        
+            # Target RDF passed in State class in the form of an array of data
+            # Save in self.dir, name target_rdf.txt
+            elif isinstancae(target_rdf, np.array):
+                np.savetxt(os.path.join(self.dir, "target_rdf.txt"))
 
     
-    def target_rdf_calc(self,
-                        A_name,
-                        B_name,
-                        exclude_bonded=False
-    ):
+    def target_rdf_calc(
+            self,
+            A_name,
+            B_name,
+            exclude_bonded=False
+        ):
         """
         Calculate and store the RDF data from a trajectory file of a particular
         State. 
         """        
-        rdf, norm = cme.structure.gsd_rdf(self.traj_file,
-                                A_name,
-                                B_name,
-                                # TODO: These 3 come from MSIBI()
-                                start=-5, 
-                                r_max=4, 
-                                bins=100,
-                                exclude_bonded=exclude_bonded
-                                )
+        rdf, norm = gsd_rdf(
+                self.traj_file,
+                A_name,
+                B_name,
+                # TODO: These 3 come from MSIBI()
+                start=-5, 
+                r_max=4, 
+                bins=100,
+                exclude_bonded=exclude_bonded
+        )
         data = np.stack((rdf.bin_centers, rdf.rdf*norm)).T
         np.savetxt(os.path.join(self.dir, "target_rdf.txt"), data)
 
@@ -150,7 +156,7 @@ class State(object):
             fh.write(header)
             fh.write(body)
 
-    def _setup_dir(name, kT):
+    def _setup_dir(self, name, kT):
         """
         Handle the creation of a state specific directory each time a new
         State() object is created.
@@ -161,12 +167,12 @@ class State(object):
         dir_name = f"{name}_{kT}"
         try:
             assert not os.path.isdir(os.path.join("states", dir_name))
-            os.mkdir(os.path.join("states", dir_name)
+            os.mkdir(os.path.join("states", dir_name))
         except:
-            raise AssertionError(f"A State object has already "+
-                            "been created with a name of {name} "+
-                            "and a kT of {kT}")
-        return os.path.abspath(os.path.join("states", dir_name)
+            raise AssertionError("A State object has already "+
+                            f"been created with a name of {name} "+
+                            f"and a kT of {kT}")
+        return os.path.abspath(os.path.join("states", dir_name))
 
 
 
