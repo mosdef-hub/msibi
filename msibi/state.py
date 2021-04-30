@@ -1,5 +1,6 @@
 import os
 import shutil
+import warnings
 
 import cmeutils as cme
 from cmeutils.structure import gsd_rdf
@@ -63,6 +64,7 @@ class State(object):
         name,
         kT,
         traj_file,
+        alpha=1.0,
         target_rdf=None,
         top_file=None,
         backup_trajectory=False,
@@ -72,9 +74,11 @@ class State(object):
         self.kT = kT
         self.dir = self._setup_dir(name, kT) 
         self.traj_file = traj_file
+        if alpha < 0 or alpha > 1:
+            raise ValueError("alpha should be between 0.0 and 1.0")
+        self.alpha = float(alpha)
         self.traj = None
         self.backup_trajectory = backup_trajectory
-        self.target_rdf = os.path.join(self.dir, "target_rdf.txt")
         
         if target_rdf is not None:
             # Target RDF passed into State class in the form of a txt file
@@ -90,7 +94,7 @@ class State(object):
                 np.savetxt(os.path.join(self.dir, "target_rdf.txt"), target_rdf)
 
     
-    def target_rdf_calc(
+    def calculate_target_rdf(
             self,
             A_name,
             B_name,
@@ -113,6 +117,17 @@ class State(object):
         data = np.stack((rdf.bin_centers, rdf.rdf*norm)).T
         np.savetxt(os.path.join(self.dir, "target_rdf.txt"), data)
 
+    @property
+    def target_rdf(self):
+        if os.path.isfile(
+                os.path.join(self.dir, "target_rdf.txt")
+                ):
+            return os.path.join(self.dir, "target_rdf.txt")
+        else:
+            warnings.warn(
+                    f"The target RDF for state {self.name} does not exist"
+                    )
+            return None
 
     def reload_query_trajectory(self):
         """Reload the query trajectory. """
