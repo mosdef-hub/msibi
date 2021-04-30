@@ -157,7 +157,8 @@ class Pair(object):
         np.savetxt(os.path.join(
             state.dir,
             f"pair_{self.name}-state_{state.name}-steo{iteration}.txt"
-            )
+            ),
+            rdf)
 
     def update_potential(self, pot_r, r_switch=None, verbose=False):
         """Update the potential using all states. """
