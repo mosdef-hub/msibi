@@ -74,20 +74,20 @@ class State(object):
         self.traj_file = traj_file
         self.traj = None
         self.backup_trajectory = backup_trajectory
+        self.target_rdf = os.path.join(self.dir, "target_rdf.txt")
         
         if target_rdf is not None:
             # Target RDF passed into State class in the form of a txt file
             # Copy to self.dir, rename to target_rdf.txt
-
-            if os.path.isfile(target_rdf):
+            if isinstance(target_rdf, str):
                 shutil.copyfile(target_rdf,
                         os.path.join(self.dir, "target_rdf.txt")
                         )
         
             # Target RDF passed in State class in the form of an array of data
             # Save in self.dir, name target_rdf.txt
-            elif isinstancae(target_rdf, np.array):
-                np.savetxt(os.path.join(self.dir, "target_rdf.txt"))
+            elif isinstance(target_rdf, np.ndarray):
+                np.savetxt(os.path.join(self.dir, "target_rdf.txt"), target_rdf)
 
     
     def target_rdf_calc(
