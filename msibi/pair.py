@@ -17,6 +17,10 @@ from msibi.utils.smoothing import savitzky_golay
 class Pair(object):
     """A pair interaction to be optimized.
 
+    Parameters
+    ----------
+    TODO
+    
     Attributes
     ----------
     name : str

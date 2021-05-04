@@ -12,6 +12,7 @@ on:
 
 jobs:
   build_cpu:
+    if: github.repository_owner == 'cmelab'
     runs-on: ubuntu-latest
 
     steps:
