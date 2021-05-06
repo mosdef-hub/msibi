@@ -80,55 +80,6 @@ class State(object):
         self.traj = None
         self.backup_trajectory = backup_trajectory
         
-        if target_rdf is not None:
-            # Target RDF passed into State class in the form of a txt file
-            # Copy to self.dir, rename to target_rdf.txt
-            if isinstance(target_rdf, str):
-                shutil.copyfile(target_rdf,
-                        os.path.join(self.dir, "target_rdf.txt")
-                        )
-        
-            # Target RDF passed in State class in the form of an array of data
-            # Save in self.dir, name target_rdf.txt
-            elif isinstance(target_rdf, np.ndarray):
-                np.savetxt(os.path.join(self.dir, "target_rdf.txt"), target_rdf)
-
-    
-    def calculate_target_rdf(
-            self,
-            A_name,
-            B_name,
-            exclude_bonded=False
-        ):
-        """
-        Calculate and store the RDF data from a trajectory file of a particular
-        State. 
-        """        
-        rdf, norm = gsd_rdf(
-                self.traj_file,
-                A_name,
-                B_name,
-                # TODO: These 3 come from MSIBI()
-                start=-5, 
-                r_max=4, 
-                bins=100,
-                exclude_bonded=exclude_bonded
-        )
-        data = np.stack((rdf.bin_centers, rdf.rdf*norm)).T
-        np.savetxt(os.path.join(self.dir, "target_rdf.txt"), data)
-
-    @property
-    def target_rdf(self):
-        if os.path.isfile(
-                os.path.join(self.dir, "target_rdf.txt")
-                ):
-            return os.path.join(self.dir, "target_rdf.txt")
-        else:
-            warnings.warn(
-                    f"The target RDF for state {self.name} does not exist"
-                    )
-            return None
-
     def reload_query_trajectory(self):
         """Reload the query trajectory. """
         if self.top_path:

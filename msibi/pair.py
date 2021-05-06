@@ -9,6 +9,7 @@ from six import string_types
 
 from msibi.potentials import alpha_array, head_correction, tail_correction
 from msibi.utils.error_calculation import calc_similarity
+from msibi.utils.calculate_rdf import state_pair_target_rdf
 from msibi.utils.exceptions import UnsupportedEngine
 from msibi.utils.find_exclusions import find_1_n_exclusions
 from msibi.utils.smoothing import savitzky_golay
@@ -35,7 +36,7 @@ class Pair(object):
     def __init__(self, type1, type2, potential, head_correction_form="linear"):
         self.type1 = str(type1)
         self.type2 = str(type2)
-        self.name = "{0}-{1}".format(self.type1, self.type2)
+        self.name = f"{self.type1}-{self.type2}"
         self.potential_file = ""
         self.states = dict()
         if isinstance(potential, string_types):
@@ -47,7 +48,12 @@ class Pair(object):
         self.head_correction_form = head_correction_form
 
     def add_state(
-        self, state, pair_indices=None, alpha_form="linear"
+        self,
+        state,
+        target_rdf=None,
+        calcualte_target_rdf=False,
+        pair_indices=None,
+        alpha_form="linear"
     ):
         """Add a state to be used in optimizing this pair.
 
@@ -62,7 +68,27 @@ class Pair(object):
             For alpha as a function of r, gives form of alpha function
             (default 'linear')
         """
-        target_rdf = np.loadtxt(state.target_rdf)
+        if target_rdf and calculate_target_rdf:
+            raise ValueError(
+                    "Setting calcualte_target_rdf = True will overwirte "
+                    "the data passed to target_rdf. calculate_target_rdf "
+                    "should be used when target_rdf is None"
+                    )
+        target_rdf_path = os.path.join(
+                state.dir, f"{self.name}_target_rdf.txt"
+            )
+        if target_rdf:
+            if isinstance(target_rdf, str):
+                shutil.copyfile(target_rdf, target_rdf_path)
+            elif isinstance(target_rdf, np.ndarray):
+                np.savetxt(target_rdf_path, target_rdf)
+
+        elif calcualte_target_rdf:
+            target_rdf = state_pair_target_rdf(state, self)
+            np.savetxt(target_rdf_path, target_rdf)
+        
+        target_rdf = np.loadtxt(target_rdf_path)
+
         self.states[state] = {
             "target_rdf": target_rdf,
             "current_rdf": None,
