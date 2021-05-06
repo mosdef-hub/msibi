@@ -4,7 +4,13 @@ import shutil
 
 import numpy as np
 from pkg_resources import resource_filename
+import gc
+import msibi
 
+def get_msibi_instance():
+    for obj in gc.get_objects():
+            if isinstance(obj, msibi.optimize.MSIBI):
+                return(obj)
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for testing.

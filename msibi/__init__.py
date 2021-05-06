@@ -4,6 +4,7 @@ from msibi.potentials import *
 from msibi.state import State
 from msibi.__version__ import __version__
 from msibi import utils
+from msibi.utils import msibi_context
 
 __all__ = [
     "__version__",

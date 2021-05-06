@@ -88,6 +88,7 @@ class MSIBI(object):
             r_switch = self.pot_r[-5]
         self.r_switch = r_switch
 
+
     def optimize(
         self, states, pairs, n_iterations=10, engine="hoomd", start_iteration=0
     ):

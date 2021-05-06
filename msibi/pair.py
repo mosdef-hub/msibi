@@ -51,7 +51,7 @@ class Pair(object):
         self,
         state,
         target_rdf=None,
-        calcualte_target_rdf=False,
+        calculate_target_rdf=False,
         pair_indices=None,
         alpha_form="linear"
     ):
@@ -83,7 +83,7 @@ class Pair(object):
             elif isinstance(target_rdf, np.ndarray):
                 np.savetxt(target_rdf_path, target_rdf)
 
-        elif calcualte_target_rdf:
+        elif calculate_target_rdf:
             target_rdf = state_pair_target_rdf(state, self)
             np.savetxt(target_rdf_path, target_rdf)
         
@@ -96,6 +96,7 @@ class Pair(object):
             "alpha_form": alpha_form,
             "pair_indices": pair_indices,
             "f_fit": [],
+            "path": state.dir
         }
 
     def select_pairs(self, state, exclude_up_to=0):

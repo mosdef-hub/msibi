@@ -1,6 +1,7 @@
 import os
 import shutil
 import warnings
+from msibi import MSIBI
 
 import cmeutils as cme
 from cmeutils.structure import gsd_rdf
@@ -40,17 +41,14 @@ class State(object):
     ----------
     kT : float
         Unitless heat energy (product of Boltzmann's constant and temperature).
-    target_rdf : numpy array
-        Target RDF obtained from atomistic/ua system
     name : str
         State name. If no name is given, state will be named 'state-{kT:.3f}'
         (default None)
-
-    state_dir : path
-        Path to state directory (default '')
     traj_file : path or md.Trajectory
         The dcd or gsd trajectory associated with this state
         (default 'query.dcd')
+    alpha : float
+        
     top_file : path
         hoomdxml containing topology information (needed for dcd)
         (default None)
@@ -69,7 +67,6 @@ class State(object):
         top_file=None,
         backup_trajectory=False,
     ):
-        
         self.name = name
         self.kT = kT
         self.dir = self._setup_dir(name, kT) 
