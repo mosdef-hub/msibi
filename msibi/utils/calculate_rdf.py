@@ -7,10 +7,10 @@ def state_pair_target_rdf(state, pair, exclude_bonded=False):
             state.traj_file,
             pair.type1,
             pair.type2,
-            start=-5,
-            r_max=4,
-            bins=100,
-            exclude_bonded=exclude_bonded
+            start=-state.opt.max_frames,
+            r_max=state.opt.rdf_cutoff,
+            bins=state.opt.n_rdf_points,
+            exclude_bonded=True
             )
     return np.stack((rdf.bin_centers, rdf.rdf*norm)).T
 

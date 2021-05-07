@@ -62,18 +62,19 @@ class State(object):
         name,
         kT,
         traj_file,
+        optimizer,
         alpha=1.0,
-        target_rdf=None,
         top_file=None,
         backup_trajectory=False,
     ):
         self.name = name
         self.kT = kT
-        self.dir = self._setup_dir(name, kT) 
         self.traj_file = traj_file
+        self.opt = optimizer
         if alpha < 0 or alpha > 1:
             raise ValueError("alpha should be between 0.0 and 1.0")
         self.alpha = float(alpha)
+        self.dir = self._setup_dir(name, kT) 
         self.traj = None
         self.backup_trajectory = backup_trajectory
         

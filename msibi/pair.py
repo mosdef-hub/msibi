@@ -68,26 +68,23 @@ class Pair(object):
             For alpha as a function of r, gives form of alpha function
             (default 'linear')
         """
-        if target_rdf and calculate_target_rdf:
+        if calculate_target_rdf and target_rdf != None:
             raise ValueError(
                     "Setting calcualte_target_rdf = True will overwirte "
                     "the data passed to target_rdf. calculate_target_rdf "
-                    "should be used when target_rdf is None"
+                    "should only be used when target_rdf is None"
                     )
-        target_rdf_path = os.path.join(
-                state.dir, f"{self.name}_target_rdf.txt"
-            )
         if target_rdf:
-            if isinstance(target_rdf, str):
-                shutil.copyfile(target_rdf, target_rdf_path)
+            if os.path.isfile(target_rdf):
+                try:
+                    target_rdf = np.loadtxt(target_rdf)
+                except Exception as e:
+                    print(e)
             elif isinstance(target_rdf, np.ndarray):
-                np.savetxt(target_rdf_path, target_rdf)
+                pass
 
         elif calculate_target_rdf:
             target_rdf = state_pair_target_rdf(state, self)
-            np.savetxt(target_rdf_path, target_rdf)
-        
-        target_rdf = np.loadtxt(target_rdf_path)
 
         self.states[state] = {
             "target_rdf": target_rdf,
