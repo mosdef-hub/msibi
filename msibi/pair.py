@@ -86,6 +86,13 @@ class Pair(object):
         elif calculate_target_rdf:
             target_rdf = state_pair_target_rdf(state, self)
 
+        if len(target_rdf) != state.opt.n_rdf_points:
+            raise ValueError(
+                    "The target RDF passed is not the same length as "
+                    "n_rdf_points set during the initialization of the "
+                    "MSIBI() class."
+                    )
+
         self.states[state] = {
             "target_rdf": target_rdf,
             "current_rdf": None,
