@@ -1,7 +1,7 @@
 import os
 import shutil
 import warnings
-from msibi import MSIBI
+from msibi import MSIBI, utils
 
 import cmeutils as cme
 from cmeutils.structure import gsd_rdf
@@ -75,15 +75,20 @@ class State(object):
             raise ValueError("alpha should be between 0.0 and 1.0")
         self.alpha = float(alpha)
         self.dir = self._setup_dir(name, kT) 
-        self.traj = None
+        self.traj = md.load(self.traj_file )
         self.backup_trajectory = backup_trajectory
+        self._is_gsd = True
+        shutil.copy(
+                os.path.join(utils.__path__[0], "hoomd_run_template.py"),
+                self.dir
+                )
         
     def reload_query_trajectory(self):
         """Reload the query trajectory. """
         if self.top_path:
-            self.traj = md.load(self.traj_path, top=self.top_path)
+            self.traj = md.load(self.traj_file, top=self.top_path)
         else:
-            self.traj = md.load(self.traj_path)
+            self.traj = md.load(self.traj_file)
 
     def save_runscript(
         self,
@@ -112,10 +117,10 @@ class State(object):
         for type1, type2, potential_file in table_potentials:
             header.append(HOOMD_TABLE_ENTRY.format(**locals()))
         header = "".join(header)
-        with open(os.path.join(self.state_dir, runscript)) as fh:
+        with open(os.path.join(self.dir, runscript)) as fh:
             body = "".join(fh.readlines())
 
-        runscript_file = os.path.join(self.state_dir, "run.py")
+        runscript_file = os.path.join(self.dir, "run.py")
         with open(runscript_file, "w") as fh:
             fh.write(header)
             fh.write(body)
@@ -137,11 +142,4 @@ class State(object):
                             f"been created with a name of {name} "+
                             f"and a kT of {kT}")
         return os.path.abspath(os.path.join("states", dir_name))
-
-
-
-
-
-
-
 

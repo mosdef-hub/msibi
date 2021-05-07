@@ -18,14 +18,14 @@ class MSIBI(object):
         The upper cutoff value for the RDF calculation.
     n_points : int
         The number of radius values.
+    max_frames : int
+        The maximum number of frames to include at once in RDF calculation
     pot_cutoff : float, optional, default=rdf_cutoff
         The upper cutoff value for the potential.
     r_switch : float, optional, default=pot_r[-5]
         The radius after which a tail correction is applied.
     smooth_rdfs : bool, optional, default=False
         Use a smoothing function to reduce the noise in the RDF data.
-    max_frames : int
-        The maximum number of frames to include at once in RDF calculation
     verbose : bool
         Whether to provide more information for debugging (default False)
 
@@ -56,10 +56,10 @@ class MSIBI(object):
         self,
         rdf_cutoff,
         n_rdf_points,
+        max_frames=10,
         pot_cutoff=None,
         r_switch=None,
         smooth_rdfs=False,
-        max_frames=1e3,
         verbose=False
     ):
 
@@ -90,7 +90,12 @@ class MSIBI(object):
 
 
     def optimize(
-        self, states, pairs, n_iterations=10, engine="hoomd", start_iteration=0
+        self,
+        states,
+        pairs,
+        n_iterations=10,
+        start_iteration=0,
+        engine="hoomd", 
     ):
         """Optimize the pair potentials
 
@@ -102,11 +107,11 @@ class MSIBI(object):
             List of pairs being optimized.
         n_iterations : int
             Number of iterations. (default 10)
-        engine : str
-            Engine that runs the simulations. (default "hoomd")
         start_iteration : int
             Start optimization at start_iteration, useful for restarting.
             (default 0)
+        engine : str
+            Engine that runs the simulations. (default "hoomd")
 
         References
         ----------
@@ -121,28 +126,15 @@ class MSIBI(object):
         if engine == "hoomd":
             try:
                 import hoomd
-
                 HOOMD_VERSION = 2
             except ImportError:
-                try:
-                    import hoomd_script
+                raise ImportError("Cannot import hoomd")
 
-                    HOOMD_VERSION = 1
-                except ImportError:
-                    raise ImportError("Cannot import hoomd")
         else:  # don't need a hoomd version if not using hoomd
             HOOMD_VERSION = None
 
         if self.verbose:
             print(f"Using HOOMD version {HOOMD_VERSION}.")
-
-        for pair in pairs:
-            for state, data in pair.states.items():
-                if len(data["target_rdf"]) != self.n_rdf_points:
-                    raise ValueError(
-                            f"Target RDF in {state.name} of pair {pair.name}"
-                            "is not the same length as n_rdf_points."
-                            )
 
         for state in states:
             state.HOOMD_VERSION = HOOMD_VERSION
