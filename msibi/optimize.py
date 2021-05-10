@@ -118,12 +118,9 @@ class MSIBI(object):
         """
 
         if engine == "hoomd":
-            try:
-                import hoomd
-                HOOMD_VERSION = 2
-            except ImportError:
-                raise ImportError("Cannot import hoomd")
-        else:  # don't need a hoomd version if not using hoomd
+            import hoomd
+            HOOMD_VERSION = 2
+        else: 
             HOOMD_VERSION = None
 
         if self.verbose:
