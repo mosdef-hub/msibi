@@ -242,7 +242,6 @@ class Pair(object):
         dirname = os.path.dirname(self.potential_file)
         iteration_filename = os.path.join(dirname, basename)
 
-        # TODO: Factor out for separate engines.
         if engine.lower() == "hoomd":
             # This file is overwritten at each iteration and actually used for
             # performing the query simulations.

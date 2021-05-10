@@ -17,7 +17,7 @@ from hoomd.init import read_gsd
 
 hoomd.context.initialize("")
 try:
-    system = read_gsd("{0}", frame=-1, time_step=0)
+    system = read_gsd("{0}", frame=0, time_step=0)
 except RuntimeError:
     from hoomd.deprecated.init import read_xml
     system = read_xml(filename="{0}", wrap_coordinates=True)
@@ -69,7 +69,7 @@ class State(object):
     ):
         self.name = name
         self.kT = kT
-        self.traj_file = traj_file
+        self.traj_file = os.path.abspath(traj_file)
         self.opt = optimizer
         if alpha < 0 or alpha > 1:
             raise ValueError("alpha should be between 0.0 and 1.0")

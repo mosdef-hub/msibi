@@ -44,8 +44,8 @@ def _hoomd_worker(args):
     """Worker for managing a single HOOMD-blue simulation. """
 
     state, idx, gpus = args
-    log_file = os.path.join(state.state_dir, "log.txt")
-    err_file = os.path.join(state.state_dir, "err.txt")
+    log_file = os.path.join(state.dir, "log.txt")
+    err_file = os.path.join(state.dir, "err.txt")
 
     if state.HOOMD_VERSION == 1:
         executable = "hoomd"
@@ -56,16 +56,16 @@ def _hoomd_worker(args):
             card = gpus[idx % len(gpus)]
             cmds = [executable, "run.py", "--gpu={card}".format(**locals())]
         else:
-            print("    Running state {state.name} on CPU".format(**locals()))
+            print("Running state {state.name} on CPU".format(**locals()))
             cmds = [executable, "run.py"]
 
         proc = Popen(
-            cmds, cwd=state.state_dir, stdout=log, stderr=err,
+            cmds, cwd=state.dir, stdout=log, stderr=err,
             universal_newlines=True
         )
-        print("    Launched HOOMD in {state.state_dir}".format(**locals()))
+        print("Launched HOOMD in {state.state_dir}".format(**locals()))
         proc.communicate()
-        print("    Finished in {state.state_dir}.".format(**locals()))
+        print("Finished in {state.state_dir}.".format(**locals()))
     _post_query(state)
 
 
