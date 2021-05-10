@@ -80,11 +80,18 @@ class Pair(object):
                     target_rdf = np.loadtxt(target_rdf)
                 except Exception as e:
                     print(e)
+                    raise OSError("Unable to open target_rdf file "
+                            "Check that the path exists and is accessible."
+                            )
             elif isinstance(target_rdf, np.ndarray):
                 pass
 
         elif calculate_target_rdf:
             target_rdf = state_pair_rdf(state, self)
+        else:
+            raise ValueError("At least one of target_rdf or "
+                    "calculate_target_rdf = True must be given."
+                    )
 
         if len(target_rdf) != state.opt.n_rdf_points:
             raise ValueError(
