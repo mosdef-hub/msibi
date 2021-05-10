@@ -56,7 +56,7 @@ class MSIBI(object):
         self,
         rdf_cutoff,
         n_rdf_points,
-        max_frames=10,
+        max_frames=1000,
         pot_cutoff=None,
         r_switch=None,
         smooth_rdfs=False,
@@ -165,10 +165,7 @@ class MSIBI(object):
         for state in pair.states:
             pair.compute_current_rdf(
                 state,
-                self.rdf_r_range,
-                n_bins=self.rdf_n_bins,
                 smooth=self.smooth_rdfs,
-                max_frames=self.max_frames,
                 verbose=self.verbose
             )
             pair.save_current_rdf(state, iteration=iteration, dr=self.dr)

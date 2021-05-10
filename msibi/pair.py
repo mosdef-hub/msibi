@@ -123,36 +123,15 @@ class Pair(object):
             to_delete = find_1_n_exclusions(top, pairs, exclude_up_to)
             pairs = np.delete(pairs, to_delete, axis=0)
         self.states[state]["pair_indices"] = pairs
-
+    
     def compute_current_rdf(
-        self, state, r_range, n_bins, smooth=True, max_frames=50, verbose=False
-    ):
-        """ """
-        pairs = self.states[state]["pair_indices"]
-        # TODO: More elegant way to handle units.
-        #       See https://github.com/ctk3b/msibi/issues/2
-        g_r_all = None
-        first_frame = 0
-        max_frames = int(max_frames)
-        for last_frame in range(
-            max_frames, state.traj.n_frames + max_frames, max_frames
-        ):
-            r, g_r = md.compute_rdf(
-                state.traj[first_frame:last_frame],
-                pairs,
-                r_range=r_range / 10,
-                n_bins=n_bins,
-            )
-            if g_r_all is None:
-                g_r_all = np.zeros_like(g_r)
-            g_r_all += (
-                g_r
-                * len(state.traj[first_frame:last_frame])
-                / state.traj.n_frames
-            )
-            first_frame = last_frame
-        r *= 10
-        rdf = np.vstack((r, g_r_all)).T
+            self,
+            state,
+            smooth,
+            verbose=False
+            ):
+
+        rdf = state_pair_target_rdf(state, self)
         self.states[state]["current_rdf"] = rdf
 
         if smooth:
@@ -164,8 +143,8 @@ class Pair(object):
                 row[1] = np.maximum(row[1], 0)
             if verbose:  # pragma: no cover
                 plt.title(f"RDF smoothing for {state.name}")
-                plt.plot(r, g_r, label="unsmoothed")
-                plt.plot(r, current_rdf[:,1], label="smoothed")
+                plt.plot(rdf[:,0], rdf[:, 1], label="unsmoothed")
+                plt.plot(rdf[:,0], current_rdf[:,1], label="smoothed")
                 plt.legend()
                 plt.show()
 
@@ -174,6 +153,7 @@ class Pair(object):
             rdf[:, 1], self.states[state]["target_rdf"][:, 1]
         )
         self.states[state]["f_fit"].append(f_fit)
+
 
     def save_current_rdf(self, state, iteration, dr):
         """Save the current rdf
