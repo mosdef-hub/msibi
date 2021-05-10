@@ -9,7 +9,7 @@ from six import string_types
 
 from msibi.potentials import alpha_array, head_correction, tail_correction
 from msibi.utils.error_calculation import calc_similarity
-from msibi.utils.calculate_rdf import state_pair_target_rdf
+from msibi.utils.calculate_rdf import state_pair_rdf
 from msibi.utils.exceptions import UnsupportedEngine
 from msibi.utils.find_exclusions import find_1_n_exclusions
 from msibi.utils.smoothing import savitzky_golay
@@ -84,7 +84,7 @@ class Pair(object):
                 pass
 
         elif calculate_target_rdf:
-            target_rdf = state_pair_target_rdf(state, self)
+            target_rdf = state_pair_rdf(state, self)
 
         if len(target_rdf) != state.opt.n_rdf_points:
             raise ValueError(
@@ -131,7 +131,7 @@ class Pair(object):
             verbose=False
             ):
 
-        rdf = state_pair_target_rdf(state, self)
+        rdf = state_pair_rdf(state, self)
         self.states[state]["current_rdf"] = rdf
 
         if smooth:

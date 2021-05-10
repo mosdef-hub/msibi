@@ -1,7 +1,7 @@
 from cmeutils.structure import gsd_rdf
 import numpy as np
 
-def state_pair_target_rdf(state, pair, exclude_bonded=True):
+def state_pair_rdf(state, pair, exclude_bonded=True):
     """ Calculate and store the RDF data from a trajectory file of a particular State. """ 
     rdf, norm = gsd_rdf(
             state.traj_file,
