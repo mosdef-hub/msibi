@@ -8,7 +8,7 @@ from cmeutils.structure import gsd_rdf
 import gsd
 import gsd.hoomd
 import mdtraj as md
-import numpy as np
+
 
 HOOMD2_HEADER = """
 import hoomd
@@ -48,7 +48,7 @@ class State(object):
         The dcd or gsd trajectory associated with this state
         (default 'query.dcd')
     alpha : float
-        
+
     top_file : path
         hoomdxml containing topology information (needed for dcd)
         (default None)
@@ -74,7 +74,7 @@ class State(object):
         if alpha < 0 or alpha > 1:
             raise ValueError("alpha should be between 0.0 and 1.0")
         self.alpha = float(alpha)
-        self.dir = self._setup_dir(name, kT) 
+        self.dir = self._setup_dir(name, kT)
         self.traj = md.load(self.traj_file )
         self.backup_trajectory = backup_trajectory
         self._is_gsd = True
@@ -82,7 +82,7 @@ class State(object):
                 os.path.join(utils.__path__[0], "hoomd_run_template.py"),
                 self.dir
                 )
-        
+
     def reload_query_trajectory(self):
         """Reload the query trajectory. """
         if self.top_path:
@@ -101,10 +101,7 @@ class State(object):
 
         header = list()
 
-        if self.HOOMD_VERSION == 1:
-            HOOMD_HEADER = HOOMD1_HEADER
-        elif self.HOOMD_VERSION == 2:
-            HOOMD_HEADER = HOOMD2_HEADER
+        HOOMD_HEADER = HOOMD2_HEADER
 
         if self._is_gsd:
             header.append(
