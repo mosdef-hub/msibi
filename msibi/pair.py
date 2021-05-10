@@ -21,7 +21,7 @@ class Pair(object):
     Parameters
     ----------
     TODO
-    
+
     Attributes
     ----------
     name : str
@@ -130,7 +130,7 @@ class Pair(object):
             to_delete = find_1_n_exclusions(top, pairs, exclude_up_to)
             pairs = np.delete(pairs, to_delete, axis=0)
         self.states[state]["pair_indices"] = pairs
-    
+
     def compute_current_rdf(
             self,
             state,
@@ -178,7 +178,7 @@ class Pair(object):
         rdf[:, 0] -= dr / 2
         np.savetxt(os.path.join(
             state.dir,
-            f"pair_{self.name}-state_{state.name}-steo{iteration}.txt"
+            f"pair_{self.name}-state_{state.name}-step{iteration}.txt"
             ),
             rdf)
 
