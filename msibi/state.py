@@ -39,24 +39,21 @@ class State(object):
 
     Attributes
     ----------
-    kT : float
+    kT : float, required
         Unitless heat energy (product of Boltzmann's constant and temperature).
-    name : str
-        State name. If no name is given, state will be named 'state-{kT:.3f}'
-        (default None)
-    traj_file : path or md.Trajectory
-        The dcd or gsd trajectory associated with this state
-        (default 'query.dcd')
-    alpha : float
-
-    top_file : path
-        hoomdxml containing topology information (needed for dcd)
-        (default None)
-    backup_trajectory : bool
+    name : str, required
+        State name used in creating state directory space and output files. 
+    traj_file : path to a gsd.hoomd.HOOMDTrajectory file
+        The gsd trajectory associated with this state
+    optimizer : msibi.optimize.MSIBI, required
+        The MSIBI object already created. Contains information needed for
+        the rest of the MSIBI optimization process
+    alpha : float, optional, default=1.0
+        The alpha value used to scaale the weight of this state.
+    backup_trajectory : bool, optional, default=False
         True if each query trajectory is backed up (default False)
 
     """
-
     def __init__(
         self,
         name,
@@ -64,7 +61,6 @@ class State(object):
         traj_file,
         optimizer,
         alpha=1.0,
-        top_file=None,
         backup_trajectory=False,
     ):
         self.name = name
@@ -75,9 +71,7 @@ class State(object):
             raise ValueError("alpha should be between 0.0 and 1.0")
         self.alpha = float(alpha)
         self.dir = self._setup_dir(name, kT)
-        self.traj = md.load(self.traj_file )
         self.backup_trajectory = backup_trajectory
-        self._is_gsd = True
         shutil.copy(
                 os.path.join(utils.__path__[0], "hoomd_run_template.py"),
                 self.dir
@@ -98,19 +92,12 @@ class State(object):
         runscript="hoomd_run_template.py",
     ):
         """Save the input script for the MD engine. """
-
         header = list()
-
         HOOMD_HEADER = HOOMD2_HEADER
+        header.append(
+                HOOMD_HEADER.format(self.traj_file, self.kT, table_width)
+                )
 
-        if self._is_gsd:
-            header.append(
-                    HOOMD_HEADER.format(self.traj_file, self.kT, table_width)
-                    )
-        else:
-            header.append(
-                    HOOMD_HEADER.format(self.top_path, self.kT, table_width)
-                    )
         for type1, type2, potential_file in table_potentials:
             header.append(HOOMD_TABLE_ENTRY.format(**locals()))
         header = "".join(header)
