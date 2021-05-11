@@ -20,14 +20,24 @@ class Pair(object):
 
     Parameters
     ----------
-    TODO
+    type1 : str, required
+        The name of one particle type on the particle pair.
+        Must match the names found in the State's .gsd trajectory file.
+        See  gsd.hoomd.ParticleData.types 
+    type2 : str, required
+        The name of one particle type on the particle pair.
+        Must match the names found in the State's .gsd trajectory file.
+        See  gsd.hoomd.ParticleData.types 
+    potential : 
+
 
     Attributes
     ----------
     name : str
         Pair name.
-    pairs : array-like, shape=(n_pairs, 2), dtype=int, optional, default=None
-        Each row gives the indices of two atoms representing a pair.
+    states : dict
+        Dictionary of each state added for this pair using
+        the Pair.add_state() method
     potential : func
         Values of the potential at every pot_r.
 
@@ -59,8 +69,18 @@ class Pair(object):
 
         Parameters
         ----------
-        state : State
-            A state object.
+        state : msibi.state.State 
+            A state object created previously.
+        target_rdf : file path or np.ndarray shape=(n,2), optional, default=None
+            Data containing the target RDF for this specific state-pair
+            combination. Can be given as a path to a text file containing
+            the data, or as a numpy array.
+            Also see the calculate_target_rdf parameter
+        calculate_target_rdf : bool, optional, default=False
+            If True, the Freud python package (via the cmeutils package)
+            is used to calcualte the pair-wise RDF between pair.type1
+            and pair.type2 using state.traj_file. The RDF related
+            parameters are set in state.opt (msibi.optimize.MSIBI)
         pair_indices : array-like (n_pairs, 2) dtype=int
             Each row gives the indices of two atoms representing a pair
             (default None)
