@@ -17,9 +17,12 @@ class MSIBI(object):
     rdf_cutoff : float
         The upper cutoff value for the RDF calculation.
     n_points : int
-        The number of radius values.
+        The number of radius values used in RDF calculations.
     max_frames : int
         The maximum number of frames to include at once in RDF calculation
+        The RDF calculation will accumulate an average RDF over the range
+        [-max_frames:-1] of the trajectory. This is also how a target_rdf
+        will be calculated in Pair.add_state
     pot_cutoff : float, optional, default=rdf_cutoff
         The upper cutoff value for the potential.
     r_switch : float, optional, default=pot_r[-5]
@@ -49,7 +52,6 @@ class MSIBI(object):
         The radius values at which the potential is computed.
     r_switch : float, optional, default=pot_r[-1] - 5 * dr
         The radius after which a tail correction is applied.
-
     """
 
     def __init__(
@@ -120,7 +122,6 @@ class MSIBI(object):
         .. [1] T.C. Moore et al., "Derivation of coarse-grained potentials via
            multistate iterative Boltzmann inversion," Journal of Chemical
            Physics, vol. 140, pp. 224104, 2014.
-
         """
 
         if engine == "hoomd":
@@ -138,7 +139,7 @@ class MSIBI(object):
         self.states = states
         self.pairs = pairs
         self.n_iterations = n_iterations
-        self.initialize(engine=engine)
+        self._initialize(engine=engine)
 
         for n in range(start_iteration + self.n_iterations):
             print("-------- Iteration {n} --------".format(**locals()))
@@ -155,8 +156,7 @@ class MSIBI(object):
             )
 
     def _recompute_rdfs(self, pair, iteration):
-        """
-        Recompute the current RDFs for every state used for a given pair.
+        """Recompute the current RDFs for every state used for a given pair.
         """
         for state in pair.states:
             pair.compute_current_rdf(
@@ -174,9 +174,8 @@ class MSIBI(object):
                         )
                     )
 
-    def initialize(self, engine="hoomd", potentials_dir=None):
-        """
-        Create initial table potentials and the simulation input scripts.
+    def _initialize(self, engine="hoomd", potentials_dir=None):
+        """Create initial table potentials and the simulation input scripts.
 
         Parameters
         ----------
@@ -184,9 +183,7 @@ class MSIBI(object):
             Engine used to run simulations
         potentials_dir : path, optional, default="'working_dir'/potentials"
             Directory to store potential files
-
         """
-
         if not potentials_dir:
             self.potentials_dir = os.path.join(os.getcwd(), "potentials")
         else:
