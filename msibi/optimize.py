@@ -56,7 +56,7 @@ class MSIBI(object):
         self,
         rdf_cutoff,
         n_rdf_points,
-        max_frames=1000,
+        max_frames=10,
         pot_cutoff=None,
         r_switch=None,
         smooth_rdfs=False,

@@ -17,7 +17,7 @@ from hoomd.init import read_gsd
 
 hoomd.context.initialize("")
 try:
-    system = read_gsd("{0}", frame=0, time_step=0)
+    system = read_gsd("{0}", frame=-1, time_step=0)
 except RuntimeError:
     from hoomd.deprecated.init import read_xml
     system = read_xml(filename="{0}", wrap_coordinates=True)
