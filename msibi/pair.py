@@ -5,11 +5,11 @@ import os
 import matplotlib.pyplot as plt
 import mdtraj as md
 import numpy as np
+from cmeutils.structure import gsd_rdf
 from six import string_types
 
 from msibi.potentials import alpha_array, head_correction, tail_correction
 from msibi.utils.error_calculation import calc_similarity
-from msibi.utils.calculate_rdf import state_pair_rdf
 from msibi.utils.exceptions import UnsupportedEngine
 from msibi.utils.find_exclusions import find_1_n_exclusions
 from msibi.utils.smoothing import savitzky_golay
@@ -23,24 +23,20 @@ class Pair(object):
     type1 : str, required
         The name of one particle type on the particle pair.
         Must match the names found in the State's .gsd trajectory file.
-        See  gsd.hoomd.ParticleData.types 
+        See  gsd.hoomd.ParticleData.types
     type2 : str, required
         The name of one particle type on the particle pair.
         Must match the names found in the State's .gsd trajectory file.
-        See  gsd.hoomd.ParticleData.types 
-    potential : 
+        See  gsd.hoomd.ParticleData.types
+    potential :
 
 
     Attributes
     ----------
     name : str
         Pair name.
-    states : dict
-        Dictionary of each state added for this pair using
-        the Pair.add_state() method
     potential : func
         Values of the potential at every pot_r.
-
     """
 
     def __init__(self, type1, type2, potential, head_correction_form="linear"):
@@ -48,7 +44,7 @@ class Pair(object):
         self.type2 = str(type2)
         self.name = f"{self.type1}-{self.type2}"
         self.potential_file = ""
-        self.states = dict()
+        self._states = dict()
         if isinstance(potential, string_types):
             self.potential = np.loadtxt(potential)[:, 1]
             # TODO: this could be dangerous
@@ -57,78 +53,41 @@ class Pair(object):
         self.previous_potential = None
         self.head_correction_form = head_correction_form
 
-    def add_state(
+    def _add_state(
         self,
         state,
-        target_rdf=None,
-        calculate_target_rdf=False,
-        pair_indices=None,
-        alpha_form="linear"
     ):
         """Add a state to be used in optimizing this pair.
 
         Parameters
         ----------
-        state : msibi.state.State 
+        state : msibi.state.State
             A state object created previously.
-        target_rdf : file path or np.ndarray shape=(n,2), optional, default=None
-            Data containing the target RDF for this specific state-pair
-            combination. Can be given as a path to a text file containing
-            the data, or as a numpy array.
-            Also see the calculate_target_rdf parameter
-        calculate_target_rdf : bool, optional, default=False
-            If True, the Freud python package (via the cmeutils package)
-            is used to calcualte the pair-wise RDF between pair.type1
-            and pair.type2 using state.traj_file. The RDF related
-            parameters are set in state.opt (msibi.optimize.MSIBI)
-        pair_indices : array-like (n_pairs, 2) dtype=int
-            Each row gives the indices of two atoms representing a pair
-            (default None)
-        alpha_form : str
-            For alpha as a function of r, gives form of alpha function
-            (default 'linear')
         """
-        if calculate_target_rdf and target_rdf != None:
-            raise ValueError(
-                    "Setting calcualte_target_rdf = True will overwirte "
-                    "the data passed to target_rdf. calculate_target_rdf "
-                    "should only be used when target_rdf is None"
-                    )
-        if target_rdf:
-            if os.path.isfile(target_rdf):
-                try:
-                    target_rdf = np.loadtxt(target_rdf)
-                except Exception as e:
-                    print(e)
-                    raise OSError("Unable to open target_rdf file "
-                            "Check that the path exists and is accessible."
-                            )
-            elif isinstance(target_rdf, np.ndarray):
-                pass
+        target_rdf = self.get_state_rdf(state)
 
-        elif calculate_target_rdf:
-            target_rdf = state_pair_rdf(state, self)
-        else:
-            raise ValueError("At least one of target_rdf or "
-                    "calculate_target_rdf = True must be given."
-                    )
-
-        if len(target_rdf) != state.opt.n_rdf_points:
-            raise ValueError(
-                    "The target RDF passed is not the same length as "
-                    "n_rdf_points set during the initialization of the "
-                    "MSIBI() class."
-                    )
-
-        self.states[state] = {
+        self._states[state] = {
             "target_rdf": target_rdf,
             "current_rdf": None,
             "alpha": state.alpha,
-            "alpha_form": alpha_form,
-            "pair_indices": pair_indices,
+            "alpha_form": "linear",
+            "pair_indices": None,
             "f_fit": [],
             "path": state.dir
         }
+
+    def get_state_rdf(self, state, exclude_bonded=True):
+        """Calculate the RDF of a Pair at a State."""
+        rdf, norm = gsd_rdf(
+                state.traj_file,
+                self.type1,
+                self.type2,
+                start=-state._opt.max_frames,
+                r_max=state._opt.rdf_cutoff,
+                bins=state._opt.n_rdf_points,
+                exclude_bonded=exclude_bonded
+                )
+        return np.stack((rdf.bin_centers, rdf.rdf*norm)).T
 
     def select_pairs(self, state, exclude_up_to=0):
         """Select pairs based on a topology and exclusions.
@@ -149,20 +108,20 @@ class Pair(object):
         if exclude_up_to is not None:
             to_delete = find_1_n_exclusions(top, pairs, exclude_up_to)
             pairs = np.delete(pairs, to_delete, axis=0)
-        self.states[state]["pair_indices"] = pairs
+        self._states[state]["pair_indices"] = pairs
 
     def compute_current_rdf(
-            self,
-            state,
-            smooth,
-            verbose=False
-            ):
+        self,
+        state,
+        smooth,
+        verbose=False
+        ):
 
-        rdf = state_pair_rdf(state, self)
-        self.states[state]["current_rdf"] = rdf
+        rdf = self.get_state_rdf(state)
+        self._states[state]["current_rdf"] = rdf
 
         if smooth:
-            current_rdf = self.states[state]["current_rdf"]
+            current_rdf = self._states[state]["current_rdf"]
             current_rdf[:, 1] = savitzky_golay(
                 current_rdf[:, 1], 9, 2, deriv=0, rate=1
             )
@@ -177,9 +136,9 @@ class Pair(object):
 
         # Compute fitness function comparing the two RDFs.
         f_fit = calc_similarity(
-            rdf[:, 1], self.states[state]["target_rdf"][:, 1]
+            rdf[:, 1], self._states[state]["target_rdf"][:, 1]
         )
-        self.states[state]["f_fit"].append(f_fit)
+        self._states[state]["f_fit"].append(f_fit)
 
 
     def save_current_rdf(self, state, iteration, dr):
@@ -194,7 +153,7 @@ class Pair(object):
         dr : float
             The RDF bin size
         """
-        rdf = self.states[state]["current_rdf"]
+        rdf = self._states[state]["current_rdf"]
         rdf[:, 0] -= dr / 2
         np.savetxt(os.path.join(
             state.dir,
@@ -205,14 +164,14 @@ class Pair(object):
     def update_potential(self, pot_r, r_switch=None, verbose=False):
         """Update the potential using all states. """
         self.previous_potential = np.copy(self.potential)
-        for state in self.states:
+        for state in self._states:
             kT = state.kT
-            alpha0 = self.states[state]["alpha"]
-            form = self.states[state]["alpha_form"]
+            alpha0 = self._states[state]["alpha"]
+            form = self._states[state]["alpha_form"]
             alpha = alpha_array(alpha0, pot_r, form=form)
 
-            current_rdf = self.states[state]["current_rdf"][:, 1] #nparray
-            target_rdf = self.states[state]["target_rdf"][:, 1] #nparray
+            current_rdf = self._states[state]["current_rdf"][:, 1] #nparray
+            target_rdf = self._states[state]["target_rdf"][:, 1] #nparray
 
             # For cases where rdf_cutoff != pot_cutoff, only update the
             # potential using RDF values < pot_cutoff.
@@ -229,7 +188,7 @@ class Pair(object):
 
             # The actual IBI step.
             self.potential += (
-                kT * alpha * np.log(current_rdf / target_rdf) / len(self.states)
+                kT * alpha * np.log(current_rdf / target_rdf) / len(self._states)
             )
 
             if verbose:  # pragma: no cover
