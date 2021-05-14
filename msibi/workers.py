@@ -1,5 +1,3 @@
-from __future__ import division, print_function
-
 import itertools
 import os
 from distutils.spawn import find_executable

@@ -1,5 +1,3 @@
-from __future__ import division
-
 import os
 
 import numpy as np
@@ -90,11 +88,15 @@ class MSIBI(object):
             r_switch = self.pot_r[-5]
         self.r_switch = r_switch
 
+    def add_state(self, state):
+        state._opt = self
+        self.states.append(state)
+
+    def add_pair(self, pair):
+        self.pairs.append(pair)
 
     def optimize(
         self,
-        states,
-        pairs,
         n_iterations=10,
         start_iteration=0,
         engine="hoomd",
@@ -103,10 +105,6 @@ class MSIBI(object):
 
         Parameters
         ----------
-        states : array_like, len=n_states, dtype=msibi.State
-            List of states used to optimize pair potentials.
-        pairs : array_like, len=n_pairs, dtype=msibi.Pair
-            List of pairs being optimized.
         n_iterations : int
             Number of iterations. (default 10)
         start_iteration : int
@@ -123,6 +121,9 @@ class MSIBI(object):
            multistate iterative Boltzmann inversion," Journal of Chemical
            Physics, vol. 140, pp. 224104, 2014.
         """
+        for pair in self.pairs:
+            for state in self.states:
+                pair._add_state(state)
 
         if engine == "hoomd":
             import hoomd
@@ -133,11 +134,9 @@ class MSIBI(object):
         if self.verbose:
             print(f"Using HOOMD version {HOOMD_VERSION}.")
 
-        for state in states:
+        for state in self.states:
             state.HOOMD_VERSION = HOOMD_VERSION
 
-        self.states = states
-        self.pairs = pairs
         self.n_iterations = n_iterations
         self._initialize(engine=engine)
 
@@ -156,9 +155,8 @@ class MSIBI(object):
             )
 
     def _recompute_rdfs(self, pair, iteration):
-        """Recompute the current RDFs for every state used for a given pair.
-        """
-        for state in pair.states:
+        """Recompute the current RDFs for every state used for a given pair."""
+        for state in self.states:
             pair.compute_current_rdf(
                 state,
                 smooth=self.smooth_rdfs,
@@ -170,7 +168,7 @@ class MSIBI(object):
                         pair.name,
                         state.name,
                         iteration,
-                        pair.states[state]["f_fit"][iteration]
+                        pair._states[state]["f_fit"][iteration]
                         )
                     )
 

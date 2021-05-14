@@ -42,31 +42,26 @@ class State(object):
     kT : float, required
         Unitless heat energy (product of Boltzmann's constant and temperature).
     name : str, required
-        State name used in creating state directory space and output files. 
+        State name used in creating state directory space and output files.
     traj_file : path to a gsd.hoomd.HOOMDTrajectory file
         The gsd trajectory associated with this state
-    optimizer : msibi.optimize.MSIBI, required
-        The MSIBI object already created. Contains information needed for
-        the rest of the MSIBI optimization process
     alpha : float, optional, default=1.0
         The alpha value used to scaale the weight of this state.
     backup_trajectory : bool, optional, default=False
         True if each query trajectory is backed up (default False)
-
     """
     def __init__(
         self,
         name,
         kT,
         traj_file,
-        optimizer,
         alpha=1.0,
         backup_trajectory=False,
     ):
         self.name = name
         self.kT = kT
         self.traj_file = os.path.abspath(traj_file)
-        self.opt = optimizer
+        self._opt = None
         if alpha < 0 or alpha > 1:
             raise ValueError("alpha should be between 0.0 and 1.0")
         self.alpha = float(alpha)
