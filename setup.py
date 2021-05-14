@@ -17,7 +17,7 @@ except ImportError:
     )
     sys.exit(1)
 
-requirements = ["numpy", "six", "networkx"]
+requirements = ["numpy", "networkx"]
 
 NAME = "msibi"
 # Load the package's __version__.py module as a dictionary.
