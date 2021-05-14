@@ -1,12 +1,9 @@
-from __future__ import division
-
 import os
 
 import matplotlib.pyplot as plt
 import mdtraj as md
 import numpy as np
 from cmeutils.structure import gsd_rdf
-from six import string_types
 
 from msibi.potentials import alpha_array, head_correction, tail_correction
 from msibi.utils.error_calculation import calc_similarity
@@ -45,7 +42,7 @@ class Pair(object):
         self.name = f"{self.type1}-{self.type2}"
         self.potential_file = ""
         self._states = dict()
-        if isinstance(potential, string_types):
+        if isinstance(potential, str):
             self.potential = np.loadtxt(potential)[:, 1]
             # TODO: this could be dangerous
         else:
