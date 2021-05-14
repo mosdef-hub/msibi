@@ -50,10 +50,7 @@ class Pair(object):
         self.previous_potential = None
         self.head_correction_form = head_correction_form
 
-    def _add_state(
-        self,
-        state,
-    ):
+    def _add_state(self, state):
         """Add a state to be used in optimizing this pair.
 
         Parameters
@@ -85,27 +82,6 @@ class Pair(object):
                 exclude_bonded=exclude_bonded
                 )
         return np.stack((rdf.bin_centers, rdf.rdf*norm)).T
-
-    def select_pairs(self, state, exclude_up_to=0):
-        """Select pairs based on a topology and exclusions.
-
-        Parameters
-        ----------
-        state : State
-            A state object, contains a topology from which to select pairs
-        exclude_up_to : int
-            Exclude pairs separated by exclude_up_to or fewer bonds
-            (default 0)
-        """
-        if state.top_path:
-            top = md.load(state.top_path).topology
-        else:
-            top = md.load(state.traj_path).topology
-        pairs = top.select_pairs(f"name '{self.type1}'", f"name '{self.type2}'")
-        if exclude_up_to is not None:
-            to_delete = find_1_n_exclusions(top, pairs, exclude_up_to)
-            pairs = np.delete(pairs, to_delete, axis=0)
-        self._states[state]["pair_indices"] = pairs
 
     def compute_current_rdf(
         self,
