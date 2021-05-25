@@ -66,6 +66,8 @@ class MSIBI(object):
         self.verbose = verbose
         self.states = []
         self.pairs = []
+        self.bonds = []
+        self.angles = []
         self.n_iterations = 10  # Can be overridden in optimize().
         self.max_frames = max_frames
 
@@ -94,6 +96,12 @@ class MSIBI(object):
 
     def add_pair(self, pair):
         self.pairs.append(pair)
+
+    def add_bond(self, bond):
+        self.bonds.append(bond)
+
+    def add_angle(self, angle):
+        self.angles.append(angle)
 
     def optimize(
         self,
@@ -124,6 +132,16 @@ class MSIBI(object):
         for pair in self.pairs:
             for state in self.states:
                 pair._add_state(state)
+
+        if self.bonds:
+            for bond in self.bonds:
+                for state in self.states:
+                    bond._add_state(state)
+
+        if self.angles:
+            for angle in self.angles:
+                for state in self.states:
+                    angle._add_state(state)
 
         if engine == "hoomd":
             import hoomd
@@ -194,9 +212,12 @@ class MSIBI(object):
             os.mkdir("rdfs")
 
         table_potentials = []
+        bonds = None
+        angles = None
+
         for pair in self.pairs:
             potential_file = os.path.join(
-                self.potentials_dir, "pot.{0}.txt".format(pair.name)
+                self.potentials_dir, f"pot.{pair.name}.txt"
             )
             pair.potential_file = potential_file
             table_potentials.append((pair.type1, pair.type2, potential_file))
@@ -213,7 +234,16 @@ class MSIBI(object):
             # performing the query simulations.
             pair.save_table_potential(self.pot_r, self.dr, engine=engine)
 
+        if self.bonds:
+            bonds = self.bonds
+        if self.angles:
+            angles = self.angles
+
         for state in self.states:
             state.save_runscript(
-                table_potentials, table_width=len(self.pot_r), engine=engine
+                table_potentials=table_potentials,
+                table_width=len(self.pot_r),
+                engine=engine,
+                bonds=bonds,
+                angles=angles
             )
