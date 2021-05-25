@@ -16,11 +16,7 @@ import hoomd.md
 from hoomd.init import read_gsd
 
 hoomd.context.initialize("")
-try:
-    system = read_gsd("{0}", frame=-1, time_step=0)
-except RuntimeError:
-    from hoomd.deprecated.init import read_xml
-    system = read_xml(filename="{0}", wrap_coordinates=True)
+system = read_gsd("{0}", frame=-1, time_step=0)
 T_final = {1:.1f}
 
 pot_width = {2:d}
@@ -88,9 +84,8 @@ class State(object):
     ):
         """Save the input script for the MD engine. """
         header = list()
-        HOOMD_HEADER = HOOMD2_HEADER
         header.append(
-                HOOMD_HEADER.format(self.traj_file, self.kT, table_width)
+                HOOMD2_HEADER.format(self.traj_file, self.kT, table_width)
                 )
 
         for type1, type2, potential_file in table_potentials:
