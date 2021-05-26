@@ -9,6 +9,7 @@ from msibi.potentials import alpha_array, head_correction, tail_correction
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.exceptions import UnsupportedEngine
 from msibi.utils.find_exclusions import find_1_n_exclusions
+from msibi.utils.general import find_nearest
 from msibi.utils.smoothing import savitzky_golay
 
 
@@ -166,27 +167,29 @@ class Pair(object):
 
             if verbose:  # pragma: no cover
                 plt.plot(
-                        pot_r, self.previous_potential,
-                        label="previous potential"
-                        )
+                    pot_r, self.previous_potential, label="previous potential"
+                )
                 plt.plot(pot_r, self.potential, label="potential")
+                plt.ylim((np.nanmin(self.potential)-1,10))
                 plt.legend()
                 plt.show()
 
         # Apply corrections to ensure continuous, well-behaved potentials.
-        if verbose:  # pragma: no cover
-            plt.plot(pot_r, self.potential, label="uncorrected potential")
+        pot = self.potential
         self.potential = tail_correction(pot_r, self.potential, r_switch)
-        if verbose:  # pragma: no cover
-            plt.plot(pot_r, self.potential, label="tail correction")
+        tail = self.potential
         self.potential = head_correction(
             pot_r,
             self.potential,
             self.previous_potential,
             self.head_correction_form
         )
+        head = self.potential
         if verbose:  # pragma: no cover
-            plt.plot(pot_r, self.potential, label="head correction")
+            plt.plot(pot_r, head, label="head correction")
+            plt.plot(pot_r, pot, label="uncorrected potential")
+            idx_r, _ = find_nearest(pot_r, r_switch)
+            plt.plot(pot_r[idx_r:], tail[idx_r:], label="tail correction")
             plt.legend()
             plt.show()
 
