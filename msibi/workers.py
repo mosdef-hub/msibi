@@ -2,8 +2,7 @@ import itertools
 import os
 from distutils.spawn import find_executable
 from math import ceil
-from multiprocessing import cpu_count
-from multiprocessing.dummy import Pool
+from multiprocessing import cpu_count, Pool
 from subprocess import Popen
 
 from msibi.utils.exceptions import UnsupportedEngine
@@ -32,10 +31,8 @@ def run_query_simulations(states, engine="hoomd"):
     worker_args = zip(states, range(n_states), itertools.repeat(gpus))
     chunk_size = ceil(n_states / n_procs)
 
-    pool = Pool(n_procs)
-    pool.imap(worker, worker_args, chunk_size)
-    pool.close()
-    pool.join()
+    with Pool(n_procs) as pool:
+        pool.imap(worker, worker_args, chunk_size)
 
 
 def _hoomd_worker(args):
