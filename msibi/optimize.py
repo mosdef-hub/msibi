@@ -131,7 +131,7 @@ class MSIBI(object):
         """
         for pair in self.pairs:
             for state in self.states:
-                pair._add_state(state)
+                pair._add_state(state, smooth=self.smooth_rdfs)
 
         if self.bonds:
             for bond in self.bonds:

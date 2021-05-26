@@ -51,7 +51,7 @@ class Pair(object):
         self.previous_potential = None
         self.head_correction_form = head_correction_form
 
-    def _add_state(self, state):
+    def _add_state(self, state, smooth=True):
         """Add a state to be used in optimizing this pair.
 
         Parameters
@@ -60,6 +60,10 @@ class Pair(object):
             A state object created previously.
         """
         target_rdf = self.get_state_rdf(state)
+        if smooth:
+            target_rdf[:, 1] = savitzky_golay(
+                target_rdf[:, 1], 9, 2, deriv=0, rate=1
+                )
 
         self._states[state] = {
             "target_rdf": target_rdf,
@@ -170,7 +174,9 @@ class Pair(object):
                     pot_r, self.previous_potential, label="previous potential"
                 )
                 plt.plot(pot_r, self.potential, label="potential")
-                plt.ylim((np.nanmin(self.potential)-1,10))
+                plt.ylim(
+                    (min(self.potential[np.isfinite(self.potential)])-1,10)
+                )
                 plt.legend()
                 plt.show()
 
@@ -190,6 +196,8 @@ class Pair(object):
             plt.plot(pot_r, pot, label="uncorrected potential")
             idx_r, _ = find_nearest(pot_r, r_switch)
             plt.plot(pot_r[idx_r:], tail[idx_r:], label="tail correction")
+
+            plt.ylim((min(pot[np.isfinite(pot)])-1, 10))
             plt.legend()
             plt.show()
 
