@@ -155,7 +155,7 @@ class Pair(object):
 
             if verbose:  # pragma: no cover
                 plt.plot(current_rdf[:,0], current_rdf[:,1], label="current rdf")
-                plt.plot(target_rdf[:,0], target_rdf[:,0], label="target rdf")
+                plt.plot(target_rdf[:,0], target_rdf[:,1], label="target rdf")
                 plt.legend()
                 plt.show()
 
