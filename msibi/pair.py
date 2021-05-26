@@ -143,25 +143,25 @@ class Pair(object):
             form = self._states[state]["alpha_form"]
             alpha = alpha_array(alpha0, pot_r, form=form)
 
-            current_rdf = self._states[state]["current_rdf"][:, 1] #nparray
-            target_rdf = self._states[state]["target_rdf"][:, 1] #nparray
+            current_rdf = self._states[state]["current_rdf"]
+            target_rdf = self._states[state]["target_rdf"]
 
             # For cases where rdf_cutoff != pot_cutoff, only update the
             # potential using RDF values < pot_cutoff.
             unused_rdf_vals = current_rdf.shape[0] - self.potential.shape[0]
             if unused_rdf_vals != 0:
-                current_rdf = current_rdf[:-unused_rdf_vals]
-                target_rdf = target_rdf[:-unused_rdf_vals]
+                current_rdf = current_rdf[:-unused_rdf_vals,:]
+                target_rdf = target_rdf[:-unused_rdf_vals,:]
 
             if verbose:  # pragma: no cover
-                plt.plot(current_rdf, label="current rdf")
-                plt.plot(target_rdf, label="target rdf")
+                plt.plot(current_rdf[:,0], current_rdf[:,1], label="current rdf")
+                plt.plot(target_rdf[:,0], target_rdf[:,0], label="target rdf")
                 plt.legend()
                 plt.show()
 
             # The actual IBI step.
             self.potential += (
-                kT * alpha * np.log(current_rdf / target_rdf) / len(self._states)
+                    kT * alpha * np.log(current_rdf[:,1] / target_rdf[:,1]) / len(self._states)
             )
 
             if verbose:  # pragma: no cover
