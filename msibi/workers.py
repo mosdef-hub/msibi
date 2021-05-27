@@ -1,9 +1,6 @@
-import itertools
 import os
 from distutils.spawn import find_executable
-from math import ceil
-from multiprocessing import cpu_count, Pool
-from subprocess import Popen
+import subprocess as sp
 
 from msibi.utils.exceptions import UnsupportedEngine
 from msibi.utils.general import backup_file
@@ -39,12 +36,11 @@ def _hoomd_worker(state, gpu):
             print(f"Running state {state.name} on CPU")
             cmds = [executable, "run.py"]
 
-        proc = Popen(
+        print(f"Launched HOOMD in {state.dir}")
+        sp.run(
             cmds, cwd=state.dir, stdout=log, stderr=err,
             universal_newlines=True
         )
-        print(f"Launched HOOMD in {state.dir}")
-        proc.communicate()
         print(f"Finished in {state.dir}.")
     _post_query(state)
 
