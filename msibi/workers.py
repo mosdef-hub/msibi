@@ -10,45 +10,31 @@ from msibi.utils.general import backup_file
 
 
 def run_query_simulations(states, engine="hoomd"):
-    """Run all query simulations for a single iteration. """
+    """Run all query simulations for a single iteration."""
 
     # Gather hardware info.
-    gpus = _get_gpu_info()
-    if gpus is None:
-        n_procs = cpu_count()
-        gpus = []
-        print(f"Launching {n_procs} CPU threads...")
-    else:
-        n_procs = len(gpus)
-        print(f"Launching {n_procs} GPU threads...")
+    gpu = _has_gpu()
 
     if engine.lower() == "hoomd":
         worker = _hoomd_worker
     else:
         raise UnsupportedEngine(engine)
 
-    n_states = len(states)
-    worker_args = zip(states, range(n_states), itertools.repeat(gpus))
-    chunk_size = ceil(n_states / n_procs)
-
-    with Pool(n_procs) as pool:
-        pool.imap(worker, worker_args, chunk_size)
-        pool.close()
-        pool.join()
+    for state in states:
+        _hoomd_worker(state, gpu=gpu)
 
 
-def _hoomd_worker(args):
-    """Worker for managing a single HOOMD-blue simulation. """
+def _hoomd_worker(state, gpu):
+    """Worker for managing a single HOOMD-blue simulation."""
 
-    state, idx, gpus = args
     log_file = os.path.join(state.dir, "log.txt")
     err_file = os.path.join(state.dir, "err.txt")
 
     executable = "python"
     with open(log_file, "w") as log, open(err_file, "w") as err:
-        if gpus:
-            card = gpus[idx % len(gpus)]
-            cmds = [executable, "run.py", f"--gpu={card}"]
+        if gpu:
+            print(f"Running state {state.name} on GPU")
+            cmds = [executable, "run.py", "--mode=gpu"]
         else:
             print(f"Running state {state.name} on CPU")
             cmds = [executable, "run.py"]
@@ -64,7 +50,7 @@ def _hoomd_worker(args):
 
 
 def _post_query(state):
-    """Reload the query trajectory and make backups. """
+    """Reload the query trajectory and make backups."""
 
     state.reload_query_trajectory()
     backup_file(os.path.join(state.dir, "log.txt"))
@@ -73,14 +59,9 @@ def _post_query(state):
         backup_file(state.traj_path)
 
 
-def _get_gpu_info():
-    """ """
+def _has_gpu():
     nvidia_smi = find_executable("nvidia-smi")
     if not nvidia_smi:
-        return
+        return False
     else:
-        gpus = [
-            line.split()[1].replace(":", "")
-            for line in os.popen("nvidia-smi -L").readlines()
-        ]
-        return gpus
+        return True
