@@ -78,11 +78,8 @@ class State(object):
                 )
 
     def reload_query_trajectory(self):
-        """Reload the query trajectory. """
-        if self.top_path:
-            self.traj = md.load(self.traj_file, top=self.top_path)
-        else:
-            self.traj = md.load(self.traj_file)
+        """Reload the query trajectory."""
+        self.traj = md.load(self.traj_file)
 
     def save_runscript(
         self,
