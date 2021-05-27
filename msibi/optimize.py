@@ -63,6 +63,7 @@ class MSIBI(object):
         verbose=False
     ):
 
+        rmin = 1e-4
         self.verbose = verbose
         self.states = []
         self.pairs = []
@@ -75,7 +76,7 @@ class MSIBI(object):
         self.n_rdf_points = n_rdf_points
         self.dr = rdf_cutoff / (n_rdf_points - 1)
         self.smooth_rdfs = smooth_rdfs
-        self.rdf_r_range = np.array([0.0, self.rdf_cutoff + self.dr])
+        self.rdf_r_range = np.array([rmin, self.rdf_cutoff + self.dr])
         self.rdf_n_bins = self.n_rdf_points
 
         # Sometimes the pot_cutoff and rdf_cutoff have different ranges,
@@ -84,7 +85,7 @@ class MSIBI(object):
             pot_cutoff = rdf_cutoff
         self.pot_cutoff = pot_cutoff
 
-        self.pot_r = np.arange(0.0, self.pot_cutoff + self.dr, self.dr)
+        self.pot_r = np.arange(rmin, self.pot_cutoff + self.dr, self.dr)
 
         if not r_switch:
             r_switch = self.pot_r[-5]
