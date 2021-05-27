@@ -17,10 +17,10 @@ def run_query_simulations(states, engine="hoomd"):
     if gpus is None:
         n_procs = cpu_count()
         gpus = []
-        print("Launching {n_procs} CPU threads...".format(**locals()))
+        print(f"Launching {n_procs} CPU threads...")
     else:
         n_procs = len(gpus)
-        print("Launching {n_procs} GPU threads...".format(**locals()))
+        print(f"Launching {n_procs} GPU threads...")
 
     if engine.lower() == "hoomd":
         worker = _hoomd_worker
@@ -33,6 +33,8 @@ def run_query_simulations(states, engine="hoomd"):
 
     with Pool(n_procs) as pool:
         pool.imap(worker, worker_args, chunk_size)
+        pool.close()
+        pool.join()
 
 
 def _hoomd_worker(args):
@@ -46,18 +48,18 @@ def _hoomd_worker(args):
     with open(log_file, "w") as log, open(err_file, "w") as err:
         if gpus:
             card = gpus[idx % len(gpus)]
-            cmds = [executable, "run.py", "--gpu={card}".format(**locals())]
+            cmds = [executable, "run.py", f"--gpu={card}"]
         else:
-            print("Running state {state.name} on CPU".format(**locals()))
+            print(f"Running state {state.name} on CPU")
             cmds = [executable, "run.py"]
 
         proc = Popen(
             cmds, cwd=state.dir, stdout=log, stderr=err,
             universal_newlines=True
         )
-        print("Launched HOOMD in {state.state_dir}".format(**locals()))
+        print(f"Launched HOOMD in {state.dir}")
         proc.communicate()
-        print("Finished in {state.state_dir}.".format(**locals()))
+        print(f"Finished in {state.dir}.")
     _post_query(state)
 
 
@@ -65,8 +67,8 @@ def _post_query(state):
     """Reload the query trajectory and make backups. """
 
     state.reload_query_trajectory()
-    backup_file(os.path.join(state.state_dir, "log.txt"))
-    backup_file(os.path.join(state.state_dir, "err.txt"))
+    backup_file(os.path.join(state.dir, "log.txt"))
+    backup_file(os.path.join(state.dir, "err.txt"))
     if state.backup_trajectory:
         backup_file(state.traj_path)
 
