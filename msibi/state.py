@@ -2,6 +2,9 @@ import os
 import shutil
 import warnings
 from msibi import MSIBI, utils
+from msibi.utils.hoomd_run_template import (HOOMD2_HEADER, HOOMD_TABLE_ENTRY,
+    HOOMD_BOND_INIT, HOOMD_BOND_ENTRY, HOOMD_ANGLE_INIT, HOOMD_ANGLE_ENTRY,
+    HOOMD_TEMPLATE)
 
 import cmeutils as cme
 from cmeutils.structure import gsd_rdf
@@ -9,34 +12,6 @@ import gsd
 import gsd.hoomd
 import mdtraj as md
 
-
-HOOMD2_HEADER = """
-import hoomd
-import hoomd.md
-from hoomd.init import read_gsd
-
-hoomd.context.initialize("")
-system = read_gsd("{0}", frame=-1, time_step=0)
-T_final = {1:.1f}
-
-pot_width = {2:d}
-nl = hoomd.md.nlist.cell()
-table = hoomd.md.pair.table(width=pot_width, nlist=nl)
-harmonic_bond = hoomd.md.bond.harmonic()
-harmonic_angle = hoomd.md.angle.harmonic()
-"""
-
-HOOMD_TABLE_ENTRY = """
-table.set_from_file('{type1}', '{type2}', filename='{potential_file}')
-"""
-
-HOOMD_BOND_ENTRY = """
-harmonic_bond.bond_coeff.set('{name}', k={k}, r0={r0})
-"""
-
-HOOMD_ANGLE_ENTRY = """
-harmonic_angle.angle_coeff.set('{name}', k={k}, t0={theta})
-"""
 
 class State(object):
     """A single state used as part of a multistate optimization.
@@ -72,10 +47,6 @@ class State(object):
         self.dir = self._setup_dir(name, kT)
         self.query_traj = os.path.join(self.dir, "query.gsd")
         self.backup_trajectory = backup_trajectory
-        shutil.copy(
-                os.path.join(utils.__path__[0], "hoomd_run_template.py"),
-                self.dir
-                )
 
     def reload_query_trajectory(self):
         """Reload the query trajectory."""
@@ -85,42 +56,40 @@ class State(object):
         self,
         table_potentials,
         table_width,
-        bonds,
-        angles,
+        bonds=None,
+        angles=None,
         engine="hoomd",
-        runscript="hoomd_run_template.py",
     ):
-        """Save the input script for the MD engine. """
-        header = list()
-        header.append(
+        """Save the input script for the MD engine."""
+        script = list()
+        script.append(
                 HOOMD2_HEADER.format(self.traj_file, self.kT, table_width)
                 )
 
         for type1, type2, potential_file in table_potentials:
-            header.append(HOOMD_TABLE_ENTRY.format(**locals()))
+            script.append(HOOMD_TABLE_ENTRY.format(**locals()))
 
-        if bonds:
+        if bonds is not None:
+            script.append(HOOMD_BOND_INIT)
             for bond in bonds:
                 name = bond.name
                 k = bond._states[self]["k"]
                 r0 = bond._states[self]["r0"]
-                header.append(HOOMD_BOND_ENTRY.format(**locals()))
+                script.append(HOOMD_BOND_ENTRY.format(**locals()))
 
-        if angles:
+        if angles is not None:
+            script.append(HOOMD_ANGLE_INIT)
             for angle in angles:
                 name = angle.name
                 k = angle._states[self]["k"]
                 theta = angle._states[self]["theta"]
-                header.append(HOOMD_ANGLE_ENTRY.format(**locals()))
+                script.append(HOOMD_ANGLE_ENTRY.format(**locals()))
 
-        header = "".join(header)
-        with open(os.path.join(self.dir, runscript)) as fh:
-            body = "".join(fh.readlines())
+        script.append(HOOMD_TEMPLATE)
 
         runscript_file = os.path.join(self.dir, "run.py")
         with open(runscript_file, "w") as fh:
-            fh.write(header)
-            fh.write(body)
+            fh.writelines(script)
 
     def _setup_dir(self, name, kT):
         """
