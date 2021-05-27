@@ -70,6 +70,7 @@ class State(object):
             raise ValueError("alpha should be between 0.0 and 1.0")
         self.alpha = float(alpha)
         self.dir = self._setup_dir(name, kT)
+        self.query_traj = os.path.join(self.dir, "query.gsd")
         self.backup_trajectory = backup_trajectory
         shutil.copy(
                 os.path.join(utils.__path__[0], "hoomd_run_template.py"),

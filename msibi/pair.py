@@ -59,7 +59,7 @@ class Pair(object):
         state : msibi.state.State
             A state object created previously.
         """
-        target_rdf = self.get_state_rdf(state)
+        target_rdf = self.get_state_rdf(state, query=False)
         if smooth:
             target_rdf[:, 1] = savitzky_golay(
                 target_rdf[:, 1], 9, 2, deriv=0, rate=1
@@ -75,10 +75,14 @@ class Pair(object):
             "path": state.dir
         }
 
-    def get_state_rdf(self, state, exclude_bonded=True):
+    def get_state_rdf(self, state, query, exclude_bonded=True):
         """Calculate the RDF of a Pair at a State."""
+        if query:
+            traj = state.query_traj
+        else:
+            traj = state.traj_file
         rdf, norm = gsd_rdf(
-                state.traj_file,
+                traj,
                 self.type1,
                 self.type2,
                 start=-state._opt.max_frames,
@@ -95,7 +99,7 @@ class Pair(object):
         verbose=False
         ):
 
-        rdf = self.get_state_rdf(state)
+        rdf = self.get_state_rdf(state, query=True)
         self._states[state]["current_rdf"] = rdf
 
         if smooth:
@@ -165,7 +169,7 @@ class Pair(object):
                 plt.show()
 
             # The actual IBI step.
-            self.potential += (
+            self.potential -= (
                     kT * alpha * np.log(current_rdf[:,1] / target_rdf[:,1]) / len(self._states)
             )
 
