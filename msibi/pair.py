@@ -75,7 +75,7 @@ class Pair(object):
             "path": state.dir
         }
 
-    def get_state_rdf(self, state, query, exclude_bonded=True):
+    def get_state_rdf(self, state, query, exclude_bonded=False):
         """Calculate the RDF of a Pair at a State."""
         if query:
             traj = state.query_traj
