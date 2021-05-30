@@ -64,7 +64,9 @@ class Pair(object):
             target_rdf[:, 1] = savitzky_golay(
                 target_rdf[:, 1], 9, 2, deriv=0, rate=1
                 )
-
+            negative_idx = np.where(target_rdf < 0)
+            target_rdf[negative_idx] = 0
+            
         self._states[state] = {
             "target_rdf": target_rdf,
             "current_rdf": None,
@@ -107,8 +109,8 @@ class Pair(object):
             current_rdf[:, 1] = savitzky_golay(
                 current_rdf[:, 1], 9, 2, deriv=0, rate=1
             )
-            for row in current_rdf:
-                row[1] = np.maximum(row[1], 0)
+            negative_idx = np.where(current_rdf < 0)
+            current_rdf[negative_idx] = 0
             if verbose:  # pragma: no cover
                 plt.title(f"RDF smoothing for {state.name}")
                 plt.plot(rdf[:,0], rdf[:, 1], label="unsmoothed")
@@ -216,11 +218,8 @@ class Pair(object):
         dirname = os.path.dirname(self.potential_file)
         iteration_filename = os.path.join(dirname, basename)
 
-        if engine.lower() == "hoomd":
-            # This file is overwritten at each iteration and actually used for
-            # performing the query simulations.
-            np.savetxt(self.potential_file, data.T)
-            # This file is written for viewing of how the potential evolves.
-            np.savetxt(iteration_filename, data.T)
-        else:
-            raise UnsupportedEngine(engine)
+        # This file is overwritten at each iteration and actually used for
+        # performing the query simulations.
+        np.savetxt(self.potential_file, data.T)
+        # This file is written for viewing of how the potential evolves.
+        np.savetxt(iteration_filename, data.T)
