@@ -171,7 +171,7 @@ class Pair(object):
                 plt.show()
 
             # The actual IBI step.
-            self.potential -= (
+            self.potential += (
                     kT * alpha * np.log(current_rdf[:,1] / target_rdf[:,1]) / len(self._states)
             )
 
