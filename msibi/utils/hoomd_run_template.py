@@ -41,6 +41,9 @@ hoomd.dump.gsd(
     filename="query.gsd",
     group=_all,
     period=1000,
-    overwrite=True)
+    overwrite=True,
+    dynamic=["momentum"]
+    )
+
 hoomd.run(1e5)
 """
