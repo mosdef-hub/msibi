@@ -60,7 +60,7 @@ class Pair(object):
             A state object created previously.
         """
         target_rdf = self.get_state_rdf(state, query=False)
-        if smooth:
+        if state._opt.smooth_rdfs:
             target_rdf[:, 1] = savitzky_golay(
                 target_rdf[:, 1], 9, 2, deriv=0, rate=1
                 )
@@ -77,7 +77,7 @@ class Pair(object):
             "path": state.dir
         }
 
-    def get_state_rdf(self, state, query, exclude_bonded=False):
+    def get_state_rdf(self, state, query):
         """Calculate the RDF of a Pair at a State."""
         if query:
             traj = state.query_traj
@@ -90,7 +90,7 @@ class Pair(object):
                 start=-state._opt.max_frames,
                 r_max=state._opt.rdf_cutoff,
                 bins=state._opt.n_rdf_points,
-                exclude_bonded=exclude_bonded
+                exclude_bonded=state._opt.rdf_exclude_bonded
                 )
         return np.stack((rdf.bin_centers, rdf.rdf*norm)).T
 
@@ -104,7 +104,7 @@ class Pair(object):
         rdf = self.get_state_rdf(state, query=True)
         self._states[state]["current_rdf"] = rdf
 
-        if smooth:
+        if state._opt.smooth_rdfs:
             current_rdf = self._states[state]["current_rdf"]
             current_rdf[:, 1] = savitzky_golay(
                 current_rdf[:, 1], 9, 2, deriv=0, rate=1
