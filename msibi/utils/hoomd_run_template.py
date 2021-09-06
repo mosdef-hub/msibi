@@ -45,5 +45,5 @@ hoomd.dump.gsd(
     dynamic=["momentum"]
     )
 
-hoomd.run(1e5)
+hoomd.run({})
 """

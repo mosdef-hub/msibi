@@ -109,6 +109,7 @@ class MSIBI(object):
     def optimize(
         self,
         n_iterations=10,
+        n_steps=1e6,
         start_iteration=0,
         engine="hoomd",
     ):
@@ -159,7 +160,7 @@ class MSIBI(object):
             state.HOOMD_VERSION = HOOMD_VERSION
 
         self.n_iterations = n_iterations
-        self._initialize(engine=engine)
+        self._initialize(engine=engine, n_steps=n_steps)
 
         for n in range(start_iteration + self.n_iterations):
             print("-------- Iteration {n} --------".format(**locals()))
@@ -193,7 +194,7 @@ class MSIBI(object):
                         )
                     )
 
-    def _initialize(self, engine="hoomd", potentials_dir=None):
+    def _initialize(self, engine="hoomd", n_steps=1e6, potentials_dir=None):
         """Create initial table potentials and the simulation input scripts.
 
         Parameters
@@ -244,6 +245,7 @@ class MSIBI(object):
 
         for state in self.states:
             state.save_runscript(
+                n_steps = n_steps,
                 table_potentials=table_potentials,
                 table_width=len(self.pot_r),
                 engine=engine,

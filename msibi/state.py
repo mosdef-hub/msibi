@@ -54,6 +54,7 @@ class State(object):
 
     def save_runscript(
         self,
+        n_steps,
         table_potentials,
         table_width,
         bonds=None,
@@ -85,7 +86,7 @@ class State(object):
                 theta = angle._states[self]["theta"]
                 script.append(HOOMD_ANGLE_ENTRY.format(**locals()))
 
-        script.append(HOOMD_TEMPLATE)
+        script.append(HOOMD_TEMPLATE.format(n_steps))
 
         runscript_file = os.path.join(self.dir, "run.py")
         with open(runscript_file, "w") as fh:
