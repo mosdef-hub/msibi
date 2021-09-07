@@ -21,8 +21,7 @@ T = 298.0  # K
 
 
 class TestPair(BaseTest):
-    def test_pair_name(self, state0):
-        pair, state, rdf = state0
+    def test_pair_name(self, pair):
         assert pair.name == "0-1"
 
     def test_save_table_potential(self):
@@ -31,9 +30,8 @@ class TestPair(BaseTest):
         pair.save_table_potential(r, dr)
         assert os.path.isfile(pair.potential_file)
 
-    def test_add_state(self, state0):
-        pair, state, rdf = state0
-        assert np.array_equal(pair.states[state]["target_rdf"], rdf)
+    def test_add_state(self, pair, state0):
+        assert np.array_equal(pair.states[state0]["target_rdf"], rdf)
         assert pair.states[state]["current_rdf"] is None
         assert pair.states[state]["alpha"] == 0.5
         assert len(pair.states[state]["pair_indices"]) == 145152
