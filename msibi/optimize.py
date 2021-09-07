@@ -164,7 +164,7 @@ class MSIBI(object):
         self._initialize(engine=engine, n_steps=n_steps)
 
         for n in range(start_iteration + self.n_iterations):
-            print("-------- Iteration {n} --------".format(**locals()))
+            print(f"-------- Iteration {n} --------")
             run_query_simulations(self.states, engine=engine)
             self._update_potentials(n, engine)
 
