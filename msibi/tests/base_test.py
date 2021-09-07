@@ -17,26 +17,25 @@ test_assets = os.path.join(os.path.dirname(__file__), "assets")
 
 class BaseTest:
     @pytest.fixture
-    def state0(self):
-        return self.init_state(0)
-
-    @pytest.fixture
-    def state1(self):
-        return self.init_state(1)
-
-    def init_state(self, state_n):
-        pair = Pair("0", "1", potential=mie(r, 1.0, 1.0))
-        traj_filename = os.path.join(test_assets, f"query{state_n}.gsd")
-        rdf_filename = os.path.join(test_assets, f"target-rdf{state_n}.txt")
-        rdf = np.loadtxt(rdf_filename)
-        alpha = 0.5
-        state_dir = get_fn(f"state{state_number}/")
-        state = State(
-            k_B * T,
-            state_dir=state_dir,
-            traj_file=traj_filename,
-            top_file="sys.hoomdxml",
-            name="state0"
+    def opt(self):
+        opt = MSIBI(
+            rdf_cutoff=5.0,
+            n_rdf_points=101,
+            max_frames=10,
+            pot_cutoff=5.0,
         )
-        pair.add_state(state, rdf, alpha, pair_list)
-        return pair, state, rdf
+        opt.add_state(self.init_state(0))
+        opt.add_state(self.init_state(1))
+        opt.add_pair(Pair("0", "1", potential=mie(r, 1.0, 1.0)))
+
+
+    def init_state(self, state_n, tmp_path):
+        traj_filename = os.path.join(test_assets, f"query{state_n}.gsd")
+        alpha = 0.5
+        state = State(
+            name="state0",
+            kT=k_B * T,
+            traj_file=traj_filename,
+            _dir=tmp_path
+        )
+        return state
