@@ -1,7 +1,6 @@
 import os
 
 import matplotlib.pyplot as plt
-import mdtraj as md
 import numpy as np
 from cmeutils.structure import gsd_rdf
 
@@ -66,7 +65,7 @@ class Pair(object):
                 )
             negative_idx = np.where(target_rdf < 0)
             target_rdf[negative_idx] = 0
-            
+
         self._states[state] = {
             "target_rdf": target_rdf,
             "current_rdf": None,
