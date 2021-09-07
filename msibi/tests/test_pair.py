@@ -1,5 +1,4 @@
 import os
-import tempfile
 
 import mdtraj as md
 import numpy as np
@@ -24,13 +23,16 @@ class TestPair(BaseTest):
     def test_pair_name(self, pair):
         assert pair.name == "0-1"
 
-    def test_save_table_potential(self):
+    def test_save_table_potential(self, tmp_path):
         pair = Pair("A", "B", potential=mie(r, 1.0, 1.0))
-        pair.potential_file = tempfile.mkstemp()[1]
+        pair.potential_file = os.join(tmp_path, "pot.txt")
         pair.save_table_potential(r, dr)
         assert os.path.isfile(pair.potential_file)
 
     def test_add_state(self, pair, state0):
+        opt = MSIBI(2.5, n_bins)
+        opt.add_state(state0)
+        opt.add_pair(pair)
         assert np.array_equal(pair.states[state0]["target_rdf"], rdf)
         assert pair.states[state]["current_rdf"] is None
         assert pair.states[state]["alpha"] == 0.5
