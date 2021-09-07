@@ -13,7 +13,7 @@ class TestMSIBI(BaseTest):
         assert opt.pot_cutoff == opt.rdf_cutoff
         assert opt.n_rdf_points == n_bins
         assert opt.rdf_n_bins == n_bins
-        assert opt.r_switch == 14.6 / 6.0
+        assert opt.r_switch == opt.pot_r[-5]
         assert opt.dr == 0.1 / 6.0
         assert opt.smooth_rdfs is False
         assert opt.rdf_r_range.shape[0] == 2
@@ -24,7 +24,7 @@ class TestMSIBI(BaseTest):
         assert opt.pot_cutoff != opt.rdf_cutoff
         assert opt.n_rdf_points == n_bins
         assert opt.rdf_n_bins == n_bins
-        assert opt.r_switch == 11.6 / 6.0
+        assert opt.r_switch == opt.pot_r[-5]
         assert opt.dr == 0.1 / 6.0
         assert opt.smooth_rdfs is False
         assert opt.rdf_r_range.shape[0] == 2
