@@ -62,10 +62,7 @@ class State(object):
         if alpha < 0 or alpha > 1:
             raise ValueError("alpha should be between 0.0 and 1.0")
         self.alpha = float(alpha)
-        if _dir is None:
-            self.dir = self._setup_dir(name, kT)
-        else:
-            self.dir = _dir
+        self.dir = self._setup_dir(name, kT, dir_name=_dir)
         self.query_traj = os.path.join(self.dir, "query.gsd")
         self.backup_trajectory = backup_trajectory
 
@@ -113,19 +110,19 @@ class State(object):
         with open(runscript_file, "w") as fh:
             fh.writelines(script)
 
-    def _setup_dir(self, name, kT):
+    def _setup_dir(self, name, kT, dir_name=None):
         """Create a state directory each time a new State is created."""
-        if not os.path.isdir("states"):
-            os.mkdir("states")
+        if dir_name is None:
+            if not os.path.isdir("states"):
+                os.mkdir("states")
 
-        dir_name = f"{name}_{kT}"
+            dir_name = os.path.join("states", f"{name}_{kT}")
         try:
-            assert not os.path.isdir(os.path.join("states", dir_name))
-            os.mkdir(os.path.join("states", dir_name))
-        except:
-            raise AssertionError(
-                f"A State object has already been created with name {name} "
-                f"and kT {kT}"
+            assert not os.path.isdir(dir_name)
+            os.mkdir(dir_name)
+        except AssertionError as e:
+            raise e(
+                f"A State object has already been created with name {dir_name}"
             )
-        return os.path.abspath(os.path.join("states", dir_name))
+        return os.path.abspath(dir_name)
 
