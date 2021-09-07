@@ -4,10 +4,7 @@ import mdtraj as md
 import numpy as np
 import pytest
 
-from msibi.pair import Pair
-from msibi.potentials import mie
-from msibi.state import State
-from msibi.utils.general import get_fn
+from msibi import MSIBI, State, Pair, mie
 
 from .base_test import BaseTest
 
@@ -25,7 +22,7 @@ class TestPair(BaseTest):
 
     def test_save_table_potential(self, tmp_path):
         pair = Pair("A", "B", potential=mie(r, 1.0, 1.0))
-        pair.potential_file = os.join(tmp_path, "pot.txt")
+        pair.potential_file = os.path.join(tmp_path, "pot.txt")
         pair.save_table_potential(r, dr)
         assert os.path.isfile(pair.potential_file)
 
