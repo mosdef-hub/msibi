@@ -16,18 +16,35 @@ import mdtraj as md
 class State(object):
     """A single state used as part of a multistate optimization.
 
-    Attributes
+    Parameters
     ----------
-    kT : float, required
-        Unitless heat energy (product of Boltzmann's constant and temperature).
-    name : str, required
+    name : str
         State name used in creating state directory space and output files.
+    kT : float
+        Unitless heat energy (product of Boltzmann's constant and temperature).
     traj_file : path to a gsd.hoomd.HOOMDTrajectory file
         The gsd trajectory associated with this state
-    alpha : float, optional, default=1.0
+    alpha : float, default 1.0
         The alpha value used to scaale the weight of this state.
-    backup_trajectory : bool, optional, default=False
-        True if each query trajectory is backed up (default False)
+    backup_trajectory : bool, default False
+        True if each query trajectory is backed up
+
+    Attributes
+    ----------
+    name : str
+        State name
+    kT : float
+        Unitless heat energy (product of Boltzmann's constant and temperature).
+    traj_file : path
+        Path to the gsd trajectory associated with this state
+    alpha : float
+        The alpha value used to scaale the weight of this state.
+    dir : str
+        Path to where the State info with be saved.
+    query_traj : str
+        Path to the query trajectory.
+    backup_trajectory : bool
+        True if each query trajectory is backed up
     """
     def __init__(
         self,
@@ -36,6 +53,7 @@ class State(object):
         traj_file,
         alpha=1.0,
         backup_trajectory=False,
+        _dir=None
     ):
         self.name = name
         self.kT = kT
@@ -44,7 +62,10 @@ class State(object):
         if alpha < 0 or alpha > 1:
             raise ValueError("alpha should be between 0.0 and 1.0")
         self.alpha = float(alpha)
-        self.dir = self._setup_dir(name, kT)
+        if _dir is None:
+            self.dir = self._setup_dir(name, kT)
+        else:
+            self.dir = _dir
         self.query_traj = os.path.join(self.dir, "query.gsd")
         self.backup_trajectory = backup_trajectory
 
@@ -64,8 +85,8 @@ class State(object):
         """Save the input script for the MD engine."""
         script = list()
         script.append(
-                HOOMD2_HEADER.format(self.traj_file, self.kT, table_width)
-                )
+            HOOMD2_HEADER.format(self.traj_file, self.kT, table_width)
+        )
 
         for type1, type2, potential_file in table_potentials:
             script.append(HOOMD_TABLE_ENTRY.format(**locals()))
@@ -93,10 +114,7 @@ class State(object):
             fh.writelines(script)
 
     def _setup_dir(self, name, kT):
-        """
-        Handle the creation of a state specific directory each time a new
-        State() object is created.
-        """
+        """Create a state directory each time a new State is created."""
         if not os.path.isdir("states"):
             os.mkdir("states")
 
@@ -105,8 +123,9 @@ class State(object):
             assert not os.path.isdir(os.path.join("states", dir_name))
             os.mkdir(os.path.join("states", dir_name))
         except:
-            raise AssertionError("A State object has already "+
-                            f"been created with a name of {name} "+
-                            f"and a kT of {kT}")
+            raise AssertionError(
+                f"A State object has already been created with name {name} "
+                f"and kT {kT}"
+            )
         return os.path.abspath(os.path.join("states", dir_name))
 
