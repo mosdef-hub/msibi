@@ -17,17 +17,16 @@ test_assets = os.path.join(os.path.dirname(__file__), "assets")
 
 class BaseTest:
     @pytest.fixture
-    def opt(self):
-        opt = MSIBI(
-            rdf_cutoff=5.0,
-            n_rdf_points=101,
-            max_frames=10,
-            pot_cutoff=5.0,
-        )
-        opt.add_state(self.init_state(0))
-        opt.add_state(self.init_state(1))
-        opt.add_pair(Pair("0", "1", potential=mie(r, 1.0, 1.0)))
+    def state0(self, tmp_path):
+        return self.init_state(0, tmp_path)
 
+    @pytest.fixture
+    def state1(self, tmp_path):
+        return self.init_state(1, tmp_path)
+
+    @pytest.fixture
+    def pair(self):
+        return Pair("0", "1", potential=mie(r, 1.0, 1.0))
 
     def init_state(self, state_n, tmp_path):
         traj_filename = os.path.join(test_assets, f"query{state_n}.gsd")
