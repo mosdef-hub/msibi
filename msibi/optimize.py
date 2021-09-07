@@ -207,7 +207,7 @@ class MSIBI(object):
             Directory to store potential files. If None is given, a "potentials"
             folder in the current working directory is used.
         """
-        if potentials_dir is not None:
+        if potentials_dir is None:
             self.potentials_dir = os.path.join(os.getcwd(), "potentials")
         else:
             self.potentials_dir = potentials_dir
