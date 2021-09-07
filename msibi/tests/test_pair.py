@@ -26,14 +26,16 @@ class TestPair(BaseTest):
         pair.save_table_potential(r, dr)
         assert os.path.isfile(pair.potential_file)
 
-    def test_add_state(self, pair, state0):
+    def test_add_state(self, pair, state0, rdf0, tmp_path):
         opt = MSIBI(2.5, n_bins)
         opt.add_state(state0)
         opt.add_pair(pair)
-        assert np.array_equal(pair.states[state0]["target_rdf"], rdf)
+        opt.optimize(n_iterations=0, _dir=tmp_path)
+        assert isinstance(pair._states, dict)
+        assert np.array_equal(pair._states[state0]["target_rdf"], rdf0)
         assert pair.states[state]["current_rdf"] is None
         assert pair.states[state]["alpha"] == 0.5
-        assert len(pair.states[state]["pair_indices"]) == 145152
+        assert pair.states[state]["pair_indices"] is None
         assert len(pair.states[state]["f_fit"]) == 0
 
     def test_calc_current_rdf_no_smooth(self, state0):

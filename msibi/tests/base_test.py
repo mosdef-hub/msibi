@@ -3,9 +3,7 @@ import pytest
 
 import numpy as np
 
-from msibi.pair import Pair
-from msibi.potentials import mie
-from msibi.state import State
+from msibi import Pair, mie, State
 
 
 dr = 0.1 / 6.0
@@ -27,6 +25,17 @@ class BaseTest:
     @pytest.fixture
     def pair(self):
         return Pair("0", "1", potential=mie(r, 1.0, 1.0))
+
+    @pytest.fixture
+    def rdf0(self):
+        return self.get_rdf(0)
+
+    @pytest.fixture
+    def rdf1(self):
+        return self.get_rdf(1)
+
+    def get_rdf(self, state_n):
+        return np.loadtxt(os.path.join(test_assets, f"target-rdf{state_n}.txt"))
 
     def init_state(self, state_n, tmp_path):
         traj_filename = os.path.join(test_assets, f"query{state_n}.gsd")

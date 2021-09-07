@@ -62,7 +62,7 @@ class Pair(object):
         if state._opt.smooth_rdfs:
             target_rdf[:, 1] = savitzky_golay(
                 target_rdf[:, 1], 9, 2, deriv=0, rate=1
-                )
+            )
             negative_idx = np.where(target_rdf < 0)
             target_rdf[negative_idx] = 0
 
@@ -83,14 +83,14 @@ class Pair(object):
         else:
             traj = state.traj_file
         rdf, norm = gsd_rdf(
-                traj,
-                self.type1,
-                self.type2,
-                start=-state._opt.max_frames,
-                r_max=state._opt.rdf_cutoff,
-                bins=state._opt.n_rdf_points,
-                exclude_bonded=state._opt.rdf_exclude_bonded
-                )
+            traj,
+            self.type1,
+            self.type2,
+            start=-state._opt.max_frames,
+            r_max=state._opt.rdf_cutoff,
+            bins=state._opt.n_rdf_points,
+            exclude_bonded=state._opt.rdf_exclude_bonded
+        )
         return np.stack((rdf.bin_centers, rdf.rdf*norm)).T
 
     def compute_current_rdf(
