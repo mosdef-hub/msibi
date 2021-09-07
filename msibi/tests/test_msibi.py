@@ -31,13 +31,15 @@ class TestMSIBI(BaseTest):
         assert opt.pot_r.shape[0] != n_bins
         assert opt.pot_r.shape[0] == 121
 
-    def test_msibi_optimize_states(self, state0):
-        pair, state, rdf = state0
+    def test_msibi_optimize_states(self, state0, pair):
         opt = MSIBI(2.5, n_bins, pot_cutoff=2.5)
-        opt.optimize([state], [pair], n_iterations=0, engine="hoomd")
+        opt.add_state(state0)
+        opt.add_pair(pair)
+        opt.optimize(n_iterations=0, engine="hoomd")
 
-    def test_rdf_length(self, state0):
-        pair, state, rdf = state0
+    def test_rdf_length(self, state0, pair):
         opt = MSIBI(2.5, n_bins + 1, pot_cutoff=2.5)
+        opt.add_state(state0)
+        opt.add_pair(pair)
         with pytest.raises(ValueError):
-            opt.optimize([state], [pair], n_iterations=0, engine="hoomd")
+            opt.optimize(n_iterations=0, engine="hoomd")
