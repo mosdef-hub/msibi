@@ -16,19 +16,21 @@ class MSIBI(object):
         The upper cutoff value for the RDF calculation.
     n_points : int
         The number of radius values used in RDF calculations.
-    max_frames : int
+    max_frames : int, default 10
         The maximum number of frames to include at once in RDF calculation
         The RDF calculation will accumulate an average RDF over the range
         [-max_frames:-1] of the trajectory. This is also how a target_rdf
         will be calculated in Pair.add_state
-    pot_cutoff : float, optional, default=rdf_cutoff
-        The upper cutoff value for the potential.
-    r_switch : float, optional, default=pot_r[-5]
-        The radius after which a tail correction is applied.
-    smooth_rdfs : bool, optional, default=False
-        Use a smoothing function to reduce the noise in the RDF data.
-    verbose : bool
-        Whether to provide more information for debugging (default False)
+    pot_cutoff : float, default None
+        The upper cutoff value for the potential. If None is provided,
+        rdf_cutoff is used.
+    r_switch : float, default None
+        The radius after which a tail correction is applied. If None is
+        provided, pot_r[-5] is used.
+    smooth_rdfs : bool, default False
+        Whether to use a smoothing function to reduce the noise in the RDF data.
+    verbose : bool, default False
+        Whether to provide more information for debugging.
 
     Attributes
     ----------
@@ -36,19 +38,19 @@ class MSIBI(object):
         All states to be used in the optimization procedure.
     pairs : list of Pairs
         All pairs to be used in the optimization procedure.
-    n_iterations : int, optional, default=10
+    n_iterations : int
         The number of MSIBI iterations to perform.
     rdf_cutoff : float
         The upper cutoff value for the RDF calculation.
     n_rdf_points : int
         The number of radius values used in the RDF calculation.
-    dr : float, default=rdf_cutoff / (n_points - 1)
+    dr : float
         The spacing of radius values.
-    pot_cutoff : float, optional, default=rdf_cutoff
+    pot_cutoff : float
         The upper cutoff value for the potential.
-    pot_r : np.ndarray, shape=(int((rdf_cutoff + dr) / dr),)
+    pot_r : np.ndarray, shape=int((rdf_cutoff + dr) / dr)
         The radius values at which the potential is computed.
-    r_switch : float, optional, default=pot_r[-1] - 5 * dr
+    r_switch : float
         The radius after which a tail correction is applied.
     """
 
@@ -117,13 +119,12 @@ class MSIBI(object):
 
         Parameters
         ----------
-        n_iterations : int
-            Number of iterations. (default 10)
-        start_iteration : int
+        n_iterations : int, default 10
+            Number of iterations.
+        start_iteration : int, default 0
             Start optimization at start_iteration, useful for restarting.
-            (default 0)
-        engine : str
-            Engine that runs the simulations. (default "hoomd")
+        engine : str, default "hoomd"
+            Engine that runs the simulations.
 
         References
         ----------
@@ -186,23 +187,24 @@ class MSIBI(object):
             )
             pair.save_current_rdf(state, iteration=iteration, dr=self.dr)
             print(
-                    "pair {0}, state {1}, iteration {2}: {3:f}".format(
-                        pair.name,
-                        state.name,
-                        iteration,
-                        pair._states[state]["f_fit"][iteration]
-                        )
-                    )
+                "pair {0}, state {1}, iteration {2}: {3:f}".format(
+                    pair.name,
+                    state.name,
+                    iteration,
+                    pair._states[state]["f_fit"][iteration]
+                )
+            )
 
     def _initialize(self, engine="hoomd", n_steps=1e6, potentials_dir=None):
         """Create initial table potentials and the simulation input scripts.
 
         Parameters
         ----------
-        engine : str, optional, default='hoomd'
+        engine : str, default 'hoomd'
             Engine used to run simulations
-        potentials_dir : path, optional, default="'working_dir'/potentials"
-            Directory to store potential files
+        potentials_dir : path, default None
+            Directory to store potential files. If None is given, a "potentials"
+            folder in the current working directory is used.
         """
         if not potentials_dir:
             self.potentials_dir = os.path.join(os.getcwd(), "potentials")
