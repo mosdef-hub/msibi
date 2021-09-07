@@ -1,16 +1,18 @@
-import mdtraj as md
-import numpy as np
+import os
 import pytest
+
+import numpy as np
 
 from msibi.pair import Pair
 from msibi.potentials import mie
 from msibi.state import State
-from msibi.utils.general import get_fn
+
 
 dr = 0.1 / 6.0
 r = np.arange(0, 2.5 + dr, dr)
 k_B = 1.9872041e-3  # kcal/mol-K
 T = 298.0  # K
+test_assets = os.path.join(os.path.dirname(__file__), "assets")
 
 
 class BaseTest:
@@ -22,13 +24,10 @@ class BaseTest:
     def state1(self):
         return self.init_state(1)
 
-    def init_state(self, state_number):
+    def init_state(self, state_n):
         pair = Pair("0", "1", potential=mie(r, 1.0, 1.0))
-        topology_filename = get_fn("final.hoomdxml")
-        traj_filename = get_fn(f"state{state_number}/query.dcd")
-        t = md.load(traj_filename, top=topology_filename)
-        pair_list = t.top.select_pairs('name "0"', 'name "1"')
-        rdf_filename = get_fn(f"state{state_number}/target-rdf.txt")
+        traj_filename = os.path.join(test_assets, f"query{state_n}.gsd")
+        rdf_filename = os.path.join(test_assets, f"target-rdf{state_n}.txt")
         rdf = np.loadtxt(rdf_filename)
         alpha = 0.5
         state_dir = get_fn(f"state{state_number}/")
