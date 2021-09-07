@@ -114,6 +114,7 @@ class MSIBI(object):
         n_steps=1e6,
         start_iteration=0,
         engine="hoomd",
+        _dir=None
     ):
         """Optimize the pair potentials
 
@@ -161,7 +162,7 @@ class MSIBI(object):
             state.HOOMD_VERSION = HOOMD_VERSION
 
         self.n_iterations = n_iterations
-        self._initialize(engine=engine, n_steps=n_steps)
+        self._initialize(engine=engine, n_steps=n_steps, potentials_dir=_dir)
 
         for n in range(start_iteration + self.n_iterations):
             print(f"-------- Iteration {n} --------")
@@ -206,7 +207,7 @@ class MSIBI(object):
             Directory to store potential files. If None is given, a "potentials"
             folder in the current working directory is used.
         """
-        if not potentials_dir:
+        if potentials_dir is not None:
             self.potentials_dir = os.path.join(os.getcwd(), "potentials")
         else:
             self.potentials_dir = potentials_dir
