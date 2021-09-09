@@ -141,6 +141,17 @@ class MSIBI(object):
             Number of iterations.
         start_iteration : int, default 0
             Start optimization at start_iteration, useful for restarting.
+        n_steps : int, default=1e6
+            How many steps to run the query simulations
+        integrator : str, default = "hoomd.md.integrate.nvt"
+            The integrator to use in the query simulation.
+            See hoomd-blue.readthedocs.io/en/v2.9.6/module-md-integrate.html
+        integrator_kwargs : dict, default = {"tau": 0.1}
+            The args and their values required by the integrator chosen
+        dt : float, default = 0.001
+            The time step delta
+        gsd_period : int, default = 1000
+            The frequency to write trajectory information to query.gsd
         engine : str, default "hoomd"
             Engine that runs the simulations.
 
@@ -152,6 +163,9 @@ class MSIBI(object):
            multistate iterative Boltzmann inversion," Journal of Chemical
            Physics, vol. 140, pp. 224104, 2014.
         """
+        if integrator == "hoomd.md.integrate.nve":
+            raise ValueError("The NVE ensemble in not supported with MSIBI")
+
         for pair in self.pairs:
             for state in self.states:
                 pair._add_state(state, smooth=self.smooth_rdfs)
