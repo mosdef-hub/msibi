@@ -7,7 +7,6 @@ from cmeutils.structure import gsd_rdf
 from msibi.potentials import alpha_array, head_correction, tail_correction
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.exceptions import UnsupportedEngine
-from msibi.utils.find_exclusions import find_1_n_exclusions
 from msibi.utils.general import find_nearest
 from msibi.utils.smoothing import savitzky_golay
 

@@ -1,6 +1,5 @@
 import os
 
-import mdtraj as md
 import numpy as np
 import pytest
 
