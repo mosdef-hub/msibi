@@ -120,11 +120,16 @@ class MSIBI(object):
     def add_angle(self, angle):
         self.angles.append(angle)
 
+
     def optimize(
         self,
         n_iterations=10,
-        n_steps=1e6,
         start_iteration=0,
+        n_steps=1e6,
+        integrator="hoomd.md.integrate.nvt",
+        integrator_kwargs = {"tau": 0.1},
+        dt = 0.001,
+        gsd_period=1000,
         engine="hoomd",
         _dir=None
     ):
@@ -174,7 +179,14 @@ class MSIBI(object):
             state.HOOMD_VERSION = HOOMD_VERSION
 
         self.n_iterations = n_iterations
-        self._initialize(engine=engine, n_steps=n_steps, potentials_dir=_dir)
+        self._initialize(
+                engine=engine, 
+                n_steps=n_steps,
+                integrator=integrator,
+                integrator_kwargs=integrator_kwargs,
+                dt=dt,
+                gsd_period= gsd_period
+                potentials_dir=_dir)
 
         for n in range(start_iteration + self.n_iterations):
             print(f"-------- Iteration {n} --------")
@@ -208,7 +220,16 @@ class MSIBI(object):
                 )
             )
 
-    def _initialize(self, engine="hoomd", n_steps=1e6, potentials_dir=None):
+    def _initialize(
+            self,
+            engine="hoomd",
+            n_steps=,
+            integrator,
+            integrator_kwargs,
+            dt,
+            gsd_period,
+            potentials_dir
+            ):
         """Create initial table potentials and the simulation input scripts.
 
         Parameters
@@ -260,7 +281,11 @@ class MSIBI(object):
 
         for state in self.states:
             state.save_runscript(
-                n_steps = n_steps,
+                n_steps=n_steps,
+                integrator=integrator,
+                integrator_kwargs=integrator_kwargs,
+                dt=dt,
+                gsd_period=gsd_period,
                 table_potentials=table_potentials,
                 table_width=len(self.pot_r),
                 engine=engine,

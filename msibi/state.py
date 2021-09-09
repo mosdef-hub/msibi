@@ -68,6 +68,10 @@ class State(object):
     def save_runscript(
         self,
         n_steps,
+        integrator,
+        integrator_kwargs,
+        dt,
+        gsd_eperiod,
         table_potentials,
         table_width,
         bonds=None,
@@ -98,8 +102,15 @@ class State(object):
                 k = angle._states[self]["k"]
                 theta = angle._states[self]["theta"]
                 script.append(HOOMD_ANGLE_ENTRY.format(**locals()))
+        
+        integrator_args_list = []
+        for key in integrator_kwargs:
+            integrator_args.append(f"{key},=,{integrator_kwargs[key]},")
 
-        script.append(HOOMD_TEMPLATE.format(n_steps))
+        _integrator = "".join(
+                [integrator, "(", "".join(integrator_args_list), ")"]
+                )
+        script.append(HOOMD_TEMPLATE.format(**locals()))
 
         runscript_file = os.path.join(self.dir, "run.py")
         with open(runscript_file, "w") as fh:

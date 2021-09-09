@@ -34,16 +34,16 @@ harmonic_angle.angle_coeff.set('{name}', k={k}, t0={theta})
 
 HOOMD_TEMPLATE = """
 _all = hoomd.group.all()
-nvt_int = hoomd.md.integrate.langevin(group=_all, kT=T_final, seed=1)
-hoomd.md.integrate.mode_standard(dt=0.001)
+hoomd.md.integrate.mode_standard({dt})
+integrator = {_integrator}
 
 hoomd.dump.gsd(
     filename="query.gsd",
     group=_all,
-    period=1000,
+    period={gsd_period},
     overwrite=True,
     dynamic=["momentum"]
     )
 
-hoomd.run({})
+hoomd.run({n_steps})
 """
