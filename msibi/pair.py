@@ -93,14 +93,9 @@ class Pair(object):
         )
         return np.stack((rdf.bin_centers, rdf.rdf*norm)).T
 
-    def compute_current_rdf(
-        self,
-        state,
-        smooth,
-        verbose=False
-        ):
+    def compute_current_rdf(self, state, smooth, verbose=False, query=True):
 
-        rdf = self.get_state_rdf(state, query=True)
+        rdf = self.get_state_rdf(state, query=query)
         self._states[state]["current_rdf"] = rdf
 
         if state._opt.smooth_rdfs:

@@ -38,33 +38,47 @@ class TestPair(BaseTest):
         assert pair._states[state0]["pair_indices"] is None
         assert len(pair._states[state0]["f_fit"]) == 0
 
-    def test_calc_current_rdf_no_smooth(self, state0, pair):
-        pair.compute_current_rdf(
-            state0, r_range, n_bins, smooth=False, max_frames=1e3
-        )
+    def test_current_rdf_no_smooth(self, state0, pair, tmp_path):
+        opt = MSIBI(2.5, n_bins, smooth_rdfs=False)
+        opt.add_state(state0)
+        opt.add_pair(pair)
+        opt.optimize(n_iterations=0, _dir=tmp_path)
+
+        pair.compute_current_rdf(state0, opt.smooth_rdfs, query=False)
         assert pair._states[state0]["current_rdf"] is not None
         assert len(pair._states[state0]["f_fit"]) > 0
 
-    def test_calc_current_rdf_smooth(self, state0, pair):
-        pair.compute_current_rdf(
-            state0, r_range, n_bins, smooth=True, max_frames=1e3
-        )
-        assert pair.states[state]["current_rdf"] is not None
-        assert len(pair.states[state]["f_fit"]) > 0
+    def test_current_rdf_smooth(self, state0, pair, tmp_path):
+        opt = MSIBI(2.5, n_bins, smooth_rdfs=True)
+        opt.add_state(state0)
+        opt.add_pair(pair)
+        opt.optimize(n_iterations=0, _dir=tmp_path)
 
-    def test_save_current_rdf(self, state0, pair):
-        pair.compute_current_rdf(
-            state0, r_range, n_bins, smooth=True, max_frames=1e3
-        )
-        pair.save_current_rdf(state, 0, 0.1 / 6.0)
-        if not os.path.isdir("rdfs"):
-            os.system("mkdir rdfs")
-        assert os.path.isfile("rdfs/pair_0-1-state_state0-step0.txt")
+        pair.compute_current_rdf(state0, opt.smooth_rdfs, query=False)
+        assert pair._states[state0]["current_rdf"] is not None
+        assert len(pair._states[state0]["f_fit"]) > 0
 
-    def test_update_potential(self, state0, pair):
+    def test_save_current_rdf(self, state0, pair, tmp_path):
+        opt = MSIBI(2.5, n_bins, smooth_rdfs=True)
+        opt.add_state(state0)
+        opt.add_pair(pair)
+        opt.optimize(n_iterations=0, _dir=tmp_path)
+
+        pair.compute_current_rdf(state0, opt.smooth_rdfs, query=False)
+        pair.save_current_rdf(state0, 0, opt.dr)
+        assert os.path.isfile(
+            os.path.join(
+                state0.dir, f"pair_{pair.name}-state_{state0.name}-step0.txt"
+            )
+        )
+
+    def test_update_potential(self, state0, pair, tmp_path):
         """Make sure the potential changes after calculating RDF"""
-        pair.compute_current_rdf(
-            state0, r_range, n_bins, smooth=True, max_frames=1e3
-        )
+        opt = MSIBI(2.5, n_bins)
+        opt.add_state(state0)
+        opt.add_pair(pair)
+        opt.optimize(n_iterations=0, _dir=tmp_path)
+
+        pair.compute_current_rdf(state0, opt.smooth_rdfs, query=False)
         pair.update_potential(np.arange(0, 2.5 + dr, dr), r_switch=1.8)
         assert not np.array_equal(pair.potential, pair.previous_potential)
