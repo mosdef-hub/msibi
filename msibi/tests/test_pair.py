@@ -27,7 +27,7 @@ class TestPair(BaseTest):
         assert os.path.isfile(pair.potential_file)
 
     def test_add_state(self, pair, state0, rdf0, tmp_path):
-        opt = MSIBI(2.5, n_bins)
+        opt = MSIBI(2.5, n_bins, smooth_rdfs=True, rdf_exclude_bonded=True)
         opt.add_state(state0)
         opt.add_pair(pair)
         opt.optimize(n_iterations=0, _dir=tmp_path)
