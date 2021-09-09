@@ -14,7 +14,7 @@ class MSIBI(object):
     ----------
     rdf_cutoff : float
         The upper cutoff value for the RDF calculation.
-    n_points : int
+    n_rdf_points : int
         The number of radius values used in RDF calculations.
     max_frames : int, default 10
         The maximum number of frames to include at once in RDF calculation
@@ -27,6 +27,9 @@ class MSIBI(object):
     r_switch : float, default None
         The radius after which a tail correction is applied. If None is
         provided, pot_r[-5] is used.
+    rdf_exclude_bonded : bool, default False
+        Whether the RDF calculation should exclude correlations between bonded
+        species.
     smooth_rdfs : bool, default False
         Whether to use a smoothing function to reduce the noise in the RDF data.
     verbose : bool, default False
@@ -38,14 +41,23 @@ class MSIBI(object):
         All states to be used in the optimization procedure.
     pairs : list of Pairs
         All pairs to be used in the optimization procedure.
+    bonds : list of Bonds
+        All bonds to be used in the optimization procedure.
+    angles : list of Angles
+        All angles to be used in the optimization procedure.
     n_iterations : int
         The number of MSIBI iterations to perform.
+    max_frames : int
+        The maximum number of frames to include at once in RDF calculation
     rdf_cutoff : float
         The upper cutoff value for the RDF calculation.
     n_rdf_points : int
         The number of radius values used in the RDF calculation.
     dr : float
         The spacing of radius values.
+    rdf_exclude_bonded : bool
+        Whether the RDF calculation should exclude correlations between bonded
+        species.
     pot_cutoff : float
         The upper cutoff value for the potential.
     pot_r : np.ndarray, shape=int((rdf_cutoff + dr) / dr)
