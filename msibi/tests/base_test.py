@@ -39,10 +39,10 @@ class BaseTest:
 
     def init_state(self, state_n, tmp_path):
         traj_filename = os.path.join(test_assets, f"query{state_n}.gsd")
-        alpha = 0.5
         state = State(
-            name="state0",
+            name=f"state{state_n}",
             kT=k_B * T,
+            alpha=0.5,
             traj_file=traj_filename,
             _dir=tmp_path
         )
