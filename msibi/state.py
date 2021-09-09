@@ -71,7 +71,7 @@ class State(object):
         integrator,
         integrator_kwargs,
         dt,
-        gsd_eperiod,
+        gsd_period,
         table_potentials,
         table_width,
         bonds=None,
@@ -81,7 +81,7 @@ class State(object):
         """Save the input script for the MD engine."""
         script = list()
         script.append(
-            HOOMD2_HEADER.format(self.traj_file, self.kT, table_width)
+            HOOMD2_HEADER.format(self.traj_file, table_width)
         )
 
         for type1, type2, potential_file in table_potentials:
@@ -105,10 +105,17 @@ class State(object):
         
         integrator_args_list = []
         for key in integrator_kwargs:
-            integrator_args.append(f"{key},=,{integrator_kwargs[key]},")
+            integrator_args_list.append(f"{key}={integrator_kwargs[key]},")
 
         _integrator = "".join(
-                [integrator, "(", "".join(integrator_args_list), ")"]
+                [
+                    integrator,
+                    "(",
+                    "".join(integrator_args_list),
+                    "group=_all,"
+                    f"kT={self.kT}",
+                    ")"
+                    ]
                 )
         script.append(HOOMD_TEMPLATE.format(**locals()))
 

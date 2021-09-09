@@ -181,11 +181,11 @@ class MSIBI(object):
         self.n_iterations = n_iterations
         self._initialize(
                 engine=engine, 
-                n_steps=n_steps,
+                n_steps=int(n_steps),
                 integrator=integrator,
                 integrator_kwargs=integrator_kwargs,
                 dt=dt,
-                gsd_period= gsd_period
+                gsd_period=gsd_period,
                 potentials_dir=_dir)
 
         for n in range(start_iteration + self.n_iterations):
@@ -222,8 +222,8 @@ class MSIBI(object):
 
     def _initialize(
             self,
-            engine="hoomd",
-            n_steps=,
+            engine,
+            n_steps,
             integrator,
             integrator_kwargs,
             dt,

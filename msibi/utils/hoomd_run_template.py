@@ -5,9 +5,8 @@ from hoomd.init import read_gsd
 
 hoomd.context.initialize("")
 system = read_gsd("{0}", frame=-1, time_step=0)
-T_final = {1:.1f}
 
-pot_width = {2:d}
+pot_width = {1:d}
 nl = hoomd.md.nlist.cell()
 table = hoomd.md.pair.table(width=pot_width, nlist=nl)
 """
