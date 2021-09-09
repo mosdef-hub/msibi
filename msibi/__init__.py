@@ -1,5 +1,6 @@
 from msibi.optimize import MSIBI
 from msibi.pair import Pair
+from msibi.bonds import Bond, Angle
 from msibi.potentials import *
 from msibi.state import State
 from msibi.__version__ import __version__
@@ -10,6 +11,8 @@ __all__ = [
     "MSIBI",
     "Pair",
     "State",
+    "Bond",
+    "Angle",
     # Potentials.
     "mie",
     "morse",

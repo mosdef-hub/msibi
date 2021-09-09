@@ -1,5 +1,3 @@
-from __future__ import division
-
 import numpy as np
 
 from msibi.utils.general import find_nearest
@@ -99,6 +97,8 @@ def head_correction(r, V, previous_V, form="linear"):
 def linear_head_correction(r, V, cutoff):
     """Use a linear function to smoothly force V to a finite value at V(0). """
     slope = (V[cutoff + 1] - V[cutoff + 2]) / (r[cutoff + 1] - r[cutoff + 2])
+    if slope > 0:
+        slope = -slope
     V[: cutoff + 1] = slope * (r[: cutoff + 1] - r[cutoff + 1]) + V[cutoff + 1]
     return V
 

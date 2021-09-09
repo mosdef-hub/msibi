@@ -1,5 +1,3 @@
-from __future__ import division
-
 import os
 
 import numpy as np
@@ -16,18 +14,26 @@ class MSIBI(object):
     ----------
     rdf_cutoff : float
         The upper cutoff value for the RDF calculation.
-    n_points : int
-        The number of radius values.
-    pot_cutoff : float, optional, default=rdf_cutoff
-        The upper cutoff value for the potential.
-    r_switch : float, optional, default=pot_r[-5]
-        The radius after which a tail correction is applied.
-    smooth_rdfs : bool, optional, default=False
-        Use a smoothing function to reduce the noise in the RDF data.
-    max_frames : int
+    n_rdf_points : int
+        The number of radius values used in RDF calculations.
+    max_frames : int, default 10
         The maximum number of frames to include at once in RDF calculation
-    verbose : bool
-        Whether to provide more information for debugging (default False)
+        The RDF calculation will accumulate an average RDF over the range
+        [-max_frames:-1] of the trajectory. This is also how a target_rdf
+        will be calculated in Pair.add_state
+    pot_cutoff : float, default None
+        The upper cutoff value for the potential. If None is provided,
+        rdf_cutoff is used.
+    r_switch : float, default None
+        The radius after which a tail correction is applied. If None is
+        provided, pot_r[-5] is used.
+    rdf_exclude_bonded : bool, default False
+        Whether the RDF calculation should exclude correlations between bonded
+        species.
+    smooth_rdfs : bool, default False
+        Whether to use a smoothing function to reduce the noise in the RDF data.
+    verbose : bool, default False
+        Whether to provide more information for debugging.
 
     Attributes
     ----------
@@ -35,45 +41,58 @@ class MSIBI(object):
         All states to be used in the optimization procedure.
     pairs : list of Pairs
         All pairs to be used in the optimization procedure.
-    n_iterations : int, optional, default=10
+    bonds : list of Bonds
+        All bonds to be used in the optimization procedure.
+    angles : list of Angles
+        All angles to be used in the optimization procedure.
+    n_iterations : int
         The number of MSIBI iterations to perform.
+    max_frames : int
+        The maximum number of frames to include at once in RDF calculation
     rdf_cutoff : float
         The upper cutoff value for the RDF calculation.
     n_rdf_points : int
         The number of radius values used in the RDF calculation.
-    dr : float, default=rdf_cutoff / (n_points - 1)
+    dr : float
         The spacing of radius values.
-    pot_cutoff : float, optional, default=rdf_cutoff
+    rdf_exclude_bonded : bool
+        Whether the RDF calculation should exclude correlations between bonded
+        species.
+    pot_cutoff : float
         The upper cutoff value for the potential.
-    pot_r : np.ndarray, shape=(int((rdf_cutoff + dr) / dr),)
+    pot_r : np.ndarray, shape=int((rdf_cutoff + dr) / dr)
         The radius values at which the potential is computed.
-    r_switch : float, optional, default=pot_r[-1] - 5 * dr
+    r_switch : float
         The radius after which a tail correction is applied.
-
     """
 
     def __init__(
         self,
         rdf_cutoff,
         n_rdf_points,
+        max_frames=10,
         pot_cutoff=None,
         r_switch=None,
+        rdf_exclude_bonded=False,
         smooth_rdfs=False,
-        max_frames=1e3,
         verbose=False
     ):
 
+        rmin = 1e-4
         self.verbose = verbose
         self.states = []
         self.pairs = []
+        self.bonds = []
+        self.angles = []
         self.n_iterations = 10  # Can be overridden in optimize().
         self.max_frames = max_frames
 
         self.rdf_cutoff = rdf_cutoff
         self.n_rdf_points = n_rdf_points
         self.dr = rdf_cutoff / (n_rdf_points - 1)
+        self.rdf_exclude_bonded = rdf_exclude_bonded
         self.smooth_rdfs = smooth_rdfs
-        self.rdf_r_range = np.array([0.0, self.rdf_cutoff + self.dr])
+        self.rdf_r_range = np.array([rmin, self.rdf_cutoff + self.dr])
         self.rdf_n_bins = self.n_rdf_points
 
         # Sometimes the pot_cutoff and rdf_cutoff have different ranges,
@@ -82,30 +101,43 @@ class MSIBI(object):
             pot_cutoff = rdf_cutoff
         self.pot_cutoff = pot_cutoff
 
-        self.pot_r = np.arange(0.0, self.pot_cutoff + self.dr, self.dr)
+        self.pot_r = np.arange(rmin, self.pot_cutoff + self.dr, self.dr)
 
         if not r_switch:
             r_switch = self.pot_r[-5]
         self.r_switch = r_switch
 
+    def add_state(self, state):
+        state._opt = self
+        self.states.append(state)
+
+    def add_pair(self, pair):
+        self.pairs.append(pair)
+
+    def add_bond(self, bond):
+        self.bonds.append(bond)
+
+    def add_angle(self, angle):
+        self.angles.append(angle)
+
     def optimize(
-        self, states, pairs, n_iterations=10, engine="hoomd", start_iteration=0
+        self,
+        n_iterations=10,
+        n_steps=1e6,
+        start_iteration=0,
+        engine="hoomd",
+        _dir=None
     ):
         """Optimize the pair potentials
 
         Parameters
         ----------
-        states : array_like, len=n_states, dtype=msibi.State
-            List of states used to optimize pair potentials.
-        pairs : array_like, len=n_pairs, dtype=msibi.Pair
-            List of pairs being optimized.
-        n_iterations : int
-            Number of iterations. (default 10)
-        engine : str
-            Engine that runs the simulations. (default "hoomd")
-        start_iteration : int
+        n_iterations : int, default 10
+            Number of iterations.
+        start_iteration : int, default 0
             Start optimization at start_iteration, useful for restarting.
-            (default 0)
+        engine : str, default "hoomd"
+            Engine that runs the simulations.
 
         References
         ----------
@@ -114,36 +146,38 @@ class MSIBI(object):
         .. [1] T.C. Moore et al., "Derivation of coarse-grained potentials via
            multistate iterative Boltzmann inversion," Journal of Chemical
            Physics, vol. 140, pp. 224104, 2014.
-
         """
+        for pair in self.pairs:
+            for state in self.states:
+                pair._add_state(state, smooth=self.smooth_rdfs)
+
+        if self.bonds:
+            for bond in self.bonds:
+                for state in self.states:
+                    bond._add_state(state)
+
+        if self.angles:
+            for angle in self.angles:
+                for state in self.states:
+                    angle._add_state(state)
 
         if engine == "hoomd":
             import hoomd
             HOOMD_VERSION = 2
-        else: 
+        else:
             HOOMD_VERSION = None
 
         if self.verbose:
             print(f"Using HOOMD version {HOOMD_VERSION}.")
 
-        for pair in pairs:
-            for state, data in pair.states.items():
-                if len(data["target_rdf"]) != self.n_rdf_points:
-                    raise ValueError(
-                            f"Target RDF in {state.name} of pair {pair.name}"
-                            "is not the same length as n_rdf_points."
-                            )
-
-        for state in states:
+        for state in self.states:
             state.HOOMD_VERSION = HOOMD_VERSION
 
-        self.states = states
-        self.pairs = pairs
         self.n_iterations = n_iterations
-        self.initialize(engine=engine)
+        self._initialize(engine=engine, n_steps=n_steps, potentials_dir=_dir)
 
         for n in range(start_iteration + self.n_iterations):
-            print("-------- Iteration {n} --------".format(**locals()))
+            print(f"-------- Iteration {n} --------")
             run_query_simulations(self.states, engine=engine)
             self._update_potentials(n, engine)
 
@@ -157,42 +191,35 @@ class MSIBI(object):
             )
 
     def _recompute_rdfs(self, pair, iteration):
-        """
-        Recompute the current RDFs for every state used for a given pair.
-        """
-        for state in pair.states:
+        """Recompute the current RDFs for every state used for a given pair."""
+        for state in self.states:
             pair.compute_current_rdf(
                 state,
-                self.rdf_r_range,
-                n_bins=self.rdf_n_bins,
                 smooth=self.smooth_rdfs,
-                max_frames=self.max_frames,
                 verbose=self.verbose
             )
             pair.save_current_rdf(state, iteration=iteration, dr=self.dr)
             print(
-                    "pair {0}, state {1}, iteration {2}: {3:f}".format(
-                        pair.name,
-                        state.name,
-                        iteration,
-                        pair.states[state]["f_fit"][iteration]
-                        )
-                    )
+                "pair {0}, state {1}, iteration {2}: {3:f}".format(
+                    pair.name,
+                    state.name,
+                    iteration,
+                    pair._states[state]["f_fit"][iteration]
+                )
+            )
 
-    def initialize(self, engine="hoomd", potentials_dir=None):
-        """
-        Create initial table potentials and the simulation input scripts.
+    def _initialize(self, engine="hoomd", n_steps=1e6, potentials_dir=None):
+        """Create initial table potentials and the simulation input scripts.
 
         Parameters
         ----------
-        engine : str, optional, default='hoomd'
+        engine : str, default 'hoomd'
             Engine used to run simulations
-        potentials_dir : path, optional, default="'working_dir'/potentials"
-            Directory to store potential files
-
+        potentials_dir : path, default None
+            Directory to store potential files. If None is given, a "potentials"
+            folder in the current working directory is used.
         """
-
-        if not potentials_dir:
+        if potentials_dir is None:
             self.potentials_dir = os.path.join(os.getcwd(), "potentials")
         else:
             self.potentials_dir = potentials_dir
@@ -204,9 +231,12 @@ class MSIBI(object):
             os.mkdir("rdfs")
 
         table_potentials = []
+        bonds = None
+        angles = None
+
         for pair in self.pairs:
             potential_file = os.path.join(
-                self.potentials_dir, "pot.{0}.txt".format(pair.name)
+                self.potentials_dir, f"pot.{pair.name}.txt"
             )
             pair.potential_file = potential_file
             table_potentials.append((pair.type1, pair.type2, potential_file))
@@ -223,7 +253,17 @@ class MSIBI(object):
             # performing the query simulations.
             pair.save_table_potential(self.pot_r, self.dr, engine=engine)
 
+        if self.bonds:
+            bonds = self.bonds
+        if self.angles:
+            angles = self.angles
+
         for state in self.states:
             state.save_runscript(
-                table_potentials, table_width=len(self.pot_r), engine=engine
+                n_steps = n_steps,
+                table_potentials=table_potentials,
+                table_width=len(self.pot_r),
+                engine=engine,
+                bonds=bonds,
+                angles=angles
             )
