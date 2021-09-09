@@ -66,10 +66,6 @@ class State(object):
         self.query_traj = os.path.join(self.dir, "query.gsd")
         self.backup_trajectory = backup_trajectory
 
-    def reload_query_trajectory(self):
-        """Reload the query trajectory."""
-        self.traj = md.load(self.traj_file)
-
     def save_runscript(
         self,
         n_steps,

@@ -47,8 +47,6 @@ def _hoomd_worker(state, gpu):
 
 def _post_query(state):
     """Reload the query trajectory and make backups."""
-
-    state.reload_query_trajectory()
     backup_file(os.path.join(state.dir, "log.txt"))
     backup_file(os.path.join(state.dir, "err.txt"))
     if state.backup_trajectory:
