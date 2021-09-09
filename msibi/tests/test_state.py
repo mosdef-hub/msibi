@@ -1,7 +1,6 @@
 import pytest
 
 from msibi.state import State
-from msibi.utils.general import get_fn
 
 
 @pytest.mark.skipif(True, reason="Needs implementing!")
