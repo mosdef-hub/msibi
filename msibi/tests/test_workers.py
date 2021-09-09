@@ -1,6 +1,6 @@
 import os
-
 import pytest
+from pathlib import Path
 
 from msibi.utils.exceptions import UnsupportedEngine
 from msibi.workers import _post_query, run_query_simulations
@@ -15,8 +15,13 @@ class TestWorkers(BaseTest):
             run_query_simulations(["margaret", "thatcher"], engine=engine)
 
     def test_post_query(self, state0):
-        pair, state, rdf = state0
-        _post_query(state)
-        assert state.traj is not None
-        assert os.path.isfile(os.path.join(state.state_dir, "_.0.log.txt"))
-        assert os.path.isfile(os.path.join(state.state_dir, "_.0.err.txt"))
+        log_file = os.path.join(state0.dir, "log.txt")
+        err_file = os.path.join(state0.dir, "err.txt")
+        Path(log_file).touch()
+        Path(err_file).touch()
+
+        _post_query(state0)
+        assert state0.traj_file is not None
+        assert state0.query_traj is not None
+        assert os.path.isfile(os.path.join(state0.dir, "_.0.log.txt"))
+        assert os.path.isfile(os.path.join(state0.dir, "_.0.err.txt"))

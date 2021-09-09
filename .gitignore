@@ -1,4 +1,5 @@
 # Files generated during tutorial runs
+msibi/tutorials/*
 msibi/tutorials/lj/rdfs/pair*
 msibi/tutorials/lj/state*/*.txt
 msibi/tutorials/lj/potentials/

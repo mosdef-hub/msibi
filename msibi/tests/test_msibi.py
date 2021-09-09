@@ -1,6 +1,6 @@
 import pytest
 
-from msibi.optimize import MSIBI
+from msibi import MSIBI
 
 from .base_test import BaseTest
 
@@ -13,7 +13,7 @@ class TestMSIBI(BaseTest):
         assert opt.pot_cutoff == opt.rdf_cutoff
         assert opt.n_rdf_points == n_bins
         assert opt.rdf_n_bins == n_bins
-        assert opt.r_switch == 14.6 / 6.0
+        assert opt.r_switch == opt.pot_r[-5]
         assert opt.dr == 0.1 / 6.0
         assert opt.smooth_rdfs is False
         assert opt.rdf_r_range.shape[0] == 2
@@ -24,20 +24,22 @@ class TestMSIBI(BaseTest):
         assert opt.pot_cutoff != opt.rdf_cutoff
         assert opt.n_rdf_points == n_bins
         assert opt.rdf_n_bins == n_bins
-        assert opt.r_switch == 11.6 / 6.0
+        assert opt.r_switch == opt.pot_r[-5]
         assert opt.dr == 0.1 / 6.0
         assert opt.smooth_rdfs is False
         assert opt.rdf_r_range.shape[0] == 2
         assert opt.pot_r.shape[0] != n_bins
         assert opt.pot_r.shape[0] == 121
 
-    def test_msibi_optimize_states(self, state0):
-        pair, state, rdf = state0
+    def test_msibi_optimize_states(self, state0, pair, tmp_path):
         opt = MSIBI(2.5, n_bins, pot_cutoff=2.5)
-        opt.optimize([state], [pair], n_iterations=0, engine="hoomd")
+        opt.add_state(state0)
+        opt.add_pair(pair)
+        opt.optimize(n_iterations=0, engine="hoomd", _dir=tmp_path)
 
-    def test_rdf_length(self, state0):
-        pair, state, rdf = state0
+    def test_rdf_length(self, state0, pair, tmp_path):
         opt = MSIBI(2.5, n_bins + 1, pot_cutoff=2.5)
+        opt.add_state(state0)
+        opt.add_pair(pair)
         with pytest.raises(ValueError):
-            opt.optimize([state], [pair], n_iterations=0, engine="hoomd")
+            opt.optimize(n_iterations=0, engine="hoomd", _dir=tmp_path)
