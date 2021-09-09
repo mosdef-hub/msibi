@@ -8,37 +8,6 @@ import gc
 import msibi
 
 
-def get_fn(name):
-    """Get the full path to one of the reference files shipped for testing.
-
-    This function is taken straight from MDTraj
-    (see https://github.com/mdtraj/mdtraj).
-    In the source distribution, these files are in ``msibi/utils/reference``,
-    but on installation, they're moved to somewhere in the user's python
-    site-packages directory.
-
-    Parameters
-    ----------
-    name : str
-        Name of the file to load (with respect to the reference directory).
-
-    Examples
-    ________
-    >>> import mdtraj as md
-    >>> t = md.load(get_fn('final.hoomdxml'))
-    """
-
-    fn = resource_filename("msibi", os.path.join("utils", "reference", name))
-
-    if not os.path.exists(fn):
-        raise ValueError(
-            f"Sorry! {fn} does not exist. If you just added it, you'll have to "
-            "reinstall"
-        )
-
-    return fn
-
-
 def find_nearest(array, target):
     """Find array component whose numeric value is closest to 'target'."""
     idx = np.abs(array - target).argmin()

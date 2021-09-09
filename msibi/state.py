@@ -10,7 +10,6 @@ import cmeutils as cme
 from cmeutils.structure import gsd_rdf
 import gsd
 import gsd.hoomd
-import mdtraj as md
 
 
 class State(object):
