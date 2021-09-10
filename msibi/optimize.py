@@ -123,13 +123,13 @@ class MSIBI(object):
 
     def optimize(
         self,
-        n_iterations=10,
-        start_iteration=0,
-        n_steps=1e6,
         integrator,
         integrator_kwargs,
         dt,
         gsd_period,
+        n_iterations=10,
+        start_iteration=0,
+        n_steps=1e6,
         engine="hoomd",
         _dir=None
     ):
