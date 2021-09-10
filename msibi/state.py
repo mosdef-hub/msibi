@@ -1,7 +1,6 @@
 import os
 import shutil
 import warnings
-import hoomd
 from msibi import MSIBI, utils
 from msibi.utils.hoomd_run_template import (HOOMD2_HEADER, HOOMD_TABLE_ENTRY,
     HOOMD_BOND_INIT, HOOMD_BOND_ENTRY, HOOMD_ANGLE_INIT, HOOMD_ANGLE_ENTRY,
