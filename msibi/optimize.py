@@ -128,8 +128,8 @@ class MSIBI(object):
         n_steps=1e6,
         integrator,
         integrator_kwargs,
-        dt = 0.001,
-        gsd_period=1000,
+        dt,
+        gsd_period,
         engine="hoomd",
         _dir=None
     ):
