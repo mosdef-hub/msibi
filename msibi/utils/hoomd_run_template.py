@@ -34,7 +34,9 @@ harmonic_angle.angle_coeff.set('{name}', k={k}, t0={theta})
 HOOMD_TEMPLATE = """
 _all = hoomd.group.all()
 hoomd.md.integrate.mode_standard({dt})
-integrator = {_integrator}
+integrator_kwargs = {integrator_kwargs}
+integrator = {integrator}(group=_all, **integrator_kwargs)
+
 
 hoomd.dump.gsd(
     filename="query.gsd",

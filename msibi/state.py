@@ -1,6 +1,7 @@
 import os
 import shutil
 import warnings
+import hoomd
 from msibi import MSIBI, utils
 from msibi.utils.hoomd_run_template import (HOOMD2_HEADER, HOOMD_TABLE_ENTRY,
     HOOMD_BOND_INIT, HOOMD_BOND_ENTRY, HOOMD_ANGLE_INIT, HOOMD_ANGLE_ENTRY,
@@ -102,21 +103,8 @@ class State(object):
                 k = angle._states[self]["k"]
                 theta = angle._states[self]["theta"]
                 script.append(HOOMD_ANGLE_ENTRY.format(**locals()))
-        
-        integrator_args_list = []
-        for key in integrator_kwargs:
-            integrator_args_list.append(f"{key}={integrator_kwargs[key]},")
 
-        _integrator = "".join(
-                [
-                    integrator,
-                    "(",
-                    "".join(integrator_args_list),
-                    "group=_all,"
-                    f"kT={self.kT}",
-                    ")"
-                    ]
-                )
+        integrator_kwargs["kT"] = self.kT
         script.append(HOOMD_TEMPLATE.format(**locals()))
 
         runscript_file = os.path.join(self.dir, "run.py")
