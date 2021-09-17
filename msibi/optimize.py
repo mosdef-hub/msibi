@@ -137,20 +137,21 @@ class MSIBI(object):
 
         Parameters
         ----------
+        integrator : str, required 
+            The integrator to use in the query simulation.
+            See hoomd-blue.readthedocs.io/en/v2.9.6/module-md-integrate.html
+        integrator_kwargs : dict, required 
+            The args and their values required by the integrator chosen
+        dt : float, required 
+            The time step delta
+        gsd_period : int, required 
+            The number of frames between snapshots written to query.gsd
         n_iterations : int, default 10
             Number of iterations.
         start_iteration : int, default 0
             Start optimization at start_iteration, useful for restarting.
         n_steps : int, default=1e6
             How many steps to run the query simulations
-        integrator : str, default = "hoomd.md.integrate.nvt"
-            The integrator to use in the query simulation.
-            See hoomd-blue.readthedocs.io/en/v2.9.6/module-md-integrate.html
-        integrator_kwargs : dict, default = {"tau": 0.1}
-            The args and their values required by the integrator chosen
-        dt : float, default = 0.001
-            The time step delta
-        gsd_period : int, default = 1000
             The frequency to write trajectory information to query.gsd
         engine : str, default "hoomd"
             Engine that runs the simulations.
@@ -164,7 +165,7 @@ class MSIBI(object):
            Physics, vol. 140, pp. 224104, 2014.
         """
         if integrator == "hoomd.md.integrate.nve":
-            raise ValueError("The NVE ensemble in not supported with MSIBI")
+            raise ValueError("The NVE ensemble is not supported with MSIBI")
 
         for pair in self.pairs:
             for state in self.states:
