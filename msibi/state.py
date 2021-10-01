@@ -120,7 +120,7 @@ class State(object):
             if not os.path.isdir(
                     os.path.join(dir_name, "states")
                     ):
-                os.mkdir(os.path.join(dir_name, "stats"))
+                os.mkdir(os.path.join(dir_name, "states"))
             dir_name = os.path.join(dir_name, "states", f"{name}_{kT}")
         try:
             assert not os.path.isdir(dir_name)
