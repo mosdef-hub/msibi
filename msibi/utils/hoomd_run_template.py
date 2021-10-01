@@ -8,6 +8,7 @@ system = read_gsd("{0}", frame=-1, time_step=0)
 
 pot_width = {1:d}
 nl = hoomd.md.nlist.cell()
+nl.reset_exclusions(exclusions=["1-2", "1-3", "1-4"])
 table = hoomd.md.pair.table(width=pot_width, nlist=nl)
 """
 
