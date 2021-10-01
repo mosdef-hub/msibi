@@ -115,13 +115,17 @@ class State(object):
         if dir_name is None:
             if not os.path.isdir("states"):
                 os.mkdir("states")
-
             dir_name = os.path.join("states", f"{name}_{kT}")
-            try:
-                assert not os.path.isdir(dir_name)
-                os.mkdir(dir_name)
-            except AssertionError:
-                print(f"{dir_name} already exists")
-                raise
+        else:
+            if not os.path.isdir(
+                    os.path.join(dir_name, "states")
+                    ):
+                os.mkdir(os.path.join(dir_name, "stats"))
+            dir_name = os.path.join(dir_name, "states", f"{name}_{kT}")
+        try:
+            assert not os.path.isdir(dir_name)
+            os.mkdir(dir_name)
+        except AssertionError:
+            print(f"{dir_name} already exists")
+            raise
         return os.path.abspath(dir_name)
-
