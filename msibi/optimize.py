@@ -120,11 +120,16 @@ class MSIBI(object):
     def add_angle(self, angle):
         self.angles.append(angle)
 
+
     def optimize(
         self,
+        integrator,
+        integrator_kwargs,
+        dt,
+        gsd_period,
         n_iterations=10,
-        n_steps=1e6,
         start_iteration=0,
+        n_steps=1e6,
         engine="hoomd",
         _dir=None
     ):
@@ -132,10 +137,22 @@ class MSIBI(object):
 
         Parameters
         ----------
+        integrator : str, required 
+            The integrator to use in the query simulation.
+            See hoomd-blue.readthedocs.io/en/v2.9.6/module-md-integrate.html
+        integrator_kwargs : dict, required 
+            The args and their values required by the integrator chosen
+        dt : float, required 
+            The time step delta
+        gsd_period : int, required 
+            The number of frames between snapshots written to query.gsd
         n_iterations : int, default 10
             Number of iterations.
         start_iteration : int, default 0
             Start optimization at start_iteration, useful for restarting.
+        n_steps : int, default=1e6
+            How many steps to run the query simulations
+            The frequency to write trajectory information to query.gsd
         engine : str, default "hoomd"
             Engine that runs the simulations.
 
@@ -147,6 +164,9 @@ class MSIBI(object):
            multistate iterative Boltzmann inversion," Journal of Chemical
            Physics, vol. 140, pp. 224104, 2014.
         """
+        if integrator == "hoomd.md.integrate.nve":
+            raise ValueError("The NVE ensemble is not supported with MSIBI")
+
         for pair in self.pairs:
             for state in self.states:
                 pair._add_state(state, smooth=self.smooth_rdfs)
@@ -174,7 +194,14 @@ class MSIBI(object):
             state.HOOMD_VERSION = HOOMD_VERSION
 
         self.n_iterations = n_iterations
-        self._initialize(engine=engine, n_steps=n_steps, potentials_dir=_dir)
+        self._initialize(
+                engine=engine, 
+                n_steps=int(n_steps),
+                integrator=integrator,
+                integrator_kwargs=integrator_kwargs,
+                dt=dt,
+                gsd_period=gsd_period,
+                potentials_dir=_dir)
 
         for n in range(start_iteration + self.n_iterations):
             print(f"-------- Iteration {n} --------")
@@ -208,7 +235,16 @@ class MSIBI(object):
                 )
             )
 
-    def _initialize(self, engine="hoomd", n_steps=1e6, potentials_dir=None):
+    def _initialize(
+            self,
+            engine,
+            n_steps,
+            integrator,
+            integrator_kwargs,
+            dt,
+            gsd_period,
+            potentials_dir
+            ):
         """Create initial table potentials and the simulation input scripts.
 
         Parameters
@@ -260,7 +296,11 @@ class MSIBI(object):
 
         for state in self.states:
             state.save_runscript(
-                n_steps = n_steps,
+                n_steps=n_steps,
+                integrator=integrator,
+                integrator_kwargs=integrator_kwargs,
+                dt=dt,
+                gsd_period=gsd_period,
                 table_potentials=table_potentials,
                 table_width=len(self.pot_r),
                 engine=engine,

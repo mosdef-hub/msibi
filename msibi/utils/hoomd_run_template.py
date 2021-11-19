@@ -5,10 +5,10 @@ from hoomd.init import read_gsd
 
 hoomd.context.initialize("")
 system = read_gsd("{0}", frame=-1, time_step=0)
-T_final = {1:.1f}
 
-pot_width = {2:d}
+pot_width = {1:d}
 nl = hoomd.md.nlist.cell()
+nl.reset_exclusions(exclusions=["1-2", "1-3", "1-4"])
 table = hoomd.md.pair.table(width=pot_width, nlist=nl)
 """
 
@@ -34,16 +34,18 @@ harmonic_angle.angle_coeff.set('{name}', k={k}, t0={theta})
 
 HOOMD_TEMPLATE = """
 _all = hoomd.group.all()
-nvt_int = hoomd.md.integrate.langevin(group=_all, kT=T_final, seed=1)
-hoomd.md.integrate.mode_standard(dt=0.001)
+hoomd.md.integrate.mode_standard({dt})
+integrator_kwargs = {integrator_kwargs}
+integrator = {integrator}(group=_all, **integrator_kwargs)
+
 
 hoomd.dump.gsd(
     filename="query.gsd",
     group=_all,
-    period=1000,
+    period={gsd_period},
     overwrite=True,
     dynamic=["momentum"]
     )
 
-hoomd.run({})
+hoomd.run({n_steps})
 """

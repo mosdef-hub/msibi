@@ -68,6 +68,10 @@ class State(object):
     def save_runscript(
         self,
         n_steps,
+        integrator,
+        integrator_kwargs,
+        dt,
+        gsd_period,
         table_potentials,
         table_width,
         bonds=None,
@@ -77,7 +81,7 @@ class State(object):
         """Save the input script for the MD engine."""
         script = list()
         script.append(
-            HOOMD2_HEADER.format(self.traj_file, self.kT, table_width)
+            HOOMD2_HEADER.format(self.traj_file, table_width)
         )
 
         for type1, type2, potential_file in table_potentials:
@@ -99,7 +103,8 @@ class State(object):
                 theta = angle._states[self]["theta"]
                 script.append(HOOMD_ANGLE_ENTRY.format(**locals()))
 
-        script.append(HOOMD_TEMPLATE.format(n_steps))
+        integrator_kwargs["kT"] = self.kT
+        script.append(HOOMD_TEMPLATE.format(**locals()))
 
         runscript_file = os.path.join(self.dir, "run.py")
         with open(runscript_file, "w") as fh:
@@ -110,13 +115,17 @@ class State(object):
         if dir_name is None:
             if not os.path.isdir("states"):
                 os.mkdir("states")
-
             dir_name = os.path.join("states", f"{name}_{kT}")
-            try:
-                assert not os.path.isdir(dir_name)
-                os.mkdir(dir_name)
-            except AssertionError:
-                print(f"{dir_name} already exists")
-                raise
+        else:
+            if not os.path.isdir(
+                    os.path.join(dir_name, "states")
+                    ):
+                os.mkdir(os.path.join(dir_name, "states"))
+            dir_name = os.path.join(dir_name, "states", f"{name}_{kT}")
+        try:
+            assert not os.path.isdir(dir_name)
+            os.mkdir(dir_name)
+        except AssertionError:
+            print(f"{dir_name} already exists")
+            raise
         return os.path.abspath(dir_name)
-
