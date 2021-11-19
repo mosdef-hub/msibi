@@ -42,7 +42,8 @@ class TestMSIBI(BaseTest):
                 dt=0.001,
                 gsd_period=100,
                 engine="hoomd",
-                _dir=tmp_path)
+                _dir=tmp_path
+            )
 
     def test_rdf_length(self, state0, pair, tmp_path):
         opt = MSIBI(2.5, n_bins + 1, pot_cutoff=2.5)
@@ -56,4 +57,5 @@ class TestMSIBI(BaseTest):
                 dt=0.001,
                 gsd_period=100,
                 engine="hoomd",
-                _dir=tmp_path)
+                _dir=tmp_path
+            )
