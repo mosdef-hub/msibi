@@ -35,11 +35,25 @@ class TestMSIBI(BaseTest):
         opt = MSIBI(2.5, n_bins, pot_cutoff=2.5)
         opt.add_state(state0)
         opt.add_pair(pair)
-        opt.optimize(n_iterations=0, engine="hoomd", _dir=tmp_path)
+        opt.optimize(
+                n_iterations=0,
+                integrator="hoomd.md.integrate.nvt",
+                integrator_kwargs={"tau": 0.1},
+                dt=0.001,
+                gsd_period=100,
+                engine="hoomd",
+                _dir=tmp_path)
 
     def test_rdf_length(self, state0, pair, tmp_path):
         opt = MSIBI(2.5, n_bins + 1, pot_cutoff=2.5)
         opt.add_state(state0)
         opt.add_pair(pair)
         with pytest.raises(ValueError):
-            opt.optimize(n_iterations=0, engine="hoomd", _dir=tmp_path)
+            opt.optimize(
+                n_iterations=0,
+                integrator="hoomd.md.integrate.nvt",
+                integrator_kwargs={"tau": 0.1},
+                dt=0.001,
+                gsd_period=100,
+                engine="hoomd",
+                _dir=tmp_path)
