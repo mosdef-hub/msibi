@@ -16,10 +16,13 @@ jobs:
   pytest:
     runs-on: ubuntu-latest
     container: 
-        image: cmelab/msibi_cpu:latest
+        image: mambaorg/micromamba:0.15.2
 
     steps:
     - uses: actions/checkout@v2
+
+    - name: Build environment
+      run: micromamba install -y -n base -f environment.yml
  
     - name: Run pytest with coverage report
       run: python -m pytest --cov=./ --cov-report=xml -v
