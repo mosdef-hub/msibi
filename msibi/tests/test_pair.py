@@ -29,7 +29,14 @@ class TestPair(BaseTest):
         opt = MSIBI(2.5, n_bins, smooth_rdfs=True, rdf_exclude_bonded=True)
         opt.add_state(state0)
         opt.add_pair(pair)
-        opt.optimize(n_iterations=0, _dir=tmp_path)
+        opt.optimize(
+                n_iterations=0,
+                _dir=tmp_path,
+                integrator="hoomd.md.integrate.nvt",
+                integrator_kwargs={"tau": 0.1},
+                dt=0.001,
+                gsd_period=1000
+            )
         assert isinstance(pair._states, dict)
         assert np.array_equal(pair._states[state0]["target_rdf"], rdf0)
         assert pair._states[state0]["current_rdf"] is None
@@ -41,8 +48,14 @@ class TestPair(BaseTest):
         opt = MSIBI(2.5, n_bins, smooth_rdfs=False)
         opt.add_state(state0)
         opt.add_pair(pair)
-        opt.optimize(n_iterations=0, _dir=tmp_path)
-
+        opt.optimize(
+                n_iterations=0,
+                _dir=tmp_path,
+                integrator="hoomd.md.integrate.nvt",
+                integrator_kwargs={"tau": 0.1},
+                dt=0.001,
+                gsd_period=1000
+            )
         pair.compute_current_rdf(state0, opt.smooth_rdfs, query=False)
         assert pair._states[state0]["current_rdf"] is not None
         assert len(pair._states[state0]["f_fit"]) > 0
@@ -51,8 +64,14 @@ class TestPair(BaseTest):
         opt = MSIBI(2.5, n_bins, smooth_rdfs=True)
         opt.add_state(state0)
         opt.add_pair(pair)
-        opt.optimize(n_iterations=0, _dir=tmp_path)
-
+        opt.optimize(
+                n_iterations=0,
+                _dir=tmp_path,
+                integrator="hoomd.md.integrate.nvt",
+                integrator_kwargs={"tau": 0.1},
+                dt=0.001,
+                gsd_period=1000
+            )
         pair.compute_current_rdf(state0, opt.smooth_rdfs, query=False)
         assert pair._states[state0]["current_rdf"] is not None
         assert len(pair._states[state0]["f_fit"]) > 0
@@ -61,8 +80,14 @@ class TestPair(BaseTest):
         opt = MSIBI(2.5, n_bins, smooth_rdfs=True)
         opt.add_state(state0)
         opt.add_pair(pair)
-        opt.optimize(n_iterations=0, _dir=tmp_path)
-
+        opt.optimize(
+                n_iterations=0,
+                _dir=tmp_path,
+                integrator="hoomd.md.integrate.nvt",
+                integrator_kwargs={"tau": 0.1},
+                dt=0.001,
+                gsd_period=1000
+            )
         pair.compute_current_rdf(state0, opt.smooth_rdfs, query=False)
         pair.save_current_rdf(state0, 0, opt.dr)
         assert os.path.isfile(
@@ -76,8 +101,14 @@ class TestPair(BaseTest):
         opt = MSIBI(2.5, n_bins)
         opt.add_state(state0)
         opt.add_pair(pair)
-        opt.optimize(n_iterations=0, _dir=tmp_path)
-
+        opt.optimize(
+                n_iterations=0,
+                _dir=tmp_path,
+                integrator="hoomd.md.integrate.nvt",
+                integrator_kwargs={"tau": 0.1},
+                dt=0.001,
+                gsd_period=1000
+            )
         pair.compute_current_rdf(state0, opt.smooth_rdfs, query=False)
         pair.update_potential(np.arange(0, 2.5 + dr, dr), r_switch=1.8)
         assert not np.array_equal(pair.potential, pair.previous_potential)
