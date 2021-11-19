@@ -4,11 +4,13 @@ on:
   push:
     branches: [ master ]
     paths:
+      - '.github/workflows/pytest.yml'
       - 'msibi/**'
   pull_request:
     branches: [ master ]
     paths:
       - 'msibi/**'
+      - '.github/workflows/pytest.yml'
   # Allows workflow to be manually triggered
   workflow_dispatch:
 
