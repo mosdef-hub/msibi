@@ -1,3 +1,5 @@
+<img src="/docs/msibi.png" height="400">
+
 # MultiState Iterative Boltzmann Inversion (MS-IBI)
 ----------------------------------------
 [![build_cpu](https://github.com/cmelab/msibi/actions/workflows/build_cpu.yml/badge.svg)](https://github.com/cmelab/msibi/actions/workflows/build_cpu.yml)

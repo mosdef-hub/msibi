@@ -1,21 +1,10 @@
-FROM continuumio/miniconda3:4.9.2
+FROM mambaorg/micromamba:0.15.2
 
-WORKDIR /opt/app
+COPY --chown=micromamba:micromamba environment.yml /tmp/env.yml
+RUN micromamba install -y -n base -f /tmp/env.yml && \
+    micromamba clean --all --yes
 
-# Make RUN commands use `bash --login`: -- fixes conda init
-# https://pythonspeed.com/articles/activate-conda-dockerfile/
-SHELL ["/bin/bash", "--login", "-c"]
-
-# Create the environment
-COPY environment.yml ./
-
-# Install in base environment
-RUN conda env update -n base -f environment.yml && \
-    conda clean --all --yes -f 
+USER root
 
 # Install curl for Codecov
 RUN apt-get update && apt-get upgrade -y && apt-get install -y curl
-
-# Prevent python from loading packages from outside the container
-# default empty pythonpath
-ENV PYTHONPATH /ignore/pythonpath
