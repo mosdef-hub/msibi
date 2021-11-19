@@ -17,16 +17,25 @@ on:
 jobs:
   pytest:
     runs-on: ubuntu-latest
-    container: 
-        image: mambaorg/micromamba:0.15.2
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Check out repository
+      uses: actions/checkout@v2
 
     - name: Build environment
-      run: micromamba install -y -n base -f environment.yml
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        environment-file: environment.yml
+        miniforge-variant: Mambaforge
+        miniforge-version: 4.9.2-4
+        use-mamba: true
+    
+    - name: Install package
+      shell: bash -l {0}
+      run: pip install .
  
     - name: Run pytest with coverage report
+      shell: bash -l {0}
       run: python -m pytest --cov=./ --cov-report=xml -v
           
     - name: Upload coverage to Codecov
