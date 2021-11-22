@@ -19,5 +19,4 @@ dependencies:
 - nodejs>=10
 - pip:
     - git+https://github.com/rsdefever/antefoyer.git
-    - git+https://github.com/cmelab/msibi@v0.3.0
     - git+https://github.com/cmelab/cmeutils
