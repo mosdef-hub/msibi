@@ -121,7 +121,7 @@ def exponential_head_correction(r, V, cutoff):
     dr = r[cutoff + 2] - r[cutoff + 1]
     B = np.log(V[cutoff + 1] / V[cutoff + 2]) / dr
     A = V[cutoff + 1] * np.exp(B * r[cutoff + 1])
-    V[: cutoff + 1] = A * np.exp(-B * r[: cutoff + 1])
+    return V[: cutoff + 1] = A * np.exp(-B * r[: cutoff + 1])
 
 
 def alpha_array(alpha0, pot_r, form="linear"):
