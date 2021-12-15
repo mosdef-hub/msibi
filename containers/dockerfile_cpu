@@ -1,5 +1,7 @@
 FROM mambaorg/micromamba:0.15.2
 
+USER root
+
 ADD . /msibi
 
 WORKDIR /msibi
