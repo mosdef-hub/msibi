@@ -1,8 +1,12 @@
 FROM cmelab/gpuhoomdconda:latest
 
-# Create the environment
-COPY environment-nohoomd.yml ./
+ADD . /msibi
+
+WORKDIR /msibi
 
 # Install in base environment
 RUN conda env update -n base -f environment-nohoomd.yml && \
-    conda clean --all --yes -f 
+    conda clean --all --yes -f  &&\
+    python setup.py install
+
+WORKDIR /home
