@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 
 from msibi.utils.general import find_nearest
@@ -66,7 +68,7 @@ def head_correction(r, V, previous_V, form="linear"):
     elif form == "exponential":
         correction_function = exponential_head_correction
     else:
-        raise ValueError('Unsupported head correction form: "{0}"'.format(form))
+        raise ValueError(f'Unsupported head correction form: "{form}"')
 
     for i, pot_value in enumerate(V[::-1]):
         # Apply correction function because either of the following is true:
@@ -89,9 +91,11 @@ def head_correction(r, V, previous_V, form="linear"):
                 V[i] = previous_V[i]
             return V
     else:
-        # TODO: Raise error?
-        #       This means that all potential values are well behaved.
-        pass
+        warnings.warn(
+            "No inf/nan values in your potential--this is unusual!"
+            "No head correction applied"
+        )
+        return V
 
 
 def linear_head_correction(r, V, cutoff):
@@ -122,6 +126,7 @@ def exponential_head_correction(r, V, cutoff):
     B = np.log(V[cutoff + 1] / V[cutoff + 2]) / dr
     A = V[cutoff + 1] * np.exp(B * r[cutoff + 1])
     V[: cutoff + 1] = A * np.exp(-B * r[: cutoff + 1])
+    return V
 
 
 def alpha_array(alpha0, pot_r, form="linear"):
