@@ -1,15 +1,39 @@
 from msibi.utils.sorting import natural_sort
 
 class Bond(object):
-    def __init__(self, type1, type2, k, r0):
+    def __init__(self, type1, type2):
         self.type1, self.type2 = sorted(
                 [type1, type2],
                 key=natural_sort
                 )
         self.name = f"{self.type1}-{self.type2}"
+        self._states = dict()
+    
+    def add_harmonic(self, k, r0):
+        """
+        """
         self.k = k
         self.r0 = r0
-        self._states = dict()
+        self.script = ""
+
+    def add_fene(self, k, r0, epsilon, sigma):
+        """
+        """
+        self.k = k
+        self.r0 = r0
+        self.epsilon = epsilon
+        self.sigma = sigma
+        self.script = ""
+
+    def add_table(self, file=None, func=None):
+        """
+        """
+        if [file, func].count(None) == 0:
+            raise ValueError("Choose one of `file` of `func` to create
+                        a table potential")
+        self.file = file
+        self.func = func
+        self.script = ""
 
     def _add_state(self, state):
         self._states[state] = {
