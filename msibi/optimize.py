@@ -120,8 +120,16 @@ class MSIBI(object):
     def add_angle(self, angle):
         self.angles.append(angle)
 
+    def optimize_bonds(self):
+        pass
 
-    def optimize(
+    def optimize_angles(self):
+        pass
+
+    def optimize_dihedrals(self):
+        pass
+
+    def optimize_pairs(
         self,
         integrator,
         integrator_kwargs,
