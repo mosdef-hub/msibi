@@ -35,6 +35,9 @@ class Bond(object):
         self.func = func
         self.script = ""
 
+    def get_distribution(self):
+        pass
+
     def _add_state(self, state):
         self._states[state] = {
                 "k": self.k,
