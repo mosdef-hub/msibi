@@ -124,7 +124,11 @@ class MSIBI(object):
         pass
 
     def optimize_angles(self):
-        pass
+        if self.bonds:
+            for bond in self.bonds:
+                for state in self.states:
+                    bond._add_state(state)
+
 
     def optimize_dihedrals(self):
         pass
