@@ -19,40 +19,27 @@ class Bond(object):
         self.bond_parms = {"k":self.k, "r0":self.r0}
         self.bond_type = "harmonic"
         self.script = ""
-
-    def set_fene(self, k, r0, epsilon, sigma):
+    
+    def set_polynomial(self, r0, n_terms):
         """
         """
-        self.k = k
+        self.bond_type = "polynomial"
         self.r0 = r0
-        self.epsilon = epsilon
-        self.sigma = sigma
-        self.bond_parms = {
-                "k": self.k,
-                "r0": r0,
-                "epsilon": self.epsilon,
-                "sigma": self.sigma
-            }
-        self.bond_type = "fene"
         self.script = ""
+        self.k_coeffs = {}
+        for i in range(n_terms):
+            self.k_coeffs[f"k{i}"] = 1
+
+    def update_polynomail(self):
+
+
 
     def set_table(self, file=None, func=None):
         """
         """
-        if [file, func].count(None) == 0:
-            raise ValueError("Choose one of `file` of `func` to create
-                        a table potential")
         self.file = file
-        self.func = func
         self.bond_type = "table"
         self.script = ""
-
-    def get_distribution(self, state, query=False):
-        if query:
-            traj = state.query_traj
-        else:
-            traj = state.traj_file
-        bonds = bond_distribution(traj, self.type1, self.type2)  
 
     def _add_state(self, state):
         target_distribution = self.get_distribution(state, query=False) 
@@ -65,6 +52,19 @@ class Bond(object):
                 "path": state.dir
             }
         self._states[state].update(self.bond_params)
+
+    def get_distribution(self, state, query=False):
+        if query:
+            traj = state.query_traj
+        else:
+            traj = state.traj_file
+        bonds = bond_distribution(traj, self.type1, self.type2)  
+
+    def compute_current_distribution(self, state):
+        bond_distribution = self.get_distribution(state, query=False)
+        self._states[state]["current_distribution"] = bond_distribution
+        # TODO FINISH CALC SIM
+        f_fit = calc_similarity()
 
 
 class Angle(object):
