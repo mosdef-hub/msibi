@@ -9,6 +9,8 @@ class Bond(object):
                     key=natural_sort
                 )
         self.name = f"{self.type1}-{self.type2}"
+        self.potential_file = None
+        self.potential = None
         self._states = dict()
     
     def set_harmonic(self, k, r0):
@@ -30,6 +32,9 @@ class Bond(object):
         self.k2 = k2
         self.r_min = r_min
         self.r_max = r_max
+        r_range = r_max - r_min
+        self.bond_r = np.arange(self.r_min, self.r_max, r_range / 100)
+        self.potential = 
         self.script = ""
 
         def create_bond_table(r):
