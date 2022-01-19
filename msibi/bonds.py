@@ -9,8 +9,6 @@ class Bond(object):
                     key=natural_sort
                 )
         self.name = f"{self.type1}-{self.type2}"
-        self.r_min = r_min
-        self.r_max = r_max
         self._states = dict()
     
     def set_harmonic(self, k, r0):
@@ -22,17 +20,22 @@ class Bond(object):
         self.bond_type = "harmonic"
         self.script = ""
     
-    def set_polynomial(self, r0, k_coeffs):
+    def set_polynomial(self, r0, k4, k3, k2, r_min, r_max, dr):
         """
         """
         self.bond_type = "polynomial"
         self.r0 = r0
+        self.k4 = k4
+        self.k3 = k3
+        self.k2 = k2
+        self.r_min = r_min
+        self.r_max = r_max
         self.script = ""
-        self.k_coeffs = {}
-        for i in range(n_terms):
-            self.k_coeffs[f"k{i}"] = 1
 
-    def update_polynomail(self):
+        def create_bond_table(r):
+            l = r - self.r0
+            V_r = self.k4(l)**4 + self.k3(l)**3 + self.k2(l)**2
+            return V_r
 
 
 
