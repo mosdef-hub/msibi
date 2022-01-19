@@ -143,7 +143,7 @@ class MSIBI(object):
         self.n_rdf_points = n_rdf_points
         self.dr = rdf_cutoff / (n_rdf_points - 1)
         self.r_min = r_min
-        self.rdf_exclude_bonded rdf_exclude_bonded
+        self.rdf_exclude_bonded = rdf_exclude_bonded
         self.smooth_rdfs = smooth_rdfs
         self.rdf_r_range = np.array([self.r_min, self.rdf_cutoff + self.dr])
         self.rdf_n_bins = self.n_rdf_points
