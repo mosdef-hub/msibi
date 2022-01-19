@@ -3,12 +3,14 @@ from msibi.utils.sorting import natural_sort
 
 
 class Bond(object):
-    def __init__(self, type1, type2):
+    def __init__(self, type1, type2, r_min, r_max):
         self.type1, self.type2 = sorted(
-                [type1, type2],
-                key=natural_sort
+                    [type1, type2],
+                    key=natural_sort
                 )
         self.name = f"{self.type1}-{self.type2}"
+        self.r_min = r_min
+        self.r_max = r_max
         self._states = dict()
     
     def set_harmonic(self, k, r0):
@@ -20,7 +22,7 @@ class Bond(object):
         self.bond_type = "harmonic"
         self.script = ""
     
-    def set_polynomial(self, r0, n_terms):
+    def set_polynomial(self, r0, k_coeffs):
         """
         """
         self.bond_type = "polynomial"
