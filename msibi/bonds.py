@@ -61,7 +61,6 @@ class Bond(object):
                 "f_fit": [],
                 "path": state.dir
             }
-        self._states[state].update(self.bond_params)
 
     def get_distribution(self, state, query=False):
         if query:
