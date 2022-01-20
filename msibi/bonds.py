@@ -11,6 +11,7 @@ class Bond(object):
         self.name = f"{self.type1}-{self.type2}"
         self.potential_file = None
         self.potential = None
+        self.previous_potential = None
         self._states = dict()
     
     def set_harmonic(self, k, r0):
@@ -18,22 +19,19 @@ class Bond(object):
         """
         self.k = k
         self.r0 = r0
-        self.bond_parms = {"k":self.k, "r0":self.r0}
         self.bond_type = "harmonic"
         self.script = ""
     
-    def set_polynomial(self, r0, k4, k3, k2, r_min, r_max, dr):
+    def set_quadratic(self, r0, r_min, r_max, dr, k4, k3, k2):
         """
         """
-        self.bond_type = "polynomial"
+        self.bond_type = "quadratic"
         self.r0 = r0
         self.k4 = k4
         self.k3 = k3
         self.k2 = k2
-        self.r_min = r_min
-        self.r_max = r_max
-        r_range = r_max - r_min
-        self.bond_r = np.arange(self.r_min, self.r_max, r_range / 100)
+        r_range = np.arange(r_min, r_max + dr, dr)
+        self.potential = create_bond_table(r_range)
         self.script = ""
 
         def create_bond_table(r):
@@ -43,7 +41,7 @@ class Bond(object):
 
 
 
-    def set_table(self, file=None, func=None):
+    def set_from_file(self, file=None):
         """
         """
         self.file = file
