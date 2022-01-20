@@ -88,12 +88,9 @@ class State(object):
             script.append(HOOMD_TABLE_ENTRY.format(**locals()))
 
         if bonds is not None:
-            script.append(HOOMD_BOND_INIT)
+            script.append(bonds[0].bond_init_script)
             for bond in bonds:
-                name = bond.name
-                k = bond._states[self]["k"]
-                r0 = bond._states[self]["r0"]
-                script.append(HOOMD_BOND_ENTRY.format(**locals()))
+                script.append(bond.bond_entry_script)
 
         if angles is not None:
             script.append(HOOMD_ANGLE_INIT)

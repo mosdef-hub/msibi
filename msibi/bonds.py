@@ -3,7 +3,7 @@ from msibi.utils.sorting import natural_sort
 
 
 class Bond(object):
-    def __init__(self, type1, type2, r_min, r_max):
+    def __init__(self, type1, type2):
         self.type1, self.type2 = sorted(
                     [type1, type2],
                     key=natural_sort
@@ -14,13 +14,16 @@ class Bond(object):
         self.previous_potential = None
         self._states = dict()
     
-    def set_harmonic(self, k, r0):
+    def set_harmonic(self, k0, r0):
         """
         """
-        self.k = k
+        self.k0 = k0
         self.r0 = r0
         self.bond_type = "harmonic"
-        self.script = ""
+        self.bond_init_script = "harmonic_bond = hoomd.md.bond.harmonic()"
+        self.bond_entry_script = f"""
+        harmonic_bond.bond_coeff.set({self.name}, k={self.k0}, r={self.r0})
+        """
     
     def set_quadratic(self, r0, r_min, r_max, dr, k4, k3, k2):
         """
