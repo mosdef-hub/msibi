@@ -22,7 +22,7 @@ class Bond(object):
         self.bond_type = "harmonic"
         self.bond_init_script = "harmonic_bond = hoomd.md.bond.harmonic()"
         self.bond_entry_script = f"""
-harmonic_bond.bond_coeff.set('{self.name}', k={self.k}, r={self.r0})
+harmonic_bond.bond_coeff.set('{self.name}', k={self.k}, r0={self.r0})
         """
     
     def set_quadratic(self, r0, r_min, r_max, dr, k4, k3, k2):
