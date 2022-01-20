@@ -16,14 +16,6 @@ HOOMD_TABLE_ENTRY = """
 table.set_from_file('{type1}', '{type2}', filename='{potential_file}')
 """
 
-HOOMD_BOND_INIT = """
-harmonic_bond = hoomd.md.bond.harmonic()
-"""
-
-HOOMD_BOND_ENTRY = """
-harmonic_bond.bond_coeff.set('{name}', k={k}, r0={r0})
-"""
-
 HOOMD_ANGLE_INIT = """
 harmonic_angle = hoomd.md.angle.harmonic()
 """
