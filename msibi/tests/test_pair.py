@@ -31,17 +31,17 @@ class TestPair(BaseTest):
                 integrator_kwargs={"tau": 0.1},
                 dt=0.001,
                 gsd_period=1000,
+                n_potential_points=n_bins,
+                potential_cutoff=2.5,
+                r_min=1e-4,
+                max_frames=10,
                 n_iterations=0,
                 n_steps=1e6,
         )
         opt.add_state(state0)
         opt.add_pair(pair)
         opt.optimize_pairs(
-                max_frames=10,
-                rdf_cutoff=2.5,
-                r_min=1e-4,
                 r_switch=None,
-                n_rdf_points=n_bins,
                 rdf_exclude_bonded=True,
                 smooth_rdfs=True,
                 _dir=tmp_path,
@@ -59,17 +59,17 @@ class TestPair(BaseTest):
                 integrator_kwargs={"tau": 0.1},
                 dt=0.001,
                 gsd_period=1000,
-                n_iterations=0,
+                potential_cutoff=2.5,
+                n_potential_points=n_bins,
+                r_min=1e-4,
                 n_steps=1e6,
+                n_iterations=0,
+                max_frames=10
         )
         opt.add_state(state0)
         opt.add_pair(pair)
         opt.optimize_pairs(
-                max_frames=10,
-                rdf_cutoff=2.5,
-                r_min=1e-4,
                 r_switch=None,
-                n_rdf_points=n_bins,
                 rdf_exclude_bonded=True,
                 smooth_rdfs=False,
                 _dir=tmp_path,
@@ -84,17 +84,17 @@ class TestPair(BaseTest):
                 integrator_kwargs={"tau": 0.1},
                 dt=0.001,
                 gsd_period=1000,
-                n_iterations=0,
+                potential_cutoff=2.5,
+                n_potential_points=n_bins,
+                r_min=1e-4,
                 n_steps=1e6,
+                n_iterations=0,
+                max_frames=10
         )
         opt.add_state(state0)
         opt.add_pair(pair)
         opt.optimize_pairs(
-                max_frames=10,
-                rdf_cutoff=2.5,
-                r_min=1e-4,
                 r_switch=None,
-                n_rdf_points=n_bins,
                 rdf_exclude_bonded=True,
                 smooth_rdfs=True,
                 _dir=tmp_path,
@@ -109,17 +109,17 @@ class TestPair(BaseTest):
                 integrator_kwargs={"tau": 0.1},
                 dt=0.001,
                 gsd_period=1000,
-                n_iterations=0,
+                potential_cutoff=2.5,
+                n_potential_points=n_bins,
+                r_min=1e-4,
                 n_steps=1e6,
+                n_iterations=0,
+                max_frames=10
         )
         opt.add_state(state0)
         opt.add_pair(pair)
         opt.optimize_pairs(
-                max_frames=10,
-                rdf_cutoff=2.5,
-                r_min=1e-4,
                 r_switch=None,
-                n_rdf_points=n_bins,
                 rdf_exclude_bonded=True,
                 smooth_rdfs=True,
                 _dir=tmp_path,
@@ -139,17 +139,17 @@ class TestPair(BaseTest):
                 integrator_kwargs={"tau": 0.1},
                 dt=0.001,
                 gsd_period=1000,
+                n_potential_points=n_bins,
+                potential_cutoff=2.5,
+                r_min=1e-4,
+                max_frames=10,
                 n_iterations=0,
                 n_steps=1e6,
         )
         opt.add_state(state0)
         opt.add_pair(pair)
         opt.optimize_pairs(
-                max_frames=10,
-                rdf_cutoff=2.5,
-                r_min=1e-4,
                 r_switch=None,
-                n_rdf_points=n_bins,
                 rdf_exclude_bonded=True,
                 smooth_rdfs=True,
                 _dir=tmp_path,
