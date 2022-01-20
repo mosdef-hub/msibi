@@ -200,7 +200,7 @@ class Pair(object):
             plt.legend()
             plt.show()
 
-    def save_table_potential(self, r, dr, iteration=0, engine="hoomd"):
+    def save_table_potential(self, r, dr, iteration=0):
         """Save the table potential to a file usable by the MD engine. """
         V = self.potential
         F = -1.0 * np.gradient(V, dr)

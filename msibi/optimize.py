@@ -173,7 +173,6 @@ class MSIBI(object):
             state.HOOMD_VERSION = self.HOOMD_VERSION
 
         self._initialize(
-                engine=self.engine, 
                 n_steps=int(self.n_steps),
                 integrator=self.integrator,
                 integrator_kwargs=self.integrator_kwargs,
@@ -185,16 +184,14 @@ class MSIBI(object):
         for n in range(self.start_iteration + self.n_iterations):
             print(f"-------- Iteration {n} --------")
             run_query_simulations(self.states, engine=self.engine)
-            self._update_potentials(n, engine)
+            self._update_potentials(n, self.engine)
 
-    def _update_potentials(self, iteration, engine):
+    def _update_potentials(self, iteration):
         """Update the potentials for each pair. """
         for pair in self.pairs:
             self._recompute_rdfs(pair, iteration)
             pair.update_potential(self.pot_r, self.r_switch, self.verbose)
-            pair.save_table_potential(
-                self.pot_r, self.dr, iteration=iteration, engine=engine
-            )
+            pair.save_table_potential(self.pot_r, self.dr, iteration)
 
     def _recompute_rdfs(self, pair, iteration):
         """Recompute the current RDFs for every state used for a given pair."""
@@ -216,7 +213,6 @@ class MSIBI(object):
 
     def _initialize(
             self,
-            engine,
             n_steps,
             integrator,
             integrator_kwargs,
@@ -228,8 +224,6 @@ class MSIBI(object):
 
         Parameters
         ----------
-        engine : str, default 'hoomd'
-            Engine used to run simulations
         potentials_dir : path, default None
             Directory to store potential files. If None is given, a "potentials"
             folder in the current working directory is used.
@@ -260,13 +254,11 @@ class MSIBI(object):
             pair.potential = V
 
             # This file is written for viewing of how the potential evolves.
-            pair.save_table_potential(
-                self.pot_r, self.dr, iteration=0, engine=engine
-            )
+            pair.save_table_potential(self.pot_r, self.dr, iteration=0)
 
             # This file is overwritten at each iteration and actually used for
             # performing the query simulations.
-            pair.save_table_potential(self.pot_r, self.dr, engine=engine)
+            pair.save_table_potential(self.pot_r, self.dr)
 
         if self.bonds:
             bonds = self.bonds
@@ -282,7 +274,7 @@ class MSIBI(object):
                 gsd_period=gsd_period,
                 table_potentials=table_potentials,
                 table_width=len(self.pot_r),
-                engine=engine,
+                engine=self.engine,
                 bonds=bonds,
                 angles=angles
             )
