@@ -95,5 +95,5 @@ harmonic_angle.angle_coeff.set('{self.name}', k={self.k}, t0={self.theta})
     def _add_state(self, state):
         self._states[state] = {
                 "k": self.k,
-                "theta": self.theta
+                "theta": self.theta0
             }
