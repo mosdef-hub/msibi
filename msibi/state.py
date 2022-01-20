@@ -2,9 +2,9 @@ import os
 import shutil
 import warnings
 from msibi import MSIBI, utils
-from msibi.utils.hoomd_run_template import (HOOMD2_HEADER, HOOMD_TABLE_ENTRY,
-    HOOMD_BOND_INIT, HOOMD_BOND_ENTRY, HOOMD_ANGLE_INIT, HOOMD_ANGLE_ENTRY,
-    HOOMD_TEMPLATE)
+from msibi.utils.hoomd_run_template import (
+        HOOMD2_HEADER, HOOMD_TABLE_ENTRY, HOOMD_TEMPLATE
+)
 
 import cmeutils as cme
 from cmeutils.structure import gsd_rdf
@@ -93,12 +93,9 @@ class State(object):
                 script.append(bond.bond_entry_script)
 
         if angles is not None:
-            script.append(HOOMD_ANGLE_INIT)
+            script.append(angles[0].angle_init_script)
             for angle in angles:
-                name = angle.name
-                k = angle._states[self]["k"]
-                theta = angle._states[self]["theta"]
-                script.append(HOOMD_ANGLE_ENTRY.format(**locals()))
+                script.append(angle_entry_script)
 
         integrator_kwargs["kT"] = self.kT
         script.append(HOOMD_TEMPLATE.format(**locals()))

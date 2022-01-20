@@ -35,14 +35,14 @@ harmonic_bond.bond_coeff.set('{self.name}', k={self.k}, r0={self.r0})
         self.k2 = k2
         r_range = np.arange(r_min, r_max + dr, dr)
         self.potential = create_bond_table(r_range)
+        self.bond_init_script = ""
+        self.bond_entry_script = ""
         self.script = ""
 
         def create_bond_table(r):
             l = r - self.r0
             V_r = self.k4(l)**4 + self.k3(l)**3 + self.k2(l)**2
             return V_r
-
-
 
     def set_from_file(self, file=None):
         """
@@ -77,14 +77,20 @@ harmonic_bond.bond_coeff.set('{self.name}', k={self.k}, r0={self.r0})
 
 
 class Angle(object):
-    def __init__(self, type1, type2, type3, k, theta):
+    def __init__(self, type1, type2, type3):
         self.type1 = type1
         self.type2 = type2
         self.type3 = type3
         self.name = f"{self.type1}-{self.type2}-{self.type3}"
-        self.k = k
-        self.theta = theta
         self._states = dict()
+
+    def set_harmonic(k, theta0):
+        self.k = k
+        self.theta0 = theta0
+        self.angle_init_script = "harmonic_angle = hoomd.md.angle.harmonic()"
+        self.angle_entry_script = f"""
+harmonic_angle.angle_coeff.set('{self.name}', k={self.k}, t0={self.theta})
+        """
 
     def _add_state(self, state):
         self._states[state] = {
