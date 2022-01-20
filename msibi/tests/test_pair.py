@@ -55,48 +55,78 @@ class TestPair(BaseTest):
         assert len(pair._states[state0]["f_fit"]) == 0
 
     def test_current_rdf_no_smooth(self, state0, pair, tmp_path):
-        opt = MSIBI(2.5, n_bins, smooth_rdfs=False)
-        opt.add_state(state0)
-        opt.add_pair(pair)
-        opt.optimize(
-                n_iterations=0,
-                _dir=tmp_path,
+        opt = MSIBI(
                 integrator="hoomd.md.integrate.nvt",
                 integrator_kwargs={"tau": 0.1},
                 dt=0.001,
-                gsd_period=1000
+                gsd_period=1000,
+                n_iterations=0,
+                n_steps=1e6,
+        )
+        opt.add_state(state0)
+        opt.add_pair(pair)
+        opt.optimize_pairs(
+                max_frames=10,
+                rdf_cutoff=2.5,
+                pot_cutoff=None,
+                r_min=1e-4,
+                r_switch=None,
+                n_rdf_points=n_bins,
+                rdf_exclude_bonded=True,
+                smooth_rdfs=False,
+                _dir=tmp_path,
             )
         pair.compute_current_rdf(state0, opt.smooth_rdfs, query=False)
         assert pair._states[state0]["current_rdf"] is not None
         assert len(pair._states[state0]["f_fit"]) > 0
 
     def test_current_rdf_smooth(self, state0, pair, tmp_path):
-        opt = MSIBI(2.5, n_bins, smooth_rdfs=True)
-        opt.add_state(state0)
-        opt.add_pair(pair)
-        opt.optimize(
-                n_iterations=0,
-                _dir=tmp_path,
+        opt = MSIBI(
                 integrator="hoomd.md.integrate.nvt",
                 integrator_kwargs={"tau": 0.1},
                 dt=0.001,
-                gsd_period=1000
+                gsd_period=1000,
+                n_iterations=0,
+                n_steps=1e6,
+        )
+        opt.add_state(state0)
+        opt.add_pair(pair)
+        opt.optimize_pairs(
+                max_frames=10,
+                rdf_cutoff=2.5,
+                pot_cutoff=None,
+                r_min=1e-4,
+                r_switch=None,
+                n_rdf_points=n_bins,
+                rdf_exclude_bonded=True,
+                smooth_rdfs=True,
+                _dir=tmp_path,
             )
         pair.compute_current_rdf(state0, opt.smooth_rdfs, query=False)
         assert pair._states[state0]["current_rdf"] is not None
         assert len(pair._states[state0]["f_fit"]) > 0
 
     def test_save_current_rdf(self, state0, pair, tmp_path):
-        opt = MSIBI(2.5, n_bins, smooth_rdfs=True)
-        opt.add_state(state0)
-        opt.add_pair(pair)
-        opt.optimize(
-                n_iterations=0,
-                _dir=tmp_path,
+        opt = MSIBI(
                 integrator="hoomd.md.integrate.nvt",
                 integrator_kwargs={"tau": 0.1},
                 dt=0.001,
-                gsd_period=1000
+                gsd_period=1000,
+                n_iterations=0,
+                n_steps=1e6,
+        )
+        opt.add_state(state0)
+        opt.add_pair(pair)
+        opt.optimize_pairs(
+                max_frames=10,
+                rdf_cutoff=2.5,
+                pot_cutoff=None,
+                r_min=1e-4,
+                r_switch=None,
+                n_rdf_points=n_bins,
+                rdf_exclude_bonded=True,
+                smooth_rdfs=True,
+                _dir=tmp_path,
             )
         pair.compute_current_rdf(state0, opt.smooth_rdfs, query=False)
         pair.save_current_rdf(state0, 0, opt.dr)
@@ -108,16 +138,26 @@ class TestPair(BaseTest):
 
     def test_update_potential(self, state0, pair, tmp_path):
         """Make sure the potential changes after calculating RDF"""
-        opt = MSIBI(2.5, n_bins)
-        opt.add_state(state0)
-        opt.add_pair(pair)
-        opt.optimize(
-                n_iterations=0,
-                _dir=tmp_path,
+        opt = MSIBI(
                 integrator="hoomd.md.integrate.nvt",
                 integrator_kwargs={"tau": 0.1},
                 dt=0.001,
-                gsd_period=1000
+                gsd_period=1000,
+                n_iterations=0,
+                n_steps=1e6,
+        )
+        opt.add_state(state0)
+        opt.add_pair(pair)
+        opt.optimize_pairs(
+                max_frames=10,
+                rdf_cutoff=2.5,
+                pot_cutoff=None,
+                r_min=1e-4,
+                r_switch=None,
+                n_rdf_points=n_bins,
+                rdf_exclude_bonded=True,
+                smooth_rdfs=True,
+                _dir=tmp_path,
             )
         pair.compute_current_rdf(state0, opt.smooth_rdfs, query=False)
         pair.update_potential(np.arange(0, 2.5 + dr, dr), r_switch=1.8)
