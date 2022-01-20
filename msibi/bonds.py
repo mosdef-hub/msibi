@@ -89,7 +89,7 @@ class Angle(object):
         self.theta0 = theta0
         self.angle_init_script = "harmonic_angle = hoomd.md.angle.harmonic()"
         self.angle_entry_script = f"""
-harmonic_angle.angle_coeff.set('{self.name}', k={self.k}, t0={self.theta})
+harmonic_angle.angle_coeff.set('{self.name}', k={self.k}, t0={self.theta0})
         """
 
     def _add_state(self, state):
