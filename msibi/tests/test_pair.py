@@ -26,16 +26,26 @@ class TestPair(BaseTest):
         assert os.path.isfile(pair.potential_file)
 
     def test_add_state(self, pair, state0, rdf0, tmp_path):
-        opt = MSIBI(2.5, n_bins, smooth_rdfs=True, rdf_exclude_bonded=True)
-        opt.add_state(state0)
-        opt.add_pair(pair)
-        opt.optimize(
-                n_iterations=0,
-                _dir=tmp_path,
+        opt = MSIBI(
                 integrator="hoomd.md.integrate.nvt",
                 integrator_kwargs={"tau": 0.1},
                 dt=0.001,
-                gsd_period=1000
+                gsd_period=1000,
+                n_iterations=0,
+                n_steps=1e6,
+        )
+        opt.add_state(state0)
+        opt.add_pair(pair)
+        opt.optimize_pairs(
+                max_frames=10,
+                rdf_cutoff=2.5,
+                pot_cutoff=None,
+                r_min=1e-4,
+                r_switch=None,
+                n_rdf_points=n_bins,
+                rdf_exclude_bonded=True,
+                smooth_rdfs=True,
+                _dir=tmp_path,
             )
         assert isinstance(pair._states, dict)
         assert np.array_equal(pair._states[state0]["target_rdf"], rdf0)
