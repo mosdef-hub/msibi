@@ -34,7 +34,6 @@ class Bond(object):
         self.r_max = r_max
         r_range = r_max - r_min
         self.bond_r = np.arange(self.r_min, self.r_max, r_range / 100)
-        self.potential = 
         self.script = ""
 
         def create_bond_table(r):

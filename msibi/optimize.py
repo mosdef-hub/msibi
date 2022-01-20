@@ -123,12 +123,11 @@ class MSIBI(object):
         self,
         max_frames,
         rdf_cutoff,
-        potential_cutoff,
         r_min,
-        r_switch,
         n_rdf_points,
         rdf_exclude_bonded,
         smooth_rdfs,
+        r_switch=None,
         _dir=None
     ):
         """Optimize the pair potentials
@@ -148,11 +147,10 @@ class MSIBI(object):
         self.rdf_r_range = np.array([self.r_min, self.rdf_cutoff + self.dr])
         self.rdf_n_bins = self.n_rdf_points
         # Sometimes the pot_cutoff and rdf_cutoff have different ranges,
-        if not pot_cutoff:
-            pot_cutoff = rdf_cutoff
-        self.pot_cutoff = pot_cutoff
+        self.pot_cutoff = rdf_cutoff
         self.pot_r = np.arange(self.r_min, self.pot_cutoff + self.dr, self.dr)
-        if not r_switch:
+
+        if r_switch is None:
             r_switch = self.pot_r[-5]
         self.r_switch = r_switch
 
@@ -181,7 +179,8 @@ class MSIBI(object):
                 integrator_kwargs=self.integrator_kwargs,
                 dt=self.dt,
                 gsd_period=self.gsd_period,
-                potentials_dir=_dir)
+                potentials_dir=_dir
+            )
 
         for n in range(self.start_iteration + self.n_iterations):
             print(f"-------- Iteration {n} --------")
