@@ -22,7 +22,6 @@ class TestMSIBI(BaseTest):
         opt.optimize_pairs(
                 max_frames=10,
                 rdf_cutoff=2.5,
-                pot_cutoff=None,
                 r_min=1e-4,
                 r_switch=None,
                 n_rdf_points=n_bins,
@@ -54,7 +53,6 @@ class TestMSIBI(BaseTest):
             opt.optimize_pairs(
                     max_frames=10,
                     rdf_cutoff=2.5,
-                    pot_cutoff=None,
                     r_min=1e-4,
                     r_switch=None,
                     n_rdf_points=n_bins+1,
