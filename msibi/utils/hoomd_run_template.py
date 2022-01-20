@@ -16,14 +16,6 @@ HOOMD_TABLE_ENTRY = """
 table.set_from_file('{type1}', '{type2}', filename='{potential_file}')
 """
 
-HOOMD_ANGLE_INIT = """
-harmonic_angle = hoomd.md.angle.harmonic()
-"""
-
-HOOMD_ANGLE_ENTRY = """
-harmonic_angle.angle_coeff.set('{name}', k={k}, t0={theta})
-"""
-
 HOOMD_TEMPLATE = """
 _all = hoomd.group.all()
 hoomd.md.integrate.mode_standard({dt})
