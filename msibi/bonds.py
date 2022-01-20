@@ -84,7 +84,7 @@ class Angle(object):
         self.name = f"{self.type1}-{self.type2}-{self.type3}"
         self._states = dict()
 
-    def set_harmonic(k, theta0):
+    def set_harmonic(self, k, theta0):
         self.k = k
         self.theta0 = theta0
         self.angle_init_script = "harmonic_angle = hoomd.md.angle.harmonic()"
