@@ -184,7 +184,7 @@ class MSIBI(object):
         for n in range(self.start_iteration + self.n_iterations):
             print(f"-------- Iteration {n} --------")
             run_query_simulations(self.states, engine=self.engine)
-            self._update_potentials(n, self.engine)
+            self._update_potentials(n)
 
     def _update_potentials(self, iteration):
         """Update the potentials for each pair. """
