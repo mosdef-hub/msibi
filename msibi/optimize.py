@@ -45,23 +45,6 @@ class MSIBI(object):
         All angles to be used in the optimization procedure.
     n_iterations : int
         The number of MSIBI iterations to perform.
-    max_frames : int
-        The maximum number of frames to include at once in RDF calculation
-    rdf_cutoff : float
-        The upper cutoff value for the RDF calculation.
-    n_rdf_points : int
-        The number of radius values used in the RDF calculation.
-    dr : float
-        The spacing of radius values.
-    rdf_exclude_bonded : bool
-        Whether the RDF calculation should exclude correlations between bonded
-        species.
-    pot_cutoff : float
-        The upper cutoff value for the potential.
-    pot_r : np.ndarray, shape=int((rdf_cutoff + dr) / dr)
-        The radius values at which the potential is computed.
-    r_switch : float
-        The radius after which a tail correction is applied.
     """
 
     def __init__(
@@ -72,20 +55,29 @@ class MSIBI(object):
             gsd_period,
             n_iterations,
             n_steps,
+            max_frames,
+            potential_cutoff,
+            r_min=1e-4,
+            n_potential_points=101,
             start_iteration=0,
             verbose=False,
             engine="hoomd"
     ):
-
         if integrator == "hoomd.md.integrate.nve":
             raise ValueError("The NVE ensemble is not supported with MSIBI")
         
-        self.dt = dt
+        self.pot_cutoff = potential_cutoff
         self.integrator = integrator
         self.integrator_kwargs = integrator_kwargs
+        self.dt = dt
         self.gsd_period = gsd_period
         self.n_iterations = n_iterations
         self.n_steps = n_steps
+        self.max_frames = max_frames
+        self.r_min = r_min
+        self.n_pot_points = n_potential_points
+        self.dr = self.pot_cutoff / (n_potential_points - 1)
+        self.pot_r = np.arange(r_min, potential_cutoff + self.dr, self.dr)
         self.start_iteration = start_iteration
         self.verbose = verbose
         self.engine = engine
@@ -94,6 +86,7 @@ class MSIBI(object):
             self.HOOMD_VERSION = 2
         else:
             self.HOOMD_VERSION = None
+
         # Store all of the needed interaction objects
         self.states = []
         self.pairs = []
@@ -113,42 +106,41 @@ class MSIBI(object):
     def add_angle(self, angle):
         self.angles.append(angle)
 
-    def optimize_bonds(self):
-        pass
+    def optimize_bonds(self, l_min, l_max):
+        self.optimization = "bonds"
 
-    def optimize_angles(self):
-        pass
+    def optimize_angles(self, theta_min, theta_max):
+        self.optimization = "angles"
 
     def optimize_pairs(
-        self,
-        max_frames,
-        rdf_cutoff,
-        r_min,
-        n_rdf_points,
-        rdf_exclude_bonded,
-        smooth_rdfs,
-        r_switch=None,
-        _dir=None
-    ):
+        self, rdf_exclude_bonded, smooth_rdfs, r_switch=None, _dir=None):
         """Optimize the pair potentials
 
         Parameters
         ----------
+        max_frames : int
+            The maximum number of frames to include at once in RDF calculation
+        rdf_cutoff : float
+            The upper cutoff value for the RDF calculation.
+        r_min : float
+            The lower cutoff value for the RDF calculation.
+        n_rdf_points : int
+            The number of radius values used in the RDF calculation.
+        rdf_exclude_bonded : bool
+            Whether the RDF calculation should exclude correlations between bonded
+            species.
+        r_switch : float
+            The distance after which a tail correction is applied.
 
         """
         # Set up attributes specific to pair potential optimization
-        self.max_frames = max_frames
-        self.rdf_cutoff = rdf_cutoff
-        self.n_rdf_points = n_rdf_points
-        self.dr = rdf_cutoff / (n_rdf_points - 1)
-        self.r_min = r_min
+        self.optimization = "pairs"
         self.rdf_exclude_bonded = rdf_exclude_bonded
         self.smooth_rdfs = smooth_rdfs
+        self.rdf_cutoff = self.pot_cutoff 
         self.rdf_r_range = np.array([self.r_min, self.rdf_cutoff + self.dr])
-        self.rdf_n_bins = self.n_rdf_points
-        # Sometimes the pot_cutoff and rdf_cutoff have different ranges,
-        self.pot_cutoff = rdf_cutoff
-        self.pot_r = np.arange(self.r_min, self.pot_cutoff + self.dr, self.dr)
+        self.rdf_n_bins = self.n_pot_points
+        self.n_rdf_points = self.n_pot_points
 
         if r_switch is None:
             r_switch = self.pot_r[-5]
@@ -187,11 +179,27 @@ class MSIBI(object):
             self._update_potentials(n)
 
     def _update_potentials(self, iteration):
-        """Update the potentials for each pair. """
-        for pair in self.pairs:
-            self._recompute_rdfs(pair, iteration)
-            pair.update_potential(self.pot_r, self.r_switch, self.verbose)
-            pair.save_table_potential(self.pot_r, self.dr, iteration)
+        """Update the potentials for each object to be optimized. """
+        if self.optimization == "pairs":
+            for pair in self.pairs:
+                self._recompute_rdfs(pair, iteration)
+                pair.update_potential(self.pot_r, self.r_switch, self.verbose)
+                pair.save_table_potential(self.pot_r, self.dr, iteration)
+
+        elif self.optimization == "bonds":
+            for bond in self.bonds:
+                self._recompute_distribution(bond, iteration)
+                bond.update_potential()
+
+        elif self.optimization == "angles":
+            for angle in self.angles:
+                self._recompute_distribution(angle, iteration)
+                angle.update_potential()
+
+    def _recompute_distribution(self, bond_object, iteration):
+        for state in self.states:
+            bond_object.compute_current_distribution(state)
+            
 
     def _recompute_rdfs(self, pair, iteration):
         """Recompute the current RDFs for every state used for a given pair."""
@@ -219,7 +227,7 @@ class MSIBI(object):
             dt,
             gsd_period,
             potentials_dir
-            ):
+    ):
         """Create initial table potentials and the simulation input scripts.
 
         Parameters
