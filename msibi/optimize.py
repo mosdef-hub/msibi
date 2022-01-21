@@ -152,6 +152,7 @@ class MSIBI(object):
         self.l_min = l_min
         self.l_max = l_max
         self._add_states()
+        self._initialize(potentials_dir=_dir)
 
     def optimize_angles(self, theta_min, theta_max):
         """Optimize the bond angle potentials
@@ -168,21 +169,23 @@ class MSIBI(object):
         self.theta_min = theta_min
         self.theta_max = theta_max
         self._add_states()
+        self._initialize(potentials_dir=_dir)
 
     def optimize_pairs(
-        self, rdf_exclude_bonded, smooth_rdfs, r_switch=None, _dir=None):
+        self, rdf_exclude_bonded=True, smooth_rdfs=True, r_switch=None, _dir=None):
         """Optimize the pair potentials
 
         Parameters
         ----------
-        rdf_exclude_bonded : bool
+        rdf_exclude_bonded : bool, default=True
             Whether the RDF calculation should exclude correlations between bonded
             species.
-        smooth_rdfs : bool
+        smooth_rdfs : bool, default=True
             Set to True to perform smoothing (Savitzky Golay) on the target
             and iterative RDFs.
-        r_switch : float
+        r_switch : float, optional, default=None
             The distance after which a tail correction is applied.
+            If None, then self.pot_r[-5] is used.
 
         """
         # Set up attributes specific to pair potential optimization
@@ -199,14 +202,7 @@ class MSIBI(object):
         self.r_switch = r_switch
 
         self._add_states()
-        self._initialize(
-                n_steps=int(self.n_steps),
-                integrator=self.integrator,
-                integrator_kwargs=self.integrator_kwargs,
-                dt=self.dt,
-                gsd_period=self.gsd_period,
-                potentials_dir=_dir
-            )
+        self._initialize(potentials_dir=_dir)
 
         for n in range(self.start_iteration + self.n_iterations):
             print(f"-------- Iteration {n} --------")
@@ -275,15 +271,7 @@ class MSIBI(object):
                 )
             )
 
-    def _initialize(
-            self,
-            n_steps,
-            integrator,
-            integrator_kwargs,
-            dt,
-            gsd_period,
-            potentials_dir
-    ):
+    def _initialize(self, potentials_dir):
         """Create initial table potentials and the simulation input scripts.
 
         Parameters
@@ -318,10 +306,11 @@ class MSIBI(object):
             pair.potential = V
 
             # This file is written for viewing of how the potential evolves.
-            pair.save_table_potential(self.pot_r, self.dr, iteration=0)
+            if self.optimization == "pairs":
+                pair.save_table_potential(self.pot_r, self.dr, iteration=0)
 
-            # This file is overwritten at each iteration and actually used for
-            # performing the query simulations.
+            # This file is overwritten at each iteration and
+            # used by Hoomd when performing query simulations
             pair.save_table_potential(self.pot_r, self.dr)
 
         if self.bonds:
@@ -331,11 +320,11 @@ class MSIBI(object):
 
         for state in self.states:
             state.save_runscript(
-                n_steps=n_steps,
-                integrator=integrator,
-                integrator_kwargs=integrator_kwargs,
-                dt=dt,
-                gsd_period=gsd_period,
+                n_steps=int(self.n_steps),
+                integrator=self.integrator,
+                integrator_kwargs=self.integrator_kwargs,
+                dt=self.dt,
+                gsd_period=self.gsd_period,
                 table_potentials=table_potentials,
                 table_width=len(self.pot_r),
                 engine=self.engine,
