@@ -88,14 +88,14 @@ class State(object):
             script.append(HOOMD_TABLE_ENTRY.format(**locals()))
 
         if bonds is not None:
-            script.append(bonds[0].bond_init_script)
+            script.append(bonds[0].bond_init)
             for bond in bonds:
-                script.append(bond.bond_entry_script)
+                script.append(bond.bond_entry)
 
         if angles is not None:
-            script.append(angles[0].angle_init_script)
+            script.append(angles[0].angle_init)
             for angle in angles:
-                script.append(angle_entry_script)
+                script.append(angle_entry)
 
         integrator_kwargs["kT"] = self.kT
         script.append(HOOMD_TEMPLATE.format(**locals()))

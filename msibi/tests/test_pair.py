@@ -35,12 +35,12 @@ class TestPair(BaseTest):
                 potential_cutoff=2.5,
                 r_min=1e-4,
                 max_frames=10,
-                n_iterations=0,
                 n_steps=1e6,
         )
         opt.add_state(state0)
         opt.add_pair(pair)
         opt.optimize_pairs(
+                n_iterations=0,
                 r_switch=None,
                 rdf_exclude_bonded=True,
                 smooth_rdfs=True,
@@ -63,12 +63,12 @@ class TestPair(BaseTest):
                 n_potential_points=n_bins,
                 r_min=1e-4,
                 n_steps=1e6,
-                n_iterations=0,
                 max_frames=10
         )
         opt.add_state(state0)
         opt.add_pair(pair)
         opt.optimize_pairs(
+                n_iterations=0,
                 r_switch=None,
                 rdf_exclude_bonded=True,
                 smooth_rdfs=False,
@@ -88,12 +88,12 @@ class TestPair(BaseTest):
                 n_potential_points=n_bins,
                 r_min=1e-4,
                 n_steps=1e6,
-                n_iterations=0,
                 max_frames=10
         )
         opt.add_state(state0)
         opt.add_pair(pair)
         opt.optimize_pairs(
+                n_iterations=0,
                 r_switch=None,
                 rdf_exclude_bonded=True,
                 smooth_rdfs=True,
@@ -113,12 +113,12 @@ class TestPair(BaseTest):
                 n_potential_points=n_bins,
                 r_min=1e-4,
                 n_steps=1e6,
-                n_iterations=0,
                 max_frames=10
         )
         opt.add_state(state0)
         opt.add_pair(pair)
         opt.optimize_pairs(
+                n_iterations=0,
                 r_switch=None,
                 rdf_exclude_bonded=True,
                 smooth_rdfs=True,
@@ -143,12 +143,12 @@ class TestPair(BaseTest):
                 potential_cutoff=2.5,
                 r_min=1e-4,
                 max_frames=10,
-                n_iterations=0,
                 n_steps=1e6,
         )
         opt.add_state(state0)
         opt.add_pair(pair)
         opt.optimize_pairs(
+                n_iterations=0,
                 r_switch=None,
                 rdf_exclude_bonded=True,
                 smooth_rdfs=True,

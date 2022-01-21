@@ -98,7 +98,7 @@ class Bond(object):
 
     def _add_state(self, state):
         if state._opt.optimization == "bonds":
-            target_distribution = self.get_distribution(state, query=False)
+            target_distribution = self._get_distribution(state, query=False)
         else:
             target_distribution = None
         self._states[state] = {
@@ -110,7 +110,7 @@ class Bond(object):
                 "path": state.dir
             }
 
-    def get_distribution(self, state, query=False):
+    def _get_distribution(self, state, query=False):
         if query:
             traj = state.query_traj
         else:
@@ -119,7 +119,7 @@ class Bond(object):
                 traj, self.type1, self.type2, start=-state._opt.max_frames
         )  
 
-    def compute_current_distribution(self, state):
+    def _compute_current_distribution(self, state):
         bond_distribution = self.get_distribution(state, query=True)
         self._states[state]["current_distribution"] = bond_distribution
         # TODO FINISH CALC SIM
@@ -144,7 +144,7 @@ class Angle(object):
 
     def _add_state(self, state):
         if state._opt.optimization == "angles":
-            target_distribution = self.get_distribution(state, query=False)
+            target_distribution = self._get_distribution(state, query=False)
         else:
             target_distribution = None
 
@@ -157,7 +157,7 @@ class Angle(object):
                 "path": state.dir
             }
 
-    def get_distribution(self, state, query=False):
+    def _get_distribution(self, state, query=False):
         if query:
             traj = state.query_traj
         else:
@@ -170,8 +170,8 @@ class Angle(object):
                 start=-state._opt.max_frames
         )
 
-    def compute_current_distribution(self, state):
-        angle_distribution = self.get_distribution(state, query=True)
+    def _compute_current_distribution(self, state):
+        angle_distribution = self._get_distribution(state, query=True)
         self._states[state]["current_distribution"] = angle_distribution
         # TODO FINISH CALC SIM
         f_fit = calc_similarity()

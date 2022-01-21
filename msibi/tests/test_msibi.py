@@ -17,12 +17,12 @@ class TestMSIBI(BaseTest):
                 potential_cutoff=2.5,
                 n_potential_points=n_bins,
                 max_frames=10,
-                n_iterations=0,
                 n_steps=1e6,
         )
         opt.add_state(state0)
         opt.add_pair(pair)
         opt.optimize_pairs(
+                n_iterations=0,
                 r_switch=None,
                 rdf_exclude_bonded=True,
                 smooth_rdfs=False,
@@ -47,13 +47,13 @@ class TestMSIBI(BaseTest):
                 n_potential_points=n_bins + 1,
                 r_min=1e-4,
                 max_frames=10,
-                n_iterations=0,
                 n_steps=1e6,
         )
         opt.add_state(state0)
         opt.add_pair(pair)
         with pytest.raises(ValueError):
             opt.optimize_pairs(
+                    n_iterations=0,
                     r_switch=None,
                     rdf_exclude_bonded=True,
                     smooth_rdfs=False,
