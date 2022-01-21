@@ -63,7 +63,7 @@ class MSIBI(object):
     add_state(state)
     add_bond(bond)
     add_angle(angle)
-        Add required interaction objects. See Pair.py and Bonds.py
+        Add the required interaction objects. See Pair.py and Bonds.py
 
     optimize_bonds(l_min, l_max)
         Calculates the target bond length distributions for each Bond
@@ -74,7 +74,7 @@ class MSIBI(object):
         in MSIBI.angles and optimizes the angle potential.
 
     optimize_pairs(rdf_exclude_bonded, smooth_rdfs, r_switch)
-        Calculatse the target RDF for each Pair in MSIBI.pairs
+        Calculates the target RDF for each Pair in MSIBI.pairs
         and optimizes the pair potential.
 
     """
@@ -117,7 +117,6 @@ class MSIBI(object):
             self.HOOMD_VERSION = 2
         else:
             self.HOOMD_VERSION = None
-
         # Store all of the needed interaction objects
         self.states = []
         self.pairs = []
@@ -154,6 +153,11 @@ class MSIBI(object):
         self._add_states()
         self._initialize(potentials_dir=_dir)
 
+        for n in range(self.start_iteration + self.n_iterations):
+            print(f"-------- Iteration {n} --------")
+            run_query_simulations(self.states, engine=self.engine)
+            self._update_potentials(n)
+
     def optimize_angles(self, theta_min, theta_max):
         """Optimize the bond angle potentials
 
@@ -171,8 +175,18 @@ class MSIBI(object):
         self._add_states()
         self._initialize(potentials_dir=_dir)
 
+        for n in range(self.start_iteration + self.n_iterations):
+            print(f"-------- Iteration {n} --------")
+            run_query_simulations(self.states, engine=self.engine)
+            self._update_potentials(n)
+
     def optimize_pairs(
-        self, rdf_exclude_bonded=True, smooth_rdfs=True, r_switch=None, _dir=None):
+        self,
+        rdf_exclude_bonded=True,
+        smooth_rdfs=True,
+        r_switch=None,
+        _dir=None
+    ):
         """Optimize the pair potentials
 
         Parameters
@@ -188,7 +202,6 @@ class MSIBI(object):
             If None, then self.pot_r[-5] is used.
 
         """
-        # Set up attributes specific to pair potential optimization
         self.optimization = "pairs"
         self.rdf_exclude_bonded = rdf_exclude_bonded
         self.smooth_rdfs = smooth_rdfs
@@ -231,7 +244,7 @@ class MSIBI(object):
             state.HOOMD_VERSION = self.HOOMD_VERSION
 
     def _update_potentials(self, iteration):
-        """Update the potentials for each object to be optimized. """
+        """Update the potentials for each object to be optimized."""
         if self.optimization == "pairs":
             for pair in self.pairs:
                 self._recompute_rdfs(pair, iteration)
@@ -251,7 +264,6 @@ class MSIBI(object):
     def _recompute_distribution(self, bond_object, iteration):
         for state in self.states:
             bond_object.compute_current_distribution(state)
-            
 
     def _recompute_rdfs(self, pair, iteration):
         """Recompute the current RDFs for every state used for a given pair."""
