@@ -2,7 +2,7 @@ from cmeutils.structure import angle_distribution, bond_distribution
 from msibi.utils.sorting import natural_sort
 
 HARMONIC_BOND_ENTRY = "haromonic_bond.bond_coeff.set('{}', k={}, r0={}"
-TABLE_BOND_ENTRY = ""
+TABLE_BOND_ENTRY = "btable.bond_coeff.set('{}', {})"
 HARMONIC_ANGLE_ENTRY = "harmonic_angle.angle_coeff.set('{}', k={}, t0={})"
 TABLE_ANGLE_ENTRY = ""
 
@@ -86,8 +86,10 @@ class Bond(object):
         self.dl = (l_max - l_min) / n_bond_points
         self.l_range = np.arange(l_min, l_max + self.dl, self.dl)
         self.potential = create_bond_table(self.l_range)
-        self.bond_init = ""
-        self.bond_entry = ""
+        self.bond_init = f"btable = bond.table(width={n_bond_points})"
+        self.bond_entry = TABLE_BOND_ENTRY.format(
+                self.name, self.potential_file
+        ) 
 
         def create_bond_table(l):
             L = l - self.l0
