@@ -84,13 +84,11 @@ class MSIBI(object):
             integrator_kwargs,
             dt,
             gsd_period,
-            n_iterations,
             n_steps,
             max_frames,
             potential_cutoff,
             r_min=1e-4,
             n_potential_points=101,
-            start_iteration=0,
             verbose=False,
             engine="hoomd"
     ):
@@ -102,14 +100,12 @@ class MSIBI(object):
         self.integrator_kwargs = integrator_kwargs
         self.dt = dt
         self.gsd_period = gsd_period
-        self.n_iterations = n_iterations
         self.n_steps = n_steps
         self.max_frames = max_frames
         self.r_min = r_min
         self.n_pot_points = n_potential_points
         self.dr = self.pot_cutoff / (n_potential_points - 1)
         self.pot_r = np.arange(r_min, potential_cutoff + self.dr, self.dr)
-        self.start_iteration = start_iteration
         self.verbose = verbose
         self.engine = engine
         if engine == "hoomd":
@@ -136,52 +132,50 @@ class MSIBI(object):
     def add_angle(self, angle):
         self.angles.append(angle)
 
-    def optimize_bonds(self, l_min, l_max):
+    def optimize_bonds(self, n_iterations, start_iteration=0):
         """Optimize the bond potentials
 
         Parameters
         ----------
-        l_min : float, required
-            The lower bound of the length range of the bond potential
-        l_max : float, required
-            The upper bound of the length range of the bond potential
+        n_iterations : int, required 
+            Number of iterations.
+        start_iteration : int, default 0
+            Start optimization at start_iteration, useful for restarting.
 
         """
         self.optimization = "bonds"
-        self.l_min = l_min
-        self.l_max = l_max
         self._add_states()
         self._initialize(potentials_dir=_dir)
 
-        for n in range(self.start_iteration + self.n_iterations):
+        for n in range(start_iteration + n_iterations):
             print(f"-------- Iteration {n} --------")
             run_query_simulations(self.states, engine=self.engine)
             self._update_potentials(n)
 
-    def optimize_angles(self, theta_min, theta_max):
+    def optimize_angles(self):
         """Optimize the bond angle potentials
 
         Parameters
         ----------
-        theta_min : float, required
-            The lower bound of the angle range of the bond angle potential
-        theta_max : float, required
-            The upper bound of the angle range of the bond angle potential
+        n_iterations : int, required 
+            Number of iterations.
+        start_iteration : int, default 0
+            Start optimization at start_iteration, useful for restarting.
 
         """
         self.optimization = "angles"
-        self.theta_min = theta_min
-        self.theta_max = theta_max
         self._add_states()
         self._initialize(potentials_dir=_dir)
 
-        for n in range(self.start_iteration + self.n_iterations):
+        for n in range(start_iteration + n_iterations):
             print(f"-------- Iteration {n} --------")
             run_query_simulations(self.states, engine=self.engine)
             self._update_potentials(n)
 
     def optimize_pairs(
         self,
+        n_iterations,
+        start_iteration=0,
         rdf_exclude_bonded=True,
         smooth_rdfs=True,
         r_switch=None,
@@ -191,6 +185,10 @@ class MSIBI(object):
 
         Parameters
         ----------
+        n_iterations : int, required 
+            Number of iterations.
+        start_iteration : int, default 0
+            Start optimization at start_iteration, useful for restarting.
         rdf_exclude_bonded : bool, default=True
             Whether the RDF calculation should exclude correlations between bonded
             species.
@@ -217,7 +215,7 @@ class MSIBI(object):
         self._add_states()
         self._initialize(potentials_dir=_dir)
 
-        for n in range(self.start_iteration + self.n_iterations):
+        for n in range(start_iteration + n_iterations):
             print(f"-------- Iteration {n} --------")
             run_query_simulations(self.states, engine=self.engine)
             self._update_potentials(n)
