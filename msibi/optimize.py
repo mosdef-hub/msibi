@@ -149,6 +149,9 @@ class MSIBI(object):
 
         """
         self.optimization = "bonds"
+        self.l_min = l_min
+        self.l_max = l_max
+        self._add_states()
 
     def optimize_angles(self, theta_min, theta_max):
         """Optimize the bond angle potentials
@@ -162,6 +165,9 @@ class MSIBI(object):
 
         """
         self.optimization = "angles"
+        self.theta_min = theta_min
+        self.theta_max = theta_max
+        self._add_states()
 
     def optimize_pairs(
         self, rdf_exclude_bonded, smooth_rdfs, r_switch=None, _dir=None):
@@ -192,7 +198,25 @@ class MSIBI(object):
             r_switch = self.pot_r[-5]
         self.r_switch = r_switch
 
-        # Add all pair, angle, and bond objects
+        self._add_states()
+        self._initialize(
+                n_steps=int(self.n_steps),
+                integrator=self.integrator,
+                integrator_kwargs=self.integrator_kwargs,
+                dt=self.dt,
+                gsd_period=self.gsd_period,
+                potentials_dir=_dir
+            )
+
+        for n in range(self.start_iteration + self.n_iterations):
+            print(f"-------- Iteration {n} --------")
+            run_query_simulations(self.states, engine=self.engine)
+            self._update_potentials(n)
+
+    def _add_states(self):
+        """Add State objects to Pairs, Bonds, and Angles.
+        Required step before optimization runs can begin.
+        """
         for pair in self.pairs:
             for state in self.states:
                 pair._add_state(state, smooth=self.smooth_rdfs)
@@ -209,20 +233,6 @@ class MSIBI(object):
 
         for state in self.states:
             state.HOOMD_VERSION = self.HOOMD_VERSION
-
-        self._initialize(
-                n_steps=int(self.n_steps),
-                integrator=self.integrator,
-                integrator_kwargs=self.integrator_kwargs,
-                dt=self.dt,
-                gsd_period=self.gsd_period,
-                potentials_dir=_dir
-            )
-
-        for n in range(self.start_iteration + self.n_iterations):
-            print(f"-------- Iteration {n} --------")
-            run_query_simulations(self.states, engine=self.engine)
-            self._update_potentials(n)
 
     def _update_potentials(self, iteration):
         """Update the potentials for each object to be optimized. """
