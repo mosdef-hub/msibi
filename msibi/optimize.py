@@ -246,18 +246,18 @@ class MSIBI(object):
         if self.optimization == "pairs":
             for pair in self.pairs:
                 self._recompute_rdfs(pair, iteration)
-                pair.update_potential(self.pot_r, self.r_switch, self.verbose)
-                pair.save_table_potential(self.pot_r, self.dr, iteration)
+                pair._update_potential(self.pot_r, self.r_switch, self.verbose)
+                pair._save_table_potential(self.pot_r, self.dr, iteration)
 
         elif self.optimization == "bonds":
             for bond in self.bonds:
                 self._recompute_distribution(bond, iteration)
-                bond.update_potential()
+                bond._update_potential()
 
         elif self.optimization == "angles":
             for angle in self.angles:
                 self._recompute_distribution(angle, iteration)
-                angle.update_potential()
+                angle._update_potential()
 
     def _recompute_distribution(self, bond_object, iteration):
         for state in self.states:
@@ -266,12 +266,12 @@ class MSIBI(object):
     def _recompute_rdfs(self, pair, iteration):
         """Recompute the current RDFs for every state used for a given pair."""
         for state in self.states:
-            pair.compute_current_rdf(
+            pair._compute_current_rdf(
                 state,
                 smooth=self.smooth_rdfs,
                 verbose=self.verbose
             )
-            pair.save_current_rdf(state, iteration=iteration, dr=self.dr)
+            pair._save_current_rdf(state, iteration=iteration, dr=self.dr)
             print(
                 "pair {0}, state {1}, iteration {2}: {3:f}".format(
                     pair.name,

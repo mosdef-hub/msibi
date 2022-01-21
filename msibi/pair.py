@@ -26,7 +26,6 @@ class Pair(object):
         See  gsd.hoomd.ParticleData.types
     potential :
 
-
     Attributes
     ----------
     name : str
@@ -57,13 +56,16 @@ class Pair(object):
         state : msibi.state.State
             A state object created previously.
         """
-        target_rdf = self.get_state_rdf(state, query=False)
-        if state._opt.smooth_rdfs:
-            target_rdf[:, 1] = savitzky_golay(
-                target_rdf[:, 1], 9, 2, deriv=0, rate=1
-            )
-            negative_idx = np.where(target_rdf < 0)
-            target_rdf[negative_idx] = 0
+        if state._opt.optimization == "pairs":
+            target_rdf = self._get_state_rdf(state, query=False)
+            if state._opt.smooth_rdfs:
+                target_rdf[:, 1] = savitzky_golay(
+                    target_rdf[:, 1], 9, 2, deriv=0, rate=1
+                )
+                negative_idx = np.where(target_rdf < 0)
+                target_rdf[negative_idx] = 0
+        else:
+            target_rdf = None
 
         self._states[state] = {
             "target_rdf": target_rdf,
@@ -75,7 +77,7 @@ class Pair(object):
             "path": state.dir
         }
 
-    def get_state_rdf(self, state, query):
+    def _get_state_rdf(self, state, query):
         """Calculate the RDF of a Pair at a State."""
         if query:
             traj = state.query_traj
@@ -92,9 +94,9 @@ class Pair(object):
         )
         return np.stack((rdf.bin_centers, rdf.rdf*norm)).T
 
-    def compute_current_rdf(self, state, smooth, verbose=False, query=True):
+    def _compute_current_rdf(self, state, smooth, verbose=False, query=True):
 
-        rdf = self.get_state_rdf(state, query=query)
+        rdf = self._get_state_rdf(state, query=query)
         self._states[state]["current_rdf"] = rdf
 
         if state._opt.smooth_rdfs:
@@ -118,7 +120,7 @@ class Pair(object):
         self._states[state]["f_fit"].append(f_fit)
 
 
-    def save_current_rdf(self, state, iteration, dr):
+    def _save_current_rdf(self, state, iteration, dr):
         """Save the current rdf
 
         Parameters
@@ -129,6 +131,7 @@ class Pair(object):
             Current iteration step, used in the filename
         dr : float
             The RDF bin size
+
         """
         rdf = self._states[state]["current_rdf"]
         rdf[:, 0] -= dr / 2
@@ -138,7 +141,7 @@ class Pair(object):
             ),
             rdf)
 
-    def update_potential(self, pot_r, r_switch=None, verbose=False):
+    def _update_potential(self, pot_r, r_switch=None, verbose=False):
         """Update the potential using all states. """
         self.previous_potential = np.copy(self.potential)
         for state in self._states:

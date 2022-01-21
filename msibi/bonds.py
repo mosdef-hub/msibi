@@ -1,5 +1,7 @@
 from cmeutils.structure import angle_distribution, bond_distribution
 from msibi.utils.sorting import natural_sort
+from msibi.utils.error_calculation import calc_similarity
+
 
 HARMONIC_BOND_ENTRY = "haromonic_bond.bond_coeff.set('{}', k={}, r0={}"
 TABLE_BOND_ENTRY = "btable.bond_coeff.set('{}', {})"
