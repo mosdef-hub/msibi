@@ -21,13 +21,27 @@ class MSIBI(object):
         The time step delta
     gsd_period : int, required 
         The number of frames between snapshots written to query.gsd
-    n_iterations : int, default 10
+    n_iterations : int, required 
         Number of iterations.
+    n_steps : int, required 
+        How many steps to run the query simulations
+    max_frames : int, required
+        How many snapshots of the trajectories to use in calcualting
+        relevant distributions (RDFs, bond distributions)
+    potential_cutoff : float, required
+        The upper range of the potential used for pair interactions
+        If optimizing pair potentials, this value is also used
+        as the r_max when calculating RDFs.
+    r_min : float, default=1e-4
+        The lower range of the potential used for pair interactions
+        If optimizing pair potentials, this value is also used
+        as the r_min when calculating RDFs.
+    n_potential_points, int, default=101
+        The number of bins to use in creating table pair potentials.
+        If optiimizing pair potentials, this value is also used
+        as the number of bins for RDF calculations.
     start_iteration : int, default 0
         Start optimization at start_iteration, useful for restarting.
-    n_steps : int, default=1e6
-        How many steps to run the query simulations
-        The frequency to write trajectory information to query.gsd
     engine : str, default "hoomd"
         Engine that runs the simulations.
     verbose : bool, default False
@@ -43,10 +57,27 @@ class MSIBI(object):
         All bonds to be used in the optimization procedure.
     angles : list of Angles
         All angles to be used in the optimization procedure.
-    n_iterations : int
-        The number of MSIBI iterations to perform.
-    """
 
+    Methods
+    -------
+    add_state(state)
+    add_bond(bond)
+    add_angle(angle)
+        Add required interaction objects. See Pair.py and Bonds.py
+
+    optimize_bonds(l_min, l_max)
+        Calculates the target bond length distributions for each Bond
+        in MSIBI.bonds and optimizes the bonding potential.
+
+    optimize_angles(theta_min, theta_max)
+        Calcualtes the target bond angle distribution for each Bond
+        in MSIBI.angles and optimizes the angle potential.
+
+    optimize_pairs(rdf_exclude_bonded, smooth_rdfs, r_switch)
+        Calculatse the target RDF for each Pair in MSIBI.pairs
+        and optimizes the pair potential.
+
+    """
     def __init__(
             self,
             integrator,
@@ -107,9 +138,29 @@ class MSIBI(object):
         self.angles.append(angle)
 
     def optimize_bonds(self, l_min, l_max):
+        """Optimize the bond potentials
+
+        Parameters
+        ----------
+        l_min : float, required
+            The lower bound of the length range of the bond potential
+        l_max : float, required
+            The upper bound of the length range of the bond potential
+
+        """
         self.optimization = "bonds"
 
     def optimize_angles(self, theta_min, theta_max):
+        """Optimize the bond angle potentials
+
+        Parameters
+        ----------
+        theta_min : float, required
+            The lower bound of the angle range of the bond angle potential
+        theta_max : float, required
+            The upper bound of the angle range of the bond angle potential
+
+        """
         self.optimization = "angles"
 
     def optimize_pairs(
@@ -118,17 +169,12 @@ class MSIBI(object):
 
         Parameters
         ----------
-        max_frames : int
-            The maximum number of frames to include at once in RDF calculation
-        rdf_cutoff : float
-            The upper cutoff value for the RDF calculation.
-        r_min : float
-            The lower cutoff value for the RDF calculation.
-        n_rdf_points : int
-            The number of radius values used in the RDF calculation.
         rdf_exclude_bonded : bool
             Whether the RDF calculation should exclude correlations between bonded
             species.
+        smooth_rdfs : bool
+            Set to True to perform smoothing (Savitzky Golay) on the target
+            and iterative RDFs.
         r_switch : float
             The distance after which a tail correction is applied.
 
