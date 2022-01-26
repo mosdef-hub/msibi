@@ -55,12 +55,12 @@ class Bond(object):
         self.bond_entry = HARMONIC_BOND_ENTRY.format(self.name, self.k, self.r0)
     
     def set_quadratic(self, l0, k4, k3, k2, l_min, l_max, n_bond_points=101):
-        """Set an bond potential based on the following function:
+        """Set a bond potential based on the following function:
 
             V(l) = k4(l-l0)^4 + k3(l-l0)^3 + k2(l-l0)^2
 
         Using this method will create a table potential V(l) over the range
-        l_min-l_max.
+        l_min - l_max.
 
         This should be the bond potential form of choice when optimizing bonds
         as opposed to using `set_harmonic`. However, you can also use this
@@ -95,12 +95,14 @@ class Bond(object):
 
         def create_bond_table(l):
             L = l - self.l0
-            V_l = self.k4*(L)**4 + self.k3*(L)**3 + self.k2*(L)**2
+            V_l = (self.k4*(L))**4 + (self.k3*(L))**3 + (self.k2*(L))**2
             return V_l
 
     def _add_state(self, state):
         if state._opt.optimization == "bonds":
-            target_distribution = self._get_distribution(state, query=False)
+            target_distribution = self._get_state_distribution(
+                    state, query=False
+            )
         else:
             target_distribution = None
         self._states[state] = {
@@ -112,7 +114,7 @@ class Bond(object):
                 "path": state.dir
             }
 
-    def _get_distribution(self, state, query=False):
+    def _get_state_distribution(self, state, query=False):
         if query:
             traj = state.query_traj
         else:
@@ -122,10 +124,31 @@ class Bond(object):
         )  
 
     def _compute_current_distribution(self, state):
-        bond_distribution = self.get_distribution(state, query=True)
+        bond_distribution = self.get_state_distribution(state, query=True)
         self._states[state]["current_distribution"] = bond_distribution
         # TODO FINISH CALC SIM
         f_fit = calc_similarity()
+
+    def _save_current_distribution(self, state, iteration, dr):
+        """Save the current bond length distribution 
+
+        Parameters
+        ----------
+        state : State
+            A state object
+        iteration : int
+            Current iteration step, used in the filename
+        dr : float
+            The distribution bin size
+
+        """
+        distribution = self._states[state]["current_distribution"]
+        distribution[:,0] -= dr / 2
+        np.savetxt(os.path.join(
+                state.dir,
+                f"bond_{self.name}-state_{state.name}-step_{iteration}.txt"
+            ),
+            distribution)
 
 
 class Angle(object):
@@ -146,7 +169,9 @@ class Angle(object):
 
     def _add_state(self, state):
         if state._opt.optimization == "angles":
-            target_distribution = self._get_distribution(state, query=False)
+            target_distribution = self._get_state_distribution(
+                    state, query=False
+            )
         else:
             target_distribution = None
 
@@ -159,7 +184,7 @@ class Angle(object):
                 "path": state.dir
             }
 
-    def _get_distribution(self, state, query=False):
+    def _get_state_distribution(self, state, query=False):
         if query:
             traj = state.query_traj
         else:
@@ -173,7 +198,28 @@ class Angle(object):
         )
 
     def _compute_current_distribution(self, state):
-        angle_distribution = self._get_distribution(state, query=True)
+        angle_distribution = self._get_state_distribution(state, query=True)
         self._states[state]["current_distribution"] = angle_distribution
         # TODO FINISH CALC SIM
         f_fit = calc_similarity()
+
+    def _save_current_distribution(self, state, iteration, dr):
+        """Save the current bond angle distribution 
+
+        Parameters
+        ----------
+        state : State
+            A state object
+        iteration : int
+            Current iteration step, used in the filename
+        dr : float
+            The distribution bin size
+
+        """
+        distribution = self._states[state]["current_distribution"]
+        distribution[:,0] -= dr / 2
+        np.savetxt(os.path.join(
+                state.dir,
+                f"angle_{self.name}-state_{state.name}-step_{iteration}.txt"
+            ),
+            distribution)
