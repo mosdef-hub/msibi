@@ -99,6 +99,14 @@ class Bond(object):
             return V_l
 
     def _add_state(self, state):
+        """Add a state to be used in optimizing this bond.
+
+        Parameters
+        ----------
+        state : msibi.state.State
+            A State object already created.
+
+        """
         if state._opt.optimization == "bonds":
             target_distribution = self._get_state_distribution(
                     state, query=False
@@ -115,6 +123,7 @@ class Bond(object):
             }
 
     def _get_state_distribution(self, state, query=False):
+        """Find the bond length distribution of a Bond at a State."""
         if query:
             traj = state.query_traj
         else:
@@ -124,9 +133,11 @@ class Bond(object):
         )  
 
     def _compute_current_distribution(self, state):
+        """Find the current bond length distribution of the query trajectory"""
         bond_distribution = self.get_state_distribution(state, query=True)
         self._states[state]["current_distribution"] = bond_distribution
         # TODO FINISH CALC SIM
+        # TODO ADD SMOOTHING
         f_fit = calc_similarity()
 
     def _save_current_distribution(self, state, iteration):
@@ -226,6 +237,14 @@ class Angle(object):
 
 
     def _add_state(self, state):
+        """Add a state to be used in optimizing this angle.
+
+        Parameters
+        ----------
+        state : msibi.state.State
+            A State object already created
+
+        """
         if state._opt.optimization == "angles":
             target_distribution = self._get_state_distribution(
                     state, query=False
@@ -243,6 +262,7 @@ class Angle(object):
             }
 
     def _get_state_distribution(self, state, query=False):
+        """Finds the distribution of angles for a given Angle"""
         if query:
             traj = state.query_traj
         else:
@@ -256,9 +276,11 @@ class Angle(object):
         )
 
     def _compute_current_distribution(self, state):
+        """Find the current bond angle distribution of the query trajectory"""
         angle_distribution = self._get_state_distribution(state, query=True)
         self._states[state]["current_distribution"] = angle_distribution
         # TODO FINISH CALC SIM
+        # TODO ADD SMOOTHING
         f_fit = calc_similarity()
 
     def _save_current_distribution(self, state, iteration):

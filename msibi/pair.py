@@ -94,9 +94,9 @@ class Pair(object):
         )
         return np.stack((rdf.bin_centers, rdf.rdf*norm)).T
 
-    def _compute_current_rdf(self, state, smooth, verbose=False, query=True):
-
-        rdf = self._get_state_rdf(state, query=query)
+    def _compute_current_rdf(self, state, smooth, verbose=False):
+        """Calcualte the current RDF from the query trajectory"""
+        rdf = self._get_state_rdf(state, query=True)
         self._states[state]["current_rdf"] = rdf
 
         if state._opt.smooth_rdfs:
@@ -118,7 +118,6 @@ class Pair(object):
             rdf[:, 1], self._states[state]["target_rdf"][:, 1]
         )
         self._states[state]["f_fit"].append(f_fit)
-
 
     def _save_current_rdf(self, state, iteration, dr):
         """Save the current rdf
