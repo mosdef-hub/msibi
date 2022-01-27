@@ -309,7 +309,7 @@ class MSIBI(object):
 
         for pair in self.pairs:
             potential_file = os.path.join(
-                self.potentials_dir, f"pot.{pair.name}.txt"
+                self.potentials_dir, f"pair_pot.{pair.name}.txt"
             )
             pair.potential_file = potential_file
             table_potentials.append((pair.type1, pair.type2, potential_file))
@@ -327,8 +327,18 @@ class MSIBI(object):
 
         if self.bonds:
             bonds = self.bonds
+            for bond in self.bonds:
+                if bond.bond_type != "harmonic":
+                    bond.potential_file = os.path.join(
+                            self.potentials_dir, f"bond_pot.{bond.name}.txdt"
+                    )
+
         if self.angles:
             angles = self.angles
+                if angle.angle_type != "harmonic":
+                    angle.potential_file = os.path.join(
+                            self.potentials_dir, f"angle_pot.{angle.name}.txdt"
+                    )
 
         for state in self.states:
             state.save_runscript(
