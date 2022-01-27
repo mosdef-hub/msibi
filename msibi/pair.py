@@ -148,7 +148,7 @@ class Pair(object):
             alpha0 = self._states[state]["alpha"]
             form = self._states[state]["alpha_form"]
             alpha = alpha_array(alpha0, pot_r, form=form)
-
+            N = len(self._states)
             current_rdf = self._states[state]["current_rdf"]
             target_rdf = self._states[state]["target_rdf"]
 
@@ -167,7 +167,7 @@ class Pair(object):
 
             # The actual IBI step.
             self.potential += (
-                    kT * alpha * np.log(current_rdf[:,1] / target_rdf[:,1]) / len(self._states)
+                    kT * alpha * np.log(current_rdf[:,1] / target_rdf[:,1]) / N 
             )
 
             if verbose:  # pragma: no cover

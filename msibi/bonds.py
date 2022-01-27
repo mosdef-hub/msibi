@@ -159,6 +159,21 @@ class Bond(object):
             ),
             distribution)
 
+    def _update_potential(self):
+        """
+        Compare distributions of current iteration against target,
+        and update the Bond potential via Boltzmann inversion.
+
+        """
+        self.previous_potential = np.copy(self.potential)
+        for state in self._states:
+            kT = state.kT
+            current_dist = self._states[state]["current_distribution"]
+            target_dist = self._states[state]["target_distribution"]
+            N = len(self._states)
+            self.potential += (
+                    kT * np.log(current_dist[:,1] / target_dist[:,1] / N
+            )
 
 class Angle(object):
     """Creates a bond angle potential, either to be held constant, or to be
@@ -301,3 +316,19 @@ class Angle(object):
                 f"angle_{self.name}-state_{state.name}-step_{iteration}.txt"
             ),
             distribution)
+
+    def _update_potential(self):
+        """
+        Compare distributions of current iteration against target,
+        and update the Angle potential via Boltzmann inversion.
+
+        """
+        self.previous_potential = np.copy(self.potential)
+        for state in self._states:
+            kT = state.kT
+            current_dist = self._states[state]["current_distribution"]
+            target_dist = self._states[state]["target_distribution"]
+            N = len(self._states)
+            self.potential += (
+                    kT * np.log(current_dist[:,1] / target_dist[:,1] / N
+            )
