@@ -152,7 +152,7 @@ class MSIBI(object):
             run_query_simulations(self.states, engine=self.engine)
             self._update_potentials(n)
 
-    def optimize_angles(self):
+    def optimize_angles(self, n_iterations, start_iteration=0):
         """Optimize the bond angle potentials
 
         Parameters
@@ -260,8 +260,10 @@ class MSIBI(object):
                 angle._update_potential()
 
     def _recompute_distribution(self, bond_object, iteration):
+        """Recompute the current distribution of bond lengths or angles"""
         for state in self.states:
-            bond_object.compute_current_distribution(state)
+            bond_object._compute_current_distribution(state)
+            bond_object._save_current_distribution(state, iteration=iteration)
 
     def _recompute_rdfs(self, pair, iteration):
         """Recompute the current RDFs for every state used for a given pair."""

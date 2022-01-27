@@ -129,7 +129,7 @@ class Bond(object):
         # TODO FINISH CALC SIM
         f_fit = calc_similarity()
 
-    def _save_current_distribution(self, state, iteration, dr):
+    def _save_current_distribution(self, state, iteration):
         """Save the current bond length distribution 
 
         Parameters
@@ -138,12 +138,10 @@ class Bond(object):
             A state object
         iteration : int
             Current iteration step, used in the filename
-        dr : float
-            The distribution bin size
 
         """
         distribution = self._states[state]["current_distribution"]
-        distribution[:,0] -= dr / 2
+        distribution[:,0] -= self.dl / 2
         np.savetxt(os.path.join(
                 state.dir,
                 f"bond_{self.name}-state_{state.name}-step_{iteration}.txt"
@@ -263,7 +261,7 @@ class Angle(object):
         # TODO FINISH CALC SIM
         f_fit = calc_similarity()
 
-    def _save_current_distribution(self, state, iteration, dr):
+    def _save_current_distribution(self, state, iteration):
         """Save the current bond angle distribution 
 
         Parameters
@@ -272,12 +270,10 @@ class Angle(object):
             A state object
         iteration : int
             Current iteration step, used in the filename
-        dr : float
-            The distribution bin size
 
         """
         distribution = self._states[state]["current_distribution"]
-        distribution[:,0] -= dr / 2
+        distribution[:,0] -= self.dtheta / 2
         np.savetxt(os.path.join(
                 state.dir,
                 f"angle_{self.name}-state_{state.name}-step_{iteration}.txt"
