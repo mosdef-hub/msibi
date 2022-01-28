@@ -155,7 +155,7 @@ class Bond(object):
         distribution[:,0] -= self.dl / 2
         np.savetxt(os.path.join(
                 state.dir,
-                f"bond_{self.name}-state_{state.name}-step_{iteration}.txt"
+                f"bond_pot_{self.name}-state_{state.name}-step_{iteration}.txt"
             ),
             distribution)
 
@@ -172,7 +172,7 @@ class Bond(object):
             target_dist = self._states[state]["target_distribution"]
             N = len(self._states)
             self.potential += (
-                    kT * np.log(current_dist[:,1] / target_dist[:,1] / N
+                    kT * np.log(current_dist[:,1] / target_dist[:,1] / N)
             )
 
 class Angle(object):
@@ -250,7 +250,6 @@ class Angle(object):
             V_theta = (self.k4*(T))**4 + (self.k3*(T))**3 + (self.k2*(T))**2
             return V_theta
 
-
     def _add_state(self, state):
         """Add a state to be used in optimizing this angle.
 
@@ -313,7 +312,7 @@ class Angle(object):
         distribution[:,0] -= self.dtheta / 2
         np.savetxt(os.path.join(
                 state.dir,
-                f"angle_{self.name}-state_{state.name}-step_{iteration}.txt"
+                f"angle_pot_{self.name}-state_{state.name}-step_{iteration}.txt"
             ),
             distribution)
 
@@ -330,5 +329,6 @@ class Angle(object):
             target_dist = self._states[state]["target_distribution"]
             N = len(self._states)
             self.potential += (
-                    kT * np.log(current_dist[:,1] / target_dist[:,1] / N
+                    kT * np.log(current_dist[:,1] / target_dist[:,1] / N)
             )
+

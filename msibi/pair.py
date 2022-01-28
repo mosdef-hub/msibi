@@ -136,7 +136,7 @@ class Pair(object):
         rdf[:, 0] -= dr / 2
         np.savetxt(os.path.join(
             state.dir,
-            f"pair_{self.name}-state_{state.name}-step{iteration}.txt"
+            f"pair_pot_{self.name}-state_{state.name}-step{iteration}.txt"
             ),
             rdf)
 
