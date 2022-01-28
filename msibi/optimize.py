@@ -300,9 +300,6 @@ class MSIBI(object):
         if not os.path.isdir(self.potentials_dir):
             os.mkdir(self.potentials_dir)
 
-        if not os.path.isdir("rdfs"):
-            os.mkdir("rdfs")
-
         table_potentials = []
         bonds = None
         angles = None
@@ -330,14 +327,14 @@ class MSIBI(object):
             for bond in self.bonds:
                 if bond.bond_type != "harmonic":
                     bond.potential_file = os.path.join(
-                            self.potentials_dir, f"bond_pot.{bond.name}.txdt"
+                            self.potentials_dir, f"bond_pot.{bond.name}.txt"
                     )
 
         if self.angles:
             angles = self.angles
                 if angle.angle_type != "harmonic":
                     angle.potential_file = os.path.join(
-                            self.potentials_dir, f"angle_pot.{angle.name}.txdt"
+                            self.potentials_dir, f"angle_pot.{angle.name}.txt"
                     )
 
         for state in self.states:
