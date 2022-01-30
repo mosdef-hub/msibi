@@ -44,6 +44,7 @@ class State(object):
         Path to the query trajectory.
     backup_trajectory : bool
         True if each query trajectory is backed up
+
     """
     def __init__(
         self,
