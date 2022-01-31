@@ -223,6 +223,7 @@ class MSIBI(object):
     def _add_states(self):
         """Add State objects to Pairs, Bonds, and Angles.
         Required step before optimization runs can begin.
+
         """
         for pair in self.pairs:
             for state in self.states:
@@ -332,10 +333,10 @@ class MSIBI(object):
 
         if self.angles:
             angles = self.angles
-                if angle.angle_type == "quadratic":
-                    angle.potential_file = os.path.join(
-                            self.potentials_dir, f"angle_pot.{angle.name}.txt"
-                    )
+            if angle.angle_type == "quadratic":
+                angle.potential_file = os.path.join(
+                        self.potentials_dir, f"angle_pot.{angle.name}.txt"
+                )
 
         for state in self.states:
             state.save_runscript(

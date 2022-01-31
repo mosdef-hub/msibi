@@ -95,7 +95,12 @@ class Pair(object):
         return np.stack((rdf.bin_centers, rdf.rdf*norm)).T
 
     def _compute_current_rdf(self, state, smooth, verbose=False):
-        """Calcualte the current RDF from the query trajectory"""
+        """Calcualte the current RDF from the query trajectory.
+        Updates the 'current_rdf' value in this Pair's state dict.
+        Applies smoothing if applicable and calculates the f_fit between
+        the current RDF and target RDF.
+
+        """
         rdf = self._get_state_rdf(state, query=True)
         self._states[state]["current_rdf"] = rdf
 
