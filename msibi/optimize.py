@@ -190,8 +190,8 @@ class MSIBI(object):
         start_iteration : int, default 0
             Start optimization at start_iteration, useful for restarting.
         rdf_exclude_bonded : bool, default=True
-            Whether the RDF calculation should exclude correlations between bonded
-            species.
+            If the RDF calculation should exclude correlations between bonded
+            types.
         smooth_rdfs : bool, default=True
             Set to True to perform smoothing (Savitzky Golay) on the target
             and iterative RDFs.
@@ -303,55 +303,75 @@ class MSIBI(object):
             os.mkdir(self.potentials_dir)
 
         table_potentials = []
-        bonds = None
-        angles = None
 
         for pair in self.pairs:
-            potential_file = os.path.join(
-                self.potentials_dir, f"pair_pot.{pair.name}.txt"
-            )
-            pair.potential_file = potential_file
-            table_potentials.append((pair.type1, pair.type2, potential_file))
+            if pair.type == "table":
+                potential_file = os.path.join(
+                    self.potentials_dir, f"pair_pot.{pair.name}.txt"
+                )
+                pair.potential_file = potential_file
+                # TODO REMOVE APPEND
+                table_potentials.append((pair.type1, pair.type2, potential_file))
 
-            V = tail_correction(self.pot_r, pair.potential, self.r_switch)
-            pair.potential = V
-
-            if self.optimization == "pairs":
-                # This file is written for viewing of how the potential evolves.
-                pair._save_table_potential(self.pot_r, self.dr, iteration=0)
-                # TODO Use new save potential file method
-
-                # This file is overwritten at each iteration; used in query sim
-                pair._save_table_potential(self.pot_r, self.dr)
-                # TODO Use new save potential file method
-
-
-        if self.bonds:
-            bonds = self.bonds
-            for bond in self.bonds:
-                if bond.bond_type == "quadratic":
-                    bond.potential_file = os.path.join(
-                            self.potentials_dir, f"bond_pot.{bond.name}.txt"
+                V = tail_correction(pair.r_range, pair.potential, self.r_switch)
+                pair.potential = V
+                if self.optimization == "pairs":
+                    iteration = 0
+                else:
+                    iteration = None
+                save_table_potential(
+                        pair.potential,
+                        pair.r_range,
+                        pair.dr,
+                        iteration,
+                        pair.potential_file
                     )
 
-        if self.angles:
-            angles = self.angles
+        for bond in self.bonds:
+            if bond.bond_type == "quadratic":
+                bond.potential_file = os.path.join(
+                        self.potentials_dir, f"bond_pot.{bond.name}.txt"
+                )
+                if self.optimization == "bonds":
+                    iteration = 0
+                else:
+                    iteration = None
+
+                save_table_potential(
+                        bond.potential,
+                        bond.l_range
+                        bond.dl,
+                        iteration,
+                        bond.potential_file
+                )
+
+        for angle in self.angles:
             if angle.angle_type == "quadratic":
                 angle.potential_file = os.path.join(
                         self.potentials_dir, f"angle_pot.{angle.name}.txt"
                 )
+                if self.optimization == "angles":
+                    iteration = 0
+                else:
+                    iteration = None
+
+                save_table_potential(
+                        angle.potential,
+                        angle.theta_range
+                        angle.dtheta,
+                        iteration,
+                        angle.potential_file
+                )
 
         for state in self.states:
-            state.save_runscript(
+            state._save_runscript(
                 n_steps=int(self.n_steps),
                 integrator=self.integrator,
                 integrator_kwargs=self.integrator_kwargs,
                 dt=self.dt,
                 gsd_period=self.gsd_period,
-                table_potentials=table_potentials,
-                table_width=len(self.pot_r),
-                engine=self.engine,
-                bonds=bonds,
-                angles=angles
+                pairs=self.pairs,
+                bonds=self.bonds,
+                angles=self.angles
             )
 

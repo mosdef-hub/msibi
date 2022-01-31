@@ -20,15 +20,16 @@ def morse(r, D, alpha, r0):
 def save_table_potential(potential, r, dr, iteration, potential_file):
     F = -1.0 * np.gradient(potential, dr)
     data = np.vstack([r, potential, F])
-
-    basename = os.path.basename(potential_file)
-    basename = "step{0:d}.{1}".format(iteration, basename)
-    dirname = os.path.dirname(self.potential_file)
-    iteration_filename = os.path.join(dirname, basename)
     # This file overwritten for each iteration, used during query sim.
     np.savetxt(potential_file, data.T)
-    # This file written for viewing evolution of potential.
-    np.savetxt(iteration_filename, data.T)
+
+    if iteration != None:
+        basename = os.path.basename(potential_file)
+        basename = "step{0:d}.{1}".format(iteration, basename)
+        dirname = os.path.dirname(self.potential_file)
+        iteration_filename = os.path.join(dirname, basename)
+        # This file written for viewing evolution of potential.
+        np.savetxt(iteration_filename, data.T)
 
 def tail_correction(r, V, r_switch):
     """Apply a tail correction to a potential making it go to zero smoothly.

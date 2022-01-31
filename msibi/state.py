@@ -66,7 +66,7 @@ class State(object):
         self.query_traj = os.path.join(self.dir, "query.gsd")
         self.backup_trajectory = backup_trajectory
 
-    def save_runscript(
+    def _save_runscript(
         self,
         n_steps,
         integrator,
@@ -75,19 +75,23 @@ class State(object):
         gsd_period,
         table_potentials,
         table_width,
+        pairs,
         bonds=None,
         angles=None,
-        engine="hoomd",
     ):
         """Save the input script for the MD engine."""
         script = list()
         script.append(
-            HOOMD2_HEADER.format(self.traj_file, table_width)
+            HOOMD2_HEADER.format(self.traj_file)
         )
+        # TODO Add check that the init scripts are the same for all 
+        script.append(pairs[0].pair_init)
+        for pair in pairs:
+            script.append(pair.pair_entry)
 
-        for type1, type2, potential_file in table_potentials:
-            script.append(HOOMD_TABLE_ENTRY.format(**locals()))
-
+        #for type1, type2, potential_file in table_potentials:
+        #    script.append(HOOMD_TABLE_ENTRY.format(**locals()))
+         
         if bonds is not None:
             script.append(bonds[0].bond_init)
             for bond in bonds:
