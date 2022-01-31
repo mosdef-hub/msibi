@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-from msibi.potentials import tail_correction
+from msibi.potentials import tail_correction, save_table_potential
 from msibi.utils.exceptions import UnsupportedEngine
 from msibi.workers import run_query_simulations
 
@@ -249,6 +249,7 @@ class MSIBI(object):
                 self._recompute_rdfs(pair, iteration)
                 pair._update_potential(self.pot_r, self.r_switch, self.verbose)
                 pair._save_table_potential(self.pot_r, self.dr, iteration)
+                # TODO Use new save potential file method
 
         elif self.optimization == "bonds":
             for bond in self.bonds:
@@ -315,13 +316,15 @@ class MSIBI(object):
             V = tail_correction(self.pot_r, pair.potential, self.r_switch)
             pair.potential = V
 
-            # This file is written for viewing of how the potential evolves.
             if self.optimization == "pairs":
-                pair.save_table_potential(self.pot_r, self.dr, iteration=0)
+                # This file is written for viewing of how the potential evolves.
+                pair._save_table_potential(self.pot_r, self.dr, iteration=0)
+                # TODO Use new save potential file method
 
-            # This file is overwritten at each iteration and
-            # used by Hoomd when performing query simulations
-            pair.save_table_potential(self.pot_r, self.dr)
+                # This file is overwritten at each iteration; used in query sim
+                pair._save_table_potential(self.pot_r, self.dr)
+                # TODO Use new save potential file method
+
 
         if self.bonds:
             bonds = self.bonds

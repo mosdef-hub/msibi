@@ -11,6 +11,10 @@ from msibi.utils.general import find_nearest
 from msibi.utils.smoothing import savitzky_golay
 
 
+LJ_PAIR_ENTRY = "lj.pair_coeff.set('{}', '{}', epsilon={}, sigma={}, r_cut={}"
+TABLE_PAIR_ENTRY = "table.set_from_file('{}', '{}', filename='{}')"
+
+
 class Pair(object):
     """A pair interaction to be optimized.
 
@@ -40,13 +44,40 @@ class Pair(object):
         self.name = f"{self.type1}-{self.type2}"
         self.potential_file = ""
         self._states = dict()
-        if isinstance(potential, str):
-            self.potential = np.loadtxt(potential)[:, 1]
-            # TODO: this could be dangerous
-        else:
-            self.potential = potential
         self.previous_potential = None
         self.head_correction_form = head_correction_form
+
+    def set_12_6_lj(self, epsilon, sigma, r_cut):
+        self.pair_type = "hoomd_lj"
+        self.pair_init = "lj = pair.lj(nlist=nl)"
+        self.pair_entry = LJ_PAIR_ENTRY.format(
+                self.type1, self.type2, epsilon, sigma, r_cut
+        )
+
+    def set_table_potential(
+            self, sigma, epsilon, r_min, r_max, n_points, m=12, n=6
+    ):
+        self.r_min = r_min
+        self.r_max = r_max
+        self.dr = (r_max - r_min) / n_points
+        self.r_range = np.arange(r_min, r_max + self.dr, self.dr)
+        self.potential = create_pair_table(self.r_range, epsilon, sigma, m, n)
+        self.n_points = n_points
+        self.pair_type = "table"
+        self.pair_init = f"table=hoomd.md.pair.table(width={n_points},nlist=nl)"
+        self.pair_entry = TABLE_PAIR_ENTRY.format(
+                self.type1, self.type2, self.potential_file
+        )
+
+        def create_pair_table(r, eps, sig, m, n):
+            prefactor = (m / (m - n)) * (m / n) ** (n / (m - n))
+            return prefactor * eps * ((sig / r) ** m - (sig / r) ** n)
+
+    def set_from_file(self, file_path):
+        self.potential_file = file_path
+        self.pair_type = "file"
+        self.pair_init = ""
+        self.pair_entry = ""
 
     def _add_state(self, state, smooth=True):
         """Add a state to be used in optimizing this pair.
@@ -207,7 +238,7 @@ class Pair(object):
             plt.legend()
             plt.show()
 
-    def save_table_potential(self, r, dr, iteration=0):
+    def _save_table_potential(self, r, dr, iteration=0):
         """Save the table potential to a file usable by the MD engine. """
         V = self.potential
         F = -1.0 * np.gradient(V, dr)

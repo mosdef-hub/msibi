@@ -22,7 +22,7 @@ class TestPair(BaseTest):
     def test_save_table_potential(self, tmp_path):
         pair = Pair("A", "B", potential=mie(r, 1.0, 1.0))
         pair.potential_file = os.path.join(tmp_path, "pot.txt")
-        pair.save_table_potential(r, dr)
+        pair._save_table_potential(r, dr)
         assert os.path.isfile(pair.potential_file)
 
     def test_add_state(self, pair, state0, rdf0, tmp_path):
@@ -45,7 +45,7 @@ class TestPair(BaseTest):
                 rdf_exclude_bonded=True,
                 smooth_rdfs=True,
                 _dir=tmp_path,
-            )
+        )
         assert isinstance(pair._states, dict)
         assert np.array_equal(pair._states[state0]["target_rdf"], rdf0)
         assert pair._states[state0]["current_rdf"] is None
@@ -58,23 +58,23 @@ class TestPair(BaseTest):
                 integrator="hoomd.md.integrate.nvt",
                 integrator_kwargs={"tau": 0.1},
                 dt=0.001,
-                gsd_period=1000,
+                gsd_period=500,
                 potential_cutoff=2.5,
                 n_potential_points=n_bins,
                 r_min=1e-4,
-                n_steps=1e6,
-                max_frames=10
+                n_steps=2e3,
+                max_frames=1
         )
         opt.add_state(state0)
         opt.add_pair(pair)
         opt.optimize_pairs(
-                n_iterations=0,
+                n_iterations=1,
                 r_switch=None,
                 rdf_exclude_bonded=True,
                 smooth_rdfs=False,
                 _dir=tmp_path,
             )
-        pair._compute_current_rdf(state0, opt.smooth_rdfs, query=False)
+        pair._compute_current_rdf(state0, opt.smooth_rdfs)
         assert pair._states[state0]["current_rdf"] is not None
         assert len(pair._states[state0]["f_fit"]) > 0
 
@@ -99,7 +99,7 @@ class TestPair(BaseTest):
                 smooth_rdfs=True,
                 _dir=tmp_path,
             )
-        pair._compute_current_rdf(state0, opt.smooth_rdfs, query=False)
+        pair._compute_current_rdf(state0, opt.smooth_rdfs)
         assert pair._states[state0]["current_rdf"] is not None
         assert len(pair._states[state0]["f_fit"]) > 0
 
@@ -124,7 +124,7 @@ class TestPair(BaseTest):
                 smooth_rdfs=True,
                 _dir=tmp_path,
             )
-        pair._compute_current_rdf(state0, opt.smooth_rdfs, query=False)
+        pair._compute_current_rdf(state0, opt.smooth_rdfs)
         pair._save_current_rdf(state0, 0, opt.dr)
         assert os.path.isfile(
             os.path.join(
@@ -154,6 +154,6 @@ class TestPair(BaseTest):
                 smooth_rdfs=True,
                 _dir=tmp_path,
             )
-        pair._compute_current_rdf(state0, opt.smooth_rdfs, query=False)
+        pair._compute_current_rdf(state0, opt.smooth_rdfs)
         pair._update_potential(np.arange(0, 2.5 + dr, dr), r_switch=1.8)
         assert not np.array_equal(pair.potential, pair.previous_potential)
