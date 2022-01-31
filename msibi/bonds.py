@@ -191,6 +191,9 @@ class Angle(object):
         self.type2 = type2
         self.type3 = type3
         self.name = f"{self.type1}-{self.type2}-{self.type3}"
+        self.potential_file = ""
+        self.potential = None
+        self.previous_potential = None
         self._states = dict()
 
     def set_harmonic(self, k, theta0):
