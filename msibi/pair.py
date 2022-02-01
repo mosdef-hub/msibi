@@ -11,10 +11,11 @@ from msibi.utils.general import find_nearest
 from msibi.utils.smoothing import savitzky_golay
 
 
-LJ_PAIR_ENTRY = "lj.pair_coeff.set('{}', '{}', epsilon={}, sigma={}, r_cut={}"
+LJ_PAIR_ENTRY = "lj.pair_coeff.set('{}', '{}', epsilon={}, sigma={}, r_cut={})"
 MORSE_PAIR_ENTRY = """
 morse.pair_coeff.set('{}', '{}', D0={}, alpha={}, r0={}, r_cut={}
 """
+GAUSS_PAIR_ENTRY = "gauss.pair_coeff.set('{}', '{}', epsilon={}, sigma={}, r_cut={})"
 TABLE_PAIR_ENTRY = "table.set_from_file('{}', '{}', filename='{}')"
 
 
@@ -59,9 +60,10 @@ class Pair(object):
 
         Parameters
         ----------
-        epsilon, sigma : float, required
-            12-6 Lennard Jones parameters.
-
+        epsilon : float, required
+            Sets the dept hof the potential energy well.
+        sigma : float, required
+            Sets the particle size.
         r_cut : float, required
             Maximum distance used to calculate neighbor pair potentials.
 
@@ -97,22 +99,74 @@ class Pair(object):
                 self.type1, self.type2, D0, alpha, r0, r_cut
         )
 
+    def set_gauss(self, epsilon, sigma, r_cut):
+        """Creates a hoomd Gaussian pair potential used during
+        the query simulations. This method is not compatible when
+        optimizing pair potentials. Rather, this method should
+        only be used to create static pair potentials while optimizing
+        Bonds or Angles.
+
+        Parameters
+        ----------
+        epsilon : float, required
+            Sets the dept hof the potential energy well.
+        sigma : float, required
+            Sets the particle size.
+        r_cut : float, required
+            Maximum distance used to calculate neighbor pair potentials.
+
+        """
+        self.pair_type = "hoomd_gauss"
+        self.pair_init = f"gauss = pair.gauss(nlist=nl)"
+        self.pair_entry = GAUSS_PAIR_ENTRY.format(
+                self.type1, self.type2, epsilon, sigma, r_cut
+        )
+
     def set_table_potential(
-            self, sigma, epsilon, r_min, r_max, n_points, m=12, n=6
+            self, epsilon, sigma, r_min, r_max, n_points, m=12, n=6
     ):
+        """Creates a table potential V(r) over the range r_min - r_max.
+
+        Uses the Morse potential functional form.
+
+        This should be the pair potential form of choice when optimizing
+        pairs; however, you can also use this method to set a static
+        pair potential while optimizing other potentials such as
+        Angles and Bonds.
+
+        Parameters
+        ----------
+        epsilon : float, required
+            Sets the dept hof the potential energy well.
+        sigma : float, required
+            Sets the particle size.
+        r_min : float, required
+            Sets the lower bound for distances used in the table potential
+        r_max : float, required
+            Sets the upper bound for distances used in the table potential
+        n_points : int, required
+            Sets the number of points between r_min and r_max to extrapolate
+            the table potential
+        m : int, default = 12
+            The exponent of the repulsive term
+        n : int, default = 6
+            The exponent of the attractive term
+
+        """
         self.r_min = r_min
         self.r_max = r_max
-        self.dr = (r_max - r_min) / n_points
+        self.n_points = int(n_points)
+        self.dr = (r_max - r_min) / self.n_points
         self.r_range = np.arange(r_min, r_max + self.dr, self.dr)
         self.potential = create_pair_table(self.r_range, epsilon, sigma, m, n)
-        self.n_points = n_points
         self.pair_type = "table"
-        self.pair_init = f"table=hoomd.md.pair.table(width={n_points},nlist=nl)"
+        self.pair_init = f"table=hoomd.md.pair.table(width={self.n_points},nlist=nl)"
         self.pair_entry = TABLE_PAIR_ENTRY.format(
                 self.type1, self.type2, self.potential_file
         )
 
         def create_pair_table(r, eps, sig, m, n):
+            """The Morse potential functional form"""
             prefactor = (m / (m - n)) * (m / n) ** (n / (m - n))
             return prefactor * eps * ((sig / r) ** m - (sig / r) ** n)
 

@@ -7,17 +7,6 @@ from msibi.utils.general import find_nearest
 __all__ = ["mie", "morse"]
 
 
-def mie(r, eps, sig, m=12, n=6):
-    """Mie pair potential.  """
-    prefactor = (m / (m - n)) * (m / n) ** (n / (m - n))
-    return prefactor * eps * ((sig / r) ** m - (sig / r) ** n)
-
-
-def morse(r, D, alpha, r0):
-    """Morse pair potential. """
-    return D * (np.exp(-2 * alpha * (r - r0)) - 2 * np.exp(-alpha * (r - r0)))
-
-
 def save_table_potential(potential, r, dr, iteration, potential_file):
     """Save the length, potential energy,force values to a text file."""
     F = -1.0 * np.gradient(potential, dr)
