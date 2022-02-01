@@ -141,9 +141,12 @@ class Bond(object):
         """Find the current bond length distribution of the query trajectory"""
         bond_distribution = self.get_state_distribution(state, query=True)
         self._states[state]["current_distribution"] = bond_distribution
-        # TODO FINISH CALC SIM
         # TODO ADD SMOOTHING
-        f_fit = calc_similarity()
+        f_fit = calc_similarity(
+                bond_distribution[:,1],
+                self._states[state]["target_distribution"][:,1] 
+        )
+        self._states[state]["f_fit"].append(f_fit)
 
     def _save_current_distribution(self, state, iteration):
         """Save the current bond length distribution 
@@ -158,7 +161,7 @@ class Bond(object):
         """
         distribution = self._states[state]["current_distribution"]
         distribution[:,0] -= self.dl / 2
-        fname=f"bond_pot_{self.name}-state_{state.name}-step_{iteration}.txt"
+        fname = f"bond_pot_{self.name}-state_{state.name}-step_{iteration}.txt"
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, distribution)
 
@@ -174,7 +177,7 @@ class Bond(object):
             current_dist = self._states[state]["current_distribution"]
             target_dist = self._states[state]["target_distribution"]
             N = len(self._states)
-            self.potential += (
+            self.potential += state.alpha * (
                     kT * np.log(current_dist[:,1] / target_dist[:,1] / N)
             )
 
@@ -299,9 +302,12 @@ class Angle(object):
         """Find the current bond angle distribution of the query trajectory"""
         angle_distribution = self._get_state_distribution(state, query=True)
         self._states[state]["current_distribution"] = angle_distribution
-        # TODO FINISH CALC SIM
         # TODO ADD SMOOTHING
-        f_fit = calc_similarity()
+        f_fit = calc_similarity(
+                angle_distribution[:,1],
+                self._states[state]["target_distribution"][:,1] 
+        )
+        self._states[state]["f_fit"].append(f_fit)
 
     def _save_current_distribution(self, state, iteration):
         """Save the current bond angle distribution 
@@ -317,7 +323,7 @@ class Angle(object):
         distribution = self._states[state]["current_distribution"]
         distribution[:,0] -= self.dtheta / 2
         
-        fname=f"angle_pot_{self.name}-state_{state.name}-step_{iteration}.txt"
+        fname = f"angle_pot_{self.name}-state_{state.name}-step_{iteration}.txt"
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, distribution)
 
@@ -333,7 +339,7 @@ class Angle(object):
             current_dist = self._states[state]["current_distribution"]
             target_dist = self._states[state]["target_distribution"]
             N = len(self._states)
-            self.potential += (
+            self.potential += state.alpha * (
                     kT * np.log(current_dist[:,1] / target_dist[:,1] / N)
             )
 

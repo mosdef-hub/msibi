@@ -12,9 +12,7 @@ from msibi.utils.smoothing import savitzky_golay
 
 
 LJ_PAIR_ENTRY = "lj.pair_coeff.set('{}', '{}', epsilon={}, sigma={}, r_cut={})"
-MORSE_PAIR_ENTRY = """
-morse.pair_coeff.set('{}', '{}', D0={}, alpha={}, r0={}, r_cut={}
-"""
+MORSE_PAIR_ENTRY = "morse.pair_coeff.set('{}','{}',D0={},alpha={},r0={},r_cut={}"
 GAUSS_PAIR_ENTRY = "gauss.pair_coeff.set('{}', '{}', epsilon={}, sigma={}, r_cut={})"
 TABLE_PAIR_ENTRY = "table.set_from_file('{}', '{}', filename='{}')"
 
@@ -201,7 +199,6 @@ class Pair(object):
             "current_rdf": None,
             "alpha": state.alpha,
             "alpha_form": "linear",
-            "pair_indices": None,
             "f_fit": [],
             "path": state.dir
         }
@@ -268,7 +265,7 @@ class Pair(object):
         rdf = self._states[state]["current_rdf"]
         rdf[:, 0] -= self.dr / 2
 
-        fname=f"pair_pot_{self.name}-state_{state.name}-step{iteration}.txt"
+        fname = f"pair_pot_{self.name}-state_{state.name}-step{iteration}.txt"
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, rdf)
 
