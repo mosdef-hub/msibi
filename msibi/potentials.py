@@ -4,8 +4,6 @@ import numpy as np
 
 from msibi.utils.general import find_nearest
 
-__all__ = ["mie", "morse"]
-
 
 def save_table_potential(potential, r, dr, iteration, potential_file):
     """Save the length, potential energy,force values to a text file."""
@@ -140,3 +138,4 @@ def alpha_array(alpha0, pot_r, form="linear"):
         return alpha0 * (1.0 - pot_r / pot_r[-1])
     else:
         raise ValueError("Unsupported alpha form")
+
