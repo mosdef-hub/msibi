@@ -164,17 +164,17 @@ class MSIBI(object):
             and iterative RDFs.
         r_switch : float, optional, default=None
             The distance after which a tail correction is applied.
-            If None, then r_max[-5] is used.
+            If None, then Pair.r_range[-5] is used.
 
         """
         self.optimization = "pairs"
         self.rdf_exclude_bonded = rdf_exclude_bonded
         self.smooth_rdfs = smooth_rdfs
-
-        if r_switch is None:
-            # TODO Fix handling of r_switch
-            r_switch = self.pot_r[-5]
-        self.r_switch = r_switch
+        for pair in self.pairs:
+            if r_switch is None:
+                pair.r_switch = pair.r_range[-5]
+            else:
+                pair.r_switch = r_switch
 
         self._add_states()
         self._initialize(potentials_dir=_dir)
@@ -206,7 +206,7 @@ class MSIBI(object):
         if self.optimization == "pairs":
             for pair in self.pairs:
                 self._recompute_rdfs(pair, iteration)
-                pair._update_potential(self.r_switch, self.verbose)
+                pair._update_potential(self.verbose)
                 save_table_potential(
                         pair.potential,
                         pair.r_range,
@@ -280,18 +280,14 @@ class MSIBI(object):
         if not os.path.isdir(self.potentials_dir):
             os.mkdir(self.potentials_dir)
 
-        table_potentials = []
-
         for pair in self.pairs:
-            if pair.type == "table":
+            if pair.pair_type == "table":
+                pair.r_switch = pair.r_range[-5]
                 potential_file = os.path.join(
                     self.potentials_dir, f"pair_pot.{pair.name}.txt"
                 )
                 pair.potential_file = potential_file
-                # TODO REMOVE APPEND
-                table_potentials.append((pair.type1, pair.type2, potential_file))
-
-                V = tail_correction(pair.r_range, pair.potential, self.r_switch)
+                V = tail_correction(pair.r_range, pair.potential, pair.r_switch)
                 pair.potential = V
                 if self.optimization == "pairs":
                     iteration = 0

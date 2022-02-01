@@ -269,7 +269,7 @@ class Pair(object):
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, rdf)
 
-    def _update_potential(self, r_switch=None, verbose=False):
+    def _update_potential(self, verbose=False):
         """Update the potential using all states. """
         self.previous_potential = np.copy(self.potential)
         for state in self._states:
@@ -312,7 +312,7 @@ class Pair(object):
 
         # Apply corrections to ensure continuous, well-behaved potentials.
         pot = self.potential
-        self.potential = tail_correction(self.r_range, self.potential, r_switch)
+        self.potential = tail_correction(self.r_range, self.potential, self.r_switch)
         tail = self.potential
         self.potential = head_correction(
             self.r_range,
@@ -324,7 +324,7 @@ class Pair(object):
         if verbose:  # pragma: no cover
             plt.plot(self.r_range, head, label="head correction")
             plt.plot(self.r_range, pot, label="uncorrected potential")
-            idx_r, _ = find_nearest(self.r_range, r_switch)
+            idx_r, _ = find_nearest(self.r_range, self.r_switch)
             plt.plot(
                     self.r_range[idx_r:], tail[idx_r:], label="tail correction"
             )

@@ -1,4 +1,5 @@
 import warnings
+import os
 
 import numpy as np
 
@@ -15,7 +16,7 @@ def save_table_potential(potential, r, dr, iteration, potential_file):
     if iteration != None:
         basename = os.path.basename(potential_file)
         basename = "step{0:d}.{1}".format(iteration, basename)
-        dirname = os.path.dirname(self.potential_file)
+        dirname = os.path.dirname(potential_file)
         iteration_filename = os.path.join(dirname, basename)
         # This file written for viewing evolution of potential.
         np.savetxt(iteration_filename, data.T)
