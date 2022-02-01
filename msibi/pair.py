@@ -12,6 +12,9 @@ from msibi.utils.smoothing import savitzky_golay
 
 
 LJ_PAIR_ENTRY = "lj.pair_coeff.set('{}', '{}', epsilon={}, sigma={}, r_cut={}"
+MORSE_PAIR_ENTRY = """
+morse.pair_coeff.set('{}', '{}', D0={}, alpha={}, r0={}, r_cut={}
+"""
 TABLE_PAIR_ENTRY = "table.set_from_file('{}', '{}', filename='{}')"
 
 
@@ -47,11 +50,51 @@ class Pair(object):
         self.previous_potential = None
         self.head_correction_form = head_correction_form
 
-    def set_12_6_lj(self, epsilon, sigma, r_cut):
+    def set_lj(self, epsilon, sigma, r_cut):
+        """Creates a hoomd 12-6 LJ pair potential used during
+        the query simulations. This method is not compatible when
+        optimizing pair potentials. Rather, this method should
+        only be used to create static pair potentials while optimizing
+        Bonds or Angles.
+
+        Parameters
+        ----------
+        epsilon, sigma : float, required
+            12-6 Lennard Jones parameters.
+
+        r_cut : float, required
+            Maximum distance used to calculate neighbor pair potentials.
+
+        """
         self.pair_type = "hoomd_lj"
         self.pair_init = "lj = pair.lj(nlist=nl)"
         self.pair_entry = LJ_PAIR_ENTRY.format(
                 self.type1, self.type2, epsilon, sigma, r_cut
+        )
+
+    def set_morse(self, D0, alpha, r0, r_cut):
+        """Creates a hoomd Morse pair potential used during
+        the query simulations. This method is not compatible when
+        optimizing pair potentials. Rather, this method should
+        only be used to create static pair potentials while optimizing
+        Bonds or Angles.
+
+        Parameters
+        ----------
+        D0 : float, required
+            The depth of the potential well at it's minimum point.
+        alpha : float, required
+            Sets the width of the potential well.
+        r0 : float, required
+            The position of the potential minimum.
+        r_cut : float, required
+            Maximum distance used to calculate neighbor pair potentials.
+
+        """
+        self.pair_type = "hoomd_morse"
+        self.pair_init = f"morse = pair.morse(nlist=nl)"
+        self.pair_entry = MORSE_PAIR_ENTRY.format(
+                self.type1, self.type2, D0, alpha, r0, r_cut
         )
 
     def set_table_potential(
