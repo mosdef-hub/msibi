@@ -267,10 +267,9 @@ class Pair(object):
         """
         rdf = self._states[state]["current_rdf"]
         rdf[:, 0] -= self.dr / 2
-        fpath = os.path.join(
-                state.dir,
-                f"pair_pot_{self.name}-state_{state.name}-step{iteration}.txt"
-            )
+
+        fname=f"pair_pot_{self.name}-state_{state.name}-step{iteration}.txt"
+        fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, rdf)
 
     def _update_potential(self, r_switch=None, verbose=False):

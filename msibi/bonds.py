@@ -128,9 +128,14 @@ class Bond(object):
             traj = state.query_traj
         else:
             traj = state.traj_file
+
         return bond_distribution(
-                traj, self.type1, self.type2, start=-state._opt.max_frames
-        )  
+                gsd_file=traj,
+                A_name=self.type1,
+                B_name=self.type2,
+                start=-state._opt.max_frames,
+                histogram=True
+        )
 
     def _compute_current_distribution(self, state):
         """Find the current bond length distribution of the query trajectory"""
@@ -153,11 +158,9 @@ class Bond(object):
         """
         distribution = self._states[state]["current_distribution"]
         distribution[:,0] -= self.dl / 2
-        np.savetxt(os.path.join(
-                state.dir,
-                f"bond_pot_{self.name}-state_{state.name}-step_{iteration}.txt"
-            ),
-            distribution)
+        fname=f"bond_pot_{self.name}-state_{state.name}-step_{iteration}.txt"
+        fpath = os.path.join(state.dir, fname)
+        np.savetxt(fpath, distribution)
 
     def _update_potential(self):
         """
@@ -285,11 +288,11 @@ class Angle(object):
         else:
             traj = state.traj_file
         return angle_distribution(
-                traj,
-                self.type1,
-                self.type2,
-                self.type3,
-                start=-state._opt.max_frames
+                gsd_file=traj,
+                A_name=self.type1,
+                B_name=self.type2,
+                start=-state._opt.max_frames,
+                histogram=True
         )
 
     def _compute_current_distribution(self, state):
@@ -313,11 +316,10 @@ class Angle(object):
         """
         distribution = self._states[state]["current_distribution"]
         distribution[:,0] -= self.dtheta / 2
-        np.savetxt(os.path.join(
-                state.dir,
-                f"angle_pot_{self.name}-state_{state.name}-step_{iteration}.txt"
-            ),
-            distribution)
+        
+        fname=f"angle_pot_{self.name}-state_{state.name}-step_{iteration}.txt"
+        fpath = os.path.join(state.dir, fname)
+        np.savetxt(fpath, distribution)
 
     def _update_potential(self):
         """
