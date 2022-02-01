@@ -99,7 +99,7 @@ class MSIBI(object):
     def add_angle(self, angle):
         self.angles.append(angle)
 
-    def optimize_bonds(self, n_iterations, start_iteration=0):
+    def optimize_bonds(self, n_iterations, start_iteration=0, _dir=None):
         """Optimize the bond potentials
 
         Parameters
@@ -119,7 +119,7 @@ class MSIBI(object):
             run_query_simulations(self.states)
             self._update_potentials(n)
 
-    def optimize_angles(self, n_iterations, start_iteration=0):
+    def optimize_angles(self, n_iterations, start_iteration=0, _dir=None):
         """Optimize the bond angle potentials
 
         Parameters
@@ -201,9 +201,6 @@ class MSIBI(object):
             for state in self.states:
                 angle._add_state(state)
 
-        for state in self.states:
-            state.HOOMD_VERSION = self.HOOMD_VERSION
-
     def _update_potentials(self, iteration):
         """Update the potentials for the potentials to be optimized."""
         if self.optimization == "pairs":
@@ -222,13 +219,25 @@ class MSIBI(object):
             for bond in self.bonds:
                 self._recompute_distribution(bond, iteration)
                 bond._update_potential()
-                # TODO Save new table potential
+                save_table_potential(
+                        bond.potential,
+                        bond.l_range,
+                        bond.dl,
+                        iteration,
+                        bond.potential_file
+                )
 
         elif self.optimization == "angles":
             for angle in self.angles:
                 self._recompute_distribution(angle, iteration)
                 angle._update_potential()
-                # TODO Save new table potential
+                save_table_potential(
+                        angle.potential,
+                        angle.theta_range,
+                        angle.dtheta,
+                        iteration,
+                        angle.potential_file
+                )
 
     def _recompute_distribution(self, bond_object, iteration):
         """Recompute the current distribution of bond lengths or angles"""

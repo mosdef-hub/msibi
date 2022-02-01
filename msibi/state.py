@@ -85,10 +85,10 @@ class State(object):
             HOOMD2_HEADER.format(self.traj_file)
         )
         # TODO Add check that the init scripts are the same for all 
-        script.append(pairs[0].pair_init)
-        for pair in pairs:
-            script.append(pair.pair_entry)
-
+        if pairs is not None:
+            script.append(pairs[0].pair_init)
+            for pair in pairs:
+                script.append(pair.pair_entry)
         #for type1, type2, potential_file in table_potentials:
         #    script.append(HOOMD_TABLE_ENTRY.format(**locals()))
          
@@ -128,3 +128,4 @@ class State(object):
             print(f"{dir_name} already exists")
             raise
         return os.path.abspath(dir_name)
+
