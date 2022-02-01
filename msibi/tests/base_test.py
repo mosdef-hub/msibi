@@ -24,7 +24,7 @@ class BaseTest:
 
     @pytest.fixture
     def pair(self):
-        pair = Pair("A", "B")
+        pair = Pair("0", "1")
         pair.set_table_potential(
                 epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=100
         )

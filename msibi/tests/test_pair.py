@@ -21,7 +21,7 @@ class TestPair(BaseTest):
         assert pair.name == "0-1"
 
     def test_save_table_potential(self, tmp_path):
-        pair = Pair("A", "B")
+        pair = Pair("0", "1")
         pair.set_table_potential(1, 1, 0, 2.5, 100)
         pair.potential_file = os.path.join(tmp_path, "pot.txt")
         save_table_potential(
