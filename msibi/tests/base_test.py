@@ -3,7 +3,7 @@ import pytest
 
 import numpy as np
 
-from msibi import Pair, mie, State
+from msibi import Pair, State
 
 
 dr = 0.1 / 6.0
@@ -24,7 +24,11 @@ class BaseTest:
 
     @pytest.fixture
     def pair(self):
-        return Pair("0", "1", potential=mie(r, 1.0, 1.0))
+        pair = Pair("A", "B")
+        pair.set_table_potential(
+                epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=100
+        )
+        return pair 
 
     @pytest.fixture
     def rdf0(self):

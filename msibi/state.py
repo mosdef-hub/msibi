@@ -2,9 +2,7 @@ import os
 import shutil
 import warnings
 from msibi import MSIBI, utils
-from msibi.utils.hoomd_run_template import (
-        HOOMD2_HEADER, HOOMD_TABLE_ENTRY, HOOMD_TEMPLATE
-)
+from msibi.utils.hoomd_run_template import (HOOMD2_HEADER, HOOMD_TEMPLATE)
 
 import cmeutils as cme
 from cmeutils.structure import gsd_rdf

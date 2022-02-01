@@ -151,6 +151,11 @@ class Pair(object):
             The exponent of the attractive term
 
         """
+        def create_pair_table(r, eps, sig, m, n):
+            """The Morse potential functional form"""
+            prefactor = (m / (m - n)) * (m / n) ** (n / (m - n))
+            return prefactor * eps * ((sig / r) ** m - (sig / r) ** n)
+
         self.r_min = r_min
         self.r_max = r_max
         self.n_points = int(n_points)
@@ -162,11 +167,6 @@ class Pair(object):
         self.pair_entry = TABLE_PAIR_ENTRY.format(
                 self.type1, self.type2, self.potential_file
         )
-
-        def create_pair_table(r, eps, sig, m, n):
-            """The Morse potential functional form"""
-            prefactor = (m / (m - n)) * (m / n) ** (n / (m - n))
-            return prefactor * eps * ((sig / r) ** m - (sig / r) ** n)
 
     def set_from_file(self, file_path):
         # TODO: Finish support for loading pair pot from file

@@ -48,11 +48,9 @@ class Bond(object):
             The spring constant
 
         """
-        self.k = k
-        self.r0 = r0
         self.bond_type = "harmonic"
         self.bond_init = "harmonic_bond = hoomd.md.bond.harmonic()"
-        self.bond_entry = HARMONIC_BOND_ENTRY.format(self.name, self.k, self.r0)
+        self.bond_entry = HARMONIC_BOND_ENTRY.format(self.name, k, r0)
     
     def set_quadratic(self, l0, k4, k3, k2, l_min, l_max, n_points=101):
         """Set a bond potential based on the following function:
@@ -80,23 +78,19 @@ class Bond(object):
             the table potential
 
         """
+        def create_bond_table(l, l0, k4, k3, k2):
+            L = l - l0
+            V_l = (k4*(L))**4 + (k3*(L))**3 + (k2*(L))**2
+            return V_l
+
         self.bond_type = "quadratic"
-        self.l0 = l0
-        self.k4 = k4
-        self.k3 = k3
-        self.k2 = k2
         self.dl = (l_max - l_min) / n_points
         self.l_range = np.arange(l_min, l_max + self.dl, self.dl)
-        self.potential = create_bond_table(self.l_range)
+        self.potential = create_bond_table(self.l_range, l0, k4, k3, k2)
         self.bond_init = f"btable = bond.table(width={n_points})"
         self.bond_entry = TABLE_BOND_ENTRY.format(
                 self.name, self.potential_file
         ) 
-
-        def create_bond_table(l):
-            L = l - self.l0
-            V_l = (self.k4*(L))**4 + (self.k3*(L))**3 + (self.k2*(L))**2
-            return V_l
 
     def _add_state(self, state):
         """Add a state to be used in optimizing this bond.
@@ -204,12 +198,8 @@ class Angle(object):
 
     def set_harmonic(self, k, theta0):
         self.angle_type = "harmonic"
-        self.k = k
-        self.theta0 = theta0
         self.angle_init = "harmonic_angle = hoomd.md.angle.harmonic()"
-        self.angle_entry = HARMONIC_ANGLE_ENTRY.format(
-                self.name, self.k, self.theta0
-        ) 
+        self.angle_entry = HARMONIC_ANGLE_ENTRY.format(self.name, k, theta0) 
 
     def set_quadratic(
             self, theta0, k4, k3, k2, theta_min, theta_max, n_points=101
@@ -239,25 +229,23 @@ class Angle(object):
             the table potential
 
         """
+        def create_angle_table(theta, theta0, k4, k3, k2):
+            T = theta - theta0
+            V_theta = (k4*(T))**4 + (k3*(T))**3 + (k2*(T))**2
+            return V_theta
+
         self.angle_type = "quadratic"
-        self.theta0 = theta0
-        self.k4 = k4
-        self.k3 = k3
-        self.k2 = k2
         self.dtheta = (theta_max - theta_min) / n_points
         self.theta_range = np.arange(
                 theta_min, theta_max + self.dtheta, self.dtheta
         )
-        self.potential = create_angle_table(self.theta_range)
+        self.potential = create_angle_table(
+                self.theta_range, theta0, k4, k3, k2
+        )
         self.angle_init = f"atable = angle.table(width={n_points})"
         self.angle_entry = TABLE_ANGLE_ENTRY.format(
                 self.name, self.potential_file
         ) 
-
-        def create_angle_table(theta):
-            T = theta - self.theta0
-            V_theta = (self.k4*(T))**4 + (self.k3*(T))**3 + (self.k2*(T))**2
-            return V_theta
 
     def _add_state(self, state):
         """Add a state to be used in optimizing this angle.

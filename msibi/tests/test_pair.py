@@ -3,7 +3,8 @@ import os
 import numpy as np
 import pytest
 
-from msibi import MSIBI, State, Pair, mie
+from msibi import MSIBI, State, Pair
+from msibi.potentials import save_table_potential
 
 from .base_test import BaseTest
 
@@ -20,9 +21,16 @@ class TestPair(BaseTest):
         assert pair.name == "0-1"
 
     def test_save_table_potential(self, tmp_path):
-        pair = Pair("A", "B", potential=mie(r, 1.0, 1.0))
+        pair = Pair("A", "B")
+        pair.set_table_potential(1, 1, 0, 2.5, 100)
         pair.potential_file = os.path.join(tmp_path, "pot.txt")
-        pair._save_table_potential(r, dr)
+        save_table_potential(
+                pair.potential,
+                pair.r_range,
+                pair.dr,
+                None,
+                pair.potential_file
+        )
         assert os.path.isfile(pair.potential_file)
 
     def test_add_state(self, pair, state0, rdf0, tmp_path):
@@ -31,9 +39,6 @@ class TestPair(BaseTest):
                 integrator_kwargs={"tau": 0.1},
                 dt=0.001,
                 gsd_period=1000,
-                n_potential_points=n_bins,
-                potential_cutoff=2.5,
-                r_min=1e-4,
                 max_frames=10,
                 n_steps=1e6,
         )

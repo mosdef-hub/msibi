@@ -317,7 +317,7 @@ class MSIBI(object):
 
                 save_table_potential(
                         bond.potential,
-                        bond.l_range
+                        bond.l_range,
                         bond.dl,
                         iteration,
                         bond.potential_file
@@ -335,7 +335,7 @@ class MSIBI(object):
 
                 save_table_potential(
                         angle.potential,
-                        angle.theta_range
+                        angle.theta_range,
                         angle.dtheta,
                         iteration,
                         angle.potential_file
