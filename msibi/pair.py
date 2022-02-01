@@ -28,17 +28,17 @@ class Pair(object):
         The name of one particle type on the particle pair.
         Must match the names found in the State's .gsd trajectory file.
         See  gsd.hoomd.ParticleData.types
-    potential :
 
     Attributes
     ----------
     name : str
         Pair name.
     potential : func
-        Values of the potential at every pot_r.
+        Values of the potential at every r_range.
+
     """
 
-    def __init__(self, type1, type2, potential, head_correction_form="linear"):
+    def __init__(self, type1, type2, head_correction_form="linear"):
         self.type1 = str(type1)
         self.type2 = str(type2)
         self.name = f"{self.type1}-{self.type2}"
@@ -74,6 +74,7 @@ class Pair(object):
             return prefactor * eps * ((sig / r) ** m - (sig / r) ** n)
 
     def set_from_file(self, file_path):
+        # TODO: Finish support for loading pair pot from file
         self.potential_file = file_path
         self.pair_type = "file"
         self.pair_init = ""
@@ -114,13 +115,14 @@ class Pair(object):
             traj = state.query_traj
         else:
             traj = state.traj_file
+
         rdf, norm = gsd_rdf(
             traj,
             self.type1,
             self.type2,
             start=-state._opt.max_frames,
-            r_max=state._opt.rdf_cutoff,
-            bins=state._opt.n_rdf_points,
+            r_max=self.r_max,
+            bins=self.n_points,
             exclude_bonded=state._opt.rdf_exclude_bonded
         )
         return np.stack((rdf.bin_centers, rdf.rdf*norm)).T
@@ -155,7 +157,7 @@ class Pair(object):
         )
         self._states[state]["f_fit"].append(f_fit)
 
-    def _save_current_rdf(self, state, iteration, dr):
+    def _save_current_rdf(self, state, iteration):
         """Save the current rdf
 
         Parameters
@@ -164,26 +166,24 @@ class Pair(object):
             A state object
         iteration : int
             Current iteration step, used in the filename
-        dr : float
-            The RDF bin size
 
         """
         rdf = self._states[state]["current_rdf"]
-        rdf[:, 0] -= dr / 2
-        np.savetxt(os.path.join(
-            state.dir,
-            f"pair_pot_{self.name}-state_{state.name}-step{iteration}.txt"
-            ),
-            rdf)
+        rdf[:, 0] -= self.dr / 2
+        fpath = os.path.join(
+                state.dir,
+                f"pair_pot_{self.name}-state_{state.name}-step{iteration}.txt"
+            )
+        np.savetxt(fpath, rdf)
 
-    def _update_potential(self, pot_r, r_switch=None, verbose=False):
+    def _update_potential(self, r_switch=None, verbose=False):
         """Update the potential using all states. """
         self.previous_potential = np.copy(self.potential)
         for state in self._states:
             kT = state.kT
             alpha0 = self._states[state]["alpha"]
             form = self._states[state]["alpha_form"]
-            alpha = alpha_array(alpha0, pot_r, form=form)
+            alpha = alpha_array(alpha0, self.r_range, form=form)
             N = len(self._states)
             current_rdf = self._states[state]["current_rdf"]
             target_rdf = self._states[state]["target_rdf"]
@@ -208,9 +208,9 @@ class Pair(object):
 
             if verbose:  # pragma: no cover
                 plt.plot(
-                    pot_r, self.previous_potential, label="previous potential"
+                    self.r_range, self.previous_potential, label="previous potential"
                 )
-                plt.plot(pot_r, self.potential, label="potential")
+                plt.plot(self.r_range, self.potential, label="potential")
                 plt.ylim(
                     (min(self.potential[np.isfinite(self.potential)])-1,10)
                 )
@@ -219,20 +219,22 @@ class Pair(object):
 
         # Apply corrections to ensure continuous, well-behaved potentials.
         pot = self.potential
-        self.potential = tail_correction(pot_r, self.potential, r_switch)
+        self.potential = tail_correction(self.r_range, self.potential, r_switch)
         tail = self.potential
         self.potential = head_correction(
-            pot_r,
+            self.r_range,
             self.potential,
             self.previous_potential,
             self.head_correction_form
         )
         head = self.potential
         if verbose:  # pragma: no cover
-            plt.plot(pot_r, head, label="head correction")
-            plt.plot(pot_r, pot, label="uncorrected potential")
-            idx_r, _ = find_nearest(pot_r, r_switch)
-            plt.plot(pot_r[idx_r:], tail[idx_r:], label="tail correction")
+            plt.plot(self.r_range, head, label="head correction")
+            plt.plot(self.r_range, pot, label="uncorrected potential")
+            idx_r, _ = find_nearest(self.r_range, r_switch)
+            plt.plot(
+                    self.r_range[idx_r:], tail[idx_r:], label="tail correction"
+            )
 
             plt.ylim((min(pot[np.isfinite(pot)])-1, 10))
             plt.legend()
