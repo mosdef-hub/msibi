@@ -21,15 +21,11 @@ class MSIBI(object):
         The time step delta
     gsd_period : int, required 
         The number of frames between snapshots written to query.gsd
-    n_iterations : int, required 
-        Number of iterations.
     n_steps : int, required 
         How many steps to run the query simulations
     max_frames : int, required
         How many snapshots of the trajectories to use in calcualting
         relevant distributions (RDFs, bond distributions)
-    engine : str, default "hoomd"
-        Engine that runs the simulations.
     verbose : bool, default False
         Whether to provide more information for debugging.
 
@@ -73,7 +69,6 @@ class MSIBI(object):
             n_steps,
             max_frames,
             verbose=False,
-            engine="hoomd"
     ):
         if integrator == "hoomd.md.integrate.nve":
             raise ValueError("The NVE ensemble is not supported with MSIBI")
@@ -85,12 +80,6 @@ class MSIBI(object):
         self.n_steps = n_steps
         self.max_frames = max_frames
         self.verbose = verbose
-        self.engine = engine
-        if engine == "hoomd":
-            import hoomd
-            self.HOOMD_VERSION = 2
-        else:
-            self.HOOMD_VERSION = None
         # Store all of the needed interaction objects
         self.states = []
         self.pairs = []
@@ -127,7 +116,7 @@ class MSIBI(object):
 
         for n in range(start_iteration + n_iterations):
             print(f"-------- Iteration {n} --------")
-            run_query_simulations(self.states, engine=self.engine)
+            run_query_simulations(self.states)
             self._update_potentials(n)
 
     def optimize_angles(self, n_iterations, start_iteration=0):
@@ -147,7 +136,7 @@ class MSIBI(object):
 
         for n in range(start_iteration + n_iterations):
             print(f"-------- Iteration {n} --------")
-            run_query_simulations(self.states, engine=self.engine)
+            run_query_simulations(self.states)
             self._update_potentials(n)
 
     def optimize_pairs(
@@ -192,7 +181,7 @@ class MSIBI(object):
 
         for n in range(start_iteration + n_iterations):
             print(f"-------- Iteration {n} --------")
-            run_query_simulations(self.states, engine=self.engine)
+            run_query_simulations(self.states)
             self._update_potentials(n)
 
     def _add_states(self):

@@ -6,17 +6,12 @@ from msibi.utils.exceptions import UnsupportedEngine
 from msibi.utils.general import backup_file
 
 
-def run_query_simulations(states, engine="hoomd"):
+def run_query_simulations(states):
     """Run all query simulations for a single iteration."""
 
     # Gather hardware info.
     gpu = _has_gpu()
-
-    if engine.lower() == "hoomd":
-        worker = _hoomd_worker
-    else:
-        raise UnsupportedEngine(engine)
-
+    worker = _hoomd_worker
     for state in states:
         _hoomd_worker(state, gpu=gpu)
 

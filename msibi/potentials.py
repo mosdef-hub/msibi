@@ -17,7 +17,7 @@ def morse(r, D, alpha, r0):
     """Morse pair potential. """
     return D * (np.exp(-2 * alpha * (r - r0)) - 2 * np.exp(-alpha * (r - r0)))
 
-                engine=self.engine,
+
 def save_table_potential(potential, r, dr, iteration, potential_file):
     """Save the length, potential energy,force values to a text file."""
     F = -1.0 * np.gradient(potential, dr)
