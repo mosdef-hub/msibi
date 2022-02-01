@@ -71,9 +71,7 @@ class State(object):
         integrator_kwargs,
         dt,
         gsd_period,
-        table_potentials,
-        table_width,
-        pairs,
+        pairs=None,
         bonds=None,
         angles=None,
     ):
@@ -83,19 +81,17 @@ class State(object):
             HOOMD2_HEADER.format(self.traj_file)
         )
         # TODO Add check that the init scripts are the same for all 
-        if pairs is not None:
+        if pairs is not None and len(pairs) > 0:
             script.append(pairs[0].pair_init)
             for pair in pairs:
                 script.append(pair.pair_entry)
-        #for type1, type2, potential_file in table_potentials:
-        #    script.append(HOOMD_TABLE_ENTRY.format(**locals()))
          
-        if bonds is not None:
+        if bonds is not None and len(bonds) > 0:
             script.append(bonds[0].bond_init)
             for bond in bonds:
                 script.append(bond.bond_entry)
 
-        if angles is not None:
+        if angles is not None and len(angles) > 0:
             script.append(angles[0].angle_init)
             for angle in angles:
                 script.append(angle_entry)

@@ -55,7 +55,6 @@ class TestPair(BaseTest):
         assert np.array_equal(pair._states[state0]["target_rdf"], rdf0)
         assert pair._states[state0]["current_rdf"] is None
         assert pair._states[state0]["alpha"] == 0.5
-        assert pair._states[state0]["pair_indices"] is None
         assert len(pair._states[state0]["f_fit"]) == 0
 
     def test_current_rdf_no_smooth(self, state0, pair, tmp_path):
@@ -64,9 +63,6 @@ class TestPair(BaseTest):
                 integrator_kwargs={"tau": 0.1},
                 dt=0.001,
                 gsd_period=500,
-                potential_cutoff=2.5,
-                n_potential_points=n_bins,
-                r_min=1e-4,
                 n_steps=2e3,
                 max_frames=1
         )
@@ -89,9 +85,6 @@ class TestPair(BaseTest):
                 integrator_kwargs={"tau": 0.1},
                 dt=0.001,
                 gsd_period=1000,
-                potential_cutoff=2.5,
-                n_potential_points=n_bins,
-                r_min=1e-4,
                 n_steps=1e6,
                 max_frames=10
         )
@@ -114,9 +107,6 @@ class TestPair(BaseTest):
                 integrator_kwargs={"tau": 0.1},
                 dt=0.001,
                 gsd_period=1000,
-                potential_cutoff=2.5,
-                n_potential_points=n_bins,
-                r_min=1e-4,
                 n_steps=1e6,
                 max_frames=10
         )
@@ -144,9 +134,6 @@ class TestPair(BaseTest):
                 integrator_kwargs={"tau": 0.1},
                 dt=0.001,
                 gsd_period=1000,
-                n_potential_points=n_bins,
-                potential_cutoff=2.5,
-                r_min=1e-4,
                 max_frames=10,
                 n_steps=1e6,
         )
