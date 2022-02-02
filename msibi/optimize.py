@@ -212,7 +212,7 @@ class MSIBI(object):
                         pair.r_range,
                         pair.dr,
                         iteration,
-                        pair.potential_file
+                        pair._potential_file
                     )
 
         elif self.optimization == "bonds":
@@ -224,7 +224,7 @@ class MSIBI(object):
                         bond.l_range,
                         bond.dl,
                         iteration,
-                        bond.potential_file
+                        bond._potential_file
                 )
 
         elif self.optimization == "angles":
@@ -236,7 +236,7 @@ class MSIBI(object):
                         angle.theta_range,
                         angle.dtheta,
                         iteration,
-                        angle.potential_file
+                        angle._potential_file
                 )
 
     def _recompute_distribution(self, bond_object, iteration):
