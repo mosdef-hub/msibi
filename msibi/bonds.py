@@ -6,9 +6,9 @@ from msibi.utils.error_calculation import calc_similarity
 
 
 HARMONIC_BOND_ENTRY = "haromonic_bond.bond_coeff.set('{}', k={}, r0={})"
-TABLE_BOND_ENTRY = "btable.bond_coeff.set('{}', {})"
+TABLE_BOND_ENTRY = "btable.bond_coeff.set('{}', '{}')"
 HARMONIC_ANGLE_ENTRY = "harmonic_angle.angle_coeff.set('{}', k={}, t0={})"
-TABLE_ANGLE_ENTRY = "atable.angle_coeff.set('{}', {})"
+TABLE_ANGLE_ENTRY = "atable.angle_coeff.set('{}', '{}')"
 
 
 class Bond(object):
