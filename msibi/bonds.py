@@ -86,10 +86,11 @@ class Bond(object):
             return V_l
 
         self.bond_type = "quadratic"
-        self.dl = (l_max) / (n_points - 1 )
-        self.l_range = np.arange(l_min, l_max + self.dl, self.dl)
+        self.dl = (l_max) / (n_points)
+        self.l_range = np.arange(l_min, l_max, self.dl)
         self.potential = create_bond_table(self.l_range, l0, k4, k3, k2)
-        self.bond_init = f"btable = bond.table(width={n_points})"
+        _n_points = len(self.l_range)
+        self.bond_init = f"btable = bond.table(width={_n_points})"
         self.bond_entry = TABLE_BOND_ENTRY.format(
                 self.name, self._potential_file
         ) 
@@ -246,12 +247,13 @@ class Angle(object):
         self.angle_type = "quadratic"
         self.dtheta = (theta_max) / (n_points - 1)
         self.theta_range = np.arange(
-                theta_min, theta_max + self.dtheta, self.dtheta
+                theta_min, theta_max+self.dtheta, self.dtheta
         )
         self.potential = create_angle_table(
                 self.theta_range, theta0, k4, k3, k2
         )
-        self.angle_init = f"atable = hoomd.md.angle.table(width={n_points})"
+        _n_points = len(self.theta_range)
+        self.angle_init = f"atable = hoomd.md.angle.table(width={_n_points})"
         self.angle_entry = TABLE_ANGLE_ENTRY.format(
                 self.name, self._potential_file
         ) 
