@@ -176,6 +176,7 @@ class Pair(object):
         self.pair_entry = ""
     
     def update_potential_file(self, fpath):
+        #TODO Throw error if self.pair_type isn't one that uses files (table)
         self._potential_file = fpath
         self.pair_entry = TABLE_PAIR_ENTRY.format(
                 self.type1, self.type2, self._potential_file

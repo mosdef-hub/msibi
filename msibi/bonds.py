@@ -26,7 +26,7 @@ class Bond(object):
                     key=natural_sort
                 )
         self.name = f"{self.type1}-{self.type2}"
-        self.potential_file = "" 
+        self._potential_file = "" 
         self.potential = None 
         self.previous_potential = None
         self._states = dict()
@@ -89,8 +89,15 @@ class Bond(object):
         self.potential = create_bond_table(self.l_range, l0, k4, k3, k2)
         self.bond_init = f"btable = bond.table(width={n_points})"
         self.bond_entry = TABLE_BOND_ENTRY.format(
-                self.name, self.potential_file
+                self.name, self._potential_file
         ) 
+
+    def update_potential_file(self, fpath):
+        #TODO Throw error if self.bond_type isn't one that uses fiels (table)
+        self._potential_file = fpath
+        self.bond_entry = TABLE_BOND_ENTRY.format(
+                self.name, self._potential_file
+        )
 
     def _add_state(self, state):
         """Add a state to be used in optimizing this bond.
@@ -191,7 +198,7 @@ class Angle(object):
         self.type2 = type2
         self.type3 = type3
         self.name = f"{self.type1}-{self.type2}-{self.type3}"
-        self.potential_file = ""
+        self._potential_file = ""
         self.potential = None
         self.previous_potential = None
         self._states = dict()
@@ -244,8 +251,15 @@ class Angle(object):
         )
         self.angle_init = f"atable = angle.table(width={n_points})"
         self.angle_entry = TABLE_ANGLE_ENTRY.format(
-                self.name, self.potential_file
+                self.name, self._potential_file
         ) 
+
+    def update_potential_file(self, fpath):
+        #TODO Throw error if self.angle_type isn't one that uses fils (table)
+        self._potential_file = fpath
+        self.angle_entry = TABLE_ANGLE_ENTRY.format(
+                self.name, self._potential_file
+        )
 
     def _add_state(self, state):
         """Add a state to be used in optimizing this angle.
