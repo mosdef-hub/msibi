@@ -101,7 +101,7 @@ class State(object):
 
         runscript_file = os.path.join(self.dir, "run.py")
         with open(runscript_file, "w") as fh:
-            fh.writelines(script)
+            fh.writelines("%s\n" % l for l in script)
 
     def _setup_dir(self, name, kT, dir_name=None):
         """Create a state directory each time a new State is created."""
