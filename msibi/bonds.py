@@ -5,10 +5,10 @@ from msibi.utils.sorting import natural_sort
 from msibi.utils.error_calculation import calc_similarity
 
 
-HARMONIC_BOND_ENTRY = "haromonic_bond.bond_coeff.set('{}', k={}, r0={})"
-TABLE_BOND_ENTRY = "btable.bond_coeff.set('{}', '{}')"
+HARMONIC_BOND_ENTRY = "harmonic_bond.bond_coeff.set('{}', k={}, r0={})"
+TABLE_BOND_ENTRY = "btable.set_from_file('{}', '{}')"
 HARMONIC_ANGLE_ENTRY = "harmonic_angle.angle_coeff.set('{}', k={}, t0={})"
-TABLE_ANGLE_ENTRY = "atable.angle_coeff.set('{}', '{}')"
+TABLE_ANGLE_ENTRY = "atable.set_from_file('{}', '{}')"
 
 
 class Bond(object):
@@ -86,7 +86,7 @@ class Bond(object):
             return V_l
 
         self.bond_type = "quadratic"
-        self.dl = (l_max - l_min) / n_points
+        self.dl = (l_max) / (n_points - 1 )
         self.l_range = np.arange(l_min, l_max + self.dl, self.dl)
         self.potential = create_bond_table(self.l_range, l0, k4, k3, k2)
         self.bond_init = f"btable = bond.table(width={n_points})"
@@ -244,14 +244,14 @@ class Angle(object):
             return V_theta
 
         self.angle_type = "quadratic"
-        self.dtheta = (theta_max - theta_min) / n_points
+        self.dtheta = (theta_max) / (n_points - 1)
         self.theta_range = np.arange(
                 theta_min, theta_max + self.dtheta, self.dtheta
         )
         self.potential = create_angle_table(
                 self.theta_range, theta0, k4, k3, k2
         )
-        self.angle_init = f"atable = angle.table(width={n_points})"
+        self.angle_init = f"atable = hoomd.md.angle.table(width={n_points})"
         self.angle_entry = TABLE_ANGLE_ENTRY.format(
                 self.name, self._potential_file
         ) 

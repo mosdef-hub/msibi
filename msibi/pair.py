@@ -159,7 +159,7 @@ class Pair(object):
         self.r_min = r_min
         self.r_max = r_max
         self.n_points = int(n_points)
-        self.dr = (r_max - r_min) / self.n_points
+        self.dr = (r_max) / (self.n_points - 1)
         self.r_range = np.arange(r_min, r_max + self.dr, self.dr)
         self.potential = create_pair_table(self.r_range, epsilon, sigma, m, n)
         self.pair_type = "table"
