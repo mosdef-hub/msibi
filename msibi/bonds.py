@@ -3,7 +3,7 @@ from msibi.utils.sorting import natural_sort
 from msibi.utils.error_calculation import calc_similarity
 
 
-HARMONIC_BOND_ENTRY = "haromonic_bond.bond_coeff.set('{}', k={}, r0={}"
+HARMONIC_BOND_ENTRY = "haromonic_bond.bond_coeff.set('{}', k={}, r0={})"
 TABLE_BOND_ENTRY = "btable.bond_coeff.set('{}', {})"
 HARMONIC_ANGLE_ENTRY = "harmonic_angle.angle_coeff.set('{}', k={}, t0={})"
 TABLE_ANGLE_ENTRY = "atable.angle_coeff.set('{}', {})"
@@ -50,7 +50,7 @@ class Bond(object):
         """
         self.bond_type = "harmonic"
         self.bond_init = "harmonic_bond = hoomd.md.bond.harmonic()"
-        self.bond_entry = HARMONIC_BOND_ENTRY.format(self.name, k, r0)
+        self.bond_entry = HARMONIC_BOND_ENTRY.format(self.name, k, l0)
     
     def set_quadratic(self, l0, k4, k3, k2, l_min, l_max, n_points=101):
         """Set a bond potential based on the following function:
