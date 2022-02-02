@@ -44,7 +44,7 @@ class Pair(object):
         self.type1 = str(type1)
         self.type2 = str(type2)
         self.name = f"{self.type1}-{self.type2}"
-        self.potential_file = ""
+        self._potential_file = ""
         self._states = dict()
         self.previous_potential = None
         self.head_correction_form = head_correction_form
@@ -165,15 +165,21 @@ class Pair(object):
         self.pair_type = "table"
         self.pair_init = f"table=hoomd.md.pair.table(width={self.n_points},nlist=nl)"
         self.pair_entry = TABLE_PAIR_ENTRY.format(
-                self.type1, self.type2, self.potential_file
+                self.type1, self.type2, self._potential_file
         )
 
     def set_from_file(self, file_path):
         # TODO: Finish support for loading pair pot from file
-        self.potential_file = file_path
+        self._potential_file = file_path
         self.pair_type = "file"
         self.pair_init = ""
         self.pair_entry = ""
+    
+    def update_potential_file(self, fpath):
+        self._potential_file = fpath
+        self.pair_entry = TABLE_PAIR_ENTRY.format(
+                self.type1, self.type2, self._potential_file
+        )
 
     def _add_state(self, state, smooth=True):
         """Add a state to be used in optimizing this pair.

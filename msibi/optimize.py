@@ -286,7 +286,7 @@ class MSIBI(object):
                 potential_file = os.path.join(
                     self.potentials_dir, f"pair_pot.{pair.name}.txt"
                 )
-                pair.potential_file = potential_file
+                pair.update_potential_file(potential_file)
                 V = tail_correction(pair.r_range, pair.potential, pair.r_switch)
                 pair.potential = V
                 if self.optimization == "pairs":
@@ -298,7 +298,7 @@ class MSIBI(object):
                         pair.r_range,
                         pair.dr,
                         iteration,
-                        pair.potential_file
+                        pair._potential_file
                     )
 
         for bond in self.bonds:
