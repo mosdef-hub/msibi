@@ -94,7 +94,7 @@ class State(object):
         if angles is not None and len(angles) > 0:
             script.append(angles[0].angle_init)
             for angle in angles:
-                script.append(angle_entry)
+                script.append(angle.angle_entry)
 
         integrator_kwargs["kT"] = self.kT
         script.append(HOOMD_TEMPLATE.format(**locals()))
