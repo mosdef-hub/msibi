@@ -1,3 +1,5 @@
+import numpy as np
+
 from cmeutils.structure import angle_distribution, bond_distribution
 from msibi.utils.sorting import natural_sort
 from msibi.utils.error_calculation import calc_similarity

@@ -282,6 +282,7 @@ class MSIBI(object):
 
         for pair in self.pairs:
             if pair.pair_type == "table":
+                #TODO Fix handling of r_switch here?
                 pair.r_switch = pair.r_range[-5]
                 potential_file = os.path.join(
                     self.potentials_dir, f"pair_pot.{pair.name}.txt"
@@ -303,9 +304,11 @@ class MSIBI(object):
 
         for bond in self.bonds:
             if bond.bond_type == "quadratic":
-                bond.potential_file = os.path.join(
+                potential_file = os.path.join(
                         self.potentials_dir, f"bond_pot.{bond.name}.txt"
                 )
+                bond.update_potential_file(potential_file)
+
                 if self.optimization == "bonds":
                     iteration = 0
                 else:
@@ -316,14 +319,16 @@ class MSIBI(object):
                         bond.l_range,
                         bond.dl,
                         iteration,
-                        bond.potential_file
+                        bond._potential_file
                 )
 
         for angle in self.angles:
             if angle.angle_type == "quadratic":
-                angle.potential_file = os.path.join(
+                potential_file = os.path.join(
                         self.potentials_dir, f"angle_pot.{angle.name}.txt"
                 )
+                angle.update_potential_file(potential_file)
+
                 if self.optimization == "angles":
                     iteration = 0
                 else:
@@ -334,7 +339,7 @@ class MSIBI(object):
                         angle.theta_range,
                         angle.dtheta,
                         iteration,
-                        angle.potential_file
+                        angle._potential_file
                 )
 
         for state in self.states:
