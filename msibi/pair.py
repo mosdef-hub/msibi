@@ -92,7 +92,7 @@ class Pair(object):
 
         """
         self.pair_type = "static"
-        self.pair_init = "morse = pair.morse(nlist=nl)"
+        self.pair_init = "morse = hoomd.md.pair.morse(nlist=nl)"
         self.pair_entry = MORSE_PAIR_ENTRY.format(
                 self.type1, self.type2, D0, alpha, r0, r_cut
         )
@@ -115,7 +115,7 @@ class Pair(object):
 
         """
         self.pair_type = "static"
-        self.pair_init = "gauss = pair.gauss(nlist=nl)"
+        self.pair_init = f"gauss = hoomd.md.pair.gauss(nlist=nl, r_cut={r_cut})"
         self.pair_entry = GAUSS_PAIR_ENTRY.format(
                 self.type1, self.type2, epsilon, sigma, r_cut
         )

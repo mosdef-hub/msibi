@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 
 from cmeutils.structure import angle_distribution, bond_distribution
@@ -66,7 +68,7 @@ class Bond(object):
         """
         self.bond_type = "static"
         self.bond_init = "fene = bond.fene()"
-        self.bond_entry = FENE_BOND_ENTRY.format(i
+        self.bond_entry = FENE_BOND_ENTRY.format(
                 self.name, k, r0, sigma, epsilon
         )
     
@@ -106,7 +108,7 @@ class Bond(object):
         self.l_range = np.arange(l_min, l_max, self.dl)
         self.potential = create_bond_table(self.l_range, l0, k4, k3, k2)
         _n_points = len(self.l_range)
-        self.bond_init = f"btable = bond.table(width={_n_points})"
+        self.bond_init = f"btable = hoomd.md.bond.table(width={_n_points})"
         self.bond_entry = TABLE_BOND_ENTRY.format(
                 self.name, self._potential_file
         ) 
@@ -159,13 +161,13 @@ class Bond(object):
 
     def _compute_current_distribution(self, state):
         """Find the current bond length distribution of the query trajectory"""
-        bond_distribution = self.get_state_distribution(state, query=True)
+        bond_distribution = self._get_state_distribution(state, query=True)
         self._states[state]["current_distribution"] = bond_distribution
         # TODO ADD SMOOTHING
         f_fit = calc_similarity(
-                bond_distribution[:,1],
-                self._states[state]["target_distribution"][:,1] 
-        )
+                    bond_distribution[:,1],
+                    self._states[state]["target_distribution"][:,1] 
+                )
         self._states[state]["f_fit"].append(f_fit)
 
     def _save_current_distribution(self, state, iteration):

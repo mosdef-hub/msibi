@@ -189,6 +189,11 @@ class MSIBI(object):
         Required step before optimization runs can begin.
 
         """
+        try:
+            self.smooth_rdfs
+        except AttributeError:
+            self.smooth_rdfs = False
+
         for pair in self.pairs:
             for state in self.states:
                 pair._add_state(state, smooth=self.smooth_rdfs)
