@@ -66,7 +66,7 @@ class Pair(object):
             Maximum distance used to calculate neighbor pair potentials.
 
         """
-        self.pair_type = "hoomd_lj"
+        self.pair_type = "static"
         self.pair_init = "lj = pair.lj(nlist=nl)"
         self.pair_entry = LJ_PAIR_ENTRY.format(
                 self.type1, self.type2, epsilon, sigma, r_cut
@@ -91,8 +91,8 @@ class Pair(object):
             Maximum distance used to calculate neighbor pair potentials.
 
         """
-        self.pair_type = "hoomd_morse"
-        self.pair_init = f"morse = pair.morse(nlist=nl)"
+        self.pair_type = "static"
+        self.pair_init = "morse = pair.morse(nlist=nl)"
         self.pair_entry = MORSE_PAIR_ENTRY.format(
                 self.type1, self.type2, D0, alpha, r0, r_cut
         )
@@ -114,8 +114,8 @@ class Pair(object):
             Maximum distance used to calculate neighbor pair potentials.
 
         """
-        self.pair_type = "hoomd_gauss"
-        self.pair_init = f"gauss = pair.gauss(nlist=nl)"
+        self.pair_type = "static"
+        self.pair_init = "gauss = pair.gauss(nlist=nl)"
         self.pair_entry = GAUSS_PAIR_ENTRY.format(
                 self.type1, self.type2, epsilon, sigma, r_cut
         )
@@ -171,7 +171,7 @@ class Pair(object):
     def set_from_file(self, file_path):
         # TODO: Finish support for loading pair pot from file
         self._potential_file = file_path
-        self.pair_type = "file"
+        self.pair_type = "table"
         self.pair_init = ""
         self.pair_entry = ""
     
@@ -340,19 +340,3 @@ class Pair(object):
             plt.legend()
             plt.show()
 
-    def _save_table_potential(self, r, dr, iteration=0):
-        """Save the table potential to a file usable by the MD engine. """
-        V = self.potential
-        F = -1.0 * np.gradient(V, dr)
-        data = np.vstack([r, V, F])
-
-        basename = os.path.basename(self.potential_file)
-        basename = "step{0:d}.{1}".format(iteration, basename)
-        dirname = os.path.dirname(self.potential_file)
-        iteration_filename = os.path.join(dirname, basename)
-
-        # This file is overwritten at each iteration and actually used for
-        # performing the query simulations.
-        np.savetxt(self.potential_file, data.T)
-        # This file is written for viewing of how the potential evolves.
-        np.savetxt(iteration_filename, data.T)

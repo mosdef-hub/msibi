@@ -6,8 +6,10 @@ from msibi.utils.error_calculation import calc_similarity
 
 
 HARMONIC_BOND_ENTRY = "harmonic_bond.bond_coeff.set('{}', k={}, r0={})"
+FENE_BOND_ENTRY = "fene.bond_coeff.set('{}', k={}, r0={}, sigma={}, epsilon={})"
 TABLE_BOND_ENTRY = "btable.set_from_file('{}', '{}')"
 HARMONIC_ANGLE_ENTRY = "harmonic_angle.angle_coeff.set('{}', k={}, t0={})"
+COSINE_ANGLE_ENTRY = "cosinesq.angle_coeff.set('{}', k={}, t0={})"
 TABLE_ANGLE_ENTRY = "atable.set_from_file('{}', '{}')"
 
 
@@ -50,9 +52,23 @@ class Bond(object):
             The spring constant
 
         """
-        self.bond_type = "harmonic"
+        self.bond_type = "static"
         self.bond_init = "harmonic_bond = hoomd.md.bond.harmonic()"
         self.bond_entry = HARMONIC_BOND_ENTRY.format(self.name, k, l0)
+
+    def set_fene(self, k, r0, epsilon, sigma):
+        """Creates a hoomd.md.bond.fene type of bond potential
+        to be used during the query simulations. This method is
+        not compatible when optimizing bond stretching potentials.
+        Rather, this method should only be used to create static bond
+        stretching potentials while optimizing Pairs or Angles.
+
+        """
+        self.bond_type = "static"
+        self.bond_init = "fene = bond.fene()"
+        self.bond_entry = FENE_BOND_ENTRY.format(i
+                self.name, k, r0, sigma, epsilon
+        )
     
     def set_quadratic(self, l0, k4, k3, k2, l_min, l_max, n_points=101):
         """Set a bond potential based on the following function:
@@ -170,8 +186,7 @@ class Bond(object):
         np.savetxt(fpath, distribution)
 
     def _update_potential(self):
-        """
-        Compare distributions of current iteration against target,
+        """Compare distributions of current iteration against target,
         and update the Bond potential via Boltzmann inversion.
 
         """
@@ -184,6 +199,7 @@ class Bond(object):
             self.potential += state.alpha * (
                     kT * np.log(current_dist[:,1] / target_dist[:,1] / N)
             )
+
 
 class Angle(object):
     """Creates a bond angle potential, either to be held constant, or to be
@@ -207,12 +223,45 @@ class Angle(object):
         self._states = dict()
 
     def set_harmonic(self, k, theta0):
-        self.angle_type = "harmonic"
+        """Creates a hoomd.md.angle.harmonic() type of bond angle
+        potential to be used during the query simulations.
+        This method is not compatible when optimizing bond angle potentials.
+        Rather, it should be used to set a static angle potential while
+        optimizing Pairs or Bonds.
+
+        Parameters
+        ----------
+        k : float, required
+            The potential constant
+        theta0 : float, required
+            The equilibrium resting angle
+
+        """
+        self.angle_type = "static"
         self.angle_init = "harmonic_angle = hoomd.md.angle.harmonic()"
         self.angle_entry = HARMONIC_ANGLE_ENTRY.format(self.name, k, theta0) 
 
+    def set_cosinesq(self, k, theta0):
+        """Creates a hoomd.md.angle.cosinesq() type of bond angle
+        potential to be used during the query simulations.
+        This method is not compatible when optimizing bond angle potentials.
+        Rather, it should be used to set a static angle potential while
+        optimizing Pairs or Bonds.
+        
+        Parameters
+        ----------
+        k : float, required
+            The potential constant
+        theta0 : float, required
+            The equilibrium resting angle
+
+        """
+        self.angle_type = "static"
+        self.angle_init = "cosinesq = angle.cosinesq()"
+        self.angle_entry = COSINE_ANGLE_ENTRY.format(self.name, k, theta0)
+
     def set_quadratic(
-            self, theta0, k4, k3, k2, theta_min, theta_max, n_points=101
+            self, theta0, k4, k3, k2, theta_min, theta_max, n_points=100
     ):
         """Set a bond potential based on the following function:
 
@@ -334,8 +383,7 @@ class Angle(object):
         np.savetxt(fpath, distribution)
 
     def _update_potential(self):
-        """
-        Compare distributions of current iteration against target,
+        """Compare distributions of current iteration against target,
         and update the Angle potential via Boltzmann inversion.
 
         """
