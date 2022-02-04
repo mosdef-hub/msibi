@@ -4,6 +4,7 @@ import numpy as np
 
 from cmeutils.structure import angle_distribution, bond_distribution
 from msibi.utils.sorting import natural_sort
+from msibi.potentials import quadratic_spring 
 from msibi.utils.error_calculation import calc_similarity
 
 
@@ -98,15 +99,10 @@ class Bond(object):
             the table potential
 
         """
-        def create_bond_table(l, l0, k4, k3, k2):
-            L = l - l0
-            V_l = (k4*(L))**4 + (k3*(L))**3 + (k2*(L))**2
-            return V_l
-
-        self.bond_type = "quadratic"
+        self.bond_type = "table"
         self.dl = (l_max) / (n_points)
         self.l_range = np.arange(l_min, l_max, self.dl)
-        self.potential = create_bond_table(self.l_range, l0, k4, k3, k2)
+        self.potential = quadratic_spring(self.l_range, l0, k4, k3, k2)
         _n_points = len(self.l_range)
         self.bond_init = f"btable = hoomd.md.bond.table(width={_n_points})"
         self.bond_entry = TABLE_BOND_ENTRY.format(
@@ -265,7 +261,7 @@ class Angle(object):
     def set_quadratic(
             self, theta0, k4, k3, k2, theta_min, theta_max, n_points=100
     ):
-        """Set a bond potential based on the following function:
+        """Set a bond angle potential based on the following function:
 
             V(theta) = k4(theta-theta0)^4 + k3(theta-theta0)^3 + k2(theta-theta0)^2
 
@@ -290,17 +286,12 @@ class Angle(object):
             the table potential
 
         """
-        def create_angle_table(theta, theta0, k4, k3, k2):
-            T = theta - theta0
-            V_theta = (k4*(T))**4 + (k3*(T))**3 + (k2*(T))**2
-            return V_theta
-
-        self.angle_type = "quadratic"
+        self.angle_type = "table"
         self.dtheta = (theta_max) / (n_points - 1)
         self.theta_range = np.arange(
                 theta_min, theta_max+self.dtheta, self.dtheta
         )
-        self.potential = create_angle_table(
+        self.potential = quadratic_spring(
                 self.theta_range, theta0, k4, k3, k2
         )
         _n_points = len(self.theta_range)
