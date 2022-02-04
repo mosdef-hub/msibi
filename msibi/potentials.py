@@ -36,8 +36,8 @@ def quadratic_spring(x, x0, k4, k3, k2):
     return V_x
 
 
-def morse(r, epsilon, sigma, m, n):
-    """The Morse potential functional form"""
+def mie(r, epsilon, sigma, m, n):
+    """The Mie potential functional form"""
     prefactor = (m / (m - n)) * (m / n) ** (n / (m - n))
     return prefactor * eps * ((sig / r) ** m - (sig / r) ** n)
 
