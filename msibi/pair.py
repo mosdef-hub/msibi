@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from cmeutils.structure import gsd_rdf
 
-from msibi.potentials import alpha_array, head_correction, tail_correction
+from msibi.potentials import alpha_array, head_correction, tail_correction, mie
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.exceptions import UnsupportedEngine
 from msibi.utils.general import find_nearest
@@ -125,7 +125,7 @@ class Pair(object):
     ):
         """Creates a table potential V(r) over the range r_min - r_max.
 
-        Uses the Morse potential functional form.
+        Uses the Mie potential functional form.
 
         This should be the pair potential form of choice when optimizing
         pairs; however, you can also use this method to set a static
@@ -151,17 +151,12 @@ class Pair(object):
             The exponent of the attractive term
 
         """
-        def create_pair_table(r, eps, sig, m, n):
-            """The Morse potential functional form"""
-            prefactor = (m / (m - n)) * (m / n) ** (n / (m - n))
-            return prefactor * eps * ((sig / r) ** m - (sig / r) ** n)
-
         self.r_min = r_min
         self.r_max = r_max
         self.n_points = int(n_points)
         self.dr = (r_max) / (self.n_points - 1)
         self.r_range = np.arange(r_min, r_max + self.dr, self.dr)
-        self.potential = create_pair_table(self.r_range, epsilon, sigma, m, n)
+        self.potential = mie(self.r_range, epsilon, sigma, m, n)
         self.pair_type = "table"
         self.pair_init = f"table=hoomd.md.pair.table(width={self.n_points},nlist=nl)"
         self.pair_entry = TABLE_PAIR_ENTRY.format(

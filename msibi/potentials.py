@@ -21,6 +21,7 @@ def save_table_potential(potential, r, dr, iteration, potential_file):
         # This file written for viewing evolution of potential.
         np.savetxt(iteration_filename, data.T)
 
+
 def quadratic_spring(x, x0, k4, k3, k2):
     """Creates a quadratic spring-like potential with the following form
 
@@ -33,6 +34,13 @@ def quadratic_spring(x, x0, k4, k3, k2):
     X = x - x0
     V_x = (k4*(X))**4 + (k3*(X))**3 + (k2*(X))**2
     return V_x
+
+
+def morse(r, epsilon, sigma, m, n):
+    """The Morse potential functional form"""
+    prefactor = (m / (m - n)) * (m / n) ** (n / (m - n))
+    return prefactor * eps * ((sig / r) ** m - (sig / r) ** n)
+
 
 def tail_correction(r, V, r_switch):
     """Apply a tail correction to a potential making it go to zero smoothly.
