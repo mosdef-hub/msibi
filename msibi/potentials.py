@@ -39,7 +39,8 @@ def quadratic_spring(x, x0, k4, k3, k2):
 def mie(r, epsilon, sigma, m, n):
     """The Mie potential functional form"""
     prefactor = (m / (m - n)) * (m / n) ** (n / (m - n))
-    return prefactor * eps * ((sig / r) ** m - (sig / r) ** n)
+    V_r = prefactor * epsilon * ((sigma / r) ** m - (sigma / r) ** n)
+    return V_r 
 
 
 def tail_correction(r, V, r_switch):

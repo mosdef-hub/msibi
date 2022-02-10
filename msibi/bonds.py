@@ -129,18 +129,21 @@ class Bond(object):
             target_distribution = self._get_state_distribution(
                     state, query=False
             )
+            n_bins = target_distribution.shape[0]
         else:
             target_distribution = None
+            n_bins = None
         self._states[state] = {
                 "target_distribution": target_distribution,
                 "current_distribution": None,
+                "n_bins": n_bins,
                 "alpha": state.alpha,
                 "alpha_form": "linear",
                 "f_fit": [],
                 "path": state.dir
             }
 
-    def _get_state_distribution(self, state, query=False):
+    def _get_state_distribution(self, state, query=False, bins="auto"):
         """Find the bond length distribution of a Bond at a State."""
         if query:
             traj = state.query_traj
@@ -152,12 +155,15 @@ class Bond(object):
                 A_name=self.type1,
                 B_name=self.type2,
                 start=-state._opt.max_frames,
-                histogram=True
+                histogram=True,
+                bins=bins
         )
 
     def _compute_current_distribution(self, state):
         """Find the current bond length distribution of the query trajectory"""
-        bond_distribution = self._get_state_distribution(state, query=True)
+        bond_distribution = self._get_state_distribution(
+                state, query=True, bins=self._states[state]["n_bins"]
+        )
         self._states[state]["current_distribution"] = bond_distribution
         # TODO ADD SMOOTHING
         f_fit = calc_similarity(
@@ -320,19 +326,22 @@ class Angle(object):
             target_distribution = self._get_state_distribution(
                     state, query=False
             )
+            n_bins = target_distribution.shape[0]
         else:
             target_distribution = None
+            n_bins = None
 
         self._states[state] = {
                 "target_distribution": target_distribution,
                 "current_distribution": None,
+                "n_bins": n_bins,
                 "alpha": state.alpha,
                 "alpha_form": "linear",
                 "f_fit": [],
                 "path": state.dir
             }
 
-    def _get_state_distribution(self, state, query=False):
+    def _get_state_distribution(self, state, query=False, bins="auto"):
         """Finds the distribution of angles for a given Angle"""
         if query:
             traj = state.query_traj
@@ -343,12 +352,15 @@ class Angle(object):
                 A_name=self.type1,
                 B_name=self.type2,
                 start=-state._opt.max_frames,
-                histogram=True
+                histogram=True,
+                bins=bins
         )
 
     def _compute_current_distribution(self, state):
         """Find the current bond angle distribution of the query trajectory"""
-        angle_distribution = self._get_state_distribution(state, query=True)
+        angle_distribution = self._get_state_distribution(
+                state, query=True, bins=self._states[state]["n_bins"]
+        )
         self._states[state]["current_distribution"] = angle_distribution
         # TODO ADD SMOOTHING
         f_fit = calc_similarity(
