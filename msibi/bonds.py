@@ -127,7 +127,7 @@ class Bond(object):
         """
         if state._opt.optimization == "bonds":
             target_distribution = self._get_state_distribution(
-                    state, query=False
+                    state, query=False, bins=len(self.l_range)
             )
             n_bins = target_distribution.shape[0]
         else:
@@ -201,7 +201,7 @@ class Bond(object):
             target_dist = self._states[state]["target_distribution"]
             N = len(self._states)
             self.potential += state.alpha * (
-                    kT * np.log(current_dist[:,1] / target_dist[:,1] / N)
+                    kT * np.log(current_dist[:,1] / target_dist[:,1]) / N
             )
 
 

@@ -308,7 +308,7 @@ class MSIBI(object):
                     )
 
         for bond in self.bonds:
-            if bond.bond_type == "quadratic":
+            if bond.bond_type == "table":
                 potential_file = os.path.join(
                         self.potentials_dir, f"bond_pot.{bond.name}.txt"
                 )
@@ -328,7 +328,7 @@ class MSIBI(object):
                 )
 
         for angle in self.angles:
-            if angle.angle_type == "quadratic":
+            if angle.angle_type == "table":
                 potential_file = os.path.join(
                         self.potentials_dir, f"angle_pot.{angle.name}.txt"
                 )
