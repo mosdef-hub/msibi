@@ -31,8 +31,7 @@ def quadratic_spring(x, x0, k4, k3, k2):
     potentials.
 
     """
-    X = x - x0
-    V_x = (k4*(X))**4 + (k3*(X))**3 + (k2*(X))**2
+    V_x = k4*((x-x0)**4) + k3*((x-x0)**3) + k2*((x-x0)**2)
     return V_x
 
 
