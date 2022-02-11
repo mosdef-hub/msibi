@@ -67,7 +67,7 @@ class Pair(object):
 
         """
         self.pair_type = "static"
-        self.pair_init = "lj = pair.lj(nlist=nl)"
+        self.pair_init = f"lj = hoomd.md.pair.lj(nlist=nl, r_cut={r_cut})"
         self.pair_entry = LJ_PAIR_ENTRY.format(
                 self.type1, self.type2, epsilon, sigma, r_cut
         )

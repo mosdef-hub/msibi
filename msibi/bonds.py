@@ -1,3 +1,4 @@
+import math
 import os
 
 import numpy as np
@@ -100,11 +101,11 @@ class Bond(object):
 
         """
         self.bond_type = "table"
-        self.dl = (l_max) / (n_points)
+        self.dl = l_max / n_points
         self.l_range = np.arange(l_min, l_max, self.dl)
         self.potential = quadratic_spring(self.l_range, l0, k4, k3, k2)
-        _n_points = len(self.l_range)
-        self.bond_init = f"btable = hoomd.md.bond.table(width={_n_points})"
+        self.n_points = len(self.l_range)
+        self.bond_init = f"btable = hoomd.md.bond.table(width={self.n_points})"
         self.bond_entry = TABLE_BOND_ENTRY.format(
                 self.name, self._potential_file
         ) 
@@ -127,16 +128,13 @@ class Bond(object):
         """
         if state._opt.optimization == "bonds":
             target_distribution = self._get_state_distribution(
-                    state, query=False, bins=len(self.l_range)
+                    state, query=False, bins=self.n_points
             )
-            n_bins = target_distribution.shape[0]
         else:
             target_distribution = None
-            n_bins = None
         self._states[state] = {
                 "target_distribution": target_distribution,
                 "current_distribution": None,
-                "n_bins": n_bins,
                 "alpha": state.alpha,
                 "alpha_form": "linear",
                 "f_fit": [],
@@ -162,7 +160,7 @@ class Bond(object):
     def _compute_current_distribution(self, state):
         """Find the current bond length distribution of the query trajectory"""
         bond_distribution = self._get_state_distribution(
-                state, query=True, bins=self._states[state]["n_bins"]
+                state, query=True, bins=self.n_points
         )
         self._states[state]["current_distribution"] = bond_distribution
         # TODO ADD SMOOTHING
@@ -264,15 +262,15 @@ class Angle(object):
         self.angle_init = "cosinesq = angle.cosinesq()"
         self.angle_entry = COSINE_ANGLE_ENTRY.format(self.name, k, theta0)
 
-    def set_quadratic(
-            self, theta0, k4, k3, k2, theta_min, theta_max, n_points=100
-    ):
+    def set_quadratic(self, theta0, k4, k3, k2, n_points=100):
         """Set a bond angle potential based on the following function:
 
             V(theta) = k4(theta-theta0)^4 + k3(theta-theta0)^3 + k2(theta-theta0)^2
 
         Using this method will create a table potential V(theta) over the range
         theta_min - theta_max.
+
+        The angle table potential will range from theta = 0 to theta = math.pi
 
         This should be the angle potential form of choice when optimizing angles 
         as opposed to using `set_harmonic`. However, you can also use this
@@ -283,25 +281,17 @@ class Angle(object):
         ----------
         theta0, k4, k3, k2 : float, required
             The paraters used in the V(theta) function described above
-        theta_min : float, required
-            The lower bound of the angle potential angles 
-        theta_max : float, required
-            The upper bound of the angle potential angles
         n_points : int, default = 101 
             The number of points between theta_min-theta_max used to create
             the table potential
 
         """
         self.angle_type = "table"
-        self.dtheta = (theta_max) / (n_points - 1)
-        self.theta_range = np.arange(
-                theta_min, theta_max+self.dtheta, self.dtheta
-        )
-        self.potential = quadratic_spring(
-                self.theta_range, theta0, k4, k3, k2
-        )
-        _n_points = len(self.theta_range)
-        self.angle_init = f"atable = hoomd.md.angle.table(width={_n_points})"
+        self.dtheta = math.pi / (n_points - 1)
+        self.theta_range = np.arange(0, math.pi + self.dtheta, self.dtheta)
+        self.potential = quadratic_spring(self.theta_range, theta0, k4, k3, k2)
+        self.n_points = len(self.theta_range)
+        self.angle_init = f"atable = hoomd.md.angle.table(width={self.n_points})"
         self.angle_entry = TABLE_ANGLE_ENTRY.format(
                 self.name, self._potential_file
         ) 
@@ -324,17 +314,14 @@ class Angle(object):
         """
         if state._opt.optimization == "angles":
             target_distribution = self._get_state_distribution(
-                    state, query=False
+                    state, query=False, bins=self.n_points
             )
-            n_bins = target_distribution.shape[0]
         else:
             target_distribution = None
-            n_bins = None
 
         self._states[state] = {
                 "target_distribution": target_distribution,
                 "current_distribution": None,
-                "n_bins": n_bins,
                 "alpha": state.alpha,
                 "alpha_form": "linear",
                 "f_fit": [],
@@ -351,6 +338,7 @@ class Angle(object):
                 gsd_file=traj,
                 A_name=self.type1,
                 B_name=self.type2,
+                C_name=self.type3,
                 start=-state._opt.max_frames,
                 histogram=True,
                 bins=bins
@@ -359,7 +347,7 @@ class Angle(object):
     def _compute_current_distribution(self, state):
         """Find the current bond angle distribution of the query trajectory"""
         angle_distribution = self._get_state_distribution(
-                state, query=True, bins=self._states[state]["n_bins"]
+                state, query=True, bins=self.n_points
         )
         self._states[state]["current_distribution"] = angle_distribution
         # TODO ADD SMOOTHING
