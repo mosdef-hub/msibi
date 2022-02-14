@@ -101,6 +101,8 @@ class Bond(object):
 
         """
         self.bond_type = "table"
+        self.l_min = l_min
+        self.l_max = l_max
         self.dl = l_max / n_points
         self.l_range = np.arange(l_min, l_max, self.dl)
         self.potential = quadratic_spring(self.l_range, l0, k4, k3, k2)
@@ -111,7 +113,7 @@ class Bond(object):
         ) 
 
     def update_potential_file(self, fpath):
-        #TODO Throw error if self.bond_type isn't one that uses fiels (table)
+        #TODO Throw error if self.bond_type isn't one that uses files (table)
         self._potential_file = fpath
         self.bond_entry = TABLE_BOND_ENTRY.format(
                 self.name, self._potential_file
@@ -141,7 +143,7 @@ class Bond(object):
                 "path": state.dir
             }
 
-    def _get_state_distribution(self, state, query=False, bins="auto"):
+    def _get_state_distribution(self, state, bins, query=False):
         """Find the bond length distribution of a Bond at a State."""
         if query:
             traj = state.query_traj
@@ -154,6 +156,8 @@ class Bond(object):
                 B_name=self.type2,
                 start=-state._opt.max_frames,
                 histogram=True,
+                l_min=self.l_min,
+                l_max=self.l_max,
                 bins=bins
         )
 
@@ -328,7 +332,7 @@ class Angle(object):
                 "path": state.dir
             }
 
-    def _get_state_distribution(self, state, query=False, bins="auto"):
+    def _get_state_distribution(self, state, bins, query=False):
         """Finds the distribution of angles for a given Angle"""
         if query:
             traj = state.query_traj
@@ -341,6 +345,8 @@ class Angle(object):
                 C_name=self.type3,
                 start=-state._opt.max_frames,
                 histogram=True,
+                theta_min=self.theta_min,
+                theta_max=self.theta_max,
                 bins=bins
         )
 
