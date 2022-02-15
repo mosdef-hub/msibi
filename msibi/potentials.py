@@ -70,7 +70,7 @@ def tail_correction(r, V, r_switch):
         / (r_cut ** 2 - r_switch ** 2) ** 3
     )
     return V * S_r
-
+    
 
 def head_correction(r, V, previous_V, form="linear"):
     """Apply head correction to V making it go to a finite value at V(0).
@@ -122,13 +122,70 @@ def head_correction(r, V, previous_V, form="linear"):
         return V
 
 
+def bond_correction(r, V, form):
+    if form == "linear":
+        head_correction_function = linear_head_correction
+        tail_correction_function = linear_tail_correction
+    elif form == "exponential":
+        head_correction_function = exponential_head_correction
+        tail_correction_function = exponential_tail_correction
+    else:
+        raise ValueError(f'Unsupported head correction form: "{form}"')
+
+    real_indices = np.where(np.isfinite(V))[0]
+    #TODO Need an error message here
+    assert np.all(np.ediff1d(real_indices) == 1)
+    head_cutoff = real_indices[0] - 1
+    tail_cutoff = real_indices[-1] + 1
+    fix_indices = np.where(np.logical_or(np.isnan(V), np.isposinf(V)))
+    # V with the head correction applied
+    head_correction_V = head_correction_function(r=r, V=V, cutoff=head_cutoff)
+    # V with both head correction and tial correciton applied
+    tail_correction = tail_correction_function(
+            r=r, V=head_correction_V, cutoff=tail_cutoff
+    )
+    return tail_correction
+
+def linear_tail_correction(r, V, cutoff):
+    """Use a linear function to smoothly force V to a finite value at V(cut).
+
+    Parameters
+    ----------
+    r : np.ndarray
+        Separation values
+    V : np.ndarray
+        Potential at each of the separation values
+    cutoff : int
+        The last real value of V when iterating backwards
+
+    """
+    slope = (V[cutoff - 1] - V[cutoff - 2]) / (r[cutoff - 1] - r[cutoff - 2])
+    if slope < 0:
+        slope = -slope
+    V[cutoff:] = slope * (r[cutoff:] - r[cutoff - 1]) + V[cutoff - 1]
+    return V 
+
+
 def linear_head_correction(r, V, cutoff):
-    """Use a linear function to smoothly force V to a finite value at V(0). """
+    """Use a linear function to smoothly force V to a finite value at V(0).
+    Parameters
+    ----------
+    r : np.ndarray
+        Separation values
+    V : np.ndarray
+        Potential at each of the separation values
+    cutoff : int
+        The last real value of V when iterating backwards
+
+    """
     slope = (V[cutoff + 1] - V[cutoff + 2]) / (r[cutoff + 1] - r[cutoff + 2])
     if slope > 0:
         slope = -slope
     V[: cutoff + 1] = slope * (r[: cutoff + 1] - r[cutoff + 1]) + V[cutoff + 1]
     return V
+
+def exponential_tail_correction(r, V, cutoff):
+    pass
 
 
 def exponential_head_correction(r, V, cutoff):

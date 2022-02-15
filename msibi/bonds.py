@@ -5,7 +5,7 @@ import numpy as np
 
 from cmeutils.structure import angle_distribution, bond_distribution
 from msibi.utils.sorting import natural_sort
-from msibi.potentials import quadratic_spring 
+from msibi.potentials import quadratic_spring, bond_correction 
 from msibi.utils.error_calculation import calc_similarity
 
 
@@ -28,7 +28,7 @@ class Bond(object):
         Must match the names found in the State's .gsd trajectory file
 
     """
-    def __init__(self, type1, type2):
+    def __init__(self, type1, type2, head_correction_form="linear"):
         self.type1, self.type2 = sorted(
                     [type1, type2],
                     key=natural_sort
@@ -37,6 +37,7 @@ class Bond(object):
         self._potential_file = "" 
         self.potential = None 
         self.previous_potential = None
+        self.head_correction_form = head_correction_form
         self._states = dict()
     
     def set_harmonic(self, k, l0):
@@ -201,6 +202,13 @@ class Bond(object):
             self.potential += state.alpha * (
                     kT * np.log(current_dist[:,1] / target_dist[:,1]) / N
             )
+
+        # Apply corrections
+        self.potential = bond_correction(
+                self.l_range,
+                self.potential,
+                self.head_correction_form
+        )
 
 
 class Angle(object):
