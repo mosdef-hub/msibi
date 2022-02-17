@@ -3,7 +3,7 @@ import pytest
 
 import numpy as np
 
-from msibi import Pair, State
+from msibi import Angle, Bond, Pair, State
 
 
 dr = 0.1 / 6.0
@@ -29,6 +29,19 @@ class BaseTest:
                 epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=len(r)
         )
         return pair 
+    
+    @pytest.fixture
+    def bond(self):
+        bond = Bond("0", "1")
+        bond.set_quadratic(l0=1, k4=1, k3=1, k2=1, l_min=0, l_max=2)
+        return bond
+
+    @pytest.fixture
+    def angle(self):
+        angle = Angle("0", "1", "2")
+        angle.set_harmonic(k=1, theta0=1)
+        angle.set_quadratic(theta0=1, k4=1, k3=1, k2=1)
+        return angle
 
     @pytest.fixture
     def rdf0(self):

@@ -301,6 +301,8 @@ class Angle(object):
         self.angle_type = "table"
         self.dtheta = math.pi / (n_points - 1)
         self.theta_range = np.arange(0, math.pi + self.dtheta, self.dtheta)
+        self.theta_min = 0
+        self.theta_max = math.pi
         self.potential = quadratic_spring(self.theta_range, theta0, k4, k3, k2)
         self.n_points = len(self.theta_range)
         self.angle_init = f"atable = hoomd.md.angle.table(width={self.n_points})"
