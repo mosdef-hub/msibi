@@ -4,9 +4,10 @@ import os
 import numpy as np
 
 from cmeutils.structure import angle_distribution, bond_distribution
-from msibi.utils.sorting import natural_sort
 from msibi.potentials import quadratic_spring, bond_correction 
 from msibi.utils.error_calculation import calc_similarity
+from msibi.utils.smoothing import savitzky_golay
+from msibi.utils.sorting import natural_sort
 
 
 HARMONIC_BOND_ENTRY = "harmonic_bond.bond_coeff.set('{}', k={}, r0={})"
@@ -133,6 +134,12 @@ class Bond(object):
             target_distribution = self._get_state_distribution(
                     state, query=False, bins=self.n_points
             )
+            if state._opt.smooth_dist:
+                target_distribution[:,1] = savitzky_golay(
+                        target_distribution[:,1], 3, 1, deriv=0, rate=1
+                )
+                negative_idx = np.where(target_distribution[:,1] < 0)[0]
+                target_distribution[:,1][negative_idx] = 0
         else:
             target_distribution = None
         self._states[state] = {
@@ -206,7 +213,6 @@ class Bond(object):
             self.potential += state.alpha * (
                     kT * np.log(current_dist[:,1] / target_dist[:,1]) / N
             )
-
         # Apply corrections
         self.potential = bond_correction(
                 self.l_range,
@@ -226,11 +232,12 @@ class Angle(object):
         Must match the names found in the State's .gsd trajectory file
 
     """
-    def __init__(self, type1, type2, type3):
+    def __init__(self, type1, type2, type3, head_correction_form="linear"):
         self.type1 = type1
         self.type2 = type2
         self.type3 = type3
         self.name = f"{self.type1}-{self.type2}-{self.type3}"
+        self.head_correction_form = head_correction_form
         self._potential_file = ""
         self.potential = None
         self.previous_potential = None
@@ -330,6 +337,12 @@ class Angle(object):
             target_distribution = self._get_state_distribution(
                     state, query=False, bins=self.n_points
             )
+            if state._opt.smooth_dist:
+                target_distribution[:,1] = savitzky_golay(
+                        target_distribution[:,1], 3, 1, deriv=0, rate=1
+                )
+                negative_idx = np.where(target_distribution[:,1] < 0)[0]
+                target_distribution[:,1][negative_idx] = 0
         else:
             target_distribution = None
 
@@ -405,4 +418,10 @@ class Angle(object):
             self.potential += state.alpha * (
                     kT * np.log(current_dist[:,1] / target_dist[:,1] / N)
             )
+        # Apply corrections
+        self.potential = bond_correction(
+                self.theta_range,
+                self.potential,
+                self.head_correction_form
+        )
 

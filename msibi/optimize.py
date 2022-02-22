@@ -99,7 +99,9 @@ class MSIBI(object):
     def add_angle(self, angle):
         self.angles.append(angle)
 
-    def optimize_bonds(self, n_iterations, start_iteration=0, _dir=None):
+    def optimize_bonds(
+            self, n_iterations, start_iteration=0,smooth=True, _dir=None
+    ):
         """Optimize the bond potentials
 
         Parameters
@@ -108,9 +110,13 @@ class MSIBI(object):
             Number of iterations.
         start_iteration : int, default 0
             Start optimization at start_iteration, useful for restarting.
+        smooth : bool, default True
+            If True, the target distribution is smoothed using a 
+            Savitzky-Golay filter
 
         """
         self.optimization = "bonds"
+        self.smooth_dist = smooth
         self._add_states()
         self._initialize(potentials_dir=_dir)
 
@@ -119,7 +125,9 @@ class MSIBI(object):
             run_query_simulations(self.states)
             self._update_potentials(n)
 
-    def optimize_angles(self, n_iterations, start_iteration=0, _dir=None):
+    def optimize_angles(
+            self, n_iterations, start_iteration=0, smooth=True, _dir=None
+    ):
         """Optimize the bond angle potentials
 
         Parameters
@@ -128,9 +136,13 @@ class MSIBI(object):
             Number of iterations.
         start_iteration : int, default 0
             Start optimization at start_iteration, useful for restarting.
+        smooth : bool, default True
+            If True, the target distribution is smoothed using a 
+            Savitzky-Golay filter
 
         """
         self.optimization = "angles"
+        self.smooth_dist = smooth
         self._add_states()
         self._initialize(potentials_dir=_dir)
 
