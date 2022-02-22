@@ -133,6 +133,8 @@ def bond_correction(r, V, form):
         raise ValueError(f'Unsupported head correction form: "{form}"')
 
     real_indices = np.where(np.isfinite(V))[0]
+    print("REAL INDICES")
+    print(real_indices)
     #TODO Need an error message here
     assert np.all(np.ediff1d(real_indices) == 1)
     head_cutoff = real_indices[0] - 1
@@ -146,7 +148,7 @@ def bond_correction(r, V, form):
     )
     return tail_correction
 
-def linear_tail_correction(r, V, cutoff):
+def linear_tail_correction(r, V, cutoff, window=3):
     """Use a linear function to smoothly force V to a finite value at V(cut).
 
     Parameters
@@ -157,16 +159,20 @@ def linear_tail_correction(r, V, cutoff):
         Potential at each of the separation values
     cutoff : int
         The last real value of V when iterating backwards
+    window : int
+        Number of data points backward from cutoff to use in slope calculation
 
     """
-    slope = (V[cutoff - 1] - V[cutoff - 2]) / (r[cutoff - 1] - r[cutoff - 2])
+    slope = (
+            V[cutoff - 1] - V[cutoff - window]
+            ) / (r[cutoff - 1] - r[cutoff - window])
     if slope < 0:
         slope = -slope
     V[cutoff:] = slope * (r[cutoff:] - r[cutoff - 1]) + V[cutoff - 1]
     return V 
 
 
-def linear_head_correction(r, V, cutoff):
+def linear_head_correction(r, V, cutoff, window=3):
     """Use a linear function to smoothly force V to a finite value at V(0).
     Parameters
     ----------
@@ -175,10 +181,14 @@ def linear_head_correction(r, V, cutoff):
     V : np.ndarray
         Potential at each of the separation values
     cutoff : int
-        The last real value of V when iterating backwards
+        The first real value of V when iterating forwards 
+    window : int
+        Number of data points forward from cutoff to use in slope calculation
 
     """
-    slope = (V[cutoff + 1] - V[cutoff + 2]) / (r[cutoff + 1] - r[cutoff + 2])
+    slope = (
+            V[cutoff + 1] - V[cutoff + window]
+            ) / (r[cutoff + 1] - r[cutoff + window])
     if slope > 0:
         slope = -slope
     V[: cutoff + 1] = slope * (r[: cutoff + 1] - r[cutoff + 1]) + V[cutoff + 1]

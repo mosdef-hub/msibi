@@ -416,7 +416,7 @@ class Angle(object):
             target_dist = self._states[state]["target_distribution"]
             N = len(self._states)
             self.potential += state.alpha * (
-                    kT * np.log(current_dist[:,1] / target_dist[:,1] / N)
+                    kT * np.log(current_dist[:,1] / target_dist[:,1]) / N
             )
         # Apply corrections
         self.potential = bond_correction(
