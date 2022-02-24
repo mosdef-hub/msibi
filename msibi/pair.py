@@ -177,7 +177,7 @@ class Pair(object):
                 self.type1, self.type2, self._potential_file
         )
 
-    def _add_state(self, state, smooth=True):
+    def _add_state(self, state):
         """Add a state to be used in optimizing this pair.
 
         Parameters
@@ -223,7 +223,7 @@ class Pair(object):
         )
         return np.stack((rdf.bin_centers, rdf.rdf*norm)).T
 
-    def _compute_current_rdf(self, state, smooth, verbose=False):
+    def _compute_current_rdf(self, state, verbose=False):
         """Calcualte the current RDF from the query trajectory.
         Updates the 'current_rdf' value in this Pair's state dict.
         Applies smoothing if applicable and calculates the f_fit between

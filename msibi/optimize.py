@@ -265,11 +265,7 @@ class MSIBI(object):
     def _recompute_rdfs(self, pair, iteration):
         """Recompute the current RDFs for every state used for a given pair."""
         for state in self.states:
-            pair._compute_current_rdf(
-                state,
-                smooth=self.smooth_rdfs,
-                verbose=self.verbose
-            )
+            pair._compute_current_rdf(state, verbose=self.verbose)
             pair._save_current_rdf(state, iteration=iteration)
             print(
                 "pair {0}, state {1}, iteration {2}: {3:f}".format(

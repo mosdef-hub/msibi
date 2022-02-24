@@ -174,8 +174,14 @@ class Bond(object):
         bond_distribution = self._get_state_distribution(
                 state, query=True, bins=self.n_points
         )
+        if state._opt.smooth_dist:
+            bond_distribution[:,1] = savitzky_golay(
+                    bond_distribution[:,1], 3, 1, deriv=0, rate=1
+            )
+            negative_idx = np.where(bond_distribution[:,1] < 0)[0]
+            bond_distribution[:,1][negative_idx] = 0
         self._states[state]["current_distribution"] = bond_distribution
-        # TODO ADD SMOOTHING
+
         f_fit = calc_similarity(
                     bond_distribution[:,1],
                     self._states[state]["target_distribution"][:,1] 
@@ -195,7 +201,7 @@ class Bond(object):
         """
         distribution = self._states[state]["current_distribution"]
         distribution[:,0] -= self.dl / 2
-        fname = f"bond_pot_{self.name}-state_{state.name}-step_{iteration}.txt"
+        fname = f"bond_dist_{self.name}-state_{state.name}-step_{iteration}.txt"
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, distribution)
 
@@ -378,8 +384,14 @@ class Angle(object):
         angle_distribution = self._get_state_distribution(
                 state, query=True, bins=self.n_points
         )
+        if state._opt.smooth_dist:
+            angle_distribution[:,1] = savitzky_golay(
+                    angle_distribution[:,1], 3, 1, deriv=0, rate=1
+            )
+            negative_idx = np.where(angle_distribution[:,1] < 0)[0]
+            angle_distribution[:,1][negative_idx] = 0
         self._states[state]["current_distribution"] = angle_distribution
-        # TODO ADD SMOOTHING
+
         f_fit = calc_similarity(
                 angle_distribution[:,1],
                 self._states[state]["target_distribution"][:,1] 
@@ -400,7 +412,7 @@ class Angle(object):
         distribution = self._states[state]["current_distribution"]
         distribution[:,0] -= self.dtheta / 2
         
-        fname = f"angle_pot_{self.name}-state_{state.name}-step_{iteration}.txt"
+        fname = f"angle_dist_{self.name}-state_{state.name}-step_{iteration}.txt"
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, distribution)
 
