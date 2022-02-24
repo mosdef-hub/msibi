@@ -123,6 +123,8 @@ def head_correction(r, V, previous_V, form="linear"):
 
 
 def bond_correction(r, V, form):
+    import more_itertools as mit
+
     if form == "linear":
         head_correction_function = linear_head_correction
         tail_correction_function = linear_tail_correction
@@ -132,11 +134,25 @@ def bond_correction(r, V, form):
     else:
         raise ValueError(f'Unsupported head correction form: "{form}"')
 
-    real_indices = np.where(np.isfinite(V))[0]
-    print("REAL INDICES")
-    print(real_indices)
-    #TODO Need an error message here
-    assert np.all(np.ediff1d(real_indices) == 1)
+    real_idx = np.where(np.isfinite(V))[0]
+    # Check for continuity of real_indices:
+    if not np.all(np.ediff1d(real_idx) == 1):
+        start = real_idx[0]
+        end = real_idx[-1]
+        # Correct nans, infs that are surrounded by 2 finite numbers
+        for idx, v in enumerate(V[start:end]):
+            if not np.isfinite(v):
+                try:
+                    avg = (V[idx+start-1] + V[idx+start+1]) / 2
+                    V[idx+start] = avg
+                except IndexError:
+                    pass
+        # Trim off edge cases
+        _real_idx = np.where(np.isfinite(V))[0]
+        real_idx = max(
+                [list(g) for g in mit.consecutive_groups(_real_idx)], key=len
+        )
+
     head_cutoff = real_indices[0] - 1
     tail_cutoff = real_indices[-1] + 1
     fix_indices = np.where(np.logical_or(np.isnan(V), np.isposinf(V)))
