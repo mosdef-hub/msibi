@@ -123,6 +123,9 @@ def head_correction(r, V, previous_V, form="linear"):
 
 
 def bond_correction(r, V, form):
+    """Handles corrections for both the head and tail of both
+    bond scretching and angle potentials.
+    """
     import more_itertools as mit
 
     if form == "linear":
@@ -153,16 +156,15 @@ def bond_correction(r, V, form):
                 [list(g) for g in mit.consecutive_groups(_real_idx)], key=len
         )
 
-    head_cutoff = real_indices[0] - 1
-    tail_cutoff = real_indices[-1] + 1
-    fix_indices = np.where(np.logical_or(np.isnan(V), np.isposinf(V)))
-    # V with the head correction applied
+    head_cutoff = real_idx[0] - 1
+    tail_cutoff = real_idx[-1] + 1
+    # Potential with the head correction applied
     head_correction_V = head_correction_function(r=r, V=V, cutoff=head_cutoff)
-    # V with both head correction and tial correciton applied
-    tail_correction = tail_correction_function(
+    # Potential with both head correction and tial correciton applied
+    tail_correction_V = tail_correction_function(
             r=r, V=head_correction_V, cutoff=tail_cutoff
     )
-    return tail_correction
+    return tail_correction_V
 
 def linear_tail_correction(r, V, cutoff, window=3):
     """Use a linear function to smoothly force V to a finite value at V(cut).
