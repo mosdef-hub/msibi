@@ -42,7 +42,7 @@ def mie(r, epsilon, sigma, m, n):
     return V_r 
 
 
-def tail_correction(r, V, r_switch):
+def pair_tail_correction(r, V, r_switch):
     """Apply a tail correction to a potential making it go to zero smoothly.
 
     Parameters
@@ -72,7 +72,7 @@ def tail_correction(r, V, r_switch):
     return V * S_r
     
 
-def head_correction(r, V, previous_V, form="linear"):
+def pair_head_correction(r, V, previous_V, form="linear"):
     """Apply head correction to V making it go to a finite value at V(0).
 
     Parameters

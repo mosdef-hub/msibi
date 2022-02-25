@@ -4,7 +4,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from cmeutils.structure import gsd_rdf
 
-from msibi.potentials import alpha_array, head_correction, tail_correction, mie
+from msibi.potentials import (
+        alpha_array, pair_head_correction, pair_tail_correction, mie
+)
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.exceptions import UnsupportedEngine
 from msibi.utils.general import find_nearest
@@ -164,11 +166,21 @@ class Pair(object):
         )
 
     def set_from_file(self, file_path):
+        """
+        """
         # TODO: Finish support for loading pair pot from file
+        # TODO: Finish doc strings for all of the set_from_file funcs
         self._potential_file = file_path
+        with np.loadtxt(self._potential_file) as f:
+            self.r_range = f[:,0]
+            self.n_points = len(self.r_range)
+            self.potential = f[:,1]
+
         self.pair_type = "table"
-        self.pair_init = ""
-        self.pair_entry = ""
+        self.pair_init = f"table=hoomd.md.pair.table(width={self.n_points},nlist=nl)"
+        self.pair_entry = TABLE_PAIR_ENTRY.format(
+                self.type1, self.type2, self._potential_file
+        )
     
     def update_potential_file(self, fpath):
         #TODO Throw error if self.pair_type isn't one that uses files (table)
@@ -271,7 +283,7 @@ class Pair(object):
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, rdf)
 
-    def _update_potential(self, verbose=False):
+    def _update_potential(self):
         """Update the potential using all states. """
         self.previous_potential = np.copy(self.potential)
         for state in self._states:
@@ -285,6 +297,7 @@ class Pair(object):
 
             # For cases where rdf_cutoff != pot_cutoff, only update the
             # potential using RDF values < pot_cutoff.
+            # TODO: Remove this; I don't think it was ever working anyway
             unused_rdf_vals = current_rdf.shape[0] - self.potential.shape[0]
             if unused_rdf_vals != 0:
                 current_rdf = current_rdf[:-unused_rdf_vals,:]
@@ -301,37 +314,16 @@ class Pair(object):
                     kT * alpha * np.log(current_rdf[:,1] / target_rdf[:,1]) / N 
             )
 
-            if verbose:  # pragma: no cover
-                plt.plot(
-                    self.r_range, self.previous_potential, label="previous potential"
-                )
-                plt.plot(self.r_range, self.potential, label="potential")
-                plt.ylim(
-                    (min(self.potential[np.isfinite(self.potential)])-1,10)
-                )
-                plt.legend()
-                plt.show()
-
         # Apply corrections to ensure continuous, well-behaved potentials.
         pot = self.potential
-        self.potential = tail_correction(self.r_range, self.potential, self.r_switch)
+        self.potential = pair_tail_correction(
+                self.r_range, self.potential, self.r_switch
+        )
         tail = self.potential
-        self.potential = head_correction(
+        self.potential = pair_head_correction(
             self.r_range,
             self.potential,
             self.previous_potential,
             self.head_correction_form
         )
-        head = self.potential
-        if verbose:  # pragma: no cover
-            plt.plot(self.r_range, head, label="head correction")
-            plt.plot(self.r_range, pot, label="uncorrected potential")
-            idx_r, _ = find_nearest(self.r_range, self.r_switch)
-            plt.plot(
-                    self.r_range[idx_r:], tail[idx_r:], label="tail correction"
-            )
-
-            plt.ylim((min(pot[np.isfinite(pot)])-1, 10))
-            plt.legend()
-            plt.show()
 

@@ -114,6 +114,21 @@ class Bond(object):
                 self.name, self._potential_file
         ) 
 
+    def set_from_file(self, file_path):
+        """
+        """
+        self._potential_file = file_path
+        with np.loadtxt(self._potential_file) as f:
+            self.l_range = f[:,0]
+            self.n_points = len(self.l_range)
+            self.potential = f[:,1]
+
+        self.bond_type = "table"
+        self.bond_init = f"btable = hoomd.md.bond.table(width={self.n_points})"
+        self.bond_entry = TABLE_BOND_ENTRY.format(
+                self.name, self._potential_file
+        ) 
+
     def update_potential_file(self, fpath):
         #TODO Throw error if self.bond_type isn't one that uses files (table)
         self._potential_file = fpath
@@ -318,6 +333,21 @@ class Angle(object):
         self.theta_max = math.pi
         self.potential = quadratic_spring(self.theta_range, theta0, k4, k3, k2)
         self.n_points = len(self.theta_range)
+        self.angle_init = f"atable = hoomd.md.angle.table(width={self.n_points})"
+        self.angle_entry = TABLE_ANGLE_ENTRY.format(
+                self.name, self._potential_file
+        ) 
+
+    def set_from_file(self, file_path):
+        """
+        """
+        self._potential_file = file_path
+        with np.loadtxt(self._potential_file) as f:
+            self.theta_range = f[:,0]
+            self.n_points = len(self.l_range)
+            self.potential = f[:,1]
+
+        self.angle_type = "table"
         self.angle_init = f"atable = hoomd.md.angle.table(width={self.n_points})"
         self.angle_entry = TABLE_ANGLE_ENTRY.format(
                 self.name, self._potential_file
