@@ -223,7 +223,7 @@ class MSIBI(object):
         if self.optimization == "pairs":
             for pair in self.pairs:
                 self._recompute_rdfs(pair, iteration)
-                pair._update_potential(self.verbose)
+                pair._update_potential()
                 save_table_potential(
                         pair.potential,
                         pair.r_range,
@@ -318,7 +318,7 @@ class MSIBI(object):
                     )
 
         for bond in self.bonds:
-            if bond.bond_type == "table":
+            if bond.bond_type == "table" and bond._potential_file == "":
                 potential_file = os.path.join(
                         self.potentials_dir, f"bond_pot.{bond.name}.txt"
                 )
@@ -338,7 +338,7 @@ class MSIBI(object):
                 )
 
         for angle in self.angles:
-            if angle.angle_type == "table":
+            if angle.angle_type == "table" and angle._potential_file == "":
                 potential_file = os.path.join(
                         self.potentials_dir, f"angle_pot.{angle.name}.txt"
                 )

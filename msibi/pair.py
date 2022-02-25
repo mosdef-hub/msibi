@@ -303,12 +303,6 @@ class Pair(object):
                 current_rdf = current_rdf[:-unused_rdf_vals,:]
                 target_rdf = target_rdf[:-unused_rdf_vals,:]
 
-            if verbose:  # pragma: no cover
-                plt.plot(current_rdf[:,0], current_rdf[:,1], label="current rdf")
-                plt.plot(target_rdf[:,0], target_rdf[:,1], label="target rdf")
-                plt.legend()
-                plt.show()
-
             # The actual IBI step.
             self.potential += (
                     kT * alpha * np.log(current_rdf[:,1] / target_rdf[:,1]) / N 

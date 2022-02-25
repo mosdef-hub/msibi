@@ -123,6 +123,8 @@ class Bond(object):
         self.n_points = len(self.l_range)
         self.dl = np.round(self.l_range[1] - self.l_range[0], 3) 
         self.potential = f[:,1]
+        self.l_min = self.l_range[0]
+        self.l_max = self.l_range[-1] + self.dl
 
         self.bond_type = "table"
         self.bond_init = f"btable = hoomd.md.bond.table(width={self.n_points})"
@@ -348,6 +350,8 @@ class Angle(object):
         self.dtheta = np.round(self.theta_range[1] - self.theta_range[0], 3) 
         self.n_points = len(self.theta_range)
         self.potential = f[:,1]
+        self.theta_min = 0
+        self.theta_max = math.pi
 
         self.angle_type = "table"
         self.angle_init = f"atable = hoomd.md.angle.table(width={self.n_points})"
