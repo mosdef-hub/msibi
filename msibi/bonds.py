@@ -115,7 +115,20 @@ class Bond(object):
         ) 
 
     def set_from_file(self, file_path):
-        """
+        """Creates a bond-stretching potential from a text file.
+        The columns of the text file must be in the order of r, V, F
+        which is the format used by hoomd-blue for table files.
+
+        Use this potential setter to set a potential from a previous MSIBI run.
+        For example, use the final potential files from a bond-optimization IBI
+        run to set a static coarse-grained bond potential while you perform
+        IBI runs on angle and pair potentials.
+
+        Parameters:
+        -----------
+        file_path : str, required
+            The full path to the table potential text file.
+
         """
         self._potential_file = file_path
         f = np.loadtxt(self._potential_file)
@@ -133,7 +146,21 @@ class Bond(object):
         ) 
 
     def update_potential_file(self, fpath):
-        #TODO Throw error if self.bond_type isn't one that uses files (table)
+        """Set (or reset) the path to a table potential file.
+        This function ensures that the Bond.bond_entry attribute
+        is correctly updated when a potential file path is generated
+        or updated.
+
+        Parameters:
+        -----------
+        fpath : str, required
+            Full path to the text file
+
+        """
+        if self.bond_type != "table":
+            raise RuntimeError("Updating potential file paths can only "
+                    "be done for bond potential types that use table potentials."
+            )
         self._potential_file = fpath
         self.bond_entry = TABLE_BOND_ENTRY.format(
                 self.name, self._potential_file
@@ -342,7 +369,20 @@ class Angle(object):
         ) 
 
     def set_from_file(self, file_path):
-        """
+        """Creates a bond-stretching potential from a text file.
+        The columns of the text file must be in the order of r, V, F
+        which is the format used by hoomd-blue for table files.
+
+        Use this potential setter to set a potential from a previous MSIBI run.
+        For example, use the final potential files from a bond-optimization IBI
+        run to set a static coarse-grained bond potential while you perform
+        IBI runs on angle and pair potentials.
+
+        Parameters:
+        -----------
+        file_path : str, required
+            The full path to the table potential text file.
+
         """
         self._potential_file = file_path
         f = np.loadtxt(self._potential_file)
@@ -360,7 +400,17 @@ class Angle(object):
         ) 
 
     def update_potential_file(self, fpath):
-        #TODO Throw error if self.angle_type isn't one that uses fils (table)
+        """Set (or reset) the path to a table potential file.
+        This function ensures that the Angle.angle_entry attribute
+        is correctly updated when a potential file path is generated
+        or updated.
+
+        Parameters:
+        -----------
+        fpath : str, required
+            Full path to the text file
+
+        """
         self._potential_file = fpath
         self.angle_entry = TABLE_ANGLE_ENTRY.format(
                 self.name, self._potential_file

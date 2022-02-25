@@ -26,8 +26,6 @@ class MSIBI(object):
     max_frames : int, required
         How many snapshots of the trajectories to use in calcualting
         relevant distributions (RDFs, bond distributions)
-    verbose : bool, default False
-        Whether to provide more information for debugging.
 
     Attributes
     ----------
@@ -68,7 +66,6 @@ class MSIBI(object):
             gsd_period,
             n_steps,
             max_frames,
-            verbose=False,
     ):
         if integrator == "hoomd.md.integrate.nve":
             raise ValueError("The NVE ensemble is not supported with MSIBI")
@@ -79,7 +76,6 @@ class MSIBI(object):
         self.gsd_period = gsd_period
         self.n_steps = n_steps
         self.max_frames = max_frames
-        self.verbose = verbose
         # Store all of the needed interaction objects
         self.states = []
         self.pairs = []
@@ -265,7 +261,7 @@ class MSIBI(object):
     def _recompute_rdfs(self, pair, iteration):
         """Recompute the current RDFs for every state used for a given pair."""
         for state in self.states:
-            pair._compute_current_rdf(state, verbose=self.verbose)
+            pair._compute_current_rdf(state)
             pair._save_current_rdf(state, iteration=iteration)
             print(
                 "pair {0}, state {1}, iteration {2}: {3:f}".format(

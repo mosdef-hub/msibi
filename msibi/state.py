@@ -80,18 +80,29 @@ class State(object):
         script.append(
             HOOMD2_HEADER.format(self.traj_file)
         )
-        # TODO Add check that the init scripts are the same for all 
         if pairs is not None and len(pairs) > 0:
+            if len(set([p.pair_init for p in pairs])) != 1:
+                raise RuntimeError("Combining different pair potential types "
+                        "is not currently supported in MSIBI."
+                )
             script.append(pairs[0].pair_init)
             for pair in pairs:
                 script.append(pair.pair_entry)
          
         if bonds is not None and len(bonds) > 0:
+            if len(set([b.bond_init for b in bonds])) != 1:
+                raise RuntimeError("Combining different bond potential types "
+                        "is not currently supported in MSIBI."
+                )
             script.append(bonds[0].bond_init)
             for bond in bonds:
                 script.append(bond.bond_entry)
 
         if angles is not None and len(angles) > 0:
+            if len(set([a.angle_init for a in angless])) != 1:
+                raise RuntimeError("Combining different angle potential types "
+                        "is not currently supported in MSIBI."
+                )
             script.append(angles[0].angle_init)
             for angle in angles:
                 script.append(angle.angle_entry)

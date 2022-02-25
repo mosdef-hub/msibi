@@ -166,10 +166,18 @@ class Pair(object):
         )
 
     def set_from_file(self, file_path):
+        """Creates a pair potential from a text file.
+        The columns of the text file must be in the order of r, V, F
+        which is the format used by hoomd-blue for table files.
+
+        Use this potential setter to set a potential from a previous MSIBI run.
+
+        Parameters:
+        -----------
+        file_path : str, required
+            The full path to the table potential text file.
+
         """
-        """
-        # TODO: Finish support for loading pair pot from file
-        # TODO: Finish doc strings for all of the set_from_file funcs
         self._potential_file = file_path
         f = np.loadtxt(self._potential_file)
         self.r_range = f[:,0]
@@ -183,7 +191,21 @@ class Pair(object):
         )
     
     def update_potential_file(self, fpath):
-        #TODO Throw error if self.pair_type isn't one that uses files (table)
+        """Set (or reset) the path to a table potential file.
+        This function ensures that the Pair.pair_entry attribute
+        is correctly updated when a potential file path is generated
+        or updated.
+
+        Parameters:
+        -----------
+        fpath : str, required
+            Full path to the text file
+
+        """
+        if self.pair_type != "table":
+            raise RuntimeError("Updating potential file paths can only "
+                    "be done for pair potential types that use table potentials."
+            )
         self._potential_file = fpath
         self.pair_entry = TABLE_PAIR_ENTRY.format(
                 self.type1, self.type2, self._potential_file
@@ -235,7 +257,7 @@ class Pair(object):
         )
         return np.stack((rdf.bin_centers, rdf.rdf*norm)).T
 
-    def _compute_current_rdf(self, state, verbose=False):
+    def _compute_current_rdf(self, state):
         """Calcualte the current RDF from the query trajectory.
         Updates the 'current_rdf' value in this Pair's state dict.
         Applies smoothing if applicable and calculates the f_fit between
@@ -252,13 +274,6 @@ class Pair(object):
             )
             negative_idx = np.where(current_rdf < 0)
             current_rdf[negative_idx] = 0
-            if verbose:  # pragma: no cover
-                plt.title(f"RDF smoothing for {state.name}")
-                plt.plot(rdf[:,0], rdf[:, 1], label="unsmoothed")
-                plt.plot(rdf[:,0], current_rdf[:,1], label="smoothed")
-                plt.legend()
-                plt.show()
-
         # Compute fitness function comparing the two RDFs.
         f_fit = calc_similarity(
             rdf[:, 1], self._states[state]["target_rdf"][:, 1]
@@ -294,15 +309,6 @@ class Pair(object):
             N = len(self._states)
             current_rdf = self._states[state]["current_rdf"]
             target_rdf = self._states[state]["target_rdf"]
-
-            # For cases where rdf_cutoff != pot_cutoff, only update the
-            # potential using RDF values < pot_cutoff.
-            # TODO: Remove this; I don't think it was ever working anyway
-            unused_rdf_vals = current_rdf.shape[0] - self.potential.shape[0]
-            if unused_rdf_vals != 0:
-                current_rdf = current_rdf[:-unused_rdf_vals,:]
-                target_rdf = target_rdf[:-unused_rdf_vals,:]
-
             # The actual IBI step.
             self.potential += (
                     kT * alpha * np.log(current_rdf[:,1] / target_rdf[:,1]) / N 
