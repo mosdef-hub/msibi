@@ -171,10 +171,10 @@ class Pair(object):
         # TODO: Finish support for loading pair pot from file
         # TODO: Finish doc strings for all of the set_from_file funcs
         self._potential_file = file_path
-        with np.loadtxt(self._potential_file) as f:
-            self.r_range = f[:,0]
-            self.n_points = len(self.r_range)
-            self.potential = f[:,1]
+        f = np.loadtxt(self._potential_file)
+        self.r_range = f[:,0]
+        self.n_points = len(self.r_range)
+        self.potential = f[:,1]
 
         self.pair_type = "table"
         self.pair_init = f"table=hoomd.md.pair.table(width={self.n_points},nlist=nl)"

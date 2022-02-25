@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-from msibi.potentials import tail_correction, save_table_potential
+from msibi.potentials import pair_tail_correction, save_table_potential
 from msibi.utils.exceptions import UnsupportedEngine
 from msibi.workers import run_query_simulations
 
@@ -301,7 +301,9 @@ class MSIBI(object):
                     self.potentials_dir, f"pair_pot.{pair.name}.txt"
                 )
                 pair.update_potential_file(potential_file)
-                V = tail_correction(pair.r_range, pair.potential, pair.r_switch)
+                V = pair_tail_correction(
+                        pair.r_range, pair.potential, pair.r_switch
+                )
                 pair.potential = V
                 if self.optimization == "pairs":
                     iteration = 0

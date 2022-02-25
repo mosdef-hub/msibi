@@ -118,10 +118,11 @@ class Bond(object):
         """
         """
         self._potential_file = file_path
-        with np.loadtxt(self._potential_file) as f:
-            self.l_range = f[:,0]
-            self.n_points = len(self.l_range)
-            self.potential = f[:,1]
+        f = np.loadtxt(self._potential_file)
+        self.l_range = f[:,0]
+        self.n_points = len(self.l_range)
+        self.dl = np.round(self.l_range[1] - self.l_range[0], 3) 
+        self.potential = f[:,1]
 
         self.bond_type = "table"
         self.bond_init = f"btable = hoomd.md.bond.table(width={self.n_points})"
@@ -342,10 +343,11 @@ class Angle(object):
         """
         """
         self._potential_file = file_path
-        with np.loadtxt(self._potential_file) as f:
-            self.theta_range = f[:,0]
-            self.n_points = len(self.l_range)
-            self.potential = f[:,1]
+        f = np.loadtxt(self._potential_file)
+        self.theta_range = f[:,0]
+        self.dtheta = np.round(self.theta_range[1] - self.theta_range[0], 3) 
+        self.n_points = len(self.theta_range)
+        self.potential = f[:,1]
 
         self.angle_type = "table"
         self.angle_init = f"atable = hoomd.md.angle.table(width={self.n_points})"
