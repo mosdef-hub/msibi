@@ -99,7 +99,7 @@ class State(object):
                 script.append(bond.bond_entry)
 
         if angles is not None and len(angles) > 0:
-            if len(set([a.angle_init for a in angless])) != 1:
+            if len(set([a.angle_init for a in angles])) != 1:
                 raise RuntimeError("Combining different angle potential types "
                         "is not currently supported in MSIBI."
                 )
