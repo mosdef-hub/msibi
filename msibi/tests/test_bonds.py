@@ -9,7 +9,7 @@ from msibi.potentials import save_table_potential
 from .base_test import BaseTest
 
 
-class TestPair(BaseTest):
+class TestBond(BaseTest):
     def test_bond_name(self, bond):
         assert bond.name == "0-1"
 
