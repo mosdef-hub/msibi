@@ -123,7 +123,7 @@ def pair_head_correction(r, V, previous_V, form="linear"):
 
 
 def bond_correction(r, V, form):
-    """Handles corrections for both the head and tail of both
+    """Handles corrections for both the head and tail of
     bond scretching and angle potentials.
     """
     import more_itertools as mit
@@ -165,6 +165,7 @@ def bond_correction(r, V, form):
             r=r, V=head_correction_V, cutoff=tail_cutoff
     )
     return tail_correction_V
+
 
 def linear_tail_correction(r, V, cutoff, window=3):
     """Use a linear function to smoothly force V to a finite value at V(cut).
@@ -212,8 +213,31 @@ def linear_head_correction(r, V, cutoff, window=3):
     V[: cutoff + 1] = slope * (r[: cutoff + 1] - r[cutoff + 1]) + V[cutoff + 1]
     return V
 
+
 def exponential_tail_correction(r, V, cutoff):
-    pass
+    """Use an exponential function to smoothly force V to a finite value at V(cut)
+
+    Parameters
+    ----------
+    r : np.ndarray
+        Separation values
+    V : np.ndarray
+        Potential at each of the separation values
+    cutoff : int
+        The last non-real value of V when iterating backwards
+
+    This function fits the small part of the potential to the form:
+    V(r) = A*exp(Br)
+
+    """
+    raise RuntimeError("Exponential tail corrections are not implemented."
+            "Use the linear correction form when optimizing bonds and angles."
+    )
+    dr = r[cutoff - 1] - r[cutoff - 2]
+    B = np.log(V[cutoff - 1] / V[cutoff - 2]) / dr
+    A = V[cutoff - 1] * np.exp(B * r[cutoff - 1])
+    V[cutoff:] = A * np.exp(B * r[cutoff:])
+    return V
 
 
 def exponential_head_correction(r, V, cutoff):
@@ -226,15 +250,16 @@ def exponential_head_correction(r, V, cutoff):
     V : np.ndarray
         Potential at each of the separation values
     cutoff : int
-        The last real value of V when iterating backwards
+        The last non real value of V when iterating forwards 
 
     This function fits the small part of the potential to the form:
     V(r) = A*exp(-Br)
+
     """
     dr = r[cutoff + 2] - r[cutoff + 1]
     B = np.log(V[cutoff + 1] / V[cutoff + 2]) / dr
     A = V[cutoff + 1] * np.exp(B * r[cutoff + 1])
-    V[: cutoff + 1] = A * np.exp(-B * r[: cutoff + 1])
+    V[:cutoff + 1] = A * np.exp(-B * r[:cutoff + 1])
     return V
 
 
