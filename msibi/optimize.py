@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-from msibi.potentials import tail_correction
+from msibi.potentials import pair_tail_correction, save_table_potential
 from msibi.utils.exceptions import UnsupportedEngine
 from msibi.workers import run_query_simulations
 
@@ -12,100 +12,75 @@ class MSIBI(object):
 
     Parameters
     ----------
-    rdf_cutoff : float
-        The upper cutoff value for the RDF calculation.
-    n_rdf_points : int
-        The number of radius values used in RDF calculations.
-    max_frames : int, default 10
-        The maximum number of frames to include at once in RDF calculation
-        The RDF calculation will accumulate an average RDF over the range
-        [-max_frames:-1] of the trajectory. This is also how a target_rdf
-        will be calculated in Pair.add_state
-    pot_cutoff : float, default None
-        The upper cutoff value for the potential. If None is provided,
-        rdf_cutoff is used.
-    r_switch : float, default None
-        The radius after which a tail correction is applied. If None is
-        provided, pot_r[-5] is used.
-    rdf_exclude_bonded : bool, default False
-        Whether the RDF calculation should exclude correlations between bonded
-        species.
-    smooth_rdfs : bool, default False
-        Whether to use a smoothing function to reduce the noise in the RDF data.
-    verbose : bool, default False
-        Whether to provide more information for debugging.
+    integrator : str, required 
+        The integrator to use in the query simulation.
+        See hoomd-blue.readthedocs.io/en/v2.9.6/module-md-integrate.html
+    integrator_kwargs : dict, required 
+        The args and their values required by the integrator chosen
+    dt : float, required 
+        The time step delta
+    gsd_period : int, required 
+        The number of frames between snapshots written to query.gsd
+    n_steps : int, required 
+        How many steps to run the query simulations
+    max_frames : int, required
+        How many snapshots of the trajectories to use in calcualting
+        relevant distributions (RDFs, bond distributions)
 
     Attributes
     ----------
-    states : list of States
+    states : list of msibi.state.State
         All states to be used in the optimization procedure.
-    pairs : list of Pairs
+    pairs : list of msibi.pair.Pair
         All pairs to be used in the optimization procedure.
-    bonds : list of Bonds
+    bonds : list of msibi.bonds.Bond
         All bonds to be used in the optimization procedure.
-    angles : list of Angles
+    angles : list of msibi.bonds.Angle
         All angles to be used in the optimization procedure.
-    n_iterations : int
-        The number of MSIBI iterations to perform.
-    max_frames : int
-        The maximum number of frames to include at once in RDF calculation
-    rdf_cutoff : float
-        The upper cutoff value for the RDF calculation.
-    n_rdf_points : int
-        The number of radius values used in the RDF calculation.
-    dr : float
-        The spacing of radius values.
-    rdf_exclude_bonded : bool
-        Whether the RDF calculation should exclude correlations between bonded
-        species.
-    pot_cutoff : float
-        The upper cutoff value for the potential.
-    pot_r : np.ndarray, shape=int((rdf_cutoff + dr) / dr)
-        The radius values at which the potential is computed.
-    r_switch : float
-        The radius after which a tail correction is applied.
+
+    Methods
+    -------
+    add_state(state)
+    add_bond(bond)
+    add_angle(angle)
+        Add the required interaction objects. See Pair.py and Bonds.py
+
+    optimize_bonds(n_iterations, start_iteration)
+        Calculates the target bond length distributions for each Bond
+        in MSIBI.bonds and optimizes the bonding potential.
+
+    optimize_angles(n_iterations, start_iteration)
+        Calcualtes the target bond angle distribution for each Bond
+        in MSIBI.angles and optimizes the angle potential.
+
+    optimize_pairs(rdf_exclude_bonded, smooth_rdfs, r_switch, n_iterations)
+        Calculates the target RDF for each Pair in MSIBI.pairs
+        and optimizes the pair potential.
+
     """
-
     def __init__(
-        self,
-        rdf_cutoff,
-        n_rdf_points,
-        max_frames=10,
-        pot_cutoff=None,
-        r_switch=None,
-        rdf_exclude_bonded=False,
-        smooth_rdfs=False,
-        verbose=False
+            self,
+            integrator,
+            integrator_kwargs,
+            dt,
+            gsd_period,
+            n_steps,
+            max_frames,
     ):
-
-        rmin = 1e-4
-        self.verbose = verbose
+        if integrator == "hoomd.md.integrate.nve":
+            raise ValueError("The NVE ensemble is not supported with MSIBI")
+        
+        self.integrator = integrator
+        self.integrator_kwargs = integrator_kwargs
+        self.dt = dt
+        self.gsd_period = gsd_period
+        self.n_steps = n_steps
+        self.max_frames = max_frames
+        # Store all of the needed interaction objects
         self.states = []
         self.pairs = []
         self.bonds = []
         self.angles = []
-        self.n_iterations = 10  # Can be overridden in optimize().
-        self.max_frames = max_frames
-
-        self.rdf_cutoff = rdf_cutoff
-        self.n_rdf_points = n_rdf_points
-        self.dr = rdf_cutoff / (n_rdf_points - 1)
-        self.rdf_exclude_bonded = rdf_exclude_bonded
-        self.smooth_rdfs = smooth_rdfs
-        self.rdf_r_range = np.array([rmin, self.rdf_cutoff + self.dr])
-        self.rdf_n_bins = self.n_rdf_points
-
-        # Sometimes the pot_cutoff and rdf_cutoff have different ranges,
-        # e.g. to look at long-range correlations
-        if not pot_cutoff:
-            pot_cutoff = rdf_cutoff
-        self.pot_cutoff = pot_cutoff
-
-        self.pot_r = np.arange(rmin, self.pot_cutoff + self.dr, self.dr)
-
-        if not r_switch:
-            r_switch = self.pot_r[-5]
-        self.r_switch = r_switch
 
     def add_state(self, state):
         state._opt = self
@@ -120,112 +95,174 @@ class MSIBI(object):
     def add_angle(self, angle):
         self.angles.append(angle)
 
+    def optimize_bonds(
+            self, n_iterations, start_iteration=0,smooth=True, _dir=None
+    ):
+        """Optimize the bond potentials
 
-    def optimize(
+        Parameters
+        ----------
+        n_iterations : int, required 
+            Number of iterations.
+        start_iteration : int, default 0
+            Start optimization at start_iteration, useful for restarting.
+        smooth : bool, default True
+            If True, the target distribution is smoothed using a 
+            Savitzky-Golay filter
+
+        """
+        self.optimization = "bonds"
+        self.smooth_dist = smooth
+        self._add_states()
+        self._initialize(potentials_dir=_dir)
+
+        for n in range(start_iteration + n_iterations):
+            print(f"-------- Iteration {n} --------")
+            run_query_simulations(self.states)
+            self._update_potentials(n)
+
+    def optimize_angles(
+            self, n_iterations, start_iteration=0, smooth=True, _dir=None
+    ):
+        """Optimize the bond angle potentials
+
+        Parameters
+        ----------
+        n_iterations : int, required 
+            Number of iterations.
+        start_iteration : int, default 0
+            Start optimization at start_iteration, useful for restarting.
+        smooth : bool, default True
+            If True, the target distribution is smoothed using a 
+            Savitzky-Golay filter
+
+        """
+        self.optimization = "angles"
+        self.smooth_dist = smooth
+        self._add_states()
+        self._initialize(potentials_dir=_dir)
+
+        for n in range(start_iteration + n_iterations):
+            print(f"-------- Iteration {n} --------")
+            run_query_simulations(self.states)
+            self._update_potentials(n)
+
+    def optimize_pairs(
         self,
-        integrator,
-        integrator_kwargs,
-        dt,
-        gsd_period,
-        n_iterations=10,
+        n_iterations,
         start_iteration=0,
-        n_steps=1e6,
-        engine="hoomd",
+        rdf_exclude_bonded=True,
+        smooth_rdfs=True,
+        r_switch=None,
         _dir=None
     ):
         """Optimize the pair potentials
 
         Parameters
         ----------
-        integrator : str, required 
-            The integrator to use in the query simulation.
-            See hoomd-blue.readthedocs.io/en/v2.9.6/module-md-integrate.html
-        integrator_kwargs : dict, required 
-            The args and their values required by the integrator chosen
-        dt : float, required 
-            The time step delta
-        gsd_period : int, required 
-            The number of frames between snapshots written to query.gsd
-        n_iterations : int, default 10
+        n_iterations : int, required 
             Number of iterations.
         start_iteration : int, default 0
             Start optimization at start_iteration, useful for restarting.
-        n_steps : int, default=1e6
-            How many steps to run the query simulations
-            The frequency to write trajectory information to query.gsd
-        engine : str, default "hoomd"
-            Engine that runs the simulations.
+        rdf_exclude_bonded : bool, default=True
+            If the RDF calculation should exclude correlations between bonded
+            types.
+        smooth_rdfs : bool, default=True
+            Set to True to perform smoothing (Savitzky Golay) on the target
+            and iterative RDFs.
+        r_switch : float, optional, default=None
+            The distance after which a tail correction is applied.
+            If None, then Pair.r_range[-5] is used.
 
-        References
-        ----------
-        Please cite the following paper:
-
-        .. [1] T.C. Moore et al., "Derivation of coarse-grained potentials via
-           multistate iterative Boltzmann inversion," Journal of Chemical
-           Physics, vol. 140, pp. 224104, 2014.
         """
-        if integrator == "hoomd.md.integrate.nve":
-            raise ValueError("The NVE ensemble is not supported with MSIBI")
+        self.optimization = "pairs"
+        self.rdf_exclude_bonded = rdf_exclude_bonded
+        self.smooth_rdfs = smooth_rdfs
+        for pair in self.pairs:
+            if r_switch is None:
+                pair.r_switch = pair.r_range[-5]
+            else:
+                pair.r_switch = r_switch
+
+        self._add_states()
+        self._initialize(potentials_dir=_dir)
+
+        for n in range(start_iteration + n_iterations):
+            print(f"-------- Iteration {n} --------")
+            run_query_simulations(self.states)
+            self._update_potentials(n)
+
+    def _add_states(self):
+        """Add State objects to Pairs, Bonds, and Angles.
+        Required step before optimization runs can begin.
+
+        """
+        try:
+            self.smooth_rdfs
+        except AttributeError:
+            self.smooth_rdfs = False
 
         for pair in self.pairs:
             for state in self.states:
-                pair._add_state(state, smooth=self.smooth_rdfs)
+                pair._add_state(state)
 
-        if self.bonds:
+        for bond in self.bonds:
+            for state in self.states:
+                bond._add_state(state)
+
+        for angle in self.angles:
+            for state in self.states:
+                angle._add_state(state)
+
+    def _update_potentials(self, iteration):
+        """Update the potentials for the potentials to be optimized."""
+        if self.optimization == "pairs":
+            for pair in self.pairs:
+                self._recompute_rdfs(pair, iteration)
+                pair._update_potential()
+                save_table_potential(
+                        pair.potential,
+                        pair.r_range,
+                        pair.dr,
+                        iteration,
+                        pair._potential_file
+                    )
+
+        elif self.optimization == "bonds":
             for bond in self.bonds:
-                for state in self.states:
-                    bond._add_state(state)
+                self._recompute_distribution(bond, iteration)
+                bond._update_potential()
+                save_table_potential(
+                        bond.potential,
+                        bond.l_range,
+                        bond.dl,
+                        iteration,
+                        bond._potential_file
+                )
 
-        if self.angles:
+        elif self.optimization == "angles":
             for angle in self.angles:
-                for state in self.states:
-                    angle._add_state(state)
+                self._recompute_distribution(angle, iteration)
+                angle._update_potential()
+                save_table_potential(
+                        angle.potential,
+                        angle.theta_range,
+                        angle.dtheta,
+                        iteration,
+                        angle._potential_file
+                )
 
-        if engine == "hoomd":
-            import hoomd
-            HOOMD_VERSION = 2
-        else:
-            HOOMD_VERSION = None
-
-        if self.verbose:
-            print(f"Using HOOMD version {HOOMD_VERSION}.")
-
+    def _recompute_distribution(self, bond_object, iteration):
+        """Recompute the current distribution of bond lengths or angles"""
         for state in self.states:
-            state.HOOMD_VERSION = HOOMD_VERSION
-
-        self.n_iterations = n_iterations
-        self._initialize(
-                engine=engine, 
-                n_steps=int(n_steps),
-                integrator=integrator,
-                integrator_kwargs=integrator_kwargs,
-                dt=dt,
-                gsd_period=gsd_period,
-                potentials_dir=_dir)
-
-        for n in range(start_iteration + self.n_iterations):
-            print(f"-------- Iteration {n} --------")
-            run_query_simulations(self.states, engine=engine)
-            self._update_potentials(n, engine)
-
-    def _update_potentials(self, iteration, engine):
-        """Update the potentials for each pair. """
-        for pair in self.pairs:
-            self._recompute_rdfs(pair, iteration)
-            pair.update_potential(self.pot_r, self.r_switch, self.verbose)
-            pair.save_table_potential(
-                self.pot_r, self.dr, iteration=iteration, engine=engine
-            )
+            bond_object._compute_current_distribution(state)
+            bond_object._save_current_distribution(state, iteration=iteration)
 
     def _recompute_rdfs(self, pair, iteration):
         """Recompute the current RDFs for every state used for a given pair."""
         for state in self.states:
-            pair.compute_current_rdf(
-                state,
-                smooth=self.smooth_rdfs,
-                verbose=self.verbose
-            )
-            pair.save_current_rdf(state, iteration=iteration, dr=self.dr)
+            pair._compute_current_rdf(state)
+            pair._save_current_rdf(state, iteration=iteration)
             print(
                 "pair {0}, state {1}, iteration {2}: {3:f}".format(
                     pair.name,
@@ -235,22 +272,11 @@ class MSIBI(object):
                 )
             )
 
-    def _initialize(
-            self,
-            engine,
-            n_steps,
-            integrator,
-            integrator_kwargs,
-            dt,
-            gsd_period,
-            potentials_dir
-            ):
+    def _initialize(self, potentials_dir):
         """Create initial table potentials and the simulation input scripts.
 
         Parameters
         ----------
-        engine : str, default 'hoomd'
-            Engine used to run simulations
         potentials_dir : path, default None
             Directory to store potential files. If None is given, a "potentials"
             folder in the current working directory is used.
@@ -263,47 +289,79 @@ class MSIBI(object):
         if not os.path.isdir(self.potentials_dir):
             os.mkdir(self.potentials_dir)
 
-        if not os.path.isdir("rdfs"):
-            os.mkdir("rdfs")
-
-        table_potentials = []
-        bonds = None
-        angles = None
-
         for pair in self.pairs:
-            potential_file = os.path.join(
-                self.potentials_dir, f"pot.{pair.name}.txt"
-            )
-            pair.potential_file = potential_file
-            table_potentials.append((pair.type1, pair.type2, potential_file))
+            if pair.pair_type == "table":
+                #TODO Fix handling of r_switch here?
+                pair.r_switch = pair.r_range[-5]
+                potential_file = os.path.join(
+                    self.potentials_dir, f"pair_pot.{pair.name}.txt"
+                )
+                pair.update_potential_file(potential_file)
+                V = pair_tail_correction(
+                        pair.r_range, pair.potential, pair.r_switch
+                )
+                pair.potential = V
+                if self.optimization == "pairs":
+                    iteration = 0
+                else:
+                    iteration = None
+                save_table_potential(
+                        pair.potential,
+                        pair.r_range,
+                        pair.dr,
+                        iteration,
+                        pair._potential_file
+                    )
 
-            V = tail_correction(self.pot_r, pair.potential, self.r_switch)
-            pair.potential = V
+        for bond in self.bonds:
+            if bond.bond_type == "table" and bond._potential_file == "":
+                potential_file = os.path.join(
+                        self.potentials_dir, f"bond_pot.{bond.name}.txt"
+                )
+                bond.update_potential_file(potential_file)
 
-            # This file is written for viewing of how the potential evolves.
-            pair.save_table_potential(
-                self.pot_r, self.dr, iteration=0, engine=engine
-            )
+                if self.optimization == "bonds":
+                    iteration = 0
+                else:
+                    iteration = None
 
-            # This file is overwritten at each iteration and actually used for
-            # performing the query simulations.
-            pair.save_table_potential(self.pot_r, self.dr, engine=engine)
+                save_table_potential(
+                        bond.potential,
+                        bond.l_range,
+                        bond.dl,
+                        iteration,
+                        bond._potential_file
+                )
 
-        if self.bonds:
-            bonds = self.bonds
-        if self.angles:
-            angles = self.angles
+        for angle in self.angles:
+            if angle.angle_type == "table" and angle._potential_file == "":
+                potential_file = os.path.join(
+                        self.potentials_dir, f"angle_pot.{angle.name}.txt"
+                )
+                angle.update_potential_file(potential_file)
+
+                if self.optimization == "angles":
+                    iteration = 0
+                else:
+                    iteration = None
+
+                save_table_potential(
+                        angle.potential,
+                        angle.theta_range,
+                        angle.dtheta,
+                        iteration,
+                        angle._potential_file
+                )
 
         for state in self.states:
-            state.save_runscript(
-                n_steps=n_steps,
-                integrator=integrator,
-                integrator_kwargs=integrator_kwargs,
-                dt=dt,
-                gsd_period=gsd_period,
-                table_potentials=table_potentials,
-                table_width=len(self.pot_r),
-                engine=engine,
-                bonds=bonds,
-                angles=angles
+            state._save_runscript(
+                n_steps=int(self.n_steps),
+                integrator=self.integrator,
+                integrator_kwargs=self.integrator_kwargs,
+                dt=self.dt,
+                gsd_period=self.gsd_period,
+                pairs=self.pairs,
+                bonds=self.bonds,
+                angles=self.angles
             )
+

@@ -9,11 +9,6 @@ from .base_test import BaseTest
 
 
 class TestWorkers(BaseTest):
-    def test_unsupported_engine(self):
-        engine = "crammps"
-        with pytest.raises(UnsupportedEngine):
-            run_query_simulations(["margaret", "thatcher"], engine=engine)
-
     def test_post_query(self, state0):
         log_file = os.path.join(state0.dir, "log.txt")
         err_file = os.path.join(state0.dir, "err.txt")

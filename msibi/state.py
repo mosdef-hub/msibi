@@ -2,9 +2,7 @@ import os
 import shutil
 import warnings
 from msibi import MSIBI, utils
-from msibi.utils.hoomd_run_template import (HOOMD2_HEADER, HOOMD_TABLE_ENTRY,
-    HOOMD_BOND_INIT, HOOMD_BOND_ENTRY, HOOMD_ANGLE_INIT, HOOMD_ANGLE_ENTRY,
-    HOOMD_TEMPLATE)
+from msibi.utils.hoomd_run_template import (HOOMD2_HEADER, HOOMD_TEMPLATE)
 
 import cmeutils as cme
 from cmeutils.structure import gsd_rdf
@@ -44,6 +42,7 @@ class State(object):
         Path to the query trajectory.
     backup_trajectory : bool
         True if each query trajectory is backed up
+
     """
     def __init__(
         self,
@@ -65,50 +64,55 @@ class State(object):
         self.query_traj = os.path.join(self.dir, "query.gsd")
         self.backup_trajectory = backup_trajectory
 
-    def save_runscript(
+    def _save_runscript(
         self,
         n_steps,
         integrator,
         integrator_kwargs,
         dt,
         gsd_period,
-        table_potentials,
-        table_width,
+        pairs=None,
         bonds=None,
         angles=None,
-        engine="hoomd",
     ):
         """Save the input script for the MD engine."""
         script = list()
         script.append(
-            HOOMD2_HEADER.format(self.traj_file, table_width)
+            HOOMD2_HEADER.format(self.traj_file)
         )
-
-        for type1, type2, potential_file in table_potentials:
-            script.append(HOOMD_TABLE_ENTRY.format(**locals()))
-
-        if bonds is not None:
-            script.append(HOOMD_BOND_INIT)
+        if pairs is not None and len(pairs) > 0:
+            if len(set([p.pair_init for p in pairs])) != 1:
+                raise RuntimeError("Combining different pair potential types "
+                        "is not currently supported in MSIBI."
+                )
+            script.append(pairs[0].pair_init)
+            for pair in pairs:
+                script.append(pair.pair_entry)
+         
+        if bonds is not None and len(bonds) > 0:
+            if len(set([b.bond_init for b in bonds])) != 1:
+                raise RuntimeError("Combining different bond potential types "
+                        "is not currently supported in MSIBI."
+                )
+            script.append(bonds[0].bond_init)
             for bond in bonds:
-                name = bond.name
-                k = bond._states[self]["k"]
-                r0 = bond._states[self]["r0"]
-                script.append(HOOMD_BOND_ENTRY.format(**locals()))
+                script.append(bond.bond_entry)
 
-        if angles is not None:
-            script.append(HOOMD_ANGLE_INIT)
+        if angles is not None and len(angles) > 0:
+            if len(set([a.angle_init for a in angles])) != 1:
+                raise RuntimeError("Combining different angle potential types "
+                        "is not currently supported in MSIBI."
+                )
+            script.append(angles[0].angle_init)
             for angle in angles:
-                name = angle.name
-                k = angle._states[self]["k"]
-                theta = angle._states[self]["theta"]
-                script.append(HOOMD_ANGLE_ENTRY.format(**locals()))
+                script.append(angle.angle_entry)
 
         integrator_kwargs["kT"] = self.kT
         script.append(HOOMD_TEMPLATE.format(**locals()))
 
         runscript_file = os.path.join(self.dir, "run.py")
         with open(runscript_file, "w") as fh:
-            fh.writelines(script)
+            fh.writelines("%s\n" % l for l in script)
 
     def _setup_dir(self, name, kT, dir_name=None):
         """Create a state directory each time a new State is created."""
@@ -129,3 +133,4 @@ class State(object):
             print(f"{dir_name} already exists")
             raise
         return os.path.abspath(dir_name)
+

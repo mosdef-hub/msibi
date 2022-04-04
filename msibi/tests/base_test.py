@@ -3,7 +3,7 @@ import pytest
 
 import numpy as np
 
-from msibi import Pair, mie, State
+from msibi import Angle, Bond, Pair, State
 
 
 dr = 0.1 / 6.0
@@ -23,8 +23,45 @@ class BaseTest:
         return self.init_state(1, tmp_path)
 
     @pytest.fixture
-    def pair(self):
-        return Pair("0", "1", potential=mie(r, 1.0, 1.0))
+    def pairs(self):
+        pair0 = Pair("0", "0")
+        pair0.set_table_potential(
+                epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=len(r)
+        )
+        pair1 = Pair("1", "1")
+        pair1.set_table_potential(
+                epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=len(r)
+        )
+        pair2 = Pair("2", "2")
+        pair2.set_table_potential(
+                epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=len(r)
+        )
+        pair01 = Pair("0", "1")
+        pair01.set_table_potential(
+                epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=len(r)
+        )
+        pair02 = Pair("0", "2")
+        pair02.set_table_potential(
+                epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=len(r)
+        )
+        pair12 = Pair("1", "2")
+        pair12.set_table_potential(
+                epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=len(r)
+        )
+        return [pair0, pair1, pair2, pair01, pair02, pair12]
+    
+    @pytest.fixture
+    def bond(self):
+        bond = Bond("0", "1")
+        bond.set_quadratic(l0=1, k4=1, k3=1, k2=1, l_min=0, l_max=2)
+        return bond
+
+    @pytest.fixture
+    def angle(self):
+        angle = Angle("0", "1", "2")
+        angle.set_harmonic(k=1, theta0=1)
+        angle.set_quadratic(theta0=1, k4=1, k3=1, k2=1)
+        return angle
 
     @pytest.fixture
     def rdf0(self):
