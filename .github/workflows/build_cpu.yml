@@ -6,7 +6,7 @@ on:
     # Run when container or environment is changed
     paths:
         - 'containers/dockerfile_cpu'
-        - 'environment.yml'
+        - 'environment-cpu.yml'
   # Allows workflow to be manually triggered
   workflow_dispatch:
 

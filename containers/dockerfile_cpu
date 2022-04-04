@@ -6,7 +6,7 @@ ADD . /msibi
 
 WORKDIR /msibi
 
-RUN micromamba install -y -n base -f environment.yml && \
+RUN micromamba install -y -n base -f environment-cpu.yml && \
     micromamba clean --all --yes && \
     python setup.py install
 
