@@ -23,12 +23,32 @@ class BaseTest:
         return self.init_state(1, tmp_path)
 
     @pytest.fixture
-    def pair(self):
-        pair = Pair("0", "1")
-        pair.set_table_potential(
+    def pairs(self):
+        pair0 = Pair("0", "0")
+        pair0.set_table_potential(
                 epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=len(r)
         )
-        return pair 
+        pair1 = Pair("1", "1")
+        pair1.set_table_potential(
+                epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=len(r)
+        )
+        pair2 = Pair("2", "2")
+        pair2.set_table_potential(
+                epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=len(r)
+        )
+        pair01 = Pair("0", "1")
+        pair01.set_table_potential(
+                epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=len(r)
+        )
+        pair02 = Pair("0", "2")
+        pair02.set_table_potential(
+                epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=len(r)
+        )
+        pair12 = Pair("1", "2")
+        pair12.set_table_potential(
+                epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=len(r)
+        )
+        return [pair0, pair1, pair2, pair01, pair02, pair12]
     
     @pytest.fixture
     def bond(self):
