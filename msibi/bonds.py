@@ -209,6 +209,7 @@ class Bond(object):
                 B_name=self.type2,
                 start=-state._opt.max_frames,
                 histogram=True,
+                normalize=True,
                 l_min=self.l_min,
                 l_max=self.l_max,
                 bins=bins
@@ -460,6 +461,7 @@ class Angle(object):
                 C_name=self.type3,
                 start=-state._opt.max_frames,
                 histogram=True,
+                normalize=True,
                 theta_min=self.theta_min,
                 theta_max=self.theta_max,
                 bins=bins
