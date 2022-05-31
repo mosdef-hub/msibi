@@ -89,7 +89,7 @@ class MSIBI(object):
         self.gsd_period = gsd_period
         self.n_steps = n_steps
         self.max_frames = max_frames
-        self.nlist_exclusions = nlist_exclusion
+        self.nlist_exclusions = nlist_exclusions
         # Store all of the needed interaction objects
         self.states = []
         self.pairs = []
