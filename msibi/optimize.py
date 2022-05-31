@@ -12,6 +12,12 @@ class MSIBI(object):
 
     Parameters
     ----------
+    nlist : str, required
+        The type of hoomd neighbor list to use.
+        When optimizing bonded potentials, using hoomd.md.nlist.tree
+        may work best for single chain, low density simulations
+        When optimizing pair potentials hoomd.md.nlist.cell
+        may work best
     integrator : str, required 
         The integrator to use in the query simulation.
         See hoomd-blue.readthedocs.io/en/v2.9.6/module-md-integrate.html
@@ -60,22 +66,30 @@ class MSIBI(object):
     """
     def __init__(
             self,
+            nlist,
             integrator,
             integrator_kwargs,
             dt,
             gsd_period,
             n_steps,
             max_frames,
+            nlist_exclusions=["1-2", "1-3"],
     ):
         if integrator == "hoomd.md.integrate.nve":
             raise ValueError("The NVE ensemble is not supported with MSIBI")
-        
+        assert nlist in [
+                "hoomd.md.nlist.cell",
+                "hoomd.md.nlist.tree",
+                "hoomd.md.nlist.stencil"
+        ], ""
+        self.nlist = nlist 
         self.integrator = integrator
         self.integrator_kwargs = integrator_kwargs
         self.dt = dt
         self.gsd_period = gsd_period
         self.n_steps = n_steps
         self.max_frames = max_frames
+        self.nlist_exclusions = nlist_exclusion
         # Store all of the needed interaction objects
         self.states = []
         self.pairs = []
@@ -356,6 +370,8 @@ class MSIBI(object):
         for state in self.states:
             state._save_runscript(
                 n_steps=int(self.n_steps),
+                nlist=self.nlist,
+                nlist_exclusions=self.nlist_exclusions,
                 integrator=self.integrator,
                 integrator_kwargs=self.integrator_kwargs,
                 dt=self.dt,
