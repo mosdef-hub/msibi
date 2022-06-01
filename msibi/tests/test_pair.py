@@ -53,8 +53,8 @@ class TestPair(BaseTest):
                 _dir=tmp_path,
         )
         assert isinstance(pairs[0]._states, dict)
-        assert np.array_equal(pairs[3]._states[state0]["target_rdf"], rdf0)
-        assert pairs[3]._states[state0]["current_rdf"] is None
+        assert np.array_equal(pairs[3]._states[state0]["target_distribution"], rdf0)
+        assert pairs[3]._states[state0]["current_distribution"] is None
         assert pairs[3]._states[state0]["alpha"] == 0.5
         assert len(pairs[3]._states[state0]["f_fit"]) == 0
     
@@ -80,7 +80,7 @@ class TestPair(BaseTest):
                 _dir=tmp_path,
             )
         pairs[3]._compute_current_rdf(state0)
-        assert pairs[3]._states[state0]["current_rdf"] is not None
+        assert pairs[3]._states[state0]["current_distribution"] is not None
         assert len(pairs[3]._states[state0]["f_fit"]) > 0
 
     @pytest.mark.skip(reason="Need better test GSDs before running IBI in tests")
@@ -105,7 +105,7 @@ class TestPair(BaseTest):
                 _dir=tmp_path,
             )
         pairs[3]._compute_current_rdf(state0)
-        assert pairs[3]._states[state0]["current_rdf"] is not None
+        assert pairs[3]._states[state0]["current_distribution"] is not None
         assert len(pairs[3]._states[state0]["f_fit"]) > 0
 
     def test_save_current_rdf(self, state0, pairs, tmp_path):
@@ -128,8 +128,8 @@ class TestPair(BaseTest):
                 smooth_rdfs=True,
                 _dir=tmp_path,
             )
-        target_rdf = pairs[0]._states[state0]["target_rdf"]
-        pairs[0]._states[state0]["current_rdf"] = target_rdf 
+        target_rdf = pairs[0]._states[state0]["target_distribution"]
+        pairs[0]._states[state0]["current_distribution"] = target_rdf 
         pairs[0]._save_current_rdf(state0, 0)
         assert os.path.isfile(
             os.path.join(
@@ -158,7 +158,7 @@ class TestPair(BaseTest):
                 smooth_rdfs=True,
                 _dir=tmp_path,
             )
-        target_rdf = pairs[1]._states[state0]["target_rdf"]
-        pairs[0]._states[state0]["current_rdf"] = target_rdf
+        target_rdf = pairs[1]._states[state0]["target_distribution"]
+        pairs[0]._states[state0]["current_distribution"] = target_rdf
         pairs[0]._update_potential()
         assert not np.array_equal(pairs[0].potential, pairs[0].previous_potential)
