@@ -3,6 +3,7 @@ import os
 import numpy as np
 
 from msibi.potentials import pair_tail_correction, save_table_potential
+from msibi.utils.smoothing import savitzky_golay
 from msibi.utils.exceptions import UnsupportedEngine
 from msibi.workers import run_query_simulations
 
@@ -134,6 +135,19 @@ class MSIBI(object):
             print(f"-------- Iteration {n} --------")
             run_query_simulations(self.states)
             self._update_potentials(n)
+        # Save final potential
+        for bond in self.bonds:
+            smoothed_pot = savitzky_golay(
+                    bond.potential, window_size=7, order=1
+            )
+            file_name = f"{bond.name}_smoothed.txt"
+            save_table_potential(
+                    potential=smoothed_pot,
+                    r=bond.l_range,
+                    dr=bond.dl,
+                    iteration=None,
+                    potential_file=os.path.join(self.potentials_dir, file_name)
+            )
 
     def optimize_angles(
             self, n_iterations, start_iteration=0, smooth=True, _dir=None
@@ -160,6 +174,19 @@ class MSIBI(object):
             print(f"-------- Iteration {n} --------")
             run_query_simulations(self.states)
             self._update_potentials(n)
+        # Save final potential
+        for angle in self.angles:
+            smoothed_pot = savitzky_golay(
+                    angle.potential, window_size=7, order=1
+            )
+            file_name = f"{angle.name}_smoothed.txt"
+            save_table_potential(
+                    potential=smoothed_pot,
+                    r=angle.theta_range,
+                    dr=angle.dtheta,
+                    iteration=None,
+                    potential_file=os.path.join(self.potentials_dir, file_name)
+            )
 
     def optimize_pairs(
         self,
@@ -205,6 +232,19 @@ class MSIBI(object):
             print(f"-------- Iteration {n} --------")
             run_query_simulations(self.states)
             self._update_potentials(n)
+
+        for pair in self.pairs:
+            smoothed_pot = savitzky_golay(
+                    pair.potential, window_size=7, order=1
+            )
+            file_name = f"{pair.name}_smoothed.txt"
+            save_table_potential(
+                    potential=smoothed_pot,
+                    r=pair.r_range,
+                    dr=pair.dr,
+                    iteration=None,
+                    potential_file=os.path.join(self.potentials_dir, file_name)
+            )
 
     def _add_states(self):
         """Add State objects to Pairs, Bonds, and Angles.

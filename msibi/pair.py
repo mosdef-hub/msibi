@@ -227,12 +227,16 @@ class Pair(object):
                 )
                 negative_idx = np.where(target_rdf < 0)
                 target_rdf[negative_idx] = 0
+
+                fname = f"pair_rdf_{self.name}-state_{state.name}-target.txt"
+                fpath = os.path.join(state.dir, fname)
+                np.savetxt(fpath, target_rdf)
         else:
             target_rdf = None
 
         self._states[state] = {
-            "target_rdf": target_rdf,
-            "current_rdf": None,
+            "target_distribution": target_rdf,
+            "current_distribution": None,
             "alpha": state.alpha,
             "alpha_form": "linear",
             "f_fit": [],
@@ -265,10 +269,10 @@ class Pair(object):
 
         """
         rdf = self._get_state_rdf(state, query=True)
-        self._states[state]["current_rdf"] = rdf
+        self._states[state]["current_distribution"] = rdf
 
         if state._opt.smooth_rdfs:
-            current_rdf = self._states[state]["current_rdf"]
+            current_rdf = self._states[state]["current_distribution"]
             current_rdf[:, 1] = savitzky_golay(
                 current_rdf[:, 1], 9, 2, deriv=0, rate=1
             )
@@ -276,7 +280,7 @@ class Pair(object):
             current_rdf[negative_idx] = 0
         # Compute fitness function comparing the two RDFs.
         f_fit = calc_similarity(
-            rdf[:, 1], self._states[state]["target_rdf"][:, 1]
+            rdf[:, 1], self._states[state]["target_distribution"][:, 1]
         )
         self._states[state]["f_fit"].append(f_fit)
 
@@ -291,7 +295,7 @@ class Pair(object):
             Current iteration step, used in the filename
 
         """
-        rdf = self._states[state]["current_rdf"]
+        rdf = self._states[state]["current_distribution"]
         rdf[:, 0] -= self.dr / 2
 
         fname = f"pair_rdf_{self.name}-state_{state.name}-step{iteration}.txt"
@@ -307,8 +311,8 @@ class Pair(object):
             form = self._states[state]["alpha_form"]
             alpha = alpha_array(alpha0, self.r_range, form=form)
             N = len(self._states)
-            current_rdf = self._states[state]["current_rdf"]
-            target_rdf = self._states[state]["target_rdf"]
+            current_rdf = self._states[state]["current_distribution"]
+            target_rdf = self._states[state]["target_distribution"]
             # The actual IBI step.
             self.potential += (
                     kT * alpha * np.log(current_rdf[:,1] / target_rdf[:,1]) / N 
