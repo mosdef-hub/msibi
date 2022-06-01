@@ -33,6 +33,8 @@ class MSIBI(object):
     max_frames : int, required
         How many snapshots of the trajectories to use in calcualting
         relevant distributions (RDFs, bond distributions)
+    nlist_exclusions : list of str, optional, default ["1-2", "1-3"]
+        Sets the pair exclusions used during the optimization simulations
 
     Attributes
     ----------
@@ -78,11 +80,13 @@ class MSIBI(object):
     ):
         if integrator == "hoomd.md.integrate.nve":
             raise ValueError("The NVE ensemble is not supported with MSIBI")
+
         assert nlist in [
                 "hoomd.md.nlist.cell",
                 "hoomd.md.nlist.tree",
                 "hoomd.md.nlist.stencil"
-        ], ""
+        ], "Enter a valid Hoomd neighbor list type"
+
         self.nlist = nlist 
         self.integrator = integrator
         self.integrator_kwargs = integrator_kwargs
