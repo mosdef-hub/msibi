@@ -37,6 +37,7 @@ class TestPair(BaseTest):
         opt = MSIBI(
                 integrator="hoomd.md.integrate.nvt",
                 integrator_kwargs={"tau": 0.1},
+                nlist="hoomd.md.nlist.cell",
                 dt=0.001,
                 gsd_period=1000,
                 max_frames=10,
@@ -62,6 +63,7 @@ class TestPair(BaseTest):
         opt = MSIBI(
                 integrator="hoomd.md.integrate.nvt",
                 integrator_kwargs={"tau": 0.1},
+                nlist="hoomd.md.nlist.cell",
                 dt=0.001,
                 gsd_period=5000,
                 n_steps=1e4,
@@ -86,6 +88,7 @@ class TestPair(BaseTest):
         opt = MSIBI(
                 integrator="hoomd.md.integrate.nvt",
                 integrator_kwargs={"tau": 0.1},
+                nlist="hoomd.md.nlist.cell",
                 dt=0.001,
                 gsd_period=5000,
                 n_steps=1e4,
@@ -109,6 +112,7 @@ class TestPair(BaseTest):
         opt = MSIBI(
                 integrator="hoomd.md.integrate.nvt",
                 integrator_kwargs={"tau": 0.1},
+                nlist="hoomd.md.nlist.cell",
                 dt=0.001,
                 gsd_period=1000,
                 n_steps=1e6,
@@ -138,6 +142,7 @@ class TestPair(BaseTest):
         opt = MSIBI(
                 integrator="hoomd.md.integrate.nvt",
                 integrator_kwargs={"tau": 0.1},
+                nlist="hoomd.md.nlist.cell",
                 dt=0.001,
                 gsd_period=1000,
                 max_frames=10,
