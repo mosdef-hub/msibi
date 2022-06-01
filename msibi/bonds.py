@@ -185,8 +185,13 @@ class Bond(object):
                 )
                 negative_idx = np.where(target_distribution[:,1] < 0)[0]
                 target_distribution[:,1][negative_idx] = 0
+
+            fname = f"bond_dist_{self.name}-state_{state.name}-target.txt"
+            fpath = os.path.join(state.dir, fname)
+            np.savetxt(fpath, target_distribution)
         else:
             target_distribution = None
+
         self._states[state] = {
                 "target_distribution": target_distribution,
                 "current_distribution": None,
@@ -194,7 +199,7 @@ class Bond(object):
                 "alpha_form": "linear",
                 "f_fit": [],
                 "path": state.dir
-            }
+        }
 
     def _get_state_distribution(self, state, bins, query=False):
         """Find the bond length distribution of a Bond at a State."""
@@ -231,7 +236,7 @@ class Bond(object):
         f_fit = calc_similarity(
                     bond_distribution[:,1],
                     self._states[state]["target_distribution"][:,1] 
-                )
+        )
         self._states[state]["f_fit"].append(f_fit)
 
     def _save_current_distribution(self, state, iteration):
@@ -436,6 +441,10 @@ class Angle(object):
                 )
                 negative_idx = np.where(target_distribution[:,1] < 0)[0]
                 target_distribution[:,1][negative_idx] = 0
+                
+            fname = f"angle_dist_{self.name}-state_{state.name}-target.txt"
+            fpath = os.path.join(state.dir, fname)
+            np.savetxt(fpath, target_distribution)
         else:
             target_distribution = None
 
@@ -446,7 +455,7 @@ class Angle(object):
                 "alpha_form": "linear",
                 "f_fit": [],
                 "path": state.dir
-            }
+        }
 
     def _get_state_distribution(self, state, bins, query=False):
         """Finds the distribution of angles for a given Angle"""

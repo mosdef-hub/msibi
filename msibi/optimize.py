@@ -132,7 +132,7 @@ class MSIBI(object):
                     r=bond.l_range,
                     dr=bond.dl,
                     iteration=None,
-                    potential_file=file_name
+                    potential_file=os.path.join(self.potentials_dir, file_name)
             )
 
     def optimize_angles(
@@ -171,7 +171,7 @@ class MSIBI(object):
                     r=angle.theta_range,
                     dr=angle.dtheta,
                     iteration=None,
-                    potential_file=file_name
+                    potential_file=os.path.join(self.potentials_dir, file_name)
             )
 
     def optimize_pairs(
@@ -218,6 +218,19 @@ class MSIBI(object):
             print(f"-------- Iteration {n} --------")
             run_query_simulations(self.states)
             self._update_potentials(n)
+
+        for pair in self.pairs:
+            smoothed_pot = savitzky_golay(
+                    pair.potential, window_size=7, order=1
+            )
+            file_name = f"{pair.name}_smoothed.txt"
+            save_table_potential(
+                    potential=smoothed_pot,
+                    r=pair.r_range,
+                    dr=pair.dr,
+                    iteration=None,
+                    potential_file=os.path.join(self.potentials_dir, file_name)
+            )
 
     def _add_states(self):
         """Add State objects to Pairs, Bonds, and Angles.
