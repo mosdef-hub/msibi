@@ -67,6 +67,8 @@ class State(object):
     def _save_runscript(
         self,
         n_steps,
+        nlist,
+        nlist_exclusions,
         integrator,
         integrator_kwargs,
         dt,
@@ -78,7 +80,7 @@ class State(object):
         """Save the input script for the MD engine."""
         script = list()
         script.append(
-            HOOMD2_HEADER.format(self.traj_file)
+            HOOMD2_HEADER.format(self.traj_file, nlist, nlist_exclusions)
         )
         if pairs is not None and len(pairs) > 0:
             if len(set([p.pair_init for p in pairs])) != 1:

@@ -3,6 +3,7 @@ import os
 import numpy as np
 
 from msibi.potentials import pair_tail_correction, save_table_potential
+from msibi.utils.smoothing import savitzky_golay
 from msibi.utils.exceptions import UnsupportedEngine
 from msibi.workers import run_query_simulations
 
@@ -12,6 +13,12 @@ class MSIBI(object):
 
     Parameters
     ----------
+    nlist : str, required
+        The type of hoomd neighbor list to use.
+        When optimizing bonded potentials, using hoomd.md.nlist.tree
+        may work best for single chain, low density simulations
+        When optimizing pair potentials hoomd.md.nlist.cell
+        may work best
     integrator : str, required 
         The integrator to use in the query simulation.
         See hoomd-blue.readthedocs.io/en/v2.9.6/module-md-integrate.html
@@ -26,6 +33,8 @@ class MSIBI(object):
     max_frames : int, required
         How many snapshots of the trajectories to use in calcualting
         relevant distributions (RDFs, bond distributions)
+    nlist_exclusions : list of str, optional, default ["1-2", "1-3"]
+        Sets the pair exclusions used during the optimization simulations
 
     Attributes
     ----------
@@ -60,22 +69,32 @@ class MSIBI(object):
     """
     def __init__(
             self,
+            nlist,
             integrator,
             integrator_kwargs,
             dt,
             gsd_period,
             n_steps,
             max_frames,
+            nlist_exclusions=["1-2", "1-3"],
     ):
         if integrator == "hoomd.md.integrate.nve":
             raise ValueError("The NVE ensemble is not supported with MSIBI")
-        
+
+        assert nlist in [
+                "hoomd.md.nlist.cell",
+                "hoomd.md.nlist.tree",
+                "hoomd.md.nlist.stencil"
+        ], "Enter a valid Hoomd neighbor list type"
+
+        self.nlist = nlist 
         self.integrator = integrator
         self.integrator_kwargs = integrator_kwargs
         self.dt = dt
         self.gsd_period = gsd_period
         self.n_steps = n_steps
         self.max_frames = max_frames
+        self.nlist_exclusions = nlist_exclusions
         # Store all of the needed interaction objects
         self.states = []
         self.pairs = []
@@ -117,9 +136,22 @@ class MSIBI(object):
         self._initialize(potentials_dir=_dir)
 
         for n in range(start_iteration + n_iterations):
-            print(f"-------- Iteration {n} --------")
+            print(f"-------- Bond Optimization: Iteration {n} --------")
             run_query_simulations(self.states)
             self._update_potentials(n)
+        # Save final potential
+        for bond in self.bonds:
+            smoothed_pot = savitzky_golay(
+                    bond.potential, window_size=7, order=1
+            )
+            file_name = f"{bond.name}_smoothed.txt"
+            save_table_potential(
+                    potential=smoothed_pot,
+                    r=bond.l_range,
+                    dr=bond.dl,
+                    iteration=None,
+                    potential_file=os.path.join(self.potentials_dir, file_name)
+            )
 
     def optimize_angles(
             self, n_iterations, start_iteration=0, smooth=True, _dir=None
@@ -143,9 +175,22 @@ class MSIBI(object):
         self._initialize(potentials_dir=_dir)
 
         for n in range(start_iteration + n_iterations):
-            print(f"-------- Iteration {n} --------")
+            print(f"-------- Angle Optimization: Iteration {n} --------")
             run_query_simulations(self.states)
             self._update_potentials(n)
+        # Save final potential
+        for angle in self.angles:
+            smoothed_pot = savitzky_golay(
+                    angle.potential, window_size=7, order=1
+            )
+            file_name = f"{angle.name}_smoothed.txt"
+            save_table_potential(
+                    potential=smoothed_pot,
+                    r=angle.theta_range,
+                    dr=angle.dtheta,
+                    iteration=None,
+                    potential_file=os.path.join(self.potentials_dir, file_name)
+            )
 
     def optimize_pairs(
         self,
@@ -188,9 +233,22 @@ class MSIBI(object):
         self._initialize(potentials_dir=_dir)
 
         for n in range(start_iteration + n_iterations):
-            print(f"-------- Iteration {n} --------")
+            print(f"-------- Pair Optimization: Iteration {n} --------")
             run_query_simulations(self.states)
             self._update_potentials(n)
+
+        for pair in self.pairs:
+            smoothed_pot = savitzky_golay(
+                    pair.potential, window_size=7, order=1
+            )
+            file_name = f"{pair.name}_smoothed.txt"
+            save_table_potential(
+                    potential=smoothed_pot,
+                    r=pair.r_range,
+                    dr=pair.dr,
+                    iteration=None,
+                    potential_file=os.path.join(self.potentials_dir, file_name)
+            )
 
     def _add_states(self):
         """Add State objects to Pairs, Bonds, and Angles.
@@ -226,7 +284,7 @@ class MSIBI(object):
                         pair.dr,
                         iteration,
                         pair._potential_file
-                    )
+                )
 
         elif self.optimization == "bonds":
             for bond in self.bonds:
@@ -257,14 +315,20 @@ class MSIBI(object):
         for state in self.states:
             bond_object._compute_current_distribution(state)
             bond_object._save_current_distribution(state, iteration=iteration)
+            print("{0}, State: {1}, Iteration: {2}: {3:f}".format(
+                    bond_object.name,
+                    state.name,
+                    iteration,
+                    bond_object._states[state]["f_fit"][iteration]
+                )
+            )
 
     def _recompute_rdfs(self, pair, iteration):
         """Recompute the current RDFs for every state used for a given pair."""
         for state in self.states:
             pair._compute_current_rdf(state)
             pair._save_current_rdf(state, iteration=iteration)
-            print(
-                "pair {0}, state {1}, iteration {2}: {3:f}".format(
+            print("Pair: {0}, State: {1}, Iteration: {2}: {3:f}".format(
                     pair.name,
                     state.name,
                     iteration,
@@ -311,7 +375,7 @@ class MSIBI(object):
                         pair.dr,
                         iteration,
                         pair._potential_file
-                    )
+                )
 
         for bond in self.bonds:
             if bond.bond_type == "table" and bond._potential_file == "":
@@ -356,6 +420,8 @@ class MSIBI(object):
         for state in self.states:
             state._save_runscript(
                 n_steps=int(self.n_steps),
+                nlist=self.nlist,
+                nlist_exclusions=self.nlist_exclusions,
                 integrator=self.integrator,
                 integrator_kwargs=self.integrator_kwargs,
                 dt=self.dt,
@@ -364,4 +430,3 @@ class MSIBI(object):
                 bonds=self.bonds,
                 angles=self.angles
             )
-

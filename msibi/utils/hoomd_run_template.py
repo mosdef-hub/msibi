@@ -6,8 +6,8 @@ from hoomd.init import read_gsd
 hoomd.context.initialize("")
 system = read_gsd("{0}", frame=-1, time_step=0)
 
-nl = hoomd.md.nlist.cell()
-nl.reset_exclusions(exclusions=["1-2", "1-3", "1-4"])
+nl = {1}()
+nl.reset_exclusions(exclusions={2})
 """
 
 HOOMD_TEMPLATE = """
