@@ -76,6 +76,7 @@ class State(object):
         pairs=None,
         bonds=None,
         angles=None,
+        dihedrals=None,
     ):
         """Save the input script for the MD engine."""
         script = list()
@@ -108,6 +109,15 @@ class State(object):
             script.append(angles[0].angle_init)
             for angle in angles:
                 script.append(angle.angle_entry)
+
+        if dihedrals is not None and len(dihedrals) > 0:
+            if len(set([d.dihedral_init for d in dihedrals])) != 1:
+                raise RuntimeError("Combining different angle potential types "
+                        "is not currently supported in MSIBI."
+                )
+            script.append(dihedrals[0].angle_init)
+            for dihedral in dihedrals:
+                script.append(dihedral.angle_entry)
 
         integrator_kwargs["kT"] = self.kT
         script.append(HOOMD_TEMPLATE.format(**locals()))
