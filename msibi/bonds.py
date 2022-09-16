@@ -3,7 +3,9 @@ import os
 
 import numpy as np
 
-from cmeutils.structure import angle_distribution, bond_distribution
+from cmeutils.structure import ( 
+        angle_distribution, bond_distribution, dihedral_distribution
+)
 from msibi.potentials import quadratic_spring, bond_correction 
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.smoothing import savitzky_golay
@@ -16,6 +18,7 @@ TABLE_BOND_ENTRY = "btable.set_from_file('{}', '{}')"
 HARMONIC_ANGLE_ENTRY = "harmonic_angle.angle_coeff.set('{}', k={}, t0={})"
 COSINE_ANGLE_ENTRY = "cosinesq.angle_coeff.set('{}', k={}, t0={})"
 TABLE_ANGLE_ENTRY = "atable.set_from_file('{}', '{}')"
+TABLE_DIHEDRAL_ENTRY = "dtable.set_from_file('{}', '{}')"
 
 
 class Bond(object):
