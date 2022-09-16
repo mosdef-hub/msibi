@@ -17,6 +17,7 @@ FENE_BOND_ENTRY = "fene.bond_coeff.set('{}', k={}, r0={}, sigma={}, epsilon={})"
 TABLE_BOND_ENTRY = "btable.set_from_file('{}', '{}')"
 HARMONIC_ANGLE_ENTRY = "harmonic_angle.angle_coeff.set('{}', k={}, t0={})"
 COSINE_ANGLE_ENTRY = "cosinesq.angle_coeff.set('{}', k={}, t0={})"
+HARMONIC_DIHEDRAL_ENTRY = "harmonic_dihedral.dihedral_coeff.set('{}', k={}, d={}, n={}, phi0={})"
 TABLE_ANGLE_ENTRY = "atable.set_from_file('{}', '{}')"
 TABLE_DIHEDRAL_ENTRY = "dtable.set_from_file('{}', '{}')"
 
@@ -562,17 +563,21 @@ class Dihedral(object):
         self._states = dict()
 
     def set_harmonic(self, k, d, n, phi0):
-        """Creates a hoomd.md.angle.harmonic() type of bond angle
+        """Creates a hoomd.md.dihedral.harmonic() type of bond dihedral 
         potential to be used during the query simulations.
-        This method is not compatible when optimizing bond angle potentials.
-        Rather, it should be used to set a static angle potential while
-        optimizing Pairs or Bonds.
+        This method is not compatible when optimizing bond dihedral potentials.
+        Rather, it should be used to set a static potential while
+        optimizing Pairs, Bonds, or Angles.
 
         Parameters
         ----------
         k : float, required
             The potential constant
-        theta0 : float, required
+        d : int, required
+            Sign factor
+        n : int, required
+            Angle scaling factor
+        phi0 : float, required
             The equilibrium resting angle
 
         """
@@ -618,7 +623,7 @@ class Dihedral(object):
 
     def set_from_file(self, file_path):
         """Creates a bond dihedral potential from a text file.
-        The columns of the text file must be in the order of r, V, F
+        The columns of the text file must be in the order of phi, V, F
         which is the format used by hoomd-blue for table files.
 
         Use this potential setter to set a potential from a previous MSIBI run.
@@ -643,7 +648,7 @@ class Dihedral(object):
 
         self.dihedral_type = "table"
         self.dihedral_init = f"dtable = hoomd.md.dihedral.table(width={self.n_points})"
-        self.dihedral_entry = TABLE_ANGLE_ENTRY.format(
+        self.dihedral_entry = TABLE_DIHEDRAL_ENTRY.format(
                 self.name, self._potential_file
         ) 
 
