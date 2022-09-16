@@ -476,6 +476,26 @@ class MSIBI(object):
                         angle._potential_file
                 )
 
+        for dihedral in self.dihedrals:
+            if dihedral.dihedral_type == "table" and dihedral._potential_file == "":
+                potential_file = os.path.join(
+                        self.potentials_dir, f"dihedral_pot.{dihedral.name}.txt"
+                )
+                dihedral.update_potential_file(potential_file)
+
+                if self.optimization == "dihedrals":
+                    iteration = 0
+                else:
+                    iteration = None
+
+                save_table_potential(
+                        dihedral.potential,
+                        dihedral.phi_range,
+                        dihedral.dphi,
+                        iteration,
+                        dihedral._potential_file
+                )
+
         for state in self.states:
             state._save_runscript(
                 n_steps=int(self.n_steps),

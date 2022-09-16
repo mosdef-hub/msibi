@@ -753,7 +753,7 @@ class Dihedral(object):
 
         """
         distribution = self._states[state]["current_distribution"]
-        distribution[:,0] -= self.dtheta / 2
+        distribution[:,0] -= self.dphi / 2
         
         fname = f"dihedral_dist_{self.name}-state_{state.name}-step_{iteration}.txt"
         fpath = os.path.join(state.dir, fname)
@@ -775,7 +775,7 @@ class Dihedral(object):
             )
         # Apply corrections
         self.potential = bond_correction(
-                self.theta_range,
+                self.phi_range,
                 self.potential,
                 self.head_correction_form
         )
