@@ -116,7 +116,7 @@ class MSIBI(object):
         self.angles.append(angle)
 
     def add_dihedral(self, dihedral):
-        self.dihedrals.append(angle)
+        self.dihedrals.append(dihedral)
 
     def optimize_bonds(
             self, n_iterations, start_iteration=0,smooth=True, _dir=None
