@@ -140,7 +140,7 @@ class MSIBI(object):
         self._initialize(potentials_dir=_dir)
 
         for n in range(start_iteration + n_iterations):
-            print(f"---Bond Optimization: Iteration {n} of {n_iterations}---")
+            print(f"---Bond Optimization: {n} of {n_iterations}---")
             run_query_simulations(self.states)
             self._update_potentials(n)
         # Save final potential
@@ -179,7 +179,7 @@ class MSIBI(object):
         self._initialize(potentials_dir=_dir)
 
         for n in range(start_iteration + n_iterations):
-            print(f"---Angle Optimization: Iteration {n} of {n_iterations}---")
+            print(f"---Angle Optimization: {n} of {n_iterations}---")
             run_query_simulations(self.states)
             self._update_potentials(n)
         # Save final potential
@@ -237,7 +237,7 @@ class MSIBI(object):
         self._initialize(potentials_dir=_dir)
 
         for n in range(start_iteration + n_iterations):
-            print(f"---Pair Optimization: Iteration {n} of {n_iterations}---")
+            print(f"---Pair Optimization: {n} of {n_iterations}---")
             run_query_simulations(self.states)
             self._update_potentials(n)
 
@@ -507,5 +507,6 @@ class MSIBI(object):
                 gsd_period=self.gsd_period,
                 pairs=self.pairs,
                 bonds=self.bonds,
-                angles=self.angles
+                angles=self.angles,
+                dihedrals=self.dihedrans,
             )
