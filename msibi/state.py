@@ -112,12 +112,12 @@ class State(object):
 
         if dihedrals is not None and len(dihedrals) > 0:
             if len(set([d.dihedral_init for d in dihedrals])) != 1:
-                raise RuntimeError("Combining different angle potential types "
+                raise RuntimeError("Combining different dihedral potential types "
                         "is not currently supported in MSIBI."
                 )
-            script.append(dihedrals[0].angle_init)
+            script.append(dihedrals[0].dihedral_init)
             for dihedral in dihedrals:
-                script.append(dihedral.angle_entry)
+                script.append(dihedral.dihedral_entry)
 
         integrator_kwargs["kT"] = self.kT
         script.append(HOOMD_TEMPLATE.format(**locals()))
