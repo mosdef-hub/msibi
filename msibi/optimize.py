@@ -415,7 +415,7 @@ class MSIBI(object):
         for pair in self.pairs:
             if pair.pair_type == "table":
                 #TODO Fix handling of r_switch here?
-                pair.r_switch = pair.r_range[-5]
+                #pair.r_switch = pair.r_range[-5]
                 potential_file = os.path.join(
                     self.potentials_dir, f"pair_pot.{pair.name}.txt"
                 )
