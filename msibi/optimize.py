@@ -508,5 +508,5 @@ class MSIBI(object):
                 pairs=self.pairs,
                 bonds=self.bonds,
                 angles=self.angles,
-                dihedrals=self.dihedrans,
+                dihedrals=self.dihedrals,
             )
