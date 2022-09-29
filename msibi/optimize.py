@@ -46,12 +46,15 @@ class MSIBI(object):
         All bonds to be used in the optimization procedure.
     angles : list of msibi.bonds.Angle
         All angles to be used in the optimization procedure.
+    dihedrals : list of msibi.bonds.Dihedral
+        All dihedrals to be used in the optimization procedure.
 
     Methods
     -------
     add_state(state)
     add_bond(bond)
     add_angle(angle)
+    add_dihedral(dihedral)
         Add the required interaction objects. See Pair.py and Bonds.py
 
     optimize_bonds(n_iterations, start_iteration)
@@ -65,6 +68,10 @@ class MSIBI(object):
     optimize_pairs(rdf_exclude_bonded, smooth_rdfs, r_switch, n_iterations)
         Calculates the target RDF for each Pair in MSIBI.pairs
         and optimizes the pair potential.
+
+    optimize_dihedrals(n_iterations, start_iteration)
+        Calculates the target bond dihedral distributions for each Pair 
+        in MSIBI.dihedrals and optimizes the dihedral potential.
 
     """
     def __init__(
@@ -119,7 +126,7 @@ class MSIBI(object):
         self.dihedrals.append(dihedral)
 
     def optimize_bonds(
-            self, n_iterations, start_iteration=0,smooth=True, _dir=None
+            self, n_iterations, start_iteration=0, smooth=True, _dir=None
     ):
         """Optimize the bond potentials
 
@@ -403,6 +410,7 @@ class MSIBI(object):
         potentials_dir : path, default None
             Directory to store potential files. If None is given, a "potentials"
             folder in the current working directory is used.
+
         """
         if potentials_dir is None:
             self.potentials_dir = os.path.join(os.getcwd(), "potentials")
