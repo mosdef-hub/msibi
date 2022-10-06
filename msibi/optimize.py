@@ -65,7 +65,7 @@ class MSIBI(object):
         Calcualtes the target bond angle distribution for each Bond
         in MSIBI.angles and optimizes the angle potential.
 
-    optimize_pairs(rdf_exclude_bonded, smooth_rdfs, r_switch, n_iterations)
+    optimize_pairs(smooth_rdfs, r_switch, n_iterations)
         Calculates the target RDF for each Pair in MSIBI.pairs
         and optimizes the pair potential.
 
@@ -207,7 +207,6 @@ class MSIBI(object):
         self,
         n_iterations,
         start_iteration=0,
-        rdf_exclude_bonded=True,
         smooth_rdfs=True,
         r_switch=None,
         _dir=None
@@ -220,9 +219,6 @@ class MSIBI(object):
             Number of iterations.
         start_iteration : int, default 0
             Start optimization at start_iteration, useful for restarting.
-        rdf_exclude_bonded : bool, default=True
-            If the RDF calculation should exclude correlations between bonded
-            types.
         smooth_rdfs : bool, default=True
             Set to True to perform smoothing (Savitzky Golay) on the target
             and iterative RDFs.
@@ -232,7 +228,6 @@ class MSIBI(object):
 
         """
         self.optimization = "pairs"
-        self.rdf_exclude_bonded = rdf_exclude_bonded
         self.smooth_rdfs = smooth_rdfs
         for pair in self.pairs:
             if r_switch is None:

@@ -42,13 +42,20 @@ class Pair(object):
 
     """
 
-    def __init__(self, type1, type2, head_correction_form="linear"):
+    def __init__(
+            self,
+            type1,
+            type2,
+            exclude_bonded=True,
+            head_correction_form="linear"
+    ):
         self.type1 = str(type1)
         self.type2 = str(type2)
         self.name = f"{self.type1}-{self.type2}"
         self._potential_file = ""
         self._states = dict()
         self.previous_potential = None
+        self.exclude_bonded = exclude_bonded
         self.head_correction_form = head_correction_form
 
     def set_lj(self, epsilon, sigma, r_cut):
@@ -258,7 +265,7 @@ class Pair(object):
             start=-state._opt.max_frames,
             r_max=self.r_max,
             bins=self.n_points,
-            exclude_bonded=state._opt.rdf_exclude_bonded
+            exclude_bonded=self.exclude_bonded
         )
         return np.stack((rdf.bin_centers, rdf.rdf*norm)).T
 
