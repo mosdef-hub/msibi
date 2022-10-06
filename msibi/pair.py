@@ -46,7 +46,6 @@ class Pair(object):
             self,
             type1,
             type2,
-            exclude_bonded=True,
             head_correction_form="linear"
     ):
         self.type1 = str(type1)
@@ -55,7 +54,6 @@ class Pair(object):
         self._potential_file = ""
         self._states = dict()
         self.previous_potential = None
-        self.exclude_bonded = exclude_bonded
         self.head_correction_form = head_correction_form
 
     def set_lj(self, epsilon, sigma, r_cut):
@@ -265,7 +263,7 @@ class Pair(object):
             start=-state._opt.max_frames,
             r_max=self.r_max,
             bins=self.n_points,
-            exclude_bonded=self.exclude_bonded
+            exclude_bonded=state.exclude_bonded
         )
         return np.stack((rdf.bin_centers, rdf.rdf*norm)).T
 

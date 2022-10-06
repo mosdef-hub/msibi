@@ -50,6 +50,7 @@ class State(object):
         kT,
         traj_file,
         alpha=1.0,
+        exclude_bonded=True,
         backup_trajectory=False,
         _dir=None
     ):
@@ -60,6 +61,7 @@ class State(object):
         self.alpha = float(alpha)
         self.dir = self._setup_dir(name, kT, dir_name=_dir)
         self.query_traj = os.path.join(self.dir, "query.gsd")
+        self.exclude_bonded = exclude_bonded
         self.backup_trajectory = backup_trajectory
 
     def _save_runscript(
