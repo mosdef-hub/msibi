@@ -56,7 +56,7 @@ class Pair(object):
         the query simulations. This method is not compatible when
         optimizing pair potentials. Rather, this method should
         only be used to create static pair potentials while optimizing
-        Bonds or Angles.
+        other potentials.
 
         Parameters
         ----------
@@ -79,7 +79,7 @@ class Pair(object):
         the query simulations. This method is not compatible when
         optimizing pair potentials. Rather, this method should
         only be used to create static pair potentials while optimizing
-        Bonds or Angles.
+        other potentials.
 
         Parameters
         ----------
@@ -104,7 +104,7 @@ class Pair(object):
         the query simulations. This method is not compatible when
         optimizing pair potentials. Rather, this method should
         only be used to create static pair potentials while optimizing
-        Bonds or Angles.
+        other potentials.
 
         Parameters
         ----------
@@ -131,8 +131,7 @@ class Pair(object):
 
         This should be the pair potential form of choice when optimizing
         pairs; however, you can also use this method to set a static
-        pair potential while optimizing other potentials such as
-        Angles and Bonds.
+        pair potential while optimizing other potentials.
 
         Parameters
         ----------
@@ -203,7 +202,8 @@ class Pair(object):
 
         """
         if self.pair_type != "table":
-            raise RuntimeError("Updating potential file paths can only "
+            raise RuntimeError(
+                    "Updating potential file paths can only "
                     "be done for pair potential types that use table potentials."
             )
         self._potential_file = fpath
@@ -218,6 +218,7 @@ class Pair(object):
         ----------
         state : msibi.state.State
             A state object created previously.
+
         """
         if state._opt.optimization == "pairs":
             target_rdf = self._get_state_rdf(state, query=False)
@@ -297,7 +298,6 @@ class Pair(object):
         """
         rdf = self._states[state]["current_distribution"]
         rdf[:, 0] -= self.dr / 2
-
         fname = f"pair_rdf_{self.name}-state_{state.name}-step{iteration}.txt"
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, rdf)
@@ -315,9 +315,8 @@ class Pair(object):
             target_rdf = self._states[state]["target_distribution"]
             # The actual IBI step.
             self.potential += (
-                    kT * alpha * np.log(current_rdf[:,1] / target_rdf[:,1]) / N 
+                    kT * alpha * np.log(current_rdf[:,1] / target_rdf[:,1]) / N
             )
-
         # Apply corrections to ensure continuous, well-behaved potentials.
         pot = self.potential
         self.potential = pair_tail_correction(

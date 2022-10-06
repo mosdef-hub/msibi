@@ -57,8 +57,6 @@ class State(object):
         self.kT = kT
         self.traj_file = os.path.abspath(traj_file)
         self._opt = None
-        if alpha < 0 or alpha > 1:
-            raise ValueError("alpha should be between 0.0 and 1.0")
         self.alpha = float(alpha)
         self.dir = self._setup_dir(name, kT, dir_name=_dir)
         self.query_traj = os.path.join(self.dir, "query.gsd")
@@ -85,7 +83,8 @@ class State(object):
         )
         if pairs is not None and len(pairs) > 0:
             if len(set([p.pair_init for p in pairs])) != 1:
-                raise RuntimeError("Combining different pair potential types "
+                raise RuntimeError(
+                        "Combining different pair potential types "
                         "is not currently supported in MSIBI."
                 )
             script.append(pairs[0].pair_init)
@@ -94,7 +93,8 @@ class State(object):
          
         if bonds is not None and len(bonds) > 0:
             if len(set([b.bond_init for b in bonds])) != 1:
-                raise RuntimeError("Combining different bond potential types "
+                raise RuntimeError(
+                        "Combining different bond potential types "
                         "is not currently supported in MSIBI."
                 )
             script.append(bonds[0].bond_init)
@@ -103,7 +103,8 @@ class State(object):
 
         if angles is not None and len(angles) > 0:
             if len(set([a.angle_init for a in angles])) != 1:
-                raise RuntimeError("Combining different angle potential types "
+                raise RuntimeError(
+                        "Combining different angle potential types "
                         "is not currently supported in MSIBI."
                 )
             script.append(angles[0].angle_init)
@@ -112,7 +113,8 @@ class State(object):
 
         if dihedrals is not None and len(dihedrals) > 0:
             if len(set([d.dihedral_init for d in dihedrals])) != 1:
-                raise RuntimeError("Combining different dihedral potential types "
+                raise RuntimeError(
+                        "Combining different dihedral potential types "
                         "is not currently supported in MSIBI."
                 )
             script.append(dihedrals[0].dihedral_init)
@@ -145,4 +147,3 @@ class State(object):
             print(f"{dir_name} already exists")
             raise
         return os.path.abspath(dir_name)
-

@@ -162,7 +162,8 @@ class Bond(object):
 
         """
         if self.bond_type != "table":
-            raise RuntimeError("Updating potential file paths can only "
+            raise RuntimeError(
+                    "Updating potential file paths can only "
                     "be done for bond potential types that use table potentials."
             )
         self._potential_file = fpath
@@ -238,8 +239,8 @@ class Bond(object):
         self._states[state]["current_distribution"] = bond_distribution
 
         f_fit = calc_similarity(
-                    bond_distribution[:,1],
-                    self._states[state]["target_distribution"][:,1] 
+                bond_distribution[:,1],
+                self._states[state]["target_distribution"][:,1] 
         )
         self._states[state]["f_fit"].append(f_fit)
 
@@ -276,9 +277,7 @@ class Bond(object):
             )
         # Apply corrections
         self.potential = bond_correction(
-                self.l_range,
-                self.potential,
-                self.head_correction_form
+                self.l_range, self.potential, self.head_correction_form
         )
 
 
@@ -512,7 +511,6 @@ class Angle(object):
         """
         distribution = self._states[state]["current_distribution"]
         distribution[:,0] -= self.dtheta / 2
-        
         fname = f"angle_dist_{self.name}-state_{state.name}-step_{iteration}.txt"
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, distribution)
@@ -533,9 +531,7 @@ class Angle(object):
             )
         # Apply corrections
         self.potential = bond_correction(
-                self.theta_range,
-                self.potential,
-                self.head_correction_form
+                self.theta_range, self.potential, self.head_correction_form
         )
 
 
@@ -590,23 +586,23 @@ class Dihedral(object):
 
             V(phi) = k4(phi-phi0)^4 + k3(phi-phi0)^3 + k2(phi-phi0)^2
 
-        Using this method will create a table potential V(theta) over the range
-        theta_min - theta_max.
+        Using this method will create a table potential V(phi) over the range
+        phi_min - phi_max.
 
-        The angle table potential will range from theta = 0 to theta = math.pi
+        The table potential will range from phi = -math.pi to phi = math.pi
 
-        This should be the angle potential form of choice when optimizing angles 
+        This should be the potential form of choice when optimizing dihedrals 
         as opposed to using `set_harmonic`. However, you can also use this
-        method to set a static angle potential while you are optimizing other
-        potentials such as Bonds or Pairs.
+        method to set a static potential while you are optimizing other
+        potentials.
 
         Parameters
         ----------
-        theta0, k4, k3, k2 : float, required
-            The paraters used in the V(theta) function described above
+        phi0, k4, k3, k2 : float, required
+            The paraters used in the V(phi) function described above
         n_points : int, default = 101 
-            The number of points between theta_min-theta_max used to create
-            the table potential
+            The number of points between phi_min - phi_max used to create
+            the table potential.
 
         """
         self.dihedral_type = "table"
@@ -723,7 +719,7 @@ class Dihedral(object):
         )
 
     def _compute_current_distribution(self, state):
-        """Find the current bond angle distribution of the query trajectory"""
+        """Find the current bond dihedral distribution of the query trajectory"""
         dihedral_distribution = self._get_state_distribution(
                 state, query=True, bins=self.n_points
         )
@@ -754,7 +750,6 @@ class Dihedral(object):
         """
         distribution = self._states[state]["current_distribution"]
         distribution[:,0] -= self.dphi / 2
-        
         fname = f"dihedral_dist_{self.name}-state_{state.name}-step_{iteration}.txt"
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, distribution)
@@ -775,8 +770,5 @@ class Dihedral(object):
             )
         # Apply corrections
         self.potential = bond_correction(
-                self.phi_range,
-                self.potential,
-                self.head_correction_form
+                self.phi_range, self.potential, self.head_correction_form
         )
-
