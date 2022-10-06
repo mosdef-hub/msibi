@@ -583,12 +583,12 @@ class Dihedral(object):
         """
         self.dihedral_type = "static"
         self.dihedral_init = "harmonic_dihedral = hoomd.md.dihedral.harmonic()"
-        self.angle_entry = HARMONIC_DIHEDRAL_ENTRY.format(self.name, k, d, n, phi0) 
+        self.dihedral_entry = HARMONIC_DIHEDRAL_ENTRY.format(self.name, k, d, n, phi0) 
 
     def set_quadratic(self, phi0, k4, k3, k2, n_points=100):
         """Set a bond dihedral potential based on the following function:
 
-            V(theta) = k4(phi-phi0)^4 + k3(phi-phi0)^3 + k2(phi-phi0)^2
+            V(phi) = k4(phi-phi0)^4 + k3(phi-phi0)^3 + k2(phi-phi0)^2
 
         Using this method will create a table potential V(theta) over the range
         theta_min - theta_max.

@@ -413,7 +413,7 @@ class MSIBI(object):
             os.mkdir(self.potentials_dir)
 
         for pair in self.pairs:
-            if pair.pair_type == "table":
+            if pair.pair_type == "table" and self.optimization == "pairs":
                 #TODO Fix handling of r_switch here?
                 #pair.r_switch = pair.r_range[-5]
                 potential_file = os.path.join(

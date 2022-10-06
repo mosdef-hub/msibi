@@ -323,11 +323,9 @@ class Pair(object):
         self.potential = pair_tail_correction(
                 self.r_range, self.potential, self.r_switch
         )
-        tail = self.potential
         self.potential = pair_head_correction(
             self.r_range,
             self.potential,
             self.previous_potential,
             self.head_correction_form
         )
-
