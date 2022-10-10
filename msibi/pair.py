@@ -5,7 +5,7 @@ import numpy as np
 from cmeutils.structure import gsd_rdf
 
 from msibi.potentials import (
-        alpha_array, pair_head_correction, pair_tail_correction, mie
+        alpha_array, pair_head_correction, pair_tail_correction, mie, lj_table
 )
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.exceptions import UnsupportedEngine
@@ -132,7 +132,7 @@ class Pair(object):
     ):
         """Creates a table potential V(r) over the range r_min - r_max.
 
-        Uses the Mie potential functional form.
+        Uses the LJ potential form with exponents m and n.
 
         This should be the pair potential form of choice when optimizing
         pairs; however, you can also use this method to set a static
@@ -162,7 +162,7 @@ class Pair(object):
         self.n_points = int(n_points)
         self.dr = (r_max) / (self.n_points - 1)
         self.r_range = np.arange(r_min, r_max + self.dr, self.dr)
-        self.potential = mie(self.r_range, epsilon, sigma, m, n)
+        self.potential = lj_table(self.r_range, epsilon, sigma, m, n)
         self.pair_type = "table"
         self.pair_init = f"table=hoomd.md.pair.table(width={self.n_points},nlist=nl)"
         self.pair_entry = TABLE_PAIR_ENTRY.format(
