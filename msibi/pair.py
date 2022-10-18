@@ -260,7 +260,7 @@ class Pair(object):
             traj,
             self.type1,
             self.type2,
-            start=-state._opt.max_frames,
+            start=-state.max_frames,
             r_max=self.r_max,
             bins=self.n_points,
             exclude_bonded=state.exclude_bonded

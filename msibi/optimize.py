@@ -30,9 +30,6 @@ class MSIBI(object):
         The number of frames between snapshots written to query.gsd
     n_steps : int, required 
         How many steps to run the query simulations
-    max_frames : int, required
-        How many snapshots of the trajectories to use in calcualting
-        relevant distributions (RDFs, bond distributions)
     nlist_exclusions : list of str, optional, default ["1-2", "1-3"]
         Sets the pair exclusions used during the optimization simulations
 
@@ -82,7 +79,6 @@ class MSIBI(object):
             dt,
             gsd_period,
             n_steps,
-            max_frames,
             nlist_exclusions=["1-2", "1-3"],
     ):
         if integrator == "hoomd.md.integrate.nve":
@@ -100,7 +96,6 @@ class MSIBI(object):
         self.dt = dt
         self.gsd_period = gsd_period
         self.n_steps = n_steps
-        self.max_frames = max_frames
         self.nlist_exclusions = nlist_exclusions
         # Store all of the needed interaction objects
         self.states = []

@@ -49,6 +49,7 @@ class State(object):
         name,
         kT,
         traj_file,
+        max_frames,
         alpha=1.0,
         exclude_bonded=True,
         backup_trajectory=False,
@@ -57,6 +58,7 @@ class State(object):
         self.name = name
         self.kT = kT
         self.traj_file = os.path.abspath(traj_file)
+        self.max_frames = max_frames
         self._opt = None
         self.alpha = float(alpha)
         self.dir = self._setup_dir(name, kT, dir_name=_dir)
