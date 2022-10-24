@@ -53,6 +53,7 @@ class State(object):
         alpha=1.0,
         exclude_bonded=True,
         backup_trajectory=False,
+        target_frames=None,
         _dir=None
     ):
         self.name = name
@@ -65,6 +66,10 @@ class State(object):
         self.query_traj = os.path.join(self.dir, "query.gsd")
         self.exclude_bonded = exclude_bonded
         self.backup_trajectory = backup_trajectory
+        if target_frames:
+            self.target_frames = target_frames
+        else:
+            self.target_frames = max_frames
 
     def _save_runscript(
         self,

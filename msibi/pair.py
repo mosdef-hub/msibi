@@ -253,14 +253,16 @@ class Pair(object):
         """Calculate the RDF of a Pair at a State."""
         if query:
             traj = state.query_traj
+            n_frames = state.max_frames
         else:
             traj = state.traj_file
+            n_frames = state.target_frames
 
         rdf, norm = gsd_rdf(
             traj,
             self.type1,
             self.type2,
-            start=-state.max_frames,
+            start=-n_frames,
             r_max=self.r_max,
             bins=self.n_points,
             exclude_bonded=state.exclude_bonded
