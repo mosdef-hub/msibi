@@ -188,7 +188,7 @@ class Pair(object):
         self.r_min = self.r_range[0]
         self.r_max = self.r_range[-1]
         self.n_points = len(self.r_range)
-        self.dr = (self.r_max) / (self.n_points - 1_
+        self.dr = (self.r_max) / (self.n_points - 1)
         self.potential = f[:,1]
 
         self.pair_type = "table"
