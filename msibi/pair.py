@@ -185,6 +185,8 @@ class Pair(object):
         self._potential_file = file_path
         f = np.loadtxt(self._potential_file)
         self.r_range = f[:,0]
+        self.r_min = self.r_range[0]
+        self.r_max = self.r_range[-1]
         self.n_points = len(self.r_range)
         self.potential = f[:,1]
 
