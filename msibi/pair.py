@@ -1,5 +1,6 @@
 import os
 
+
 import matplotlib.pyplot as plt
 import numpy as np
 from cmeutils.structure import gsd_rdf
@@ -219,7 +220,7 @@ class Pair(object):
                 self.type1, self.type2, self._potential_file
         )
 
-    def _add_state(self, state):
+    def _add_state(self, state, smoothing_window):
         """Add a state to be used in optimizing this pair.
 
         Parameters
@@ -232,7 +233,7 @@ class Pair(object):
             target_rdf = self._get_state_rdf(state, query=False)
             if state._opt.smooth_rdfs:
                 target_rdf[:, 1] = savitzky_golay(
-                    target_rdf[:, 1], 9, 2, deriv=0, rate=1
+                    target_rdf[:, 1], smoothing_window, 2, deriv=0, rate=1
                 )
                 negative_idx = np.where(target_rdf < 0)
                 target_rdf[negative_idx] = 0
@@ -272,7 +273,7 @@ class Pair(object):
         )
         return np.stack((rdf.bin_centers, rdf.rdf*norm)).T
 
-    def _compute_current_rdf(self, state):
+    def _compute_current_rdf(self, state, smoothing_window):
         """Calcualte the current RDF from the query trajectory.
         Updates the 'current_rdf' value in this Pair's state dict.
         Applies smoothing if applicable and calculates the f_fit between
@@ -285,7 +286,7 @@ class Pair(object):
         if state._opt.smooth_rdfs:
             current_rdf = self._states[state]["current_distribution"]
             current_rdf[:, 1] = savitzky_golay(
-                current_rdf[:, 1], 9, 2, deriv=0, rate=1
+                current_rdf[:, 1], smoothing_window, 2, deriv=0, rate=1
             )
             negative_idx = np.where(current_rdf < 0)
             current_rdf[negative_idx] = 0
@@ -312,7 +313,7 @@ class Pair(object):
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, rdf)
 
-    def _update_potential(self, smooth):
+    def _update_potential(self, smooth, smoothing_window):
         """Update the potential using all states. """
         self.previous_potential = np.copy(self.potential)
         for state in self._states:
@@ -339,4 +340,6 @@ class Pair(object):
             self.head_correction_form
         )
         if smooth:
-            self.potential = savitzky_golay(self.potential, 7, 1, 0, 1)
+            self.potential = savitzky_golay(
+                    self.potential, smoothing_window, 1, 0, 1
+            )

@@ -171,7 +171,7 @@ class Bond(object):
                 self.name, self._potential_file
         )
 
-    def _add_state(self, state):
+    def _add_state(self, state, smoothing_window):
         """Add a state to be used in optimizing this bond.
 
         Parameters
@@ -186,7 +186,11 @@ class Bond(object):
             )
             if state._opt.smooth_dist:
                 target_distribution[:,1] = savitzky_golay(
-                        target_distribution[:,1], 3, 1, deriv=0, rate=1
+                        target_distribution[:,1],
+                        smoothing_window,
+                        1,
+                        deriv=0,
+                        rate=1
                 )
                 negative_idx = np.where(target_distribution[:,1] < 0)[0]
                 target_distribution[:,1][negative_idx] = 0
@@ -225,14 +229,14 @@ class Bond(object):
                 bins=bins
         )
 
-    def _compute_current_distribution(self, state):
+    def _compute_current_distribution(self, state, smoothing_window):
         """Find the current bond length distribution of the query trajectory"""
         bond_distribution = self._get_state_distribution(
                 state, query=True, bins=self.n_points
         )
         if state._opt.smooth_dist:
             bond_distribution[:,1] = savitzky_golay(
-                    bond_distribution[:,1], 3, 1, deriv=0, rate=1
+                    bond_distribution[:,1], smoothing_window, 1, deriv=0, rate=1
             )
             negative_idx = np.where(bond_distribution[:,1] < 0)[0]
             bond_distribution[:,1][negative_idx] = 0
@@ -261,7 +265,7 @@ class Bond(object):
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, distribution)
 
-    def _update_potential(self, smooth):
+    def _update_potential(self, smooth, smoothing_window):
         """Compare distributions of current iteration against target,
         and update the Bond potential via Boltzmann inversion.
 
@@ -280,7 +284,9 @@ class Bond(object):
                 self.l_range, self.potential, self.head_correction_form
         )
         if smooth:
-            self.potential = savitzky_golay(self.potential, 5, 1, 0, 1)
+            self.potential = savitzky_golay(
+                    self.potential, smoothing_window, 1, 0, 1
+            )
 
 
 class Angle(object):
@@ -427,7 +433,7 @@ class Angle(object):
                 self.name, self._potential_file
         )
 
-    def _add_state(self, state):
+    def _add_state(self, state, smoothing_window=5):
         """Add a state to be used in optimizing this angle.
 
         Parameters
@@ -442,7 +448,11 @@ class Angle(object):
             )
             if state._opt.smooth_dist:
                 target_distribution[:,1] = savitzky_golay(
-                        target_distribution[:,1], 3, 1, deriv=0, rate=1
+                        target_distribution[:,1],
+                        smoothing_window,
+                        1,
+                        deriv=0,
+                        rate=1
                 )
                 negative_idx = np.where(target_distribution[:,1] < 0)[0]
                 target_distribution[:,1][negative_idx] = 0
@@ -481,14 +491,14 @@ class Angle(object):
                 bins=bins
         )
 
-    def _compute_current_distribution(self, state):
+    def _compute_current_distribution(self, state, smoothing_window):
         """Find the current bond angle distribution of the query trajectory"""
         angle_distribution = self._get_state_distribution(
                 state, query=True, bins=self.n_points
         )
         if state._opt.smooth_dist:
             angle_distribution[:,1] = savitzky_golay(
-                    angle_distribution[:,1], 3, 1, deriv=0, rate=1
+                    angle_distribution[:,1], smoothing_window, 1, deriv=0, rate=1
             )
             negative_idx = np.where(angle_distribution[:,1] < 0)[0]
             angle_distribution[:,1][negative_idx] = 0
@@ -517,7 +527,7 @@ class Angle(object):
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, distribution)
 
-    def _update_potential(self, smooth):
+    def _update_potential(self, smooth, smoothing_window):
         """Compare distributions of current iteration against target,
         and update the Angle potential via Boltzmann inversion.
 
@@ -536,7 +546,9 @@ class Angle(object):
                 self.theta_range, self.potential, self.head_correction_form
         )
         if smooth:
-            self.potential = savitzky_golay(self.potential, 5, 1, 0, 1)
+            self.potential = savitzky_golay(
+                    self.potential, smoothing_window, 1, 0, 1
+            )
 
 
 class Dihedral(object):
@@ -722,14 +734,18 @@ class Dihedral(object):
                 bins=bins
         )
 
-    def _compute_current_distribution(self, state):
+    def _compute_current_distribution(self, state, smoothing_window):
         """Find the current bond dihedral distribution of the query trajectory"""
         dihedral_distribution = self._get_state_distribution(
                 state, query=True, bins=self.n_points
         )
         if state._opt.smooth_dist:
             dihedral_distribution[:,1] = savitzky_golay(
-                    dihedral_distribution[:,1], 5, 1, deriv=0, rate=1
+                    dihedral_distribution[:,1],
+                    smoothing_window,
+                    1,
+                    deriv=0,
+                    rate=1
             )
             negative_idx = np.where(dihedral_distribution[:,1] < 0)[0]
             dihedral_distribution[:,1][negative_idx] = 0
@@ -758,7 +774,7 @@ class Dihedral(object):
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, distribution)
 
-    def _update_potential(self, smooth):
+    def _update_potential(self, smooth, smoothing_window):
         """Compare distributions of current iteration against target,
         and update the Dihedral potential via Boltzmann inversion.
 
@@ -777,4 +793,6 @@ class Dihedral(object):
                 self.phi_range, self.potential, self.head_correction_form
         )
         if smooth:
-            self.potential = savitzky_golay(self.potential, 5, 1, 0, 1)
+            self.potential = savitzky_golay(
+                    self.potential, smoothing_window, 1, 0, 1
+            )
