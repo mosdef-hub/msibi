@@ -374,7 +374,7 @@ class MSIBI(object):
             print("{0}, State: {1}, Iteration: {2}: {3:f}".format(
                     bond_object.name,
                     state.name,
-                    iteration,
+                    iteration + 1,
                     bond_object._states[state]["f_fit"][iteration]
                 )
             )
@@ -387,7 +387,7 @@ class MSIBI(object):
             print("Pair: {0}, State: {1}, Iteration: {2}: {3:f}".format(
                     pair.name,
                     state.name,
-                    iteration,
+                    iteration + 1,
                     pair._states[state]["f_fit"][iteration]
                 )
             )
