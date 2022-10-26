@@ -312,7 +312,7 @@ class Pair(object):
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, rdf)
 
-    def _update_potential(self):
+    def _update_potential(self, smooth):
         """Update the potential using all states. """
         self.previous_potential = np.copy(self.potential)
         for state in self._states:
@@ -338,3 +338,5 @@ class Pair(object):
             self.previous_potential,
             self.head_correction_form
         )
+        if smooth:
+            self.potential = savitzky_golay(self.potential, 7, 1, 0, 1)

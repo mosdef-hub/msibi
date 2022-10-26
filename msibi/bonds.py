@@ -261,7 +261,7 @@ class Bond(object):
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, distribution)
 
-    def _update_potential(self):
+    def _update_potential(self, smooth):
         """Compare distributions of current iteration against target,
         and update the Bond potential via Boltzmann inversion.
 
@@ -279,6 +279,8 @@ class Bond(object):
         self.potential = bond_correction(
                 self.l_range, self.potential, self.head_correction_form
         )
+        if smooth:
+            self.potential = savitzky_golay(self.potential, 5, 1, 0, 1)
 
 
 class Angle(object):
@@ -515,7 +517,7 @@ class Angle(object):
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, distribution)
 
-    def _update_potential(self):
+    def _update_potential(self, smooth):
         """Compare distributions of current iteration against target,
         and update the Angle potential via Boltzmann inversion.
 
@@ -533,6 +535,8 @@ class Angle(object):
         self.potential = bond_correction(
                 self.theta_range, self.potential, self.head_correction_form
         )
+        if smooth:
+            self.potential = savitzky_golay(self.potential, 5, 1, 0, 1)
 
 
 class Dihedral(object):
@@ -754,7 +758,7 @@ class Dihedral(object):
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, distribution)
 
-    def _update_potential(self):
+    def _update_potential(self, smooth):
         """Compare distributions of current iteration against target,
         and update the Dihedral potential via Boltzmann inversion.
 
@@ -772,3 +776,5 @@ class Dihedral(object):
         self.potential = bond_correction(
                 self.phi_range, self.potential, self.head_correction_form
         )
+        if smooth:
+            self.potential = savitzky_golay(self.potential, 5, 1, 0, 1)

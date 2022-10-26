@@ -121,7 +121,12 @@ class MSIBI(object):
         self.dihedrals.append(dihedral)
 
     def optimize_bonds(
-            self, n_iterations, start_iteration=0, smooth=True, _dir=None
+            self,
+            n_iterations,
+            start_iteration=0,
+            smooth=True,
+            smooth_pot=True,
+            _dir=None
     ):
         """Optimize the bond potentials
 
@@ -144,7 +149,7 @@ class MSIBI(object):
         for n in range(start_iteration + n_iterations):
             print(f"---Bond Optimization: {n+1} of {n_iterations}---")
             run_query_simulations(self.states)
-            self._update_potentials(n)
+            self._update_potentials(n, smooth_pot)
         # Save final potential
         for bond in self.bonds:
             smoothed_pot = savitzky_golay(
@@ -160,7 +165,12 @@ class MSIBI(object):
             )
 
     def optimize_angles(
-            self, n_iterations, start_iteration=0, smooth=True, _dir=None
+            self,
+            n_iterations,
+            start_iteration=0,
+            smooth=True,
+            smooth_pot=True,
+            _dir=None
     ):
         """Optimize the bond angle potentials
 
@@ -183,7 +193,7 @@ class MSIBI(object):
         for n in range(start_iteration + n_iterations):
             print(f"---Angle Optimization: {n+1} of {n_iterations}---")
             run_query_simulations(self.states)
-            self._update_potentials(n)
+            self._update_potentials(n, smooth_pot)
         # Save final potential
         for angle in self.angles:
             smoothed_pot = savitzky_golay(
@@ -191,7 +201,7 @@ class MSIBI(object):
             )
             file_name = f"{angle.name}_smoothed.txt"
             save_table_potential(
-                    potential=smoothed_pot,
+                    potential=angle.potential,
                     r=angle.theta_range,
                     dr=angle.dtheta,
                     iteration=None,
@@ -316,12 +326,12 @@ class MSIBI(object):
             for state in self.states:
                 dihedral._add_state(state)
 
-    def _update_potentials(self, iteration):
+    def _update_potentials(self, iteration, smooth_pot):
         """Update the potentials for the potentials to be optimized."""
         if self.optimization == "pairs":
             for pair in self.pairs:
                 self._recompute_rdfs(pair, iteration)
-                pair._update_potential()
+                pair._update_potential(smooth_pot)
                 save_table_potential(
                         pair.potential,
                         pair.r_range,
@@ -333,7 +343,7 @@ class MSIBI(object):
         elif self.optimization == "bonds":
             for bond in self.bonds:
                 self._recompute_distribution(bond, iteration)
-                bond._update_potential()
+                bond._update_potential(smooth_pot)
                 save_table_potential(
                         bond.potential,
                         bond.l_range,
@@ -345,7 +355,7 @@ class MSIBI(object):
         elif self.optimization == "angles":
             for angle in self.angles:
                 self._recompute_distribution(angle, iteration)
-                angle._update_potential()
+                angle._update_potential(smooth_pot)
                 save_table_potential(
                         angle.potential,
                         angle.theta_range,
@@ -357,7 +367,7 @@ class MSIBI(object):
         elif self.optimization == "dihedrals":
             for dihedral in self.dihedrals:
                 self._recompute_distribution(dihedral, iteration)
-                dihedral._update_potential()
+                dihedral._update_potential(smooth_pot)
                 save_table_potential(
                         dihedral.potential,
                         dihedral.phi_range,
