@@ -155,7 +155,7 @@ class MSIBI(object):
         # Save final potential
         for bond in self.bonds:
             smoothed_pot = savitzky_golay(
-                    bond.potential, window_size=smoothing_window, order=1
+                    y=bond.potential, window_size=smoothing_window, order=1
             )
             file_name = f"{bond.name}_smoothed.txt"
             save_table_potential(
@@ -200,7 +200,7 @@ class MSIBI(object):
         # Save final potential
         for angle in self.angles:
             smoothed_pot = savitzky_golay(
-                    angle.potential, window_size=smoothing_window, order=1
+                    y=angle.potential, window_size=smoothing_window, order=1
             )
             file_name = f"{angle.name}_smoothed.txt"
             save_table_potential(
@@ -254,7 +254,7 @@ class MSIBI(object):
 
         for pair in self.pairs:
             smoothed_pot = savitzky_golay(
-                    pair.potential, window_size=smoothing_window, order=1
+                    y=pair.potential, window_size=smoothing_window, order=1
             )
             file_name = f"{pair.name}_smoothed.txt"
             save_table_potential(

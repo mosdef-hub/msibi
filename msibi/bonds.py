@@ -186,11 +186,9 @@ class Bond(object):
             )
             if state._opt.smooth_dist:
                 target_distribution[:,1] = savitzky_golay(
-                        target_distribution[:,1],
-                        smoothing_window,
-                        1,
-                        deriv=0,
-                        rate=1
+                        y=target_distribution[:,1],
+                        window_size=smoothing_window,
+                        order=1,
                 )
                 negative_idx = np.where(target_distribution[:,1] < 0)[0]
                 target_distribution[:,1][negative_idx] = 0
@@ -236,7 +234,9 @@ class Bond(object):
         )
         if state._opt.smooth_dist:
             bond_distribution[:,1] = savitzky_golay(
-                    bond_distribution[:,1], smoothing_window, 1, deriv=0, rate=1
+                    y=bond_distribution[:,1],
+                    window_size=smoothing_window,
+                    order=1
             )
             negative_idx = np.where(bond_distribution[:,1] < 0)[0]
             bond_distribution[:,1][negative_idx] = 0
@@ -285,7 +285,9 @@ class Bond(object):
         )
         if smooth:
             self.potential = savitzky_golay(
-                    self.potential, smoothing_window, 1, 0, 1
+                    y=self.potential,
+                    window_size=smoothing_window,
+                    order=1
             )
 
 
@@ -448,11 +450,9 @@ class Angle(object):
             )
             if state._opt.smooth_dist:
                 target_distribution[:,1] = savitzky_golay(
-                        target_distribution[:,1],
-                        smoothing_window,
-                        1,
-                        deriv=0,
-                        rate=1
+                        y=target_distribution[:,1],
+                        window_size=smoothing_window,
+                        order=1,
                 )
                 negative_idx = np.where(target_distribution[:,1] < 0)[0]
                 target_distribution[:,1][negative_idx] = 0
@@ -498,7 +498,9 @@ class Angle(object):
         )
         if state._opt.smooth_dist:
             angle_distribution[:,1] = savitzky_golay(
-                    angle_distribution[:,1], smoothing_window, 1, deriv=0, rate=1
+                    y=angle_distribution[:,1],
+                    window_size=smoothing_window,
+                    order=1
             )
             negative_idx = np.where(angle_distribution[:,1] < 0)[0]
             angle_distribution[:,1][negative_idx] = 0
@@ -547,7 +549,9 @@ class Angle(object):
         )
         if smooth:
             self.potential = savitzky_golay(
-                    self.potential, smoothing_window, 1, 0, 1
+                    y=self.potential,
+                    window_size=smoothing_window,
+                    order=1
             )
 
 
@@ -741,11 +745,9 @@ class Dihedral(object):
         )
         if state._opt.smooth_dist:
             dihedral_distribution[:,1] = savitzky_golay(
-                    dihedral_distribution[:,1],
-                    smoothing_window,
-                    1,
-                    deriv=0,
-                    rate=1
+                    y=dihedral_distribution[:,1],
+                    window_size=smoothing_window,
+                    order=1,
             )
             negative_idx = np.where(dihedral_distribution[:,1] < 0)[0]
             dihedral_distribution[:,1][negative_idx] = 0
@@ -794,5 +796,7 @@ class Dihedral(object):
         )
         if smooth:
             self.potential = savitzky_golay(
-                    self.potential, smoothing_window, 1, 0, 1
+                    y=self.potential,
+                    window_size=smoothing_window,
+                    order=1
             )
