@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import numpy as np
 
@@ -362,8 +363,11 @@ class MSIBI(object):
 
         elif self.optimization == "angles":
             for angle in self.angles:
+                print("Computing distribution from query simulation...")
                 self._recompute_distribution(angle, iteration, smoothing_window)
+                print("Updating the potential file...")
                 angle._update_potential(smooth_pot, smoothing_window)
+                print("Saving iteration potential file...")
                 save_table_potential(
                         angle.potential,
                         angle.theta_range,
@@ -371,6 +375,7 @@ class MSIBI(object):
                         iteration,
                         angle._potential_file
                 )
+                print(f"File saved to {angle._potential_file}")
 
         elif self.optimization == "dihedrals":
             for dihedral in self.dihedrals:
@@ -477,6 +482,10 @@ class MSIBI(object):
                 potential_file = os.path.join(
                         self.potentials_dir, f"angle_pot.{angle.name}.txt"
                 )
+                angle.update_potential_file(potential_file)
+            elif angle.angle_type == "table" and angle._potential_file != "":
+                potential_file = os.path.join(self.potentials_dir, f"angle_pot.{angle.name}")
+                shutil.copyfile(angle._potential_file, potential_file)
                 angle.update_potential_file(potential_file)
 
                 if self.optimization == "angles":
