@@ -216,6 +216,7 @@ class MSIBI(object):
         n_iterations,
         start_iteration=0,
         smooth_rdfs=True,
+        smooth_pot=False,
         smoothing_window=9,
         r_switch=None,
         _dir=None
@@ -250,7 +251,7 @@ class MSIBI(object):
         for n in range(start_iteration + n_iterations):
             print(f"---Pair Optimization: {n+1} of {n_iterations}---")
             run_query_simulations(self.states)
-            self._update_potentials(n, smoothing_window)
+            self._update_potentials(n, smooth_pot, smoothing_window)
 
         for pair in self.pairs:
             smoothed_pot = savitzky_golay(
@@ -270,6 +271,7 @@ class MSIBI(object):
             n_iterations,
             start_iteration=0,
             smooth=True,
+            smooth_pot=False,
             smoothing_window=7,
             _dir=None
     ):
@@ -294,7 +296,7 @@ class MSIBI(object):
         for n in range(start_iteration + n_iterations):
             print(f"---Dihedral Optimization: {n+1} of {n_iterations}---")
             run_query_simulations(self.states)
-            self._update_potentials(n)
+            self._update_potentials(n, smooth_pot, smoothing_window)
         # Save final potential
         for dihedral in self.dihedrals:
             smoothed_pot = savitzky_golay(
