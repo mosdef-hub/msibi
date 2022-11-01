@@ -145,7 +145,7 @@ class MSIBI(object):
         """
         self.optimization = "bonds"
         self.smooth_dist = smooth
-        self._add_states()
+        self._add_states(smoothing_window)
         self._initialize(potentials_dir=_dir)
 
         for n in range(start_iteration + n_iterations):
@@ -244,7 +244,7 @@ class MSIBI(object):
             else:
                 pair.r_switch = r_switch
 
-        self._add_states()
+        self._add_states(smoothing_window)
         self._initialize(potentials_dir=_dir)
 
         for n in range(start_iteration + n_iterations):
@@ -288,7 +288,7 @@ class MSIBI(object):
         """
         self.optimization = "dihedrals"
         self.smooth_dist = smooth
-        self._add_states()
+        self._add_states(smoothing_window)
         self._initialize(potentials_dir=_dir)
 
         for n in range(start_iteration + n_iterations):
