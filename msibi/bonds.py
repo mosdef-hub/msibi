@@ -685,7 +685,7 @@ class Dihedral(object):
                 self.name, self._potential_file
         )
 
-    def _add_state(self, state):
+    def _add_state(self, state, smoothing_window):
         """Add a state to be used in optimizing this angle.
 
         Parameters
