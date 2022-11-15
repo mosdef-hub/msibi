@@ -125,7 +125,7 @@ class MSIBI(object):
             self,
             n_iterations,
             start_iteration=0,
-            smooth=True,
+            smooth_dist=True,
             smooth_pot=True,
             smoothing_window=5,
             _dir=None
@@ -138,26 +138,31 @@ class MSIBI(object):
             Number of iterations.
         start_iteration : int, default 0
             Start optimization at start_iteration, useful for restarting.
-        smooth : bool, default True
-            If True, the target distribution is smoothed using a 
-            Savitzky-Golay filter
+        smooth_dist : bool, default True
+            If True, the target distribution is smoothed
+        smooth_pot : bool, default True
+            If True, the potential is smoothed between iterations
 
         """
         self.optimization = "bonds"
-        self.smooth_dist = smooth
+        self.smooth_dist = smooth_dist
         self._add_states(smoothing_window)
         self._initialize(potentials_dir=_dir)
-
+        # Run the optimization iterations:
         for n in range(start_iteration + n_iterations):
             print(f"---Bond Optimization: {n+1} of {n_iterations}---")
             run_query_simulations(self.states)
             self._update_potentials(n, smooth_pot, smoothing_window)
-        # Save final potential
+        # Save final potential to a seprate file
+        # If not already smoothing the potential, smooth the final output
         for bond in self.bonds:
-            smoothed_pot = savitzky_golay(
-                    y=bond.potential, window_size=smoothing_window, order=1
-            )
-            file_name = f"{bond.name}_smoothed.txt"
+            if not smooth_pot: 
+                smoothed_pot = savitzky_golay(
+                        y=bond.potential, window_size=smoothing_window, order=1
+                )
+            else:
+                smoothed_pot = bond.potential
+            file_name = f"{bond.name}_final.txt"
             save_table_potential(
                     potential=smoothed_pot,
                     r=bond.l_range,
@@ -183,13 +188,14 @@ class MSIBI(object):
             Number of iterations.
         start_iteration : int, default 0
             Start optimization at start_iteration, useful for restarting.
-        smooth : bool, default True
-            If True, the target distribution is smoothed using a 
-            Savitzky-Golay filter
+        smooth_dist : bool, default True
+            If True, the target distribution is smoothed 
+        smooth_pot : bool, default True
+            If True, the potential is smoothed between iterations
 
         """
         self.optimization = "angles"
-        self.smooth_dist = smooth
+        self.smooth_dist = smooth_dist
         self._add_states(smoothing_window)
         self._initialize(potentials_dir=_dir)
 
@@ -197,12 +203,16 @@ class MSIBI(object):
             print(f"---Angle Optimization: {n+1} of {n_iterations}---")
             run_query_simulations(self.states)
             self._update_potentials(n, smooth_pot, smoothing_window)
-        # Save final potential
+        # Save final potential to a seprate file
+        # If not already smoothing the potential, smooth the final output
         for angle in self.angles:
-            smoothed_pot = savitzky_golay(
-                    y=angle.potential, window_size=smoothing_window, order=1
-            )
-            file_name = f"{angle.name}_smoothed.txt"
+            if not smoothed_pot:
+                smoothed_pot = savitzky_golay(
+                        y=angle.potential, window_size=smoothing_window, order=1
+                )
+            else:
+                smoothed_pot = angle.potential
+            file_name = f"{angle.name}_final.txt"
             save_table_potential(
                     potential=angle.potential,
                     r=angle.theta_range,
@@ -232,6 +242,8 @@ class MSIBI(object):
         smooth_rdfs : bool, default=True
             Set to True to perform smoothing (Savitzky Golay) on the target
             and iterative RDFs.
+        smooth_pot : bool, default True
+            If True, the potential is smoothed between iterations
         r_switch : float, optional, default=None
             The distance after which a tail correction is applied.
             If None, then Pair.r_range[-5] is used.
@@ -253,11 +265,16 @@ class MSIBI(object):
             run_query_simulations(self.states)
             self._update_potentials(n, smooth_pot, smoothing_window)
 
+        # Save final potential to a seprate file
+        # If not already smoothing the potential, smooth the final output
         for pair in self.pairs:
-            smoothed_pot = savitzky_golay(
-                    y=pair.potential, window_size=smoothing_window, order=1
-            )
-            file_name = f"{pair.name}_smoothed.txt"
+            if not smooth_pot:
+                smoothed_pot = savitzky_golay(
+                        y=pair.potential, window_size=smoothing_window, order=1
+                )
+            else:
+                smoothed_pot = pair.potential
+            file_name = f"{pair.name}_final.txt"
             save_table_potential(
                     potential=smoothed_pot,
                     r=pair.r_range,
@@ -270,7 +287,7 @@ class MSIBI(object):
             self,
             n_iterations,
             start_iteration=0,
-            smooth=True,
+            smooth_dist=True,
             smooth_pot=False,
             smoothing_window=7,
             _dir=None
@@ -283,13 +300,14 @@ class MSIBI(object):
             Number of iterations.
         start_iteration : int, default 0
             Start optimization at start_iteration, useful for restarting.
-        smooth : bool, default True
-            If True, the target distribution is smoothed using a 
-            Savitzky-Golay filter
+        smooth_dist : bool, default True
+            If True, the target distribution is smoothed
+        smooth_pot : bool, default True
+            If True, the potential is smoothed between iterations
 
         """
         self.optimization = "dihedrals"
-        self.smooth_dist = smooth
+        self.smooth_dist = smooth_dist
         self._add_states(smoothing_window)
         self._initialize(potentials_dir=_dir)
 
@@ -365,11 +383,8 @@ class MSIBI(object):
 
         elif self.optimization == "angles":
             for angle in self.angles:
-                print("Computing distribution from query simulation...")
                 self._recompute_distribution(angle, iteration, smoothing_window)
-                print("Updating the potential file...")
                 angle._update_potential(smooth_pot, smoothing_window)
-                print("Saving iteration potential file...")
                 save_table_potential(
                         angle.potential,
                         angle.theta_range,
@@ -377,7 +392,6 @@ class MSIBI(object):
                         iteration,
                         angle._potential_file
                 )
-                print(f"File saved to {angle._potential_file}")
 
         elif self.optimization == "dihedrals":
             for dihedral in self.dihedrals:
