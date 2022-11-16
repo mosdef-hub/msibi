@@ -79,6 +79,7 @@ class BaseTest:
         state = State(
             name=f"state{state_n}",
             kT=k_B * T,
+            max_frames=5,
             alpha=0.5,
             traj_file=traj_filename,
             _dir=tmp_path
