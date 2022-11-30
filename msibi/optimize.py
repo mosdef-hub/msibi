@@ -206,7 +206,7 @@ class MSIBI(object):
         # Save final potential to a seprate file
         # If not already smoothing the potential, smooth the final output
         for angle in self.angles:
-            if not smoothed_pot:
+            if not smooth_pot:
                 smoothed_pot = savitzky_golay(
                         y=angle.potential, window_size=smoothing_window, order=1
                 )
