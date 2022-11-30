@@ -175,7 +175,7 @@ class MSIBI(object):
             self,
             n_iterations,
             start_iteration=0,
-            smooth=True,
+            smooth_dist=True,
             smooth_pot=True,
             smoothing_window=5,
             _dir=None
