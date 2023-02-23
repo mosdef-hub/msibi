@@ -504,18 +504,18 @@ class MSIBI(object):
                 shutil.copyfile(angle._potential_file, potential_file)
                 angle.update_potential_file(potential_file)
 
-                if self.optimization == "angles":
-                    iteration = 0
-                else:
-                    iteration = None
+            if self.optimization == "angles":
+                iteration = 0
+            else:
+                iteration = None
 
-                save_table_potential(
-                        angle.potential,
-                        angle.theta_range,
-                        angle.dtheta,
-                        iteration,
-                        angle._potential_file
-                )
+            save_table_potential(
+                    angle.potential,
+                    angle.theta_range,
+                    angle.dtheta,
+                    iteration,
+                    angle._potential_file
+            )
 
         for dihedral in self.dihedrals:
             if dihedral.dihedral_type == "table" and dihedral._potential_file == "":
