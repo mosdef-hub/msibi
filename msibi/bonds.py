@@ -44,6 +44,7 @@ class Bond(object):
         self.previous_potential = None
         self.head_correction_form = head_correction_form
         self._states = dict()
+        self.target_set = False
     
     def set_harmonic(self, k, l0):
         """Creates a hoomd.md.bond.harmonic type of bond potential
@@ -171,6 +172,20 @@ class Bond(object):
                 self.name, self._potential_file
         )
 
+    def _set_target_distribution(self, state, target_distribution):
+        self._states[state] = {
+                "target_distribution": target_distribution,
+                "current_distribution": None,
+                "alpha": state.alpha,
+                "alpha_form": "linear",
+                "f_fit": [],
+                "path": state.dir
+        }
+        fname = f"bond_dist_{self.name}-state_{state.name}-target.txt"
+        fpath = os.path.join(state.dir, fname)
+        np.savetxt(fpath, target_distribution)
+        self.target_set = True
+
     def _add_state(self, state, smoothing_window):
         """Add a state to be used in optimizing this bond.
 
@@ -180,33 +195,34 @@ class Bond(object):
             A State object already created.
 
         """
-        if state._opt.optimization == "bonds":
-            target_distribution = self._get_state_distribution(
-                    state, query=False, bins=self.n_points
-            )
-            if state._opt.smooth_dist:
-                target_distribution[:,1] = savitzky_golay(
-                        y=target_distribution[:,1],
-                        window_size=smoothing_window,
-                        order=1,
+        if not self.target_set:
+            if state._opt.optimization == "bonds":
+                target_distribution = self._get_state_distribution(
+                        state, query=False, bins=self.n_points
                 )
-                negative_idx = np.where(target_distribution[:,1] < 0)[0]
-                target_distribution[:,1][negative_idx] = 0
+                if state._opt.smooth_dist:
+                    target_distribution[:,1] = savitzky_golay(
+                            y=target_distribution[:,1],
+                            window_size=smoothing_window,
+                            order=1,
+                    )
+                    negative_idx = np.where(target_distribution[:,1] < 0)[0]
+                    target_distribution[:,1][negative_idx] = 0
 
-            fname = f"bond_dist_{self.name}-state_{state.name}-target.txt"
-            fpath = os.path.join(state.dir, fname)
-            np.savetxt(fpath, target_distribution)
-        else:
-            target_distribution = None
+                fname = f"bond_dist_{self.name}-state_{state.name}-target.txt"
+                fpath = os.path.join(state.dir, fname)
+                np.savetxt(fpath, target_distribution)
+            else:
+                target_distribution = None
 
-        self._states[state] = {
-                "target_distribution": target_distribution,
-                "current_distribution": None,
-                "alpha": state.alpha,
-                "alpha_form": "linear",
-                "f_fit": [],
-                "path": state.dir
-        }
+            self._states[state] = {
+                    "target_distribution": target_distribution,
+                    "current_distribution": None,
+                    "alpha": state.alpha,
+                    "alpha_form": "linear",
+                    "f_fit": [],
+                    "path": state.dir
+            }
 
     def _get_state_distribution(self, state, bins, query=False):
         """Find the bond length distribution of a Bond at a State."""
@@ -312,6 +328,7 @@ class Angle(object):
         self.potential = None
         self.previous_potential = None
         self._states = dict()
+        self.target_set = False
 
     def set_harmonic(self, k, theta0):
         """Creates a hoomd.md.angle.harmonic() type of bond angle
@@ -435,6 +452,20 @@ class Angle(object):
                 self.name, self._potential_file
         )
 
+    def _set_target_distribution(self, state, target_distribution):
+        self._states[state] = {
+                "target_distribution": target_distribution,
+                "current_distribution": None,
+                "alpha": state.alpha,
+                "alpha_form": "linear",
+                "f_fit": [],
+                "path": state.dir
+        }
+        fname = f"angle_dist_{self.name}-state_{state.name}-target.txt"
+        fpath = os.path.join(state.dir, fname)
+        np.savetxt(fpath, target_distribution)
+        self.target_set = True
+
     def _add_state(self, state, smoothing_window=5):
         """Add a state to be used in optimizing this angle.
 
@@ -444,33 +475,34 @@ class Angle(object):
             A State object already created
 
         """
-        if state._opt.optimization == "angles":
-            target_distribution = self._get_state_distribution(
-                    state, query=False, bins=self.n_points
-            )
-            if state._opt.smooth_dist:
-                target_distribution[:,1] = savitzky_golay(
-                        y=target_distribution[:,1],
-                        window_size=smoothing_window,
-                        order=1,
+        if not self.target_set:
+            if state._opt.optimization == "angles":
+                target_distribution = self._get_state_distribution(
+                        state, query=False, bins=self.n_points
                 )
-                negative_idx = np.where(target_distribution[:,1] < 0)[0]
-                target_distribution[:,1][negative_idx] = 0
-                
-            fname = f"angle_dist_{self.name}-state_{state.name}-target.txt"
-            fpath = os.path.join(state.dir, fname)
-            np.savetxt(fpath, target_distribution)
-        else:
-            target_distribution = None
+                if state._opt.smooth_dist:
+                    target_distribution[:,1] = savitzky_golay(
+                            y=target_distribution[:,1],
+                            window_size=smoothing_window,
+                            order=1,
+                    )
+                    negative_idx = np.where(target_distribution[:,1] < 0)[0]
+                    target_distribution[:,1][negative_idx] = 0
+                    
+                fname = f"angle_dist_{self.name}-state_{state.name}-target.txt"
+                fpath = os.path.join(state.dir, fname)
+                np.savetxt(fpath, target_distribution)
+            else:
+                target_distribution = None
 
-        self._states[state] = {
-                "target_distribution": target_distribution,
-                "current_distribution": None,
-                "alpha": state.alpha,
-                "alpha_form": "linear",
-                "f_fit": [],
-                "path": state.dir
-        }
+            self._states[state] = {
+                    "target_distribution": target_distribution,
+                    "current_distribution": None,
+                    "alpha": state.alpha,
+                    "alpha_form": "linear",
+                    "f_fit": [],
+                    "path": state.dir
+            }
 
     def _get_state_distribution(self, state, bins, query=False):
         """Finds the distribution of angles for a given Angle"""
@@ -577,6 +609,7 @@ class Dihedral(object):
         self.potential = None
         self.previous_potential = None
         self._states = dict()
+        self.target_set = False
 
     def set_harmonic(self, k, d, n, phi0):
         """Creates a hoomd.md.dihedral.harmonic() type of bond dihedral 
