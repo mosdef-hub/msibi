@@ -173,7 +173,7 @@ def bond_correction(r, V, form):
     return tail_correction_V
 
 
-def linear_tail_correction(r, V, cutoff, window=3):
+def linear_tail_correction(r, V, cutoff, window=4):
     """Use a linear function to smoothly force V to a finite value at V(cut).
 
     Parameters
@@ -197,7 +197,7 @@ def linear_tail_correction(r, V, cutoff, window=3):
     return V 
 
 
-def linear_head_correction(r, V, cutoff, window=3):
+def linear_head_correction(r, V, cutoff, window=4):
     """Use a linear function to smoothly force V to a finite value at V(0).
     Parameters
     ----------

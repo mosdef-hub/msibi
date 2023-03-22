@@ -110,7 +110,7 @@ class Bond(object):
         self.bond_type = "table"
         self.l_min = l_min
         self.l_max = l_max
-        self.dl = l_max / n_points
+        self.dl = (l_max-l_min) / n_points
         self.l_range = np.arange(l_min, l_max, self.dl)
         self.potential = quadratic_spring(self.l_range, l0, k4, k3, k2)
         self.n_points = len(self.l_range)
