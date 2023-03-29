@@ -1,4 +1,4 @@
-name: msibi
+name: msibi2
 channels:
 - conda-forge
 dependencies:
