@@ -42,6 +42,12 @@ class Force(object):
         self._smoothing_window = 3
         self._smoothing_order = 1
         self._nbins = 100
+        self._force_type = None
+        self.xmin = None
+        self.xmax = None
+        self.dx = None
+        self.x_range = None
+        self.n_points = None
         self._states = dict()
 
     @property
