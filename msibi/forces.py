@@ -39,15 +39,15 @@ class Force(object):
         self.potential = None 
         self.previous_potential = None
         self.head_correction_form = head_correction_form
-        self._smoothing_window = 3
-        self._smoothing_order = 1
-        self._nbins = 100
-        self._force_type = None
         self.xmin = None
         self.xmax = None
         self.dx = None
         self.x_range = None
         self.n_points = None
+        self._smoothing_window = 3
+        self._smoothing_order = 1
+        self._nbins = 100
+        self._force_type = None
         self._states = dict()
 
     @property
@@ -76,11 +76,11 @@ class Force(object):
 
     @property
     def target_distribution(self, state):
-        return _self.target_distribution(state)
+        return self._states[state]["target_distribution"]
     
     @target_distribution.setter
-    def target_distribution(self, state):
-        self._target_distribution = array
+    def target_distribution(self, state, array):
+        self._states[state]["target_distribution"] = array
 
     @property
     def current_distribution(self, state):
@@ -281,7 +281,7 @@ class Bond(Force):
                 gsd_file=gsd,
                 A_name=self.type1,
                 B_name=self.type2,
-                start=-state._opt.max_frames,
+                start=-state._opt.n_frames,
                 histogram=True,
                 normalize=True,
                 l_min=self.x_min,
@@ -312,7 +312,7 @@ class Angle(Force):
                 A_name=self.type1,
                 B_name=self.type2,
                 C_name=self.type3,
-                start=-state._opt.max_frames,
+                start=-state._opt.n_frames,
                 histogram=True,
                 normalize=True,
                 l_min=self.x_min,
@@ -321,4 +321,26 @@ class Angle(Force):
         )        
 
 
+class Pair(Force):
+    def __init__(type1, type2, head_correction_form="linear"):
+        self.type1, self.type2 = sorted(
+                    [type1, type2],
+                    key=natural_sort
+                )
+        name = f"{self.type1}-{self.type2}"
+        super(Pair, self).__init__(
+                name=name, head_correciton_form=head_correciton_form
+        )
 
+    def set_lj(self, epsilon, sigma):
+        pass
+
+    def _get_distribution(self, gsd_file):
+        return gsd_rdf(
+                gsd_file=gsd_file,
+                A_name=self.type1,
+                B_name=self.type2,
+                start=-state._opt.n_frames,
+                stop=-1,
+                bins=self.nbins
+        )        

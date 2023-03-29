@@ -49,7 +49,7 @@ class State(object):
         name,
         kT,
         traj_file,
-        max_frames,
+        n_frames,
         alpha=1.0,
         exclude_bonded=True,
         backup_trajectory=False,
@@ -59,7 +59,7 @@ class State(object):
         self.name = name
         self.kT = kT
         self.traj_file = os.path.abspath(traj_file)
-        self.max_frames = max_frames
+        self.n_frames = n_frames
         self._opt = None
         self.alpha = float(alpha)
         self.dir = self._setup_dir(name, kT, dir_name=_dir)
@@ -69,7 +69,7 @@ class State(object):
         if target_frames:
             self.target_frames = target_frames
         else:
-            self.target_frames = max_frames
+            self.target_frames = n_frames
 
     def _save_runscript(
         self,
