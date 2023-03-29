@@ -42,6 +42,12 @@ def mie(r, epsilon, sigma, m, n):
     return V_r 
 
 
+def lj_table(r, epsilon, sigma, m, n):
+    """The Mie potential functional form"""
+    V_r = 4 * epsilon * ((sigma / r) ** m - (sigma / r) ** n)
+    return V_r 
+
+
 def pair_tail_correction(r, V, r_switch):
     """Apply a tail correction to a potential making it go to zero smoothly.
 
@@ -167,7 +173,7 @@ def bond_correction(r, V, form):
     return tail_correction_V
 
 
-def linear_tail_correction(r, V, cutoff, window=3):
+def linear_tail_correction(r, V, cutoff, window=4):
     """Use a linear function to smoothly force V to a finite value at V(cut).
 
     Parameters
@@ -191,7 +197,7 @@ def linear_tail_correction(r, V, cutoff, window=3):
     return V 
 
 
-def linear_head_correction(r, V, cutoff, window=3):
+def linear_head_correction(r, V, cutoff, window=4):
     """Use a linear function to smoothly force V to a finite value at V(0).
     Parameters
     ----------

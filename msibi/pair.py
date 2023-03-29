@@ -1,11 +1,12 @@
 import os
 
+
 import matplotlib.pyplot as plt
 import numpy as np
 from cmeutils.structure import gsd_rdf
 
 from msibi.potentials import (
-        alpha_array, pair_head_correction, pair_tail_correction, mie
+        alpha_array, pair_head_correction, pair_tail_correction, mie, lj_table
 )
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.exceptions import UnsupportedEngine
@@ -42,7 +43,12 @@ class Pair(object):
 
     """
 
-    def __init__(self, type1, type2, head_correction_form="linear"):
+    def __init__(
+            self,
+            type1,
+            type2,
+            head_correction_form="linear"
+    ):
         self.type1 = str(type1)
         self.type2 = str(type2)
         self.name = f"{self.type1}-{self.type2}"
@@ -56,7 +62,7 @@ class Pair(object):
         the query simulations. This method is not compatible when
         optimizing pair potentials. Rather, this method should
         only be used to create static pair potentials while optimizing
-        Bonds or Angles.
+        other potentials.
 
         Parameters
         ----------
@@ -79,7 +85,7 @@ class Pair(object):
         the query simulations. This method is not compatible when
         optimizing pair potentials. Rather, this method should
         only be used to create static pair potentials while optimizing
-        Bonds or Angles.
+        other potentials.
 
         Parameters
         ----------
@@ -104,7 +110,7 @@ class Pair(object):
         the query simulations. This method is not compatible when
         optimizing pair potentials. Rather, this method should
         only be used to create static pair potentials while optimizing
-        Bonds or Angles.
+        other potentials.
 
         Parameters
         ----------
@@ -127,12 +133,11 @@ class Pair(object):
     ):
         """Creates a table potential V(r) over the range r_min - r_max.
 
-        Uses the Mie potential functional form.
+        Uses the LJ potential form with exponents m and n.
 
         This should be the pair potential form of choice when optimizing
         pairs; however, you can also use this method to set a static
-        pair potential while optimizing other potentials such as
-        Angles and Bonds.
+        pair potential while optimizing other potentials.
 
         Parameters
         ----------
@@ -158,7 +163,7 @@ class Pair(object):
         self.n_points = int(n_points)
         self.dr = (r_max) / (self.n_points - 1)
         self.r_range = np.arange(r_min, r_max + self.dr, self.dr)
-        self.potential = mie(self.r_range, epsilon, sigma, m, n)
+        self.potential = lj_table(self.r_range, epsilon, sigma, m, n)
         self.pair_type = "table"
         self.pair_init = f"table=hoomd.md.pair.table(width={self.n_points},nlist=nl)"
         self.pair_entry = TABLE_PAIR_ENTRY.format(
@@ -181,7 +186,10 @@ class Pair(object):
         self._potential_file = file_path
         f = np.loadtxt(self._potential_file)
         self.r_range = f[:,0]
+        self.r_min = self.r_range[0]
+        self.r_max = self.r_range[-1]
         self.n_points = len(self.r_range)
+        self.dr = (self.r_max) / (self.n_points - 1)
         self.potential = f[:,1]
 
         self.pair_type = "table"
@@ -203,7 +211,8 @@ class Pair(object):
 
         """
         if self.pair_type != "table":
-            raise RuntimeError("Updating potential file paths can only "
+            raise RuntimeError(
+                    "Updating potential file paths can only "
                     "be done for pair potential types that use table potentials."
             )
         self._potential_file = fpath
@@ -211,19 +220,20 @@ class Pair(object):
                 self.type1, self.type2, self._potential_file
         )
 
-    def _add_state(self, state):
+    def _add_state(self, state, smoothing_window):
         """Add a state to be used in optimizing this pair.
 
         Parameters
         ----------
         state : msibi.state.State
             A state object created previously.
+
         """
         if state._opt.optimization == "pairs":
             target_rdf = self._get_state_rdf(state, query=False)
             if state._opt.smooth_rdfs:
                 target_rdf[:, 1] = savitzky_golay(
-                    target_rdf[:, 1], 9, 2, deriv=0, rate=1
+                    target_rdf[:, 1], smoothing_window, 2, deriv=0, rate=1
                 )
                 negative_idx = np.where(target_rdf < 0)
                 target_rdf[negative_idx] = 0
@@ -247,21 +257,23 @@ class Pair(object):
         """Calculate the RDF of a Pair at a State."""
         if query:
             traj = state.query_traj
+            n_frames = state.max_frames
         else:
             traj = state.traj_file
+            n_frames = state.target_frames
 
         rdf, norm = gsd_rdf(
             traj,
             self.type1,
             self.type2,
-            start=-state._opt.max_frames,
+            start=-n_frames,
             r_max=self.r_max,
             bins=self.n_points,
-            exclude_bonded=state._opt.rdf_exclude_bonded
+            exclude_bonded=state.exclude_bonded
         )
         return np.stack((rdf.bin_centers, rdf.rdf*norm)).T
 
-    def _compute_current_rdf(self, state):
+    def _compute_current_rdf(self, state, smoothing_window):
         """Calcualte the current RDF from the query trajectory.
         Updates the 'current_rdf' value in this Pair's state dict.
         Applies smoothing if applicable and calculates the f_fit between
@@ -274,7 +286,7 @@ class Pair(object):
         if state._opt.smooth_rdfs:
             current_rdf = self._states[state]["current_distribution"]
             current_rdf[:, 1] = savitzky_golay(
-                current_rdf[:, 1], 9, 2, deriv=0, rate=1
+                current_rdf[:, 1], smoothing_window, 2, deriv=0, rate=1
             )
             negative_idx = np.where(current_rdf < 0)
             current_rdf[negative_idx] = 0
@@ -297,12 +309,11 @@ class Pair(object):
         """
         rdf = self._states[state]["current_distribution"]
         rdf[:, 0] -= self.dr / 2
-
         fname = f"pair_rdf_{self.name}-state_{state.name}-step{iteration}.txt"
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, rdf)
 
-    def _update_potential(self):
+    def _update_potential(self, smooth, smoothing_window):
         """Update the potential using all states. """
         self.previous_potential = np.copy(self.potential)
         for state in self._states:
@@ -315,19 +326,20 @@ class Pair(object):
             target_rdf = self._states[state]["target_distribution"]
             # The actual IBI step.
             self.potential += (
-                    kT * alpha * np.log(current_rdf[:,1] / target_rdf[:,1]) / N 
+                    kT * alpha * np.log(current_rdf[:,1] / target_rdf[:,1]) / N
             )
-
         # Apply corrections to ensure continuous, well-behaved potentials.
         pot = self.potential
         self.potential = pair_tail_correction(
                 self.r_range, self.potential, self.r_switch
         )
-        tail = self.potential
         self.potential = pair_head_correction(
             self.r_range,
             self.potential,
             self.previous_potential,
             self.head_correction_form
         )
-
+        if smooth:
+            self.potential = savitzky_golay(
+                    self.potential, smoothing_window, 1, 0, 1
+            )
