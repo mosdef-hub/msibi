@@ -187,8 +187,9 @@ class Force(object):
             A State object already created.
 
         """ #TODO: Set target distribution elsewhere --> Use setter
+        target_distribution = _get_state_distribution(state=state, query=False)
         self._states[state] = {
-                "target_distribution": None,
+                "target_distribution": target_distribution,
                 "current_distribution": None,
                 "alpha": state.alpha,
                 "alpha_form": "linear",
@@ -196,13 +197,12 @@ class Force(object):
                 "path": state.dir
         }
 
-    def _get_state_distribution(self, state, bins, query=False):
+    def _get_state_distribution(self, state, query):
         """Find the bond length distribution of a Bond at a State."""
         if query:
             traj = state.query_traj
         else:
             traj = state.traj_file
-
         return self._get_distribution(gsd_file=traj)
 
     def _compute_current_distribution(self, state):
