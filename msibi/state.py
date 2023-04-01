@@ -49,7 +49,6 @@ class State(object):
         name,
         kT,
         traj_file,
-        n_frames,
         alpha=1.0,
         exclude_bonded=True,
         backup_trajectory=False,
@@ -59,17 +58,12 @@ class State(object):
         self.name = name
         self.kT = kT
         self.traj_file = os.path.abspath(traj_file)
-        self.n_frames = n_frames
         self._opt = None
         self.alpha = float(alpha)
         self.dir = self._setup_dir(name, kT, dir_name=_dir)
         self.query_traj = os.path.join(self.dir, "query.gsd")
         self.exclude_bonded = exclude_bonded
         self.backup_trajectory = backup_trajectory
-        if target_frames:
-            self.target_frames = target_frames
-        else:
-            self.target_frames = n_frames
 
     def _save_runscript(
         self,

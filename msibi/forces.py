@@ -32,10 +32,6 @@ class Force(object):
 
     """
     def __init__(self, name, head_correction_form="linear"):
-        self.type1, self.type2 = sorted(
-                    [type1, type2],
-                    key=natural_sort
-                )
         self.name = name 
         self._potential_file = "" 
         self.potential = None 
@@ -76,19 +72,15 @@ class Force(object):
     def nbins(self, value):
         self._nbins =  value
 
-    @property
     def target_distribution(self, state):
         return self._states[state]["target_distribution"]
     
-    @target_distribution.setter
-    def target_distribution(self, state, array):
+    def set_target_distribution(self, state, array):
         self._states[state]["target_distribution"] = array
 
-    @property
     def current_distribution(self, state):
         return self._get_distribution(state)
 
-    @property
     def distribution_fit(self, state):
         return self._calc_fit(state)
     
@@ -269,22 +261,23 @@ class Force(object):
 
 
 class Bond(Force):
-    def __init__(type1, type2, head_correction_form="linear"):
+    def __init__(self, type1, type2, head_correction_form="linear"):
         self.type1, self.type2 = sorted(
                     [type1, type2],
                     key=natural_sort
                 )
+        self.head_correction_form = head_correction_form
         name = f"{self.type1}-{self.type2}"
         super(Bond, self).__init__(
-                name=name, head_correciton_form=head_correciton_form
+                name=name, head_correction_form=self.head_correction_form
         )
 
     def set_harmonic(self, l0, k):
         pass
 
-    def _get_distribution(self, gsd_file):
+    def _get_distribution(self, state, gsd_file):
         return bond_distribution(
-                gsd_file=gsd,
+                gsd_file=gsd_file,
                 A_name=self.type1,
                 B_name=self.type2,
                 start=-state._opt.n_frames,
@@ -296,18 +289,19 @@ class Bond(Force):
         )        
 
     def _correct_potential(self):
-        #TODO: Define potential correcitons in sub classes?
+        #TODO: Define potential corrections in sub classes?
         pass
 
 
 class Angle(Force):
-    def __init__(type1, type2, type3,  head_correction_form="linear"):
+    def __init__(self, type1, type2, type3,  head_correction_form="linear"):
         self.type1 = type1
         self.type2 = type2
         self.type3 = type3
         name = f"{self.type1}-{self.type2}-{self.type3}"
+        self.head_correction_form = head_correction_form
         super(Angle, self).__init__(
-                name=name, head_correciton_form=head_correciton_form
+                name=name, head_correction_form=self.head_correction_form
         )
 
     def set_harmonic(self, t0, k):
@@ -329,20 +323,21 @@ class Angle(Force):
 
 
 class Pair(Force):
-    def __init__(type1, type2, head_correction_form="linear"):
+    def __init__(self, type1, type2, head_correction_form="linear"):
         self.type1, self.type2 = sorted(
                     [type1, type2],
                     key=natural_sort
                 )
         name = f"{self.type1}-{self.type2}"
+        self.head_correction_form = head_correction_form
         super(Pair, self).__init__(
-                name=name, head_correciton_form=head_correciton_form
+                name=name, head_correction_form=self.head_correction_form
         )
 
     def set_lj(self, epsilon, sigma):
         pass
 
-    def _get_distribution(self, gsd_file):
+    def _get_distribution(self, state, gsd_file):
         return gsd_rdf(
                 gsd_file=gsd_file,
                 A_name=self.type1,
@@ -354,20 +349,23 @@ class Pair(Force):
 
 
 class Dihedral(Force):
-    def __init__(type1, type2, type3, type4, head_correction_form="linear"):
+    def __init__(
+            self, type1, type2, type3, type4, head_correction_form="linear"
+    ):
         self.type1 = type1
         self.type2 = type2
         self.type3 = type3
         self.type4 = type4
         name = f"{self.type1}-{self.type2}-{self.type3}-{self.type4}"
+        self.head_correction_form = head_correction_form
         super(Dihedral, self).__init__(
-                name=name, head_correciton_form=head_correciton_form
+                name=name, head_correction_form=self.head_correction_form
         )
 
     def set_harmonic(self, l0, k):
         pass
 
-    def _get_distribution(self, gsd_file):
+    def _get_distribution(self, state, gsd_file):
         return dihedral_distribution(
                 gsd_file=gsd,
                 A_name=self.type1,
@@ -381,5 +379,5 @@ class Dihedral(Force):
         )        
 
     def _correct_potential(self):
-        #TODO: Define potential correcitons in sub classes?
+        #TODO: Define potential corrections in sub classes?
         pass
