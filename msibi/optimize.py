@@ -148,7 +148,7 @@ class MSIBI(object):
         for n in range(n_iterations):
             print(f"---Bond Optimization: {n+1} of {n_iterations}---")
             run_query_simulations(self.states)
-            self._update_potentials(n, smooth_pot, smoothing_window)
+            self._update_potentials(n, smooth_pot)
         # Save final potential to a seprate file
         # If not already smoothing the potential, smooth the final output
         for bond in self.bonds:
@@ -337,81 +337,69 @@ class MSIBI(object):
             for state in self.states:
                 dihedral._add_state(state)
 
-    def _update_potentials(self, iteration, smooth_pot, smoothing_window):
+    def _update_potentials(self, iteration, smooth_pot):
         """Update the potentials for the potentials to be optimized."""
         if self.optimization == "pairs":
             for pair in self.pairs:
-                self._recompute_rdfs(pair, iteration, smoothing_window)
-                pair._update_potential(smooth_pot, smoothing_window)
+                self._recompute_distribution(pair, iteration)
+                pair._update_potential(smooth_pot)
                 save_table_potential(
                         pair.potential,
-                        pair.r_range,
-                        pair.dr,
+                        pair.x_range,
+                        pair.dx,
                         iteration,
                         pair._potential_file
                 )
 
         elif self.optimization == "bonds":
             for bond in self.bonds:
-                self._recompute_distribution(bond, iteration, smoothing_window)
-                bond._update_potential(smooth_pot, smoothing_window)
+                self._recompute_distribution(bond, iteration)
+                bond._update_potential(smooth_pot)
                 save_table_potential(
                         bond.potential,
-                        bond.l_range,
-                        bond.dl,
+                        bond.x_range,
+                        bond.dx,
                         iteration,
                         bond._potential_file
                 )
 
         elif self.optimization == "angles":
             for angle in self.angles:
-                self._recompute_distribution(angle, iteration, smoothing_window)
-                angle._update_potential(smooth_pot, smoothing_window)
+                self._recompute_distribution(angle, iteration)
+                angle._update_potential(smooth_pot)
                 save_table_potential(
                         angle.potential,
-                        angle.theta_range,
-                        angle.dtheta,
+                        angle.x_range,
+                        angle.dx,
                         iteration,
                         angle._potential_file
                 )
 
         elif self.optimization == "dihedrals":
             for dihedral in self.dihedrals:
-                self._recompute_distribution(dihedral, iteration, smoothing_window)
-                dihedral._update_potential(smooth_pot, smoothing_window)
+                self._recompute_distribution(dihedral, iteration)
+                dihedral._update_potential(smooth_pot)
                 save_table_potential(
                         dihedral.potential,
-                        dihedral.phi_range,
-                        dihedral.dphi,
+                        dihedral.x_range,
+                        dihedral.dx,
                         iteration,
                         dihedral._potential_file
                 )
 
-    def _recompute_distribution(self, bond_object, iteration, smoothing_window):
+    def _recompute_distribution(self, force, iteration):
         """Recompute the current distribution of bond lengths or angles"""
         for state in self.states:
-            bond_object._compute_current_distribution(state, smoothing_window)
-            bond_object._save_current_distribution(state, iteration=iteration)
+            force._compute_current_distribution(state)
+            force._save_current_distribution(state, iteration=iteration)
             print("{0}, State: {1}, Iteration: {2}: {3:f}".format(
-                    bond_object.name,
+                    force.name,
                     state.name,
                     iteration + 1,
-                    bond_object._states[state]["f_fit"][iteration]
+                    force._states[state]["f_fit"][iteration]
                 )
             )
-
-    def _recompute_rdfs(self, pair, iteration, smoothing_window):
-        """Recompute the current RDFs for every state used for a given pair."""
-        for state in self.states:
-            pair._compute_current_rdf(state, smoothing_window)
-            pair._save_current_rdf(state, iteration=iteration)
-            print("Pair: {0}, State: {1}, Iteration: {2}: {3:f}".format(
-                    pair.name,
-                    state.name,
-                    iteration + 1,
-                    pair._states[state]["f_fit"][iteration]
-                )
-            )
+            print()
 
     def _initialize(self, potentials_dir):
         """Create initial table potentials and the simulation input scripts.
@@ -481,6 +469,7 @@ class MSIBI(object):
                 angle.update_potential_file(potential_file)
             elif angle.angle_type == "table" and angle._potential_file != "":
                 potential_file = os.path.join(self.potentials_dir, f"angle_pot_{angle.name}")
+                # What is this doing, not done for pairs or bonds
                 shutil.copyfile(angle._potential_file, potential_file)
                 angle.update_potential_file(potential_file)
 

@@ -3,7 +3,9 @@ import os
 
 import numpy as np
 
-from cmeutils.structure import angle_distribution, bond_distribution
+from cmeutils.structure import (
+        angle_distribution, bond_distribution, dihedral_distribution, gsd_rdf
+)
 from msibi.potentials import quadratic_spring, bond_correction 
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.smoothing import savitzky_golay
@@ -159,7 +161,7 @@ class Force(object):
 
     def update_potential_file(self, fpath):
         """Set (or reset) the path to a table potential file.
-        This function ensures that the Bond.bond_entry attribute
+        This function ensures that the Fond.fond_entry attribute
         is correctly updated when a potential file path is generated
         or updated.
 
@@ -179,12 +181,12 @@ class Force(object):
         )
 
     def _add_state(self, state):
-        """Add a state to be used in optimizing this bond.
+        """Add a state to be used in optimizing this Fond.
 
         Parameters
         ----------
         state : msibi.state.State
-            A State object already created.
+            Instance of a State object already created.
 
         """ #TODO: Set target distribution elsewhere --> Use setter
         target_distribution = _get_state_distribution(state=state, query=False)
@@ -206,13 +208,17 @@ class Force(object):
         return self._get_distribution(gsd_file=traj)
 
     def _compute_current_distribution(self, state):
-        """Find the current bond length distribution of the query trajectory"""
+        """Find the current distribution of the query trajectory"""
         distribution = self._get_state_distribution(
                 state, query=True, bins=self.n_points
         )
         if state._opt.smooth_dist:
             distribution[:,1] = savitzky_golay(
-                    distribution[:,1], 3, 1, deriv=0, rate=1
+                    distribution[:,1],
+                    smoothing_window=self.smoothing_window,
+                    smoothing_order=self.smoothing_order,
+                    deriv=0,
+                    rate=1
             )
             negative_idx = np.where(distribution[:,1] < 0)[0]
             distribution[:,1][negative_idx] = 0
@@ -290,6 +296,7 @@ class Bond(Force):
         )        
 
     def _correct_potential(self):
+        #TODO: Define potential correcitons in sub classes?
         pass
 
 
@@ -344,3 +351,35 @@ class Pair(Force):
                 stop=-1,
                 bins=self.nbins
         )        
+
+
+class Dihedral(Force):
+    def __init__(type1, type2, type3, type4, head_correction_form="linear"):
+        self.type1 = type1
+        self.type2 = type2
+        self.type3 = type3
+        self.type4 = type4
+        name = f"{self.type1}-{self.type2}-{self.type3}-{self.type4}"
+        super(Dihedral, self).__init__(
+                name=name, head_correciton_form=head_correciton_form
+        )
+
+    def set_harmonic(self, l0, k):
+        pass
+
+    def _get_distribution(self, gsd_file):
+        return dihedral_distribution(
+                gsd_file=gsd,
+                A_name=self.type1,
+                B_name=self.type2,
+                C_name=self.type3,
+                D_name=self.type4,
+                start=-state._opt.n_frames,
+                histogram=True,
+                normalize=True,
+                bins=self.nbins
+        )        
+
+    def _correct_potential(self):
+        #TODO: Define potential correcitons in sub classes?
+        pass
