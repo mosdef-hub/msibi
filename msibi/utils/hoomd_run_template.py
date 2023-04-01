@@ -1,3 +1,27 @@
+HOOMD3_HEADER = """
+import hoomd
+
+device = hoomd.device.auto_select()
+sim = hoomd.Simulation(device=device)
+sim.create_state_from_snapshot({0})
+nl = {1}()
+integrator = hoomd.md.Integrator(dt={2})
+method_kwargs = {3}
+method = {method}(
+    kT={4},
+    filter=hoomd.filter.All(),
+    **method_kwargs
+)
+integrator.methods.append(method)
+
+sim.operations.integrator = integrator
+sim.state.thermalize_particle_momenta(filter=hoomd.filter.All(), kT={4})
+"""
+
+HOOMD3_TEMPLATE = """
+
+"""
+
 HOOMD2_HEADER = """
 import hoomd
 import hoomd.md
