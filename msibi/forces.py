@@ -13,11 +13,11 @@ from msibi.utils.sorting import natural_sort
 
 
 HARMONIC_BOND_ENTRY = "harmonic_bond.bond_coeff.set('{}', k={}, r0={})"
-FENE_BOND_ENTRY = "fene.bond_coeff.set('{}', k={}, r0={}, sigma={}, epsilon={})"
 TABLE_BOND_ENTRY = "btable.set_from_file('{}', '{}')"
 HARMONIC_ANGLE_ENTRY = "harmonic_angle.angle_coeff.set('{}', k={}, t0={})"
-COSINE_ANGLE_ENTRY = "cosinesq.angle_coeff.set('{}', k={}, t0={})"
 TABLE_ANGLE_ENTRY = "atable.set_from_file('{}', '{}')"
+LJ_PAIR_ENTRY = "lj.pair_coeff.set('{}', '{}', epsilon={}, sigma={}, r_cut={})"
+TABLE_PAIR_ENTRY = "table.set_from_file('{}', '{}', filename='{}')"
 
 
 class Force(object):
@@ -78,8 +78,8 @@ class Force(object):
     def set_target_distribution(self, state, array):
         self._states[state]["target_distribution"] = array
 
-    def current_distribution(self, state):
-        return self._get_distribution(state)
+    def current_distribution(self, state, query=True):
+        return self._get_state_distribution(state, query)
 
     def distribution_fit(self, state):
         return self._calc_fit(state)
@@ -197,7 +197,7 @@ class Force(object):
             traj = state.query_traj
         else:
             traj = state.traj_file
-        return self._get_distribution(gsd_file=traj)
+        return self._get_distribution(state=state, gsd_file=traj)
 
     def _compute_current_distribution(self, state):
         """Find the current distribution of the query trajectory"""
@@ -274,13 +274,13 @@ class Bond(Force):
 
     def set_harmonic(self, l0, k):
         pass
-
+    #TODO: Do we need the state here as a parameter?
     def _get_distribution(self, state, gsd_file):
         return bond_distribution(
                 gsd_file=gsd_file,
                 A_name=self.type1,
                 B_name=self.type2,
-                start=-state._opt.n_frames,
+                start=-state.n_frames,
                 histogram=True,
                 normalize=True,
                 l_min=self.x_min,
@@ -313,7 +313,7 @@ class Angle(Force):
                 A_name=self.type1,
                 B_name=self.type2,
                 C_name=self.type3,
-                start=-state._opt.n_frames,
+                start=-state.n_frames,
                 histogram=True,
                 normalize=True,
                 l_min=self.x_min,
@@ -334,15 +334,35 @@ class Pair(Force):
                 name=name, head_correction_form=self.head_correction_form
         )
 
-    def set_lj(self, epsilon, sigma):
-        pass
+    def set_lj(self, epsilon, sigma, r_cut):
+        """Creates a hoomd 12-6 LJ pair potential used during
+        the query simulations. This method is not compatible when
+        optimizing pair potentials. Rather, this method should
+        only be used to create static pair potentials while optimizing
+        other potentials.
+
+        Parameters
+        ----------
+        epsilon : float, required
+            Sets the dept hof the potential energy well.
+        sigma : float, required
+            Sets the particle size.
+        r_cut : float, required
+            Maximum distance used to calculate neighbor pair potentials.
+
+        """
+        self.force_type = "static"
+        self.force_init = f"lj = hoomd.md.pair.lj(nlist=nl, r_cut={r_cut})"
+        self.force_entry = LJ_PAIR_ENTRY.format(
+                self.type1, self.type2, epsilon, sigma, r_cut
+        )
 
     def _get_distribution(self, state, gsd_file):
         return gsd_rdf(
                 gsd_file=gsd_file,
                 A_name=self.type1,
                 B_name=self.type2,
-                start=-state._opt.n_frames,
+                start=-state.n_frames,
                 stop=-1,
                 bins=self.nbins
         )        
@@ -372,7 +392,7 @@ class Dihedral(Force):
                 B_name=self.type2,
                 C_name=self.type3,
                 D_name=self.type4,
-                start=-state._opt.n_frames,
+                start=-state.n_frames,
                 histogram=True,
                 normalize=True,
                 bins=self.nbins
