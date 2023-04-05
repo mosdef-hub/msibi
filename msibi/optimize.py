@@ -111,9 +111,13 @@ class MSIBI(object):
 
     def add_pair(self, pair):
         self.pairs.append(pair)
+        for state in self.states:
+            pair._add_state(state)
 
     def add_bond(self, bond):
         self.bonds.append(bond)
+        for state in self.states:
+            bond._add_state(state)
 
     def add_angle(self, angle):
         self.angles.append(angle)

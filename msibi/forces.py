@@ -1,6 +1,7 @@
 import math
 import os
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 from cmeutils.structure import (
@@ -50,19 +51,19 @@ class Force(object):
 
     @property
     def smoothing_window(self):
-        return _self.smoothing_window
+        return self._smoothing_window
 
     @smoothing_window.setter
     def smoothing_window(self, value):
-        _self.smoothing_window = value
+        self._smoothing_window = value
 
     @property
     def smoothing_order(self):
-        return _self.smoothing_order
+        return self._smoothing_order
 
     @smoothing_order.setter
     def smoothing_order(self, value):
-        _self.smoothing_order = value
+        self._smoothing_order = value
 
     @property
     def nbins(self):
@@ -74,7 +75,23 @@ class Force(object):
 
     def target_distribution(self, state):
         return self._states[state]["target_distribution"]
-    
+   
+    def plot_target_distribution(self, state):
+        target = self.target_distribution(state)
+        fig = plt.figure()
+        plt.title(f"State {state.name}: {self.name} Target")
+        plt.ylabel("P(x)")
+        plt.xlabel("x")
+        plt.plot(target[:,0], target[:,1])
+        if self.smoothing_window:
+            y_smoothed = savitzky_golay(
+                    target[:,1],
+                    window_size=self.smoothing_window,
+                    order=self.smoothing_order
+            )
+            plt.plot(target[:,0], y_smoothed, label="Smoothed")
+            plt.legend()
+
     def set_target_distribution(self, state, array):
         self._states[state]["target_distribution"] = array
 
@@ -181,7 +198,9 @@ class Force(object):
             Instance of a State object already created.
 
         """ #TODO: Set target distribution elsewhere --> Use setter
-        target_distribution = _get_state_distribution(state=state, query=False)
+        target_distribution = self._get_state_distribution(
+                state=state, query=False
+        )
         self._states[state] = {
                 "target_distribution": target_distribution,
                 "current_distribution": None,
@@ -359,7 +378,7 @@ class Pair(Force):
 
     def _get_distribution(self, state, gsd_file):
         return gsd_rdf(
-                gsd_file=gsd_file,
+                gsdfile=gsd_file,
                 A_name=self.type1,
                 B_name=self.type2,
                 start=-state.n_frames,
