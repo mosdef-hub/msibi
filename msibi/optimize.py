@@ -146,7 +146,7 @@ class MSIBI(object):
         """
         self.optimization = "bonds"
         self.smooth_dist = smooth_dist
-        self._add_states()
+        #self._add_states()
         self._initialize(potentials_dir=_dir)
         # Run the optimization iterations:
         for n in range(n_iterations):
@@ -445,8 +445,8 @@ class MSIBI(object):
                         pair._potential_file
                 )
 
-        for bond in self.bonds:
-            if bond.bond_type == "table" and bond._potential_file == "":
+        for bond in self.bonds: #TODO: Remind myself what we are doing here
+            if bond.force_type == "table" and bond._potential_file == "":
                 potential_file = os.path.join(
                         self.potentials_dir, f"bond_pot_{bond.name}.txt"
                 )
@@ -466,7 +466,7 @@ class MSIBI(object):
                 )
 
         for angle in self.angles:
-            if angle.angle_type == "table" and angle._potential_file == "":
+            if angle.force_type == "table" and angle._potential_file == "":
                 potential_file = os.path.join(
                         self.potentials_dir, f"angle_pot_{angle.name}.txt"
                 )
@@ -491,7 +491,7 @@ class MSIBI(object):
             )
 
         for dihedral in self.dihedrals:
-            if dihedral.dihedral_type == "table" and dihedral._potential_file == "":
+            if dihedral.force_type == "table" and dihedral._potential_file == "":
                 potential_file = os.path.join(
                         self.potentials_dir, f"dihedral_pot_{dihedral.name}.txt"
                 )
