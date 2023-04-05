@@ -32,8 +32,9 @@ class Force(object):
         Must match the names found in the State's .gsd trajectory file
 
     """
-    def __init__(self, name, head_correction_form="linear"):
+    def __init__(self, name, optimize=False, head_correction_form="linear"):
         self.name = name 
+        self.optimize = optimize
         self._potential_file = "" 
         self.potential = None 
         self.previous_potential = None
@@ -198,9 +199,12 @@ class Force(object):
             Instance of a State object already created.
 
         """ #TODO: Set target distribution elsewhere --> Use setter
-        target_distribution = self._get_state_distribution(
-                state=state, query=False
-        )
+        if self.optimize:
+            target_distribution = self._get_state_distribution(
+                    state=state, query=False
+            )
+        else:
+            target_distribution = None
         self._states[state] = {
                 "target_distribution": target_distribution,
                 "current_distribution": None,
@@ -280,7 +284,7 @@ class Force(object):
 
 
 class Bond(Force):
-    def __init__(self, type1, type2, head_correction_form="linear"):
+    def __init__(self, type1, type2, optimize, head_correction_form="linear"):
         self.type1, self.type2 = sorted(
                     [type1, type2],
                     key=natural_sort
@@ -288,7 +292,9 @@ class Bond(Force):
         self.head_correction_form = head_correction_form
         name = f"{self.type1}-{self.type2}"
         super(Bond, self).__init__(
-                name=name, head_correction_form=self.head_correction_form
+                name=name,
+                optimize=optimize,
+                head_correction_form=self.head_correction_form
         )
 
     def set_harmonic(self, l0, k):
@@ -313,14 +319,16 @@ class Bond(Force):
 
 
 class Angle(Force):
-    def __init__(self, type1, type2, type3,  head_correction_form="linear"):
+    def __init__(self, type1, type2, type3, optimize, head_correction_form="linear"):
         self.type1 = type1
         self.type2 = type2
         self.type3 = type3
         name = f"{self.type1}-{self.type2}-{self.type3}"
         self.head_correction_form = head_correction_form
         super(Angle, self).__init__(
-                name=name, head_correction_form=self.head_correction_form
+                name=name,
+                optimize=optimize,
+                head_correction_form=self.head_correction_form
         )
 
     def set_harmonic(self, t0, k):
@@ -342,7 +350,7 @@ class Angle(Force):
 
 
 class Pair(Force):
-    def __init__(self, type1, type2, head_correction_form="linear"):
+    def __init__(self, type1, type2, optimize, head_correction_form="linear"):
         self.type1, self.type2 = sorted(
                     [type1, type2],
                     key=natural_sort
@@ -350,7 +358,9 @@ class Pair(Force):
         name = f"{self.type1}-{self.type2}"
         self.head_correction_form = head_correction_form
         super(Pair, self).__init__(
-                name=name, head_correction_form=self.head_correction_form
+                name=name,
+                optimize=optimize,
+                head_correction_form=self.head_correction_form
         )
 
     def set_lj(self, epsilon, sigma, r_cut):
@@ -389,7 +399,13 @@ class Pair(Force):
 
 class Dihedral(Force):
     def __init__(
-            self, type1, type2, type3, type4, head_correction_form="linear"
+            self,
+            type1,
+            type2,
+            type3,
+            type4,
+            optimize,
+            head_correction_form="linear"
     ):
         self.type1 = type1
         self.type2 = type2
@@ -398,7 +414,9 @@ class Dihedral(Force):
         name = f"{self.type1}-{self.type2}-{self.type3}-{self.type4}"
         self.head_correction_form = head_correction_form
         super(Dihedral, self).__init__(
-                name=name, head_correction_form=self.head_correction_form
+                name=name,
+                optimize=optimize,
+                head_correction_form=self.head_correction_form
         )
 
     def set_harmonic(self, l0, k):
