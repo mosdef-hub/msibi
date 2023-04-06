@@ -104,44 +104,44 @@ class State(object):
             HOOMD2_HEADER.format(self.traj_file, nlist, nlist_exclusions)
         )
         if pairs is not None and len(pairs) > 0:
-            if len(set([p.pair_init for p in pairs])) != 1:
+            if len(set([p.force_init for p in pairs])) != 1:
                 raise RuntimeError(
                         "Combining different pair potential types "
                         "is not currently supported in MSIBI."
                 )
-            script.append(pairs[0].pair_init)
+            script.append(pairs[0].force_init)
             for pair in pairs:
-                script.append(pair.pair_entry)
+                script.append(pair.force_entry)
          
         if bonds is not None and len(bonds) > 0:
-            if len(set([b.bond_init for b in bonds])) != 1:
+            if len(set([b.force_init for b in bonds])) != 1:
                 raise RuntimeError(
                         "Combining different bond potential types "
                         "is not currently supported in MSIBI."
                 )
-            script.append(bonds[0].bond_init)
+            script.append(bonds[0].force_init)
             for bond in bonds:
-                script.append(bond.bond_entry)
+                script.append(bond.force_entry)
 
         if angles is not None and len(angles) > 0:
-            if len(set([a.angle_init for a in angles])) != 1:
+            if len(set([a.force_init for a in angles])) != 1:
                 raise RuntimeError(
                         "Combining different angle potential types "
                         "is not currently supported in MSIBI."
                 )
-            script.append(angles[0].angle_init)
+            script.append(angles[0].force_init)
             for angle in angles:
-                script.append(angle.angle_entry)
+                script.append(angle.force_entry)
 
         if dihedrals is not None and len(dihedrals) > 0:
-            if len(set([d.dihedral_init for d in dihedrals])) != 1:
+            if len(set([d.force_init for d in dihedrals])) != 1:
                 raise RuntimeError(
                         "Combining different dihedral potential types "
                         "is not currently supported in MSIBI."
                 )
-            script.append(dihedrals[0].dihedral_init)
+            script.append(dihedrals[0].force_init)
             for dihedral in dihedrals:
-                script.append(dihedral.dihedral_entry)
+                script.append(dihedral.force_entry)
 
         integrator_kwargs["kT"] = self.kT
         script.append(HOOMD_TEMPLATE.format(**locals()))

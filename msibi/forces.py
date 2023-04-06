@@ -78,6 +78,11 @@ class Force(object):
         return self._states[state]["target_distribution"]
    
     def plot_target_distribution(self, state):
+        if not self.optimize:
+            raise RuntimeError(
+                    "This force object is not set to be optimized. "
+                    "The target distribution is not calculated."
+            )
         target = self.target_distribution(state)
         fig = plt.figure()
         plt.title(f"State {state.name}: {self.name} Target")
@@ -224,14 +229,12 @@ class Force(object):
 
     def _compute_current_distribution(self, state):
         """Find the current distribution of the query trajectory"""
-        distribution = self._get_state_distribution(
-                state, query=True, bins=self.n_points
-        )
+        distribution = self._get_state_distribution(state, query=True)
         if state._opt.smooth_dist:
             distribution[:,1] = savitzky_golay(
-                    distribution[:,1],
-                    smoothing_window=self.smoothing_window,
-                    smoothing_order=self.smoothing_order,
+                    y=distribution[:,1],
+                    window_size=self.smoothing_window,
+                    order=self.smoothing_order,
                     deriv=0,
                     rate=1
             )

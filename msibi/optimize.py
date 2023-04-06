@@ -152,7 +152,7 @@ class MSIBI(object):
         for n in range(n_iterations):
             print(f"---Bond Optimization: {n+1} of {n_iterations}---")
             run_query_simulations(self.states)
-            self._update_potentials(n, smooth_pot)
+            self._update_potentials(n)
         # Save final potential to a seprate file
         # If not already smoothing the potential, smooth the final output
         for bond in self.bonds:
@@ -341,12 +341,12 @@ class MSIBI(object):
             for state in self.states:
                 dihedral._add_state(state)
 
-    def _update_potentials(self, iteration, smooth_pot):
+    def _update_potentials(self, iteration):
         """Update the potentials for the potentials to be optimized."""
         if self.optimization == "pairs":
             for pair in self.pairs:
                 self._recompute_distribution(pair, iteration)
-                pair._update_potential(smooth_pot)
+                pair._update_potential()
                 save_table_potential(
                         pair.potential,
                         pair.x_range,
@@ -358,7 +358,7 @@ class MSIBI(object):
         elif self.optimization == "bonds":
             for bond in self.bonds:
                 self._recompute_distribution(bond, iteration)
-                bond._update_potential(smooth_pot)
+                bond._update_potential()
                 save_table_potential(
                         bond.potential,
                         bond.x_range,
@@ -370,7 +370,7 @@ class MSIBI(object):
         elif self.optimization == "angles":
             for angle in self.angles:
                 self._recompute_distribution(angle, iteration)
-                angle._update_potential(smooth_pot)
+                angle._update_potential()
                 save_table_potential(
                         angle.potential,
                         angle.x_range,
@@ -382,7 +382,7 @@ class MSIBI(object):
         elif self.optimization == "dihedrals":
             for dihedral in self.dihedrals:
                 self._recompute_distribution(dihedral, iteration)
-                dihedral._update_potential(smooth_pot)
+                dihedral._update_potential()
                 save_table_potential(
                         dihedral.potential,
                         dihedral.x_range,
