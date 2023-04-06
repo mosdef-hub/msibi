@@ -19,6 +19,8 @@ HARMONIC_ANGLE_ENTRY = "harmonic_angle.angle_coeff.set('{}', k={}, t0={})"
 TABLE_ANGLE_ENTRY = "atable.set_from_file('{}', '{}')"
 LJ_PAIR_ENTRY = "lj.pair_coeff.set('{}', '{}', epsilon={}, sigma={}, r_cut={})"
 TABLE_PAIR_ENTRY = "table.set_from_file('{}', '{}', filename='{}')"
+HARMONIC_DIHEDRAL_ENTRY = ""
+TABLE_DIHEDRAL_ENTRY = ""
 
 
 class Force(object):
@@ -43,7 +45,6 @@ class Force(object):
         self.xmax = None
         self.dx = None
         self.x_range = None
-        #self.n_points = None
         self._smoothing_window = 3
         self._smoothing_order = 1
         self._nbins = 100
@@ -163,7 +164,6 @@ class Force(object):
         self._potential_file = file_path
         f = np.loadtxt(self._potential_file)
         self.x_range = f[:,0]
-        #self.n_points = len(self.l_range)
         self.dx = np.round(self.x_range[1] - self.x_range[0], 3) 
         self.potential = f[:,1]
         self.x_min = self.l_range[0]
@@ -318,14 +318,16 @@ class Bond(Force):
                 bins=self.nbins
         )        
 
-    def _correct_potential(self):
-
-        #TODO: Define potential corrections in sub classes?
-        pass
-
 
 class Angle(Force):
-    def __init__(self, type1, type2, type3, optimize, head_correction_form="linear"):
+    def __init__(
+            self,
+            type1,
+            type2,
+            type3,
+            optimize,
+            head_correction_form="linear"
+    ):
         self.type1 = type1
         self.type2 = type2
         self.type3 = type3
@@ -356,11 +358,15 @@ class Angle(Force):
 
 
 class Pair(Force):
-    def __init__(self, type1, type2, optimize, head_correction_form="linear"):
-        self.type1, self.type2 = sorted(
-                    [type1, type2],
-                    key=natural_sort
-                )
+    def __init__(
+            self,
+            type1,
+            type2,
+            optimize,
+            exclude_bonded=False,
+            head_correction_form="linear"
+    ):
+        self.type1, self.type2 = sorted( [type1, type2], key=natural_sort)
         name = f"{self.type1}-{self.type2}"
         self.head_correction_form = head_correction_form
         super(Pair, self).__init__(
@@ -440,7 +446,3 @@ class Dihedral(Force):
                 normalize=True,
                 bins=self.nbins
         )        
-
-    def _correct_potential(self):
-        #TODO: Define potential corrections in sub classes?
-        pass
