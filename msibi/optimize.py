@@ -100,30 +100,61 @@ class MSIBI(object):
         self.nlist_exclusions = nlist_exclusions
         # Store all of the needed interaction objects
         self.states = []
-        self.pairs = []
-        self.bonds = []
-        self.angles = []
-        self.dihedrals = []
+        self.forces = []
+        self._optimize_forces = []
 
     def add_state(self, state):
         state._opt = self
         self.states.append(state)
 
-    def add_pair(self, pair):
-        self.pairs.append(pair)
+    def add_force(self, force):
+        self.forces.append(force)
+        if force.optimize:
+            self._add_optimize_force(force)
         for state in self.states:
-            pair._add_state(state)
+            force._add_state(state)
 
-    def add_bond(self, bond):
-        self.bonds.append(bond)
-        for state in self.states:
-            bond._add_state(state)
+    def _add_optimize_force(self, force):
+        if not all(
+                [isinstance(force, f.__class__) for f in self._optimize_forces]
+        ):
+            raise RuntimeError(
+                    "Only one type of force (i.e. Bonds, Angles, Pairs, etc) "
+                    "Can be set to optimize."
+            )
+        self._optimize_forces.append(force)
 
-    def add_angle(self, angle):
-        self.angles.append(angle)
+    def run_optimization(self, n_iterations, _dir=None):
+        """Runs MSIBI on the potentials set to be optimized.
 
-    def add_dihedral(self, dihedral):
-        self.dihedrals.append(dihedral)
+        Parameters
+        ----------
+        n_iterations : int, required 
+            Number of iterations.
+
+        """
+        self._initialize(potentials_dir=_dir)
+        for n in range(n_iterations):
+            print(f"---Bond Optimization: {n+1} of {n_iterations}---")
+            run_query_simulations(self.states)
+            self._update_potentials(n)
+        for force in self.optimize_forces:
+            if not smooth_pot: 
+                smoothed_pot = savitzky_golay(
+                        y=force.potential,
+                        window_size=force.smoothing_window,
+                        order=force.smoothing_order
+                )
+            else:
+                smoothed_pot = force.potential
+            file_name = f"{force.name}_final.txt"
+            save_table_potential(
+                    potential=smoothed_pot,
+                    r=force.x_range,
+                    dr=force.dx,
+                    iteration=None,
+                    potential_file=os.path.join(self.potentials_dir, file_name)
+            )
 
     def optimize_bonds(
             self,
@@ -320,27 +351,6 @@ class MSIBI(object):
                     potential_file=os.path.join(self.potentials_dir, file_name)
             )
 
-    def _add_states(self):
-        """Add State objects to Pairs, Bonds, and Angles.
-        Required step before optimization runs can begin.
-
-        """
-        for pair in self.pairs:
-            for state in self.states:
-                pair._add_state(state)
-
-        for bond in self.bonds:
-            for state in self.states:
-                bond._add_state(state)
-
-        for angle in self.angles:
-            for state in self.states:
-                angle._add_state(state)
-
-        for dihedral in self.dihedrals:
-            for state in self.states:
-                dihedral._add_state(state)
-
     def _update_potentials(self, iteration):
         """Update the potentials for the potentials to be optimized."""
         if self.optimization == "pairs":
@@ -422,13 +432,14 @@ class MSIBI(object):
 
         if not os.path.isdir(self.potentials_dir):
             os.mkdir(self.potentials_dir)
-
-        for pair in self.pairs:
-            if pair.force_type == "table" and self.optimization == "pairs":
+        #TODO: Fix this stuff to work with single list of force objects
+        #TODO: Set optimization attribute for MSIBI class?
+        for force in self.forces:
+            if force.format == "table" and self.optimization == "pairs":
                 potential_file = os.path.join(
-                    self.potentials_dir, f"pair_pot_{pair.name}.txt"
+                    self.potentials_dir, f"pair_pot_{force.name}.txt"
                 )
-                pair.update_potential_file(potential_file)
+                force.update_potential_file(potential_file)
                 V = pair_tail_correction(
                         pair.x_range, pair.potential, pair.r_switch
                 )
@@ -446,7 +457,7 @@ class MSIBI(object):
                 )
 
         for bond in self.bonds: #TODO: Remind myself what we are doing here
-            if bond.force_type == "table" and bond._potential_file == "":
+            if bond.format == "table" and bond._potential_file == "":
                 potential_file = os.path.join(
                         self.potentials_dir, f"bond_pot_{bond.name}.txt"
                 )
@@ -466,12 +477,12 @@ class MSIBI(object):
                 )
 
         for angle in self.angles:
-            if angle.force_type == "table" and angle._potential_file == "":
+            if angle.format == "table" and angle._potential_file == "":
                 potential_file = os.path.join(
                         self.potentials_dir, f"angle_pot_{angle.name}.txt"
                 )
                 angle.update_potential_file(potential_file)
-            elif angle.angle_type == "table" and angle._potential_file != "":
+            elif angle.format == "table" and angle._potential_file != "":
                 potential_file = os.path.join(self.potentials_dir, f"angle_pot_{angle.name}")
                 # What is this doing, not done for pairs or bonds
                 shutil.copyfile(angle._potential_file, potential_file)
@@ -491,7 +502,7 @@ class MSIBI(object):
             )
 
         for dihedral in self.dihedrals:
-            if dihedral.force_type == "table" and dihedral._potential_file == "":
+            if dihedral.format == "table" and dihedral._potential_file == "":
                 potential_file = os.path.join(
                         self.potentials_dir, f"dihedral_pot_{dihedral.name}.txt"
                 )

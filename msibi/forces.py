@@ -48,8 +48,15 @@ class Force(object):
         self._smoothing_window = 3
         self._smoothing_order = 1
         self._nbins = 100
-        self._force_type = None
+        self.format = None
         self._states = dict()
+
+    def __repr__(self):
+        return (
+                f"Type: {self.__class__}; "
+                + f"Name: {self.name}; "
+                + f"Optimize: {self.optimize}"
+        )
 
     @property
     def smoothing_window(self):
@@ -134,7 +141,6 @@ class Force(object):
             the table potential
 
         """
-        self.force_type = "table"
         self.x_min = x_min
         self.x_max = x_max
         self.dx = x_max / self.nbins
@@ -169,7 +175,7 @@ class Force(object):
         self.x_min = self.l_range[0]
         self.x_max = self.l_range[-1] + self.dx
 
-        self.force_type = "table"
+        self.format = "table"
         self.force_init = f"btable = hoomd.md.bond.table(width={self.nbins})"
         self.force_entry = TABLE_BOND_ENTRY.format(
                 self.name, self._potential_file
@@ -187,7 +193,8 @@ class Force(object):
             Full path to the text file
 
         """
-        if self.force_type != "table":
+        #TODO: Probably don't need this
+        if self.format != "table":
             raise RuntimeError("Updating potential file paths can only "
                     "be done for potential types that use table potentials."
             )
@@ -293,6 +300,7 @@ class Bond(Force):
                     [type1, type2],
                     key=natural_sort
                 )
+        self.force_type = "bond"
         self._correction_function = bond_correction
         name = f"{self.type1}-{self.type2}"
         super(Bond, self).__init__(
@@ -332,7 +340,7 @@ class Angle(Force):
         self.type2 = type2
         self.type3 = type3
         name = f"{self.type1}-{self.type2}-{self.type3}"
-        self._correction_function = bond_correction
+        self.force_type = "angle"
         super(Angle, self).__init__(
                 name=name,
                 optimize=optimize,
@@ -368,11 +376,11 @@ class Pair(Force):
     ):
         self.type1, self.type2 = sorted( [type1, type2], key=natural_sort)
         name = f"{self.type1}-{self.type2}"
-        self.head_correction_form = head_correction_form
+        self.force_type = "pair"
         super(Pair, self).__init__(
                 name=name,
                 optimize=optimize,
-                head_correction_form=self.head_correction_form
+                head_correction_form=head_correction_form
         )
 
     def set_lj(self, epsilon, sigma, r_cut):
@@ -392,7 +400,7 @@ class Pair(Force):
             Maximum distance used to calculate neighbor pair potentials.
 
         """
-        self.force_type = "static"
+        self.type = "static"
         self.force_init = f"lj = hoomd.md.pair.lj(nlist=nl, r_cut={r_cut})"
         self.force_entry = LJ_PAIR_ENTRY.format(
                 self.type1, self.type2, epsilon, sigma, r_cut
@@ -424,7 +432,7 @@ class Dihedral(Force):
         self.type3 = type3
         self.type4 = type4
         name = f"{self.type1}-{self.type2}-{self.type3}-{self.type4}"
-        self._correction_function = bond_correction
+        self.force_type = "dihedral"
         super(Dihedral, self).__init__(
                 name=name,
                 optimize=optimize,
