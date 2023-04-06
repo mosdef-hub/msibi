@@ -165,8 +165,8 @@ class MSIBI(object):
             file_name = f"{bond.name}_final.txt"
             save_table_potential(
                     potential=smoothed_pot,
-                    r=bond.l_range,
-                    dr=bond.dl,
+                    r=bond.x_range,
+                    dr=bond.dx,
                     iteration=None,
                     potential_file=os.path.join(self.potentials_dir, file_name)
             )
@@ -212,8 +212,8 @@ class MSIBI(object):
             file_name = f"{angle.name}_final.txt"
             save_table_potential(
                     potential=angle.potential,
-                    r=angle.theta_range,
-                    dr=angle.dtheta,
+                    r=angle.x_range,
+                    dr=angle.dx,
                     iteration=None,
                     potential_file=os.path.join(self.potentials_dir, file_name)
             )
@@ -271,8 +271,8 @@ class MSIBI(object):
             file_name = f"{pair.name}_final.txt"
             save_table_potential(
                     potential=smoothed_pot,
-                    r=pair.r_range,
-                    dr=pair.dr,
+                    r=pair.x_range,
+                    dr=pair.dx,
                     iteration=None,
                     potential_file=os.path.join(self.potentials_dir, file_name)
             )
@@ -314,8 +314,8 @@ class MSIBI(object):
             file_name = f"{dihedral.name}_smoothed.txt"
             save_table_potential(
                     potential=smoothed_pot,
-                    r=dihedral.phi_range,
-                    dr=dihedral.dphi,
+                    r=dihedral.x_range,
+                    dr=dihedral.dx,
                     iteration=None,
                     potential_file=os.path.join(self.potentials_dir, file_name)
             )

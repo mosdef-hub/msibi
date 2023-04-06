@@ -282,7 +282,7 @@ class Force(object):
             )
         #TODO: Add correction funcs to Force classes
         #TODO: Smoothing potential before doing head and tail corrections?
-        self.potential = self._correct_potential(
+        self.potential = self._correction_function(
                 self.x_range, self.potential, self.head_correction_form
         )
 
@@ -293,16 +293,17 @@ class Bond(Force):
                     [type1, type2],
                     key=natural_sort
                 )
-        self.head_correction_form = head_correction_form
+        self._correction_function = bond_correction
         name = f"{self.type1}-{self.type2}"
         super(Bond, self).__init__(
                 name=name,
                 optimize=optimize,
-                head_correction_form=self.head_correction_form
+                head_correction_form=head_correction_form
         )
 
     def set_harmonic(self, l0, k):
         pass
+
     #TODO: Do we need the state here as a parameter?
     def _get_distribution(self, state, gsd_file):
         return bond_distribution(
@@ -318,6 +319,7 @@ class Bond(Force):
         )        
 
     def _correct_potential(self):
+
         #TODO: Define potential corrections in sub classes?
         pass
 
@@ -328,11 +330,11 @@ class Angle(Force):
         self.type2 = type2
         self.type3 = type3
         name = f"{self.type1}-{self.type2}-{self.type3}"
-        self.head_correction_form = head_correction_form
+        self._correction_function = bond_correction
         super(Angle, self).__init__(
                 name=name,
                 optimize=optimize,
-                head_correction_form=self.head_correction_form
+                head_correction_form=head_correction_form
         )
 
     def set_harmonic(self, t0, k):
@@ -416,11 +418,11 @@ class Dihedral(Force):
         self.type3 = type3
         self.type4 = type4
         name = f"{self.type1}-{self.type2}-{self.type3}-{self.type4}"
-        self.head_correction_form = head_correction_form
+        self._correction_function = bond_correction
         super(Dihedral, self).__init__(
                 name=name,
                 optimize=optimize,
-                head_correction_form=self.head_correction_form
+                head_correction_form=head_correction_form
         )
 
     def set_harmonic(self, l0, k):
