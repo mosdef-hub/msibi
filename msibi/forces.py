@@ -183,7 +183,7 @@ class Force(object):
 
     def update_potential_file(self, fpath):
         """Set (or reset) the path to a table potential file.
-        This function ensures that the Fond.fond_entry attribute
+        This function ensures that the Force.force_entry attribute
         is correctly updated when a potential file path is generated
         or updated.
 
@@ -193,13 +193,8 @@ class Force(object):
             Full path to the text file
 
         """
-        #TODO: Probably don't need this
-        if self.format != "table":
-            raise RuntimeError("Updating potential file paths can only "
-                    "be done for potential types that use table potentials."
-            )
         self._potential_file = fpath
-        self.force_entry = TABLE_BOND_ENTRY.format(
+        self.force_entry = self.force_entry.format(
                 self.name, self._potential_file
         )
 

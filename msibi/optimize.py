@@ -3,6 +3,7 @@ import shutil
 
 import numpy as np
 
+import msibi
 from msibi.potentials import pair_tail_correction, save_table_potential
 from msibi.utils.smoothing import savitzky_golay
 from msibi.utils.exceptions import UnsupportedEngine
@@ -123,7 +124,7 @@ class MSIBI(object):
         return [f for f in self.forces if isinstance(f, msibi.forces.Pair)]
 
     @property
-    def pairs(self):
+    def dihedrals(self):
         return [f for f in self.forces if isinstance(f, msibi.forces.Dihedral)]
 
     def run_optimization(self, n_iterations, _dir=None):
@@ -139,7 +140,7 @@ class MSIBI(object):
             print(f"---Optimization: {n+1} of {n_iterations}---")
             run_query_simulations(self.states)
             self._update_potentials(n)
-        for force in self.optimize_forces:
+        for force in self._optimize_forces:
             if not smooth_pot: 
                 smoothed_pot = savitzky_golay(
                         y=force.potential,
@@ -204,7 +205,7 @@ class MSIBI(object):
 
     def _update_potentials(self, iteration):
         """Update the potentials for the potentials to be optimized."""
-        for force in self._optmize_forces:
+        for force in self._optimize_forces:
             self._recompute_distribution(force, iteration)
             force._update_potential()
             save_table_potential(
@@ -249,7 +250,7 @@ class MSIBI(object):
         #TODO: Fix this stuff to work with single list of force objects
         #TODO: Set optimization attribute for MSIBI class?
         for force in self.forces:
-            if force.format == "table" and self.optimization == "pairs":
+            if force.format == "table" and force.optimize:
                 potential_file = os.path.join(
                     self.potentials_dir, f"pair_pot_{force.name}.txt"
                 )

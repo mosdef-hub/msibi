@@ -101,7 +101,6 @@ class State(object):
         integrator_kwargs,
         dt,
         gsd_period,
-        forces,
         pairs=None,
         bonds=None,
         angles=None,
