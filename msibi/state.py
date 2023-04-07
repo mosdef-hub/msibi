@@ -65,6 +65,7 @@ class State(object):
         self.dir = self._setup_dir(name, kT, dir_name=_dir)
         self.query_traj = os.path.join(self.dir, "query.gsd")
         self.exclude_bonded = exclude_bonded
+        self._potential_history = []
         # TODO: Do we want to support saving backup trajs?
         self.backup_trajectory = backup_trajectory
 

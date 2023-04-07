@@ -39,7 +39,6 @@ class Force(object):
         self.optimize = optimize
         self._potential_file = "{}" 
         self.potential = None 
-        self.previous_potential = None
         self.head_correction_form = head_correction_form
         self.xmin = None
         self.xmax = None
@@ -50,6 +49,10 @@ class Force(object):
         self._nbins = 100
         self.format = None
         self._states = dict()
+        self.potential_history = []
+        self._head_correction_history = []
+        self._tail_correction_history = []
+        self._learned_potential_history = []
 
     def __repr__(self):
         return (
@@ -272,7 +275,7 @@ class Force(object):
         and update the Bond potential via Boltzmann inversion.
 
         """
-        self.previous_potential = np.copy(self.potential)
+        self.potential_history.append(np.copy(self.potential))
         for state in self._states:
             kT = state.kT
             current_dist = self._states[state]["current_distribution"]
@@ -283,10 +286,13 @@ class Force(object):
             )
         #TODO: Add correction funcs to Force classes
         #TODO: Smoothing potential before doing head and tail corrections?
-        self.potential = self._correction_function(
+        self.potential, real, head_cut, tail_cut = self._correction_function(
                 self.x_range, self.potential, self.head_correction_form
         )
-
+        self._head_correction_history.append(self.potential[0:head_cut])
+        self._tail_correction_history.append(self.potential[tail_cut:])
+        self._learned_potential_history.append(self.potential[real])
+        
 
 class Bond(Force):
     def __init__(self, type1, type2, optimize, head_correction_form="linear"):

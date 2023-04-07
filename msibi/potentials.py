@@ -41,12 +41,6 @@ def mie(r, epsilon, sigma, m, n):
     return V_r 
 
 
-def lj_table(r, epsilon, sigma, m, n):
-    """The Mie potential functional form"""
-    V_r = 4 * epsilon * ((sigma / r) ** m - (sigma / r) ** n)
-    return V_r 
-
-
 def pair_tail_correction(r, V, r_switch):
     """Apply a tail correction to a potential making it go to zero smoothly.
 
@@ -169,7 +163,7 @@ def bond_correction(r, V, form):
     tail_correction_V = tail_correction_function(
             r=r, V=head_correction_V, cutoff=tail_cutoff
     )
-    return tail_correction_V
+    return tail_correction_V, real_idx, head_cutoff, tail_cutoff
 
 
 def linear_tail_correction(r, V, cutoff, window=4):
@@ -274,4 +268,3 @@ def alpha_array(alpha0, pot_r, form="linear"):
         return alpha0 * (1.0 - pot_r / pot_r[-1])
     else:
         raise ValueError("Unsupported alpha form")
-
