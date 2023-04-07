@@ -27,8 +27,7 @@ def quadratic_spring(x, x0, k4, k3, k2):
 
         V(x) = k4(x-x0)^4 + k3(x-x0)^3 + k2(x-x0)^2
 
-    Used in creating table potentials for bond stretching and angle
-    potentials.
+    Used in creating table potentials for bonded potentials.
 
     """
     V_x = k4*((x-x0)**4) + k3*((x-x0)**3) + k2*((x-x0)**2)

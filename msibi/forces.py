@@ -24,13 +24,13 @@ TABLE_DIHEDRAL_ENTRY = ""
 
 
 class Force(object):
-    """Creates a bond potential, either to be held constant, or to be
+    """Creates a potential, either to be held constant, or to be
     optimized.
 
     Parameters
     ----------
-    type1, type2 : str, required
-        The name of each particle type in the bond.
+    name : str, required
+        The name of the type in the bond.
         Must match the names found in the State's .gsd trajectory file
 
     """
@@ -312,7 +312,6 @@ class Bond(Force):
     def set_harmonic(self, l0, k):
         pass
 
-    #TODO: Do we need the state here as a parameter?
     def _get_distribution(self, state, gsd_file):
         return bond_distribution(
                 gsd_file=gsd_file,

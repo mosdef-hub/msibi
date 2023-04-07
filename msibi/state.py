@@ -68,6 +68,14 @@ class State(object):
         # TODO: Do we want to support saving backup trajs?
         self.backup_trajectory = backup_trajectory
 
+    def __repr__(self):
+        return (
+                f"{self.__class__}; "
+                + f"Name: {self.name}; "
+                + f"kT: {self.kT}; "
+                + f"Weight: {self.alpha}"
+        )
+
     @property
     def n_frames(self):
         return self._n_frames
@@ -93,6 +101,7 @@ class State(object):
         integrator_kwargs,
         dt,
         gsd_period,
+        forces,
         pairs=None,
         bonds=None,
         angles=None,
@@ -104,6 +113,7 @@ class State(object):
             HOOMD2_HEADER.format(self.traj_file, nlist, nlist_exclusions)
         )
         if pairs is not None and len(pairs) > 0:
+            # TODO: Do this check somewhere else? Opt in add_force?
             if len(set([p.force_init for p in pairs])) != 1:
                 raise RuntimeError(
                         "Combining different pair potential types "
@@ -144,6 +154,7 @@ class State(object):
                 script.append(dihedral.force_entry)
 
         integrator_kwargs["kT"] = self.kT
+        # TODO: use locals here or is there a better way?
         script.append(HOOMD_TEMPLATE.format(**locals()))
 
         runscript_file = os.path.join(self.dir, "run.py")
