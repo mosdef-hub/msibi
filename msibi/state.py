@@ -102,12 +102,14 @@ class State(object):
             method_kwargs,
             dt,
             seed,
+            iteration,
             gsd_period,
             pairs=None,
             bonds=None,
             angles=None,
             dihedrals=None 
     ):
+        print(f"Starting simulation {iteration} for state {self}")
         device = hoomd.device.auto_select()
         sim = hoomd.simulation.Simulation(device=device)
         with gsd.hoomd.open(self.traj_file, "rb") as traj:
@@ -140,6 +142,7 @@ class State(object):
             dihedral_force.params[dihedral.name] = dict(**dihedral.force_entry)
 
         # Create integrator and integration method
+        #TODO: Set kT in method_kwargs
         forces = [pair_force, bond_force, angle_force, dihedral_force]
         integrator = hoomd.md.Integrator(dt=dt) 
         integrator.forces = [f for f in forces if f] 
@@ -148,7 +151,6 @@ class State(object):
         sim.operations.add(integrator)
 
         #Create GSD writer
-        #TODO: Add gsd writer to operations
         gsd_writer = hoomd.write.GSD(
                 filename=self.query_traj,
                 trigger=hoomd.trigger.Periodic(int(gsd_period)),
@@ -156,10 +158,9 @@ class State(object):
         )
         sim.operations.writers.append(gsd_writer)
 
-        #TODO: Add standard logger?
-
         # Run simulation
         sim.run(n_steps)
+        print(f"Finished simulation {iteration} for state {self}")
 
     def _setup_dir(self, name, kT, dir_name=None):
         """Create a state directory each time a new State is created."""
