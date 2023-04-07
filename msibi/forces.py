@@ -37,7 +37,7 @@ class Force(object):
     def __init__(self, name, optimize=False, head_correction_form="linear"):
         self.name = name 
         self.optimize = optimize
-        self._potential_file = "" 
+        self._potential_file = "{}" 
         self.potential = None 
         self.previous_potential = None
         self.head_correction_form = head_correction_form
@@ -141,6 +141,7 @@ class Force(object):
             the table potential
 
         """
+        self.format = "table"
         self.x_min = x_min
         self.x_max = x_max
         self.dx = x_max / self.nbins
@@ -194,9 +195,7 @@ class Force(object):
 
         """
         self._potential_file = fpath
-        self.force_entry = self.force_entry.format(
-                self.name, self._potential_file
-        )
+        self.force_entry = self.force_entry.format(self._potential_file)
 
     def _add_state(self, state):
         """Add a state to be used in optimizing this Fond.
@@ -233,7 +232,7 @@ class Force(object):
     def _compute_current_distribution(self, state):
         """Find the current distribution of the query trajectory"""
         distribution = self._get_state_distribution(state, query=True)
-        if state._opt.smooth_dist:
+        if self.smoothing_window and self.smoothing_order:
             distribution[:,1] = savitzky_golay(
                     y=distribution[:,1],
                     window_size=self.smoothing_window,

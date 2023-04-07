@@ -247,93 +247,26 @@ class MSIBI(object):
 
         if not os.path.isdir(self.potentials_dir):
             os.mkdir(self.potentials_dir)
-        #TODO: Fix this stuff to work with single list of force objects
-        #TODO: Set optimization attribute for MSIBI class?
         for force in self.forces:
             if force.format == "table" and force.optimize:
                 potential_file = os.path.join(
-                    self.potentials_dir, f"pair_pot_{force.name}.txt"
+                    self.potentials_dir, f"{force.name}.txt"
                 )
                 force.update_potential_file(potential_file)
-                V = pair_tail_correction(
-                        pair.x_range, pair.potential, pair.r_switch
-                )
-                pair.potential = V
-                if self.optimization == "pairs":
+                #V = pair_tail_correction(
+                #        pair.x_range, pair.potential, pair.r_switch
+                #)
+                #pair.potential = V
+                if force.optimize:
                     iteration = 0
                 else:
                     iteration = None
                 save_table_potential(
-                        pair.potential,
-                        pair.x_range,
-                        pair.dx,
+                        force.potential,
+                        force.x_range,
+                        force.dx,
                         iteration,
-                        pair._potential_file
-                )
-
-        for bond in self.bonds: #TODO: Remind myself what we are doing here
-            if bond.format == "table" and bond._potential_file == "":
-                potential_file = os.path.join(
-                        self.potentials_dir, f"bond_pot_{bond.name}.txt"
-                )
-                bond.update_potential_file(potential_file)
-
-                if self.optimization == "bonds":
-                    iteration = 0
-                else:
-                    iteration = None
-
-                save_table_potential(
-                        bond.potential,
-                        bond.x_range,
-                        bond.dx,
-                        iteration,
-                        bond._potential_file
-                )
-
-        for angle in self.angles:
-            if angle.format == "table" and angle._potential_file == "":
-                potential_file = os.path.join(
-                        self.potentials_dir, f"angle_pot_{angle.name}.txt"
-                )
-                angle.update_potential_file(potential_file)
-            elif angle.format == "table" and angle._potential_file != "":
-                potential_file = os.path.join(self.potentials_dir, f"angle_pot_{angle.name}")
-                # What is this doing, not done for pairs or bonds
-                shutil.copyfile(angle._potential_file, potential_file)
-                angle.update_potential_file(potential_file)
-
-            if self.optimization == "angles":
-                iteration = 0
-            else:
-                iteration = None
-
-            save_table_potential(
-                    angle.potential,
-                    angle.x_range,
-                    angle.dx,
-                    iteration,
-                    angle._potential_file
-            )
-
-        for dihedral in self.dihedrals:
-            if dihedral.format == "table" and dihedral._potential_file == "":
-                potential_file = os.path.join(
-                        self.potentials_dir, f"dihedral_pot_{dihedral.name}.txt"
-                )
-                dihedral.update_potential_file(potential_file)
-
-                if self.optimization == "dihedrals":
-                    iteration = 0
-                else:
-                    iteration = None
-
-                save_table_potential(
-                        dihedral.potential,
-                        dihedral.x_range,
-                        dihedral.dx,
-                        iteration,
-                        dihedral._potential_file
+                        force._potential_file
                 )
 
         for state in self.states:
