@@ -1,17 +1,18 @@
-name: msibi
+name: msibi3
 channels:
 - conda-forge
 dependencies:
-- foyer=0.8.0
-- freud=2.4.1
-- gsd=2.4.1
-- mbuild=0.10.13
-- mdtraj=1.9.5
-- numpy=1.20.1
-- pip=21.0.1
-- python=3.7
-- pytest=6.2.2
-- pytest-cov=2.11.1
+- freud
+- gsd
+- more-itertools
+- numpy
+- pip
+- py3Dmol
+- python
+- pytest
+- pytest-cov
+- jupyter
+- ipython
+- nodejs>=10
 - pip:
-    - git+https://github.com/rsdefever/antefoyer.git
     - git+https://github.com/cmelab/cmeutils
