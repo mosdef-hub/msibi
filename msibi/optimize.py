@@ -212,7 +212,7 @@ class MSIBI(object):
                         force.potential,
                         force.x_range,
                         force.dx,
-                        iteration=0,
+                        0,
                         force._potential_file
                 )
 

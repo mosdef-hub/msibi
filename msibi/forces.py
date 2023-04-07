@@ -19,8 +19,8 @@ HARMONIC_ANGLE_ENTRY = "harmonic_angle.angle_coeff.set('{}', k={}, t0={})"
 TABLE_ANGLE_ENTRY = "atable.set_from_file('{}', '{}')"
 LJ_PAIR_ENTRY = "lj.pair_coeff.set('{}', '{}', epsilon={}, sigma={}, r_cut={})"
 TABLE_PAIR_ENTRY = "table.set_from_file('{}', '{}', filename='{}')"
-HARMONIC_DIHEDRAL_ENTRY = ""
-TABLE_DIHEDRAL_ENTRY = ""
+HARMONIC_DIHEDRAL_ENTRY = "harmonic_dihedral.dihedral_coeff.set('{}', k={}, d={}, n={}, phi0={})" 
+TABLE_DIHEDRAL_ENTRY = "dtable.set_from_file('{}', '{}')" 
 
 
 class Force(object):
@@ -208,7 +208,7 @@ class Force(object):
         state : msibi.state.State
             Instance of a State object already created.
 
-        """ #TODO: Set target distribution elsewhere --> Use setter
+        """
         if self.optimize:
             target_distribution = self._get_state_distribution(
                     state=state, query=False
@@ -310,28 +310,24 @@ class Bond(Force):
         )
 
     def set_harmonic(self, l0, k):
-       """Creates a hoomd.md.bond.harmonic type of bond potential
-        to be used during the query simulations. This method is
-        not compatible when optimizing bond potentials. Rather,
-        this method should only be used to create static bond potentials
-        while optimizing Pairs or Angles.
-
-        See the `set_quadratic` method for another option.
+        """Sets a fixed harmonic bond potential.
+        Using this method is not compatible force msibi.forces.Force
+        objects that are set to be optimized during MSIBI
 
         Parameters
         ----------
         l0 : float, required
-            The equilibrium bond length
+            Equilibrium bond length
         k : float, required
-            The spring constant
+            Spring constant
         """
         if self.optimize:
             raise RuntimeError(
-            f"Force {self} is set to be optimized which isn't compatible "
-            "with static forces such as hoomd.md.bond.harmonic."
-            "Use set_from_file() or set_quadratic to create initial "
-            "potentials for forces being optimized."
-        )
+                    f"Force {self} is set to be optimized during MSIBI."
+                    "This potential setter cannot be used "
+                    "for a force set for optimization. Instead, use either "
+                    "set_from_file() or set_quadratic()."
+            )
         self.type = "static"
         self.force_init = "harmonic_bond = hoomd.md.bond.harmonic()"
         self.force_entry = HARMONIC_BOND_ENTRY.format(self.name, k, l0)
@@ -371,26 +367,24 @@ class Angle(Force):
         )
 
     def set_harmonic(self, theta0, k):
-       """Creates a hoomd.md.angle.harmonic type of bond potential
-        to be used during the query simulations. This method is
-        not compatible when optimizing angle potentials. Rather,
-        this method should only be used to create static angle potentials
-        while optimizing other forces.
+        """Sets a fixed harmonic angle potential.
+        Using this method is not compatible force msibi.forces.Force
+        objects that are set to be optimized during MSIBI
 
         Parameters
         ----------
         theta0 : float, required
-            The equilibrium bond angle 
+            Equilibrium bond angle 
         k : float, required
-            The spring constant
+            Spring constant
         """
         if self.optimize:
             raise RuntimeError(
-            f"Force {self} is set to be optimized which isn't compatible "
-            "with static forces such as hoomd.md.bond.harmonic."
-            "Use set_from_file() or set_quadratic to create initial "
-            "potentials for forces being optimized."
-        )
+                    f"Force {self} is set to be optimized during MSIBI."
+                    "This potential setter cannot be used "
+                    "for a force set for optimization. Instead, use either "
+                    "set_from_file() or set_quadratic()."
+            )
         self.type = "static"
         self.force_init = "harmonic_angle = hoomd.md.angle.harmonic()"
         self.force_entry = HARMONIC_ANGLE_ENTRY.format(self.name, k, theta0)
@@ -483,9 +477,35 @@ class Dihedral(Force):
                 optimize=optimize,
                 head_correction_form=head_correction_form
         )
-    #TODO: Finish set_harmonic funcs for force classes
-    def set_harmonic(self, l0, k):
-        pass
+
+    def set_harmonic(self, phi0, k):
+        """Sets a fixed harmonic dihedral potential.
+        Using this method is not compatible force msibi.forces.Force
+        objects that are set to be optimized during MSIBI
+
+        Parameters
+        ----------
+        phi0 : float, required
+            Equilibrium bond length
+        k : float, required
+            Spring constant
+        d : int, required
+            Sign factor
+        n : int, required
+            Angle scaling factor
+        """
+        if self.optimize:
+            raise RuntimeError(
+                    f"Force {self} is set to be optimized during MSIBI."
+                    "This potential setter cannot be used "
+                    "for a force set for optimization. Instead, use either "
+                    "set_from_file() or set_quadratic()."
+            )
+        self.type = "static"
+        self.force_init = "harmonic_dihedral = hoomd.md.dihedral.harmonic()"
+        self.force_entry = HARMONIC_DIHEDRAL_ENTRY.format(
+                self.name, k, d, n, phi0
+        )
 
     def _get_distribution(self, state, gsd_file):
         return dihedral_distribution(
