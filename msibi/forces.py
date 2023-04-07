@@ -1,26 +1,16 @@
 import math
 import os
 
-import matplotlib.pyplot as plt
-import numpy as np
-
 from cmeutils.structure import (
         angle_distribution, bond_distribution, dihedral_distribution, gsd_rdf
 )
+import matplotlib.pyplot as plt
+import numpy as np
+
 from msibi.potentials import quadratic_spring, bond_correction 
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.smoothing import savitzky_golay
 from msibi.utils.sorting import natural_sort
-
-
-HARMONIC_BOND_ENTRY = "harmonic_bond.bond_coeff.set('{}', k={}, r0={})"
-TABLE_BOND_ENTRY = "btable.set_from_file('{}', '{}')"
-HARMONIC_ANGLE_ENTRY = "harmonic_angle.angle_coeff.set('{}', k={}, t0={})"
-TABLE_ANGLE_ENTRY = "atable.set_from_file('{}', '{}')"
-LJ_PAIR_ENTRY = "lj.pair_coeff.set('{}', '{}', epsilon={}, sigma={}, r_cut={})"
-TABLE_PAIR_ENTRY = "table.set_from_file('{}', '{}', filename='{}')"
-HARMONIC_DIHEDRAL_ENTRY = "harmonic_dihedral.dihedral_coeff.set('{}', k={}, d={}, n={}, phi0={})" 
-TABLE_DIHEDRAL_ENTRY = "dtable.set_from_file('{}', '{}')" 
 
 
 class Force(object):
@@ -48,6 +38,9 @@ class Force(object):
         self._smoothing_order = 1
         self._nbins = 100
         self.format = None
+        self.force_type = None
+        self.table_entry = None
+        self.harmonic_entry = None
         self._states = dict()
         self.potential_history = []
         self._head_correction_history = []
@@ -150,10 +143,11 @@ class Force(object):
         self.dx = x_max / self.nbins
         self.x_range = np.arange(x_min, x_max, self.dx)
         self.potential = quadratic_spring(self.x_range, x0, k4, k3, k2)
-        self.force_init = f"btable = hoomd.md.bond.table(width={self.nbins})"
-        self.force_entry = TABLE_BOND_ENTRY.format(
-                self.name, self._potential_file
-        ) 
+        self.force = None #TODO Calculate this
+        self.force_init = self.table_init.format(self.nbins) 
+        self.force_entry = self.table_entry.format(
+                self.name, self.potential, self.force
+        )
 
     def set_from_file(self, file_path):
         """Creates a bond-stretching potential from a text file.
@@ -175,15 +169,16 @@ class Force(object):
         f = np.loadtxt(self._potential_file)
         self.x_range = f[:,0]
         self.dx = np.round(self.x_range[1] - self.x_range[0], 3) 
+        self.x_min = self.x_range[0]
+        self.x_max = self.x_range[-1] + self.dx
         self.potential = f[:,1]
-        self.x_min = self.l_range[0]
-        self.x_max = self.l_range[-1] + self.dx
+        self.force = None #TODO Calculate this
 
         self.format = "table"
-        self.force_init = f"btable = hoomd.md.bond.table(width={self.nbins})"
-        self.force_entry = TABLE_BOND_ENTRY.format(
-                self.name, self._potential_file
-        ) 
+        self.force_init = self.table_init.format(self.nbins) 
+        self.force_entry = self.table_entry.format(
+                self.name, self.potential, self.force
+        )
 
     def update_potential_file(self, fpath):
         """Set (or reset) the path to a table potential file.
@@ -303,20 +298,22 @@ class Bond(Force):
         self.force_type = "bond"
         self._correction_function = bond_correction
         name = f"{self.type1}-{self.type2}"
+        self.table_init = "harmonic_bond = hoomd.md.bond.Table(width={})"
+        self.table_entry = "btable.params[{}] = dict(U={}, tau={})"
         super(Bond, self).__init__(
                 name=name,
                 optimize=optimize,
                 head_correction_form=head_correction_form
         )
 
-    def set_harmonic(self, l0, k):
+    def set_harmonic(self, r0, k):
         """Sets a fixed harmonic bond potential.
         Using this method is not compatible force msibi.forces.Force
         objects that are set to be optimized during MSIBI
 
         Parameters
         ----------
-        l0 : float, required
+        r0 : float, required
             Equilibrium bond length
         k : float, required
             Spring constant
@@ -329,8 +326,8 @@ class Bond(Force):
                     "set_from_file() or set_quadratic()."
             )
         self.type = "static"
-        self.force_init = "harmonic_bond = hoomd.md.bond.harmonic()"
-        self.force_entry = HARMONIC_BOND_ENTRY.format(self.name, k, l0)
+        self.force_init = "harmonic_bond = hoomd.md.bond.Harmonic()"
+        self.force_entry = HARMONIC_BOND_ENTRY.format(self.name, k, r0)
 
     def _get_distribution(self, state, gsd_file):
         return bond_distribution(
@@ -360,20 +357,22 @@ class Angle(Force):
         self.type3 = type3
         name = f"{self.type1}-{self.type2}-{self.type3}"
         self.force_type = "angle"
+        self.harmonic_entry = "harmonic_angle.params[{}] = dict(k={}, t0={})"
+        self.table_entry = "atable.params[{}] = dict(U={}, tau={})"
         super(Angle, self).__init__(
                 name=name,
                 optimize=optimize,
                 head_correction_form=head_correction_form
         )
 
-    def set_harmonic(self, theta0, k):
+    def set_harmonic(self, t0, k):
         """Sets a fixed harmonic angle potential.
         Using this method is not compatible force msibi.forces.Force
         objects that are set to be optimized during MSIBI
 
         Parameters
         ----------
-        theta0 : float, required
+        t0 : float, required
             Equilibrium bond angle 
         k : float, required
             Spring constant
@@ -386,8 +385,8 @@ class Angle(Force):
                     "set_from_file() or set_quadratic()."
             )
         self.type = "static"
-        self.force_init = "harmonic_angle = hoomd.md.angle.harmonic()"
-        self.force_entry = HARMONIC_ANGLE_ENTRY.format(self.name, k, theta0)
+        self.force_init = "harmonic_angle = hoomd.md.angle.Harmonic()"
+        self.force_entry = HARMONIC_ANGLE_ENTRY.format(self.name, k, t0)
 
     def _get_distribution(self, gsd_file):
         return angle_distribution(
@@ -472,6 +471,8 @@ class Dihedral(Force):
         self.type4 = type4
         name = f"{self.type1}-{self.type2}-{self.type3}-{self.type4}"
         self.force_type = "dihedral"
+        self.harmonic_entry = "harmonic_dihedral.params[{}] = dict(k={}, d={}, n={}, phi0={})"
+        self.table_entry = "dtable.params[{}] = dict(U={}, tau={})"
         super(Dihedral, self).__init__(
                 name=name,
                 optimize=optimize,
