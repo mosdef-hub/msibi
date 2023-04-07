@@ -141,7 +141,7 @@ class MSIBI(object):
             run_query_simulations(self.states)
             self._update_potentials(n)
         for force in self._optimize_forces:
-            if not smooth_pot: 
+            if force.smoothing_window and force.smoothing_order:
                 smoothed_pot = savitzky_golay(
                         y=force.potential,
                         window_size=force.smoothing_window,
@@ -154,51 +154,6 @@ class MSIBI(object):
                     potential=smoothed_pot,
                     r=force.x_range,
                     dr=force.dx,
-                    iteration=None,
-                    potential_file=os.path.join(self.potentials_dir, file_name)
-            )
-
-    def optimize_bonds(
-            self,
-            n_iterations,
-            smooth_dist=True,
-            smooth_pot=True,
-            _dir=None
-    ):
-        """Optimize the bond potentials
-
-        Parameters
-        ----------
-        n_iterations : int, required 
-            Number of iterations.
-        smooth_dist : bool, default True
-            If True, the target distribution is smoothed
-        smooth_pot : bool, default True
-            If True, the potential is smoothed between iterations
-
-        """
-        self.optimization = "bonds"
-        self.smooth_dist = smooth_dist
-        self._initialize(potentials_dir=_dir)
-        # Run the optimization iterations:
-        for n in range(n_iterations):
-            print(f"---Bond Optimization: {n+1} of {n_iterations}---")
-            run_query_simulations(self.states)
-            self._update_potentials(n)
-        # Save final potential to a seprate file
-        # If not already smoothing the potential, smooth the final output
-        for bond in self.bonds:
-            if not smooth_pot: 
-                smoothed_pot = savitzky_golay(
-                        y=bond.potential, window_size=smoothing_window, order=1
-                )
-            else:
-                smoothed_pot = bond.potential
-            file_name = f"{bond.name}_final.txt"
-            save_table_potential(
-                    potential=smoothed_pot,
-                    r=bond.x_range,
-                    dr=bond.dx,
                     iteration=None,
                     potential_file=os.path.join(self.potentials_dir, file_name)
             )
