@@ -208,19 +208,11 @@ class MSIBI(object):
                     self.potentials_dir, f"{force.name}.txt"
                 )
                 force.update_potential_file(potential_file)
-                #V = pair_tail_correction(
-                #        pair.x_range, pair.potential, pair.r_switch
-                #)
-                #pair.potential = V
-                if force.optimize:
-                    iteration = 0
-                else:
-                    iteration = None
                 save_table_potential(
                         force.potential,
                         force.x_range,
                         force.dx,
-                        iteration,
+                        iteration=0,
                         force._potential_file
                 )
 

@@ -310,7 +310,31 @@ class Bond(Force):
         )
 
     def set_harmonic(self, l0, k):
-        pass
+       """Creates a hoomd.md.bond.harmonic type of bond potential
+        to be used during the query simulations. This method is
+        not compatible when optimizing bond potentials. Rather,
+        this method should only be used to create static bond potentials
+        while optimizing Pairs or Angles.
+
+        See the `set_quadratic` method for another option.
+
+        Parameters
+        ----------
+        l0 : float, required
+            The equilibrium bond length
+        k : float, required
+            The spring constant
+        """
+        if self.optimize:
+            raise RuntimeError(
+            f"Force {self} is set to be optimized which isn't compatible "
+            "with static forces such as hoomd.md.bond.harmonic."
+            "Use set_from_file() or set_quadratic to create initial "
+            "potentials for forces being optimized."
+        )
+        self.type = "static"
+        self.force_init = "harmonic_bond = hoomd.md.bond.harmonic()"
+        self.force_entry = HARMONIC_BOND_ENTRY.format(self.name, k, l0)
 
     def _get_distribution(self, state, gsd_file):
         return bond_distribution(
@@ -346,8 +370,30 @@ class Angle(Force):
                 head_correction_form=head_correction_form
         )
 
-    def set_harmonic(self, t0, k):
-        pass
+    def set_harmonic(self, theta0, k):
+       """Creates a hoomd.md.angle.harmonic type of bond potential
+        to be used during the query simulations. This method is
+        not compatible when optimizing angle potentials. Rather,
+        this method should only be used to create static angle potentials
+        while optimizing other forces.
+
+        Parameters
+        ----------
+        theta0 : float, required
+            The equilibrium bond angle 
+        k : float, required
+            The spring constant
+        """
+        if self.optimize:
+            raise RuntimeError(
+            f"Force {self} is set to be optimized which isn't compatible "
+            "with static forces such as hoomd.md.bond.harmonic."
+            "Use set_from_file() or set_quadratic to create initial "
+            "potentials for forces being optimized."
+        )
+        self.type = "static"
+        self.force_init = "harmonic_angle = hoomd.md.angle.harmonic()"
+        self.force_entry = HARMONIC_ANGLE_ENTRY.format(self.name, k, theta0)
 
     def _get_distribution(self, gsd_file):
         return angle_distribution(
