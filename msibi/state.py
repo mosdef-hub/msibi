@@ -92,74 +92,74 @@ class State(object):
     @alpha.setter
     def alpha(self, value):
         self._alpha = value
-
-    def _save_runscript(
-        self,
-        n_steps,
-        nlist,
-        nlist_exclusions,
-        integrator,
-        integrator_kwargs,
-        dt,
-        gsd_period,
-        pairs=None,
-        bonds=None,
-        angles=None,
-        dihedrals=None,
+    
+    def _run_simulation(
+            self,
+            n_steps,
+            nlist,
+            nlist_exclusions,
+            integrator_method,
+            method_kwargs,
+            dt,
+            seed,
+            gsd_period,
+            pairs=None,
+            bonds=None,
+            angles=None,
+            dihedrals=None 
     ):
-        """Save the input script for the MD engine."""
-        script = list()
-        script.append(
-            HOOMD2_HEADER.format(self.traj_file, nlist, nlist_exclusions)
+        device = hoomd.device.auto_select()
+        sim = hoomd.simulation.Simulation(device=device)
+        with gsd.hoomd.open(self.traj_file, "rb") as traj:
+            last_snap = traj[-1]
+        sim.create_state_from_snapshot(last_snap)
+        
+        # Create force objects
+        pair_force = None
+        for pair in pairs:
+            if not pair_force:
+                pair_force = getattr(hoomd.md.pair, pair.force_init)
+            pair_force.params[pair.name] = dict(**pair.force_entry)
+
+        bond_force = None
+        for bond in bonds:
+            if not bond_force:
+                bond_force = getattr(hoomd.md.bond, bond.force_init)
+            bond_force.params[bond.name] = dict(**bond.force_entry)
+
+        angle_force = None
+        for angle in angles:
+            if not angle_force:
+                angle_force = getattr(hoomd.md.angle, angle.force_init)
+            angle_force.params[angle.name] = dict(**angle.force_entry)
+
+        dihedral_force = None
+        for dih in dihedrals:
+            if not dihedral_force:
+                dihedral_force = getattr(hoomd.md.dihedral, dihedral.force_init)
+            dihedral_force.params[dihedral.name] = dict(**dihedral.force_entry)
+
+        # Create integrator and integration method
+        forces = [pair_force, bond_force, angle_force, dihedral_force]
+        integrator = hoomd.md.Integrator(dt=dt) 
+        integrator.forces = [f for f in forces if f] 
+        method = getattr(hoomd.md.methods, integrator_method)
+        integrator.methods.append(method(**method_kwargs))
+        sim.operations.add(integrator)
+
+        #Create GSD writer
+        #TODO: Add gsd writer to operations
+        gsd_writer = hoomd.write.GSD(
+                filename=self.query_traj,
+                trigger=hoomd.trigger.Periodic(int(gsd_period)),
+                mode="wb",
         )
-        if pairs is not None and len(pairs) > 0:
-            # TODO: Do this check somewhere else? Opt in add_force?
-            if len(set([p.force_init for p in pairs])) != 1:
-                raise RuntimeError(
-                        "Combining different pair potential types "
-                        "is not currently supported in MSIBI."
-                )
-            script.append(pairs[0].force_init)
-            for pair in pairs:
-                script.append(pair.force_entry)
-         
-        if bonds is not None and len(bonds) > 0:
-            if len(set([b.force_init for b in bonds])) != 1:
-                raise RuntimeError(
-                        "Combining different bond potential types "
-                        "is not currently supported in MSIBI."
-                )
-            script.append(bonds[0].force_init)
-            for bond in bonds:
-                script.append(bond.force_entry)
+        sim.operations.writers.append(gsd_writer)
 
-        if angles is not None and len(angles) > 0:
-            if len(set([a.force_init for a in angles])) != 1:
-                raise RuntimeError(
-                        "Combining different angle potential types "
-                        "is not currently supported in MSIBI."
-                )
-            script.append(angles[0].force_init)
-            for angle in angles:
-                script.append(angle.force_entry)
+        #TODO: Add standard logger?
 
-        if dihedrals is not None and len(dihedrals) > 0:
-            if len(set([d.force_init for d in dihedrals])) != 1:
-                raise RuntimeError(
-                        "Combining different dihedral potential types "
-                        "is not currently supported in MSIBI."
-                )
-            script.append(dihedrals[0].force_init)
-            for dihedral in dihedrals:
-                script.append(dihedral.force_entry)
-
-        integrator_kwargs["kT"] = self.kT
-        # TODO: use locals here or is there a better way?
-        script.append(HOOMD_TEMPLATE.format(**locals()))
-
-        runscript_file = os.path.join(self.dir, "run.py")
-        with open(runscript_file, "w") as fh:
-            fh.writelines("%s\n" % l for l in script)
+        # Run simulation
+        sim.run(n_steps)
 
     def _setup_dir(self, name, kT, dir_name=None):
         """Create a state directory each time a new State is created."""
