@@ -431,7 +431,7 @@ class Dihedral(Force):
                 optimize=optimize,
                 head_correction_form=head_correction_form
         )
-
+    #TODO: Finish set_harmonic funcs for force classes
     def set_harmonic(self, l0, k):
         pass
 
