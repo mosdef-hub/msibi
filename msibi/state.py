@@ -119,27 +119,27 @@ class State(object):
         # Create force objects
         pair_force = None
         for pair in pairs:
-            if not pair_force:
+            if not pair_force: #TODO: Do I need to call these funcs here?
                 pair_force = getattr(hoomd.md.pair, pair.force_init)
-            pair_force.params[pair.name] = dict(**pair.force_entry)
+            pair_force.params[pair.name] = pair.force_entry
 
         bond_force = None
         for bond in bonds:
             if not bond_force:
                 bond_force = getattr(hoomd.md.bond, bond.force_init)
-            bond_force.params[bond.name] = dict(**bond.force_entry)
+            bond_force.params[bond.name] = bond.force_entry
 
         angle_force = None
         for angle in angles:
             if not angle_force:
                 angle_force = getattr(hoomd.md.angle, angle.force_init)
-            angle_force.params[angle.name] = dict(**angle.force_entry)
+            angle_force.params[angle.name] = angle.force_entry
 
         dihedral_force = None
         for dih in dihedrals:
             if not dihedral_force:
                 dihedral_force = getattr(hoomd.md.dihedral, dihedral.force_init)
-            dihedral_force.params[dihedral.name] = dict(**dihedral.force_entry)
+            dihedral_force.params[dihedral.name] = dihedral.force_entry
 
         # Create integrator and integration method
         #TODO: Set kT in method_kwargs

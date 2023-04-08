@@ -40,7 +40,6 @@ class Force(object):
         self.format = None
         self.force_type = None
         self.table_entry = None
-        self.harmonic_entry = None
         self._states = dict()
         self.potential_history = []
         self._head_correction_history = []
@@ -144,10 +143,8 @@ class Force(object):
         self.x_range = np.arange(x_min, x_max, self.dx)
         self.potential = quadratic_spring(self.x_range, x0, k4, k3, k2)
         self.force = None #TODO Calculate this
-        self.force_init = self.table_init.format(self.nbins) 
-        self.force_entry = self.table_entry.format(
-                self.name, self.potential, self.force
-        )
+        self.force_init = "Table"
+        self.force_entry = self.table_entry()
 
     def set_from_file(self, file_path):
         """Creates a bond-stretching potential from a text file.
@@ -175,10 +172,8 @@ class Force(object):
         self.force = None #TODO Calculate this
 
         self.format = "table"
-        self.force_init = self.table_init.format(self.nbins) 
-        self.force_entry = self.table_entry.format(
-                self.name, self.potential, self.force
-        )
+        self.force_init = "Table"
+        self.force_entry = self.table_entry()
 
     def update_potential_file(self, fpath):
         """Set (or reset) the path to a table potential file.
@@ -192,6 +187,7 @@ class Force(object):
             Full path to the text file
 
         """
+        #TODO: Updating potentials will be different with arrays instead of files
         self._potential_file = fpath
         self.force_entry = self.force_entry.format(self._potential_file)
 
@@ -298,8 +294,6 @@ class Bond(Force):
         self.force_type = "bond"
         self._correction_function = bond_correction
         name = f"{self.type1}-{self.type2}"
-        self.table_init = "harmonic_bond = hoomd.md.bond.Table(width={})"
-        self.table_entry = "btable.params[{}] = dict(U={}, tau={})"
         super(Bond, self).__init__(
                 name=name,
                 optimize=optimize,
@@ -326,8 +320,17 @@ class Bond(Force):
                     "set_from_file() or set_quadratic()."
             )
         self.type = "static"
-        self.force_init = "harmonic_bond = hoomd.md.bond.Harmonic()"
-        self.force_entry = HARMONIC_BOND_ENTRY.format(self.name, k, r0)
+        self.force_init = "Harmonic"
+        self.force_entry = dict(r0=r0, k=k)
+    
+    def _table_entry(self)
+        table_entry = {
+                "r_min": self.x_min,
+                "r_max": self.x_max,
+                "U": self.potential,
+                "F": self.force
+        }
+        return table_entry
 
     def _get_distribution(self, state, gsd_file):
         return bond_distribution(
@@ -357,8 +360,7 @@ class Angle(Force):
         self.type3 = type3
         name = f"{self.type1}-{self.type2}-{self.type3}"
         self.force_type = "angle"
-        self.harmonic_entry = "harmonic_angle.params[{}] = dict(k={}, t0={})"
-        self.table_entry = "atable.params[{}] = dict(U={}, tau={})"
+        self.table_entry = dict(U=None, tau=None)
         super(Angle, self).__init__(
                 name=name,
                 optimize=optimize,
@@ -385,8 +387,12 @@ class Angle(Force):
                     "set_from_file() or set_quadratic()."
             )
         self.type = "static"
-        self.force_init = "harmonic_angle = hoomd.md.angle.Harmonic()"
-        self.force_entry = HARMONIC_ANGLE_ENTRY.format(self.name, k, t0)
+        self.force_init = "Harmonic"
+        self.force_entry = dict(t0=t0, k=k)
+
+    def _table_entry(self)
+        table_entry = {"U": self.potential, "tau": self.force}
+        return table_entry
 
     def _get_distribution(self, gsd_file):
         return angle_distribution(
@@ -439,6 +445,7 @@ class Pair(Force):
 
         """
         self.type = "static"
+        #TODO: Fix init and entry
         self.force_init = f"lj = hoomd.md.pair.lj(nlist=nl, r_cut={r_cut})"
         self.force_entry = LJ_PAIR_ENTRY.format(
                 self.type1, self.type2, epsilon, sigma, r_cut
@@ -471,8 +478,7 @@ class Dihedral(Force):
         self.type4 = type4
         name = f"{self.type1}-{self.type2}-{self.type3}-{self.type4}"
         self.force_type = "dihedral"
-        self.harmonic_entry = "harmonic_dihedral.params[{}] = dict(k={}, d={}, n={}, phi0={})"
-        self.table_entry = "dtable.params[{}] = dict(U={}, tau={})"
+        self.table_entry = dict(U=None, tau=None)
         super(Dihedral, self).__init__(
                 name=name,
                 optimize=optimize,
@@ -503,10 +509,12 @@ class Dihedral(Force):
                     "set_from_file() or set_quadratic()."
             )
         self.type = "static"
-        self.force_init = "harmonic_dihedral = hoomd.md.dihedral.harmonic()"
-        self.force_entry = HARMONIC_DIHEDRAL_ENTRY.format(
-                self.name, k, d, n, phi0
-        )
+        self.force_init = "Periodic"
+        self.force_entry = dict(phi0=phi0, k=k, d=d, n=n)
+
+    def _table_entry(self)
+        table_entry = {"U": self.potential, "tau": self.force}
+        return table_entry
 
     def _get_distribution(self, state, gsd_file):
         return dihedral_distribution(
