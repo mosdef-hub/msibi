@@ -27,7 +27,6 @@ class Force(object):
     def __init__(self, name, optimize=False, head_correction_form="linear"):
         self.name = name 
         self.optimize = optimize
-        self.potential = None 
         self.head_correction_form = head_correction_form
         self.format = None
         self.xmin = None
@@ -35,6 +34,7 @@ class Force(object):
         self.dx = None
         self.x_range = None
         self.potential_history = []
+        self._potential = None 
         self._potential_file = None
         self._smoothing_window = 3
         self._smoothing_order = 1
@@ -51,6 +51,17 @@ class Force(object):
                 + f"Name: {self.name}; "
                 + f"Optimize: {self.optimize}"
         )
+    @property
+    def potential(self):
+        return self._potential
+
+    @potential.setter
+    def potential(self, array):
+        self._potential = array
+    
+    @property
+    def force(self):
+        return -1.0*np.gradient(self.potential, self.dx)
 
     @property
     def smoothing_window(self):
@@ -140,14 +151,16 @@ class Force(object):
         self.x_max = x_max
         self.dx = x_max / self.nbins
         self.x_range = np.arange(x_min, x_max, self.dx)
-        self.potential = quadratic_spring(self.x_range, x0, k4, k3, k2)
-        self.force = None #TODO Calculate this
+        self._potential = quadratic_spring(self.x_range, x0, k4, k3, k2)
         self.force_init = "Table"
         self.force_entry = self._table_entry()
 
     def set_from_file(self, file_path):
         """Creates a potential from a text file.
-        The columns of the text file must be in the order of r, V, F.
+        The columns of the text file must be in the order of r, V.
+        where r is the independent value (i.e. distance) and V
+        is the potential enregy at r. The force will be calculated
+        from r and V using np.gradient().
 
         Use this potential setter to set a potential from a previous MSIBI run.
         For example, use the final potential files from a bond-optimization IBI
@@ -166,28 +179,10 @@ class Force(object):
         self.dx = np.round(self.x_range[1] - self.x_range[0], 3) 
         self.x_min = self.x_range[0]
         self.x_max = self.x_range[-1] + self.dx
-        self.potential = f[:,1]
-        self.force = f[:,2] 
+        self._potential = f[:,1]
         self.format = "table"
         self.force_init = "Table"
         self.force_entry = self.table_entry()
-
-    def update_potential_file(self, fpath):
-        #TODO: Probably don't need this function anymore
-        """Set (or reset) the path to a table potential file.
-        This function ensures that the Force.force_entry attribute
-        is correctly updated when a potential file path is generated
-        or updated.
-
-        Parameters:
-        -----------
-        fpath : str, required
-            Full path to the text file
-
-        """
-        #TODO: Updating potentials will be different with arrays instead of files
-        self._potential_file = fpath
-        self.force_entry = self.force_entry.format(self._potential_file)
 
     def _add_state(self, state):
         """Add a state to be used in optimizing this Fond.
@@ -270,13 +265,13 @@ class Force(object):
             current_dist = self._states[state]["current_distribution"]
             target_dist = self._states[state]["target_distribution"]
             N = len(self._states)
-            self.potential += state.alpha * (
+            #TODO: Use potential setter here? Does it work?
+            self._potential += state.alpha * (
                     kT * np.log(current_dist[:,1] / target_dist[:,1]) / N
             )
         #TODO: Add correction funcs to Force classes
         #TODO: Smoothing potential before doing head and tail corrections?
-        #TODO: Set self.force as well
-        self.potential, real, head_cut, tail_cut = self._correction_function(
+        self._potential, real, head_cut, tail_cut = self._correction_function(
                 self.x_range, self.potential, self.head_correction_form
         )
         self._head_correction_history.append(self.potential[0:head_cut])
@@ -425,7 +420,7 @@ class Pair(Force):
                 head_correction_form=head_correction_form
         )
 
-    def set_lj(self, epsilon, sigma, r_cut):
+    def set_lj(self, epsilon, sigma):
         """Creates a hoomd 12-6 LJ pair potential used during
         the query simulations. This method is not compatible when
         optimizing pair potentials. Rather, this method should
@@ -444,7 +439,7 @@ class Pair(Force):
         """
         self.type = "static"
         self.force_init = "LJ" 
-        self.force_entry = dict(sigma=sigma, epsilon=epsilon, r_cut=r_cut)
+        self.force_entry = dict(sigma=sigma, epsilon=epsilon)
 
     def _get_distribution(self, state, gsd_file):
         return gsd_rdf(

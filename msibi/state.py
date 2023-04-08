@@ -1,13 +1,15 @@
 import os
 import shutil
 import warnings
-from msibi import MSIBI, utils
-from msibi.utils.hoomd_run_template import (HOOMD2_HEADER, HOOMD_TEMPLATE)
+
 
 import cmeutils as cme
 from cmeutils.structure import gsd_rdf
 import gsd
 import gsd.hoomd
+import hoomd
+from msibi import MSIBI, utils
+from msibi.utils.hoomd_run_template import (HOOMD2_HEADER, HOOMD_TEMPLATE)
 
 
 class State(object):
@@ -127,7 +129,7 @@ class State(object):
                 if pair.force_init == "Table":
                     pair_force = hoomd_pair_force(width=pair.nbins)
                 else:
-                    pair_force = hoomd_pair_force() 
+                    pair_force = hoomd_pair_force(nlist=nlist, r_cut=r_cut) 
             pair_force.params[pair.name] = pair.force_entry
 
         # Create bond objects
@@ -187,6 +189,7 @@ class State(object):
         if backup_trajectories:
             pass #TODO: shutil copy traj file
         print(f"Finished simulation {iteration} for state {self}")
+        print()
 
     def _setup_dir(self, name, kT, dir_name=None):
         """Create a state directory each time a new State is created."""

@@ -21,9 +21,8 @@ class MSIBI(object):
         may work best for single chain, low density simulations
         When optimizing pair potentials hoomd.md.nlist.cell
         may work best
-    integrator : str, required 
-        The integrator to use in the query simulation.
-        See hoomd-blue.readthedocs.io/en/v2.9.6/module-md-integrate.html
+    integrator_method : str, required 
+        The integrator_method to use in the query simulation.
     integrator_kwargs : dict, required 
         The args and their values required by the integrator chosen
     dt : float, required 
@@ -34,6 +33,13 @@ class MSIBI(object):
         How many steps to run the query simulations
     nlist_exclusions : list of str, optional, default ["1-2", "1-3"]
         Sets the pair exclusions used during the optimization simulations
+    seed : int, optional, default 42
+        Random seed to use during the simulation
+    backup_trajectories : bool, optional, default False
+        If False, the query simulation trajectories are 
+        overwritten during each iteraiton.
+        If True, the query simulations are saved for 
+        each iteration.
 
     Attributes
     ----------
@@ -62,54 +68,46 @@ class MSIBI(object):
     def __init__(
             self,
             nlist,
-            integrator,
-            integrator_kwargs,
+            integrator_method,
+            method_kwargs,
             dt,
             gsd_period,
             n_steps,
             nlist_exclusions=["1-2", "1-3"],
+            seed=42,
+            backup_trajectories=False
     ):
-        if integrator == "hoomd.md.integrate.nve":
+        if integrator_method == "NVE":
             raise ValueError("The NVE ensemble is not supported with MSIBI")
 
-        assert nlist in [
-                "hoomd.md.nlist.cell",
-                "hoomd.md.nlist.tree",
-                "hoomd.md.nlist.stencil"
-        ], "Enter a valid Hoomd neighbor list type"
+        if nlist not in ["Cell", "Tree", "Stencil"]:
+            raise ValueError(f"{nlist} is not a valid neighbor list in Hoomd")
 
         self.nlist = nlist 
-        self.integrator = integrator
-        self.integrator_kwargs = integrator_kwargs
+        self.integrator_method = integrator_method
+        self.method_kwargs = method_kwargs
         self.dt = dt
         self.gsd_period = gsd_period
         self.n_steps = n_steps
+        self.seed = seed
         self.nlist_exclusions = nlist_exclusions
-        # Store all of the needed interaction objects
+        self.backup_trajectories = backup_trajectories
         self.states = []
         self.forces = []
         self._optimize_forces = []
 
     def add_state(self, state):
+        """"""
         state._opt = self
         self.states.append(state)
 
     def add_force(self, force):
+        """"""
         self.forces.append(force)
         if force.optimize:
             self._add_optimize_force(force)
         for state in self.states:
             force._add_state(state)
-
-    def _add_optimize_force(self, force):
-        if not all(
-                [isinstance(force, f.__class__) for f in self._optimize_forces]
-        ):
-            raise RuntimeError(
-                    "Only one type of force (i.e. Bonds, Angles, Pairs, etc) "
-                    "Can be set to optimize."
-            )
-        self._optimize_forces.append(force)
 
     @property
     def bonds(self):
@@ -127,6 +125,16 @@ class MSIBI(object):
     def dihedrals(self):
         return [f for f in self.forces if isinstance(f, msibi.forces.Dihedral)]
 
+    def _add_optimize_force(self, force):
+        if not all(
+                [isinstance(force, f.__class__) for f in self._optimize_forces]
+        ):
+            raise RuntimeError(
+                    "Only one type of force (i.e. Bonds, Angles, Pairs, etc) "
+                    "Can be set to optimize."
+            )
+        self._optimize_forces.append(force)
+
     def run_optimization(self, n_iterations, _dir=None):
         """Runs MSIBI on the potentials set to be optimized.
 
@@ -138,8 +146,29 @@ class MSIBI(object):
         self._initialize(potentials_dir=_dir)
         for n in range(n_iterations):
             print(f"---Optimization: {n+1} of {n_iterations}---")
-            run_query_simulations(self.states)
+            for state in self.states:
+                state._run_simulation(
+                    n_steps=self.n_steps,
+                    nlist=self.nlist,
+                    nlist_exclusions=self.nlist_exclusions,
+                    integrator_method=self.integrator_method,
+                    method_kwargs=self.method_kwargs,
+                    dt=self.dt,
+                    seed=self.seed,
+                    iteration=n,
+                    gsd_period=self.gsd_period,
+                    pairs=self.pairs,
+                    bonds=self.bonds,
+                    angles=self.angles,
+                    dihedrals=self.dihedrals,
+                    backup_trajectories=self.backup_trajectories
+                )
+            #TODO: Make sure this working
             self._update_potentials(n)
+
+        # After MSIBI iterations are done: What are we doing?
+        # Save final potentials to a text file
+        # Skip smoothing here?
         for force in self._optimize_forces:
             if force.smoothing_window and force.smoothing_order:
                 smoothed_pot = savitzky_golay(
@@ -207,7 +236,7 @@ class MSIBI(object):
                 potential_file = os.path.join(
                     self.potentials_dir, f"{force.name}.txt"
                 )
-                force.update_potential_file(potential_file)
+                force._potential_file = potential_file
                 save_table_potential(
                         force.potential,
                         force.x_range,
@@ -215,18 +244,3 @@ class MSIBI(object):
                         0,
                         force._potential_file
                 )
-
-        for state in self.states:
-            state._save_runscript(
-                n_steps=int(self.n_steps),
-                nlist=self.nlist,
-                nlist_exclusions=self.nlist_exclusions,
-                integrator=self.integrator,
-                integrator_kwargs=self.integrator_kwargs,
-                dt=self.dt,
-                gsd_period=self.gsd_period,
-                pairs=self.pairs,
-                bonds=self.bonds,
-                angles=self.angles,
-                dihedrals=self.dihedrals,
-            )
