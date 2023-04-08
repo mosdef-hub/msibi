@@ -104,6 +104,7 @@ class State(object):
             method_kwargs,
             dt,
             seed,
+            r_cut,
             iteration,
             gsd_period,
             pairs=None,
@@ -121,6 +122,7 @@ class State(object):
             last_snap = traj[-1]
         sim.create_state_from_snapshot(last_snap)
         
+        nlist = getattr(hoomd.md.nlist, nlist)
         # Create pair objects
         pair_force = None
         for pair in pairs:
@@ -129,8 +131,12 @@ class State(object):
                 if pair.force_init == "Table":
                     pair_force = hoomd_pair_force(width=pair.nbins)
                 else:
-                    pair_force = hoomd_pair_force(nlist=nlist, r_cut=r_cut) 
-            pair_force.params[pair.name] = pair.force_entry
+                    pair_force = hoomd_pair_force(
+                            nlist=nlist(buffer=20, exclusions=nlist_exclusions),
+                            default_r_cut=r_cut
+                    ) 
+            param_name = (pair.name[0], pair.name[-1]) # Can't use pair.name
+            pair_force.params[param_name] = pair.force_entry
 
         # Create bond objects
         bond_force = None
@@ -173,7 +179,9 @@ class State(object):
         integrator = hoomd.md.Integrator(dt=dt) 
         integrator.forces = [f for f in forces if f] # Filter out None 
         method = getattr(hoomd.md.methods, integrator_method)
-        integrator.methods.append(method(**method_kwargs))
+        integrator.methods.append(
+                method(filter=hoomd.filter.All(), kT=self.kT, **method_kwargs)
+        )
         sim.operations.add(integrator)
 
         #Create GSD writer

@@ -31,6 +31,9 @@ class MSIBI(object):
         The number of frames between snapshots written to query.gsd
     n_steps : int, required 
         How many steps to run the query simulations
+    r_cut : float, optional, default 0
+        Set the r_cut value to use in pair interactions.
+        Leave as zero if pair interactions aren't being used.
     nlist_exclusions : list of str, optional, default ["1-2", "1-3"]
         Sets the pair exclusions used during the optimization simulations
     seed : int, optional, default 42
@@ -73,7 +76,8 @@ class MSIBI(object):
             dt,
             gsd_period,
             n_steps,
-            nlist_exclusions=["1-2", "1-3"],
+            r_cut=0,
+            nlist_exclusions=["bond", "angle"],
             seed=42,
             backup_trajectories=False
     ):
@@ -89,6 +93,7 @@ class MSIBI(object):
         self.dt = dt
         self.gsd_period = gsd_period
         self.n_steps = n_steps
+        self.r_cut = r_cut
         self.seed = seed
         self.nlist_exclusions = nlist_exclusions
         self.backup_trajectories = backup_trajectories
@@ -131,7 +136,7 @@ class MSIBI(object):
         ):
             raise RuntimeError(
                     "Only one type of force (i.e. Bonds, Angles, Pairs, etc) "
-                    "Can be set to optimize."
+                    "can be set to optimize at a time."
             )
         self._optimize_forces.append(force)
 
@@ -154,8 +159,9 @@ class MSIBI(object):
                     integrator_method=self.integrator_method,
                     method_kwargs=self.method_kwargs,
                     dt=self.dt,
+                    r_cut=self.r_cut,
                     seed=self.seed,
-                    iteration=n,
+                    iteration=n+1,
                     gsd_period=self.gsd_period,
                     pairs=self.pairs,
                     bonds=self.bonds,

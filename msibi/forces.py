@@ -114,6 +114,7 @@ class Force(object):
             plt.legend()
 
     def set_target_distribution(self, state, array):
+        """"""
         self._states[state]["target_distribution"] = array
 
     def current_distribution(self, state, query=True):
@@ -151,7 +152,7 @@ class Force(object):
         self.x_max = x_max
         self.dx = x_max / self.nbins
         self.x_range = np.arange(x_min, x_max, self.dx)
-        self._potential = quadratic_spring(self.x_range, x0, k4, k3, k2)
+        self.potential = quadratic_spring(self.x_range, x0, k4, k3, k2)
         self.force_init = "Table"
         self.force_entry = self._table_entry()
 
@@ -180,7 +181,7 @@ class Force(object):
         self.x_min = self.x_range[0]
         self.x_max = self.x_range[-1] + self.dx
         self._potential = f[:,1]
-        self.format = "table"
+        self.format = "table" #TODO: Still using format attribute?
         self.force_init = "Table"
         self.force_entry = self.table_entry()
 
@@ -265,7 +266,7 @@ class Force(object):
             current_dist = self._states[state]["current_distribution"]
             target_dist = self._states[state]["target_distribution"]
             N = len(self._states)
-            #TODO: Use potential setter here? Does it work?
+            #TODO: Use potential setter here? Does it work with +=?
             self._potential += state.alpha * (
                     kT * np.log(current_dist[:,1] / target_dist[:,1]) / N
             )
@@ -274,9 +275,9 @@ class Force(object):
         self._potential, real, head_cut, tail_cut = self._correction_function(
                 self.x_range, self.potential, self.head_correction_form
         )
-        self._head_correction_history.append(self.potential[0:head_cut])
-        self._tail_correction_history.append(self.potential[tail_cut:])
-        self._learned_potential_history.append(self.potential[real])
+        self._head_correction_history.append(np.copy(self.potential[0:head_cut]))
+        self._tail_correction_history.append(np.copy(self.potential[tail_cut:]))
+        self._learned_potential_history.append(np.copy(self.potential[real]))
         
 
 class Bond(Force):
@@ -414,6 +415,7 @@ class Pair(Force):
         self.type1, self.type2 = sorted( [type1, type2], key=natural_sort)
         name = f"{self.type1}-{self.type2}"
         self._force_type = "pair"
+        self.r_cut = None
         super(Pair, self).__init__(
                 name=name,
                 optimize=optimize,
