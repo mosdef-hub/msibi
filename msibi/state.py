@@ -107,45 +107,69 @@ class State(object):
             pairs=None,
             bonds=None,
             angles=None,
-            dihedrals=None 
+            dihedrals=None,
+            backup_trajectories=False
     ):
-        print(f"Starting simulation {iteration} for state {self}")
         device = hoomd.device.auto_select()
         sim = hoomd.simulation.Simulation(device=device)
+        print(f"Starting simulation {iteration} for state {self}")
+        print(f"Running on device {device}")
+
         with gsd.hoomd.open(self.traj_file, "rb") as traj:
             last_snap = traj[-1]
         sim.create_state_from_snapshot(last_snap)
         
-        # Create force objects
+        # Create pair objects
         pair_force = None
         for pair in pairs:
-            if not pair_force: #TODO: Do I need to call these funcs here?
-                pair_force = getattr(hoomd.md.pair, pair.force_init)
+            if not pair_force: # Only create hoomd.md.pair obj once
+                hoomd_pair_force = getattr(hoomd.md.pair, pair.force_init)
+                if pair.force_init == "Table":
+                    pair_force = hoomd_pair_force(width=pair.nbins)
+                else:
+                    pair_force = hoomd_pair_force() 
             pair_force.params[pair.name] = pair.force_entry
 
+        # Create bond objects
         bond_force = None
         for bond in bonds:
             if not bond_force:
-                bond_force = getattr(hoomd.md.bond, bond.force_init)
+                hoomd_bond_force = getattr(hoomd.md.bond, bond.force_init)
+                if bond.force_init == "Table":
+                    bond_force = hoomd_bond_force(width=bond.nbins)
+                else:
+                    bond_force = hoomd_bond_force()
             bond_force.params[bond.name] = bond.force_entry
 
+        # Create angle objects
         angle_force = None
         for angle in angles:
             if not angle_force:
-                angle_force = getattr(hoomd.md.angle, angle.force_init)
+                hoomd_angle_force = getattr(hoomd.md.angle, angle.force_init)
+                if angle.force_init == "Table":
+                    angle_force = hoomd_angle_force(width=angle.nbins)
+                else:
+                    angle_force = hoomd_angle_force()
             angle_force.params[angle.name] = angle.force_entry
 
+        # Create dihedral objects
         dihedral_force = None
         for dih in dihedrals:
             if not dihedral_force:
-                dihedral_force = getattr(hoomd.md.dihedral, dihedral.force_init)
-            dihedral_force.params[dihedral.name] = dihedral.force_entry
+                hoomd_dihedral_force = getattr(
+                        hoomd.md.dihedral, dih.force_init
+                )
+                if dih.force_init == "Table":
+                    dihedral_force = hoomd_dihedral_force(width=dih.nbins)
+                else:
+                    dihedral_force = hoomd_dihedral_force()
+            dihedral_force.params[dih.name] = dih.force_entry
 
         # Create integrator and integration method
         #TODO: Set kT in method_kwargs
         forces = [pair_force, bond_force, angle_force, dihedral_force]
         integrator = hoomd.md.Integrator(dt=dt) 
-        integrator.forces = [f for f in forces if f] 
+        integrator.forces = [f for f in forces if f] # Filter out None 
         method = getattr(hoomd.md.methods, integrator_method)
         integrator.methods.append(method(**method_kwargs))
         sim.operations.add(integrator)
@@ -160,6 +184,8 @@ class State(object):
 
         # Run simulation
         sim.run(n_steps)
+        if backup_trajectories:
+            pass #TODO: shutil copy traj file
         print(f"Finished simulation {iteration} for state {self}")
 
     def _setup_dir(self, name, kT, dir_name=None):

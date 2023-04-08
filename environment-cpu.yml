@@ -5,6 +5,7 @@ dependencies:
 - freud
 - gsd
 - hoomd<4.0=*cpu*
+- matplotlib
 - more-itertools
 - numpy
 - pip

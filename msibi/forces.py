@@ -27,21 +27,20 @@ class Force(object):
     def __init__(self, name, optimize=False, head_correction_form="linear"):
         self.name = name 
         self.optimize = optimize
-        self._potential_file = "{}" 
         self.potential = None 
         self.head_correction_form = head_correction_form
+        self.format = None
         self.xmin = None
         self.xmax = None
         self.dx = None
         self.x_range = None
+        self.potential_history = []
+        self._potential_file = None
         self._smoothing_window = 3
         self._smoothing_order = 1
         self._nbins = 100
-        self.format = None
-        self.force_type = None
-        self.table_entry = None
+        self._force_type = None #TODO: Do we need this?
         self._states = dict()
-        self.potential_history = []
         self._head_correction_history = []
         self._tail_correction_history = []
         self._learned_potential_history = []
@@ -113,7 +112,7 @@ class Force(object):
         return self._calc_fit(state)
     
     def set_quadratic(self, k4, k3, k2, x0, x_min, x_max, n_points=101):
-        """Set a bond potential based on the following function:
+        """Set a potential based on the following function:
 
             V(x) = k4(l-x0)^4 + k3(l-x0)^3 + k2(l-x0)^2
 
@@ -121,7 +120,7 @@ class Force(object):
         x_min - x_max.
 
         This should be the potential form of choice when setting an initial 
-        potential for the force to be optimized.
+        guess potential for the force to be optimized.
 
         Parameters
         ----------
@@ -144,12 +143,11 @@ class Force(object):
         self.potential = quadratic_spring(self.x_range, x0, k4, k3, k2)
         self.force = None #TODO Calculate this
         self.force_init = "Table"
-        self.force_entry = self.table_entry()
+        self.force_entry = self._table_entry()
 
     def set_from_file(self, file_path):
-        """Creates a bond-stretching potential from a text file.
-        The columns of the text file must be in the order of r, V, F
-        which is the format used by hoomd-blue for table files.
+        """Creates a potential from a text file.
+        The columns of the text file must be in the order of r, V, F.
 
         Use this potential setter to set a potential from a previous MSIBI run.
         For example, use the final potential files from a bond-optimization IBI
@@ -169,13 +167,13 @@ class Force(object):
         self.x_min = self.x_range[0]
         self.x_max = self.x_range[-1] + self.dx
         self.potential = f[:,1]
-        self.force = None #TODO Calculate this
-
+        self.force = f[:,2] 
         self.format = "table"
         self.force_init = "Table"
         self.force_entry = self.table_entry()
 
     def update_potential_file(self, fpath):
+        #TODO: Probably don't need this function anymore
         """Set (or reset) the path to a table potential file.
         This function ensures that the Force.force_entry attribute
         is correctly updated when a potential file path is generated
@@ -277,6 +275,7 @@ class Force(object):
             )
         #TODO: Add correction funcs to Force classes
         #TODO: Smoothing potential before doing head and tail corrections?
+        #TODO: Set self.force as well
         self.potential, real, head_cut, tail_cut = self._correction_function(
                 self.x_range, self.potential, self.head_correction_form
         )
@@ -291,7 +290,7 @@ class Bond(Force):
                     [type1, type2],
                     key=natural_sort
                 )
-        self.force_type = "bond"
+        self._force_type = "bond"
         self._correction_function = bond_correction
         name = f"{self.type1}-{self.type2}"
         super(Bond, self).__init__(
@@ -323,7 +322,7 @@ class Bond(Force):
         self.force_init = "Harmonic"
         self.force_entry = dict(r0=r0, k=k)
     
-    def _table_entry(self)
+    def _table_entry(self):
         table_entry = {
                 "r_min": self.x_min,
                 "r_max": self.x_max,
@@ -359,8 +358,7 @@ class Angle(Force):
         self.type2 = type2
         self.type3 = type3
         name = f"{self.type1}-{self.type2}-{self.type3}"
-        self.force_type = "angle"
-        self.table_entry = dict(U=None, tau=None)
+        self._force_type = "angle"
         super(Angle, self).__init__(
                 name=name,
                 optimize=optimize,
@@ -390,7 +388,7 @@ class Angle(Force):
         self.force_init = "Harmonic"
         self.force_entry = dict(t0=t0, k=k)
 
-    def _table_entry(self)
+    def _table_entry(self):
         table_entry = {"U": self.potential, "tau": self.force}
         return table_entry
 
@@ -420,7 +418,7 @@ class Pair(Force):
     ):
         self.type1, self.type2 = sorted( [type1, type2], key=natural_sort)
         name = f"{self.type1}-{self.type2}"
-        self.force_type = "pair"
+        self._force_type = "pair"
         super(Pair, self).__init__(
                 name=name,
                 optimize=optimize,
@@ -445,11 +443,8 @@ class Pair(Force):
 
         """
         self.type = "static"
-        #TODO: Fix init and entry
-        self.force_init = f"lj = hoomd.md.pair.lj(nlist=nl, r_cut={r_cut})"
-        self.force_entry = LJ_PAIR_ENTRY.format(
-                self.type1, self.type2, epsilon, sigma, r_cut
-        )
+        self.force_init = "LJ" 
+        self.force_entry = dict(sigma=sigma, epsilon=epsilon, r_cut=r_cut)
 
     def _get_distribution(self, state, gsd_file):
         return gsd_rdf(
@@ -477,7 +472,7 @@ class Dihedral(Force):
         self.type3 = type3
         self.type4 = type4
         name = f"{self.type1}-{self.type2}-{self.type3}-{self.type4}"
-        self.force_type = "dihedral"
+        self._force_type = "dihedral"
         self.table_entry = dict(U=None, tau=None)
         super(Dihedral, self).__init__(
                 name=name,
@@ -512,7 +507,7 @@ class Dihedral(Force):
         self.force_init = "Periodic"
         self.force_entry = dict(phi0=phi0, k=k, d=d, n=n)
 
-    def _table_entry(self)
+    def _table_entry(self):
         table_entry = {"U": self.potential, "tau": self.force}
         return table_entry
 

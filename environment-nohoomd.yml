@@ -4,6 +4,7 @@ channels:
 dependencies:
 - freud
 - gsd
+- matplotlib
 - more-itertools
 - numpy
 - pip
