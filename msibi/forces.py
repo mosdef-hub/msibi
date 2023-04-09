@@ -209,14 +209,6 @@ class Force(object):
                 "path": state.dir
         }
 
-    def _get_state_distribution(self, state, query):
-        """Find the bond length distribution of a Bond at a State."""
-        if query:
-            traj = state.query_traj
-        else:
-            traj = state.traj_file
-        return self._get_distribution(state=state, gsd_file=traj)
-
     def _compute_current_distribution(self, state):
         """Find the current distribution of the query trajectory"""
         distribution = self._get_state_distribution(state, query=True)
@@ -237,6 +229,14 @@ class Force(object):
                     self._states[state]["target_distribution"][:,1] 
         )
         self._states[state]["f_fit"].append(f_fit)
+    #TODO: Get rid of this func? Pass in correct traj file in other funcs?
+    def _get_state_distribution(self, state, query):
+        """Find the bond length distribution of a Bond at a State."""
+        if query:
+            traj = state.query_traj
+        else:
+            traj = state.traj_file
+        return self._get_distribution(state=state, gsd_file=traj)
 
     def _save_current_distribution(self, state, iteration):
         """Save the current bond length distribution 
