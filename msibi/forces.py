@@ -70,6 +70,8 @@ class Force(object):
     @smoothing_window.setter
     def smoothing_window(self, value):
         self._smoothing_window = value
+        for state in self._states:
+            self._add_state(state)
 
     @property
     def smoothing_order(self):
@@ -78,6 +80,8 @@ class Force(object):
     @smoothing_order.setter
     def smoothing_order(self, value):
         self._smoothing_order = value
+        for state in self._states:
+            self._add_state(state)
 
     @property
     def nbins(self):
@@ -198,6 +202,15 @@ class Force(object):
             target_distribution = self._get_state_distribution(
                     state=state, query=False
             )
+            if self.smoothing_window and self.smoothing_order:
+                target_distribution[:,1] = savitzky_golay(
+                        y=target_distribution[:,1],
+                        window_size=self.smoothing_window,
+                        order=self.smoothing_order,
+                        deriv=0,
+                        rate=1
+                )
+
         else:
             target_distribution = None
         self._states[state] = {
