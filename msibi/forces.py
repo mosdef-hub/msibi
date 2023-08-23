@@ -122,9 +122,11 @@ class Force(object):
         self._states[state]["target_distribution"] = array
 
     def current_distribution(self, state, query=True):
+        """"""
         return self._get_state_distribution(state, query)
 
     def distribution_fit(self, state):
+        """"""
         return self._calc_fit(state)
     
     def set_quadratic(self, k4, k3, k2, x0, x_min, x_max, n_points=101):
@@ -296,9 +298,8 @@ class Force(object):
 class Bond(Force):
     def __init__(self, type1, type2, optimize, head_correction_form="linear"):
         self.type1, self.type2 = sorted(
-                    [type1, type2],
-                    key=natural_sort
-                )
+                    [type1, type2], key=natural_sort
+        )
         self._force_type = "bond"
         self._correction_function = bond_correction
         name = f"{self.type1}-{self.type2}"

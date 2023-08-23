@@ -3,7 +3,7 @@ channels:
 - conda-forge
 dependencies:
 - freud
-- gsd
+- gsd<2.9
 - hoomd<4.0=*cpu*
 - matplotlib
 - more-itertools
