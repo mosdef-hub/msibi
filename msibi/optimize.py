@@ -21,15 +21,15 @@ class MSIBI(object):
         may work best for single chain, low density simulations
         When optimizing pair potentials hoomd.md.nlist.cell
         may work best
-    integrator_method : str, required 
+    integrator_method : str, required
         The integrator_method to use in the query simulation.
-    integrator_kwargs : dict, required 
+    integrator_kwargs : dict, required
         The args and their values required by the integrator chosen
-    dt : float, required 
+    dt : float, required
         The time step delta
-    gsd_period : int, required 
+    gsd_period : int, required
         The number of frames between snapshots written to query.gsd
-    n_steps : int, required 
+    n_steps : int, required
         How many steps to run the query simulations
     r_cut : float, optional, default 0
         Set the r_cut value to use in pair interactions.
@@ -39,9 +39,9 @@ class MSIBI(object):
     seed : int, optional, default 42
         Random seed to use during the simulation
     backup_trajectories : bool, optional, default False
-        If False, the query simulation trajectories are 
+        If False, the query simulation trajectories are
         overwritten during each iteraiton.
-        If True, the query simulations are saved for 
+        If True, the query simulations are saved for
         each iteration.
 
     Attributes
@@ -84,7 +84,7 @@ class MSIBI(object):
     ):
         if nlist not in ["Cell", "Tree", "Stencil"]:
             raise ValueError(f"{nlist} is not a valid neighbor list in Hoomd")
-        self.nlist = nlist 
+        self.nlist = nlist
         self.integrator_method = integrator_method
         self.thermostat = thermostat
         self.method_kwargs = method_kwargs
@@ -143,7 +143,7 @@ class MSIBI(object):
 
         Parameters
         ----------
-        n_iterations : int, required 
+        n_iterations : int, required
             Number of iterations.
         """
         self._initialize(potentials_dir=_dir)
@@ -156,6 +156,7 @@ class MSIBI(object):
                     nlist_exclusions=self.nlist_exclusions,
                     integrator_method=self.integrator_method,
                     method_kwargs=self.method_kwargs,
+                    thermostat=self.thermostat,
                     dt=self.dt,
                     r_cut=self.r_cut,
                     seed=self.seed,

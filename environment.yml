@@ -1,0 +1,10 @@
+name: msibi-hoomd4
+channels:
+- conda-forge
+dependencies:
+- cuda-version==11.8
+- freud>=2.13
+- gsd>=3.0
+- hoomd>=4.0
+- cmeutils
+- more-itertools
