@@ -82,7 +82,7 @@ class State(object):
     @property
     def n_frames(self):
         return self._n_frames
-    
+
     @n_frames.setter
     def n_frames(self, value):
         self._n_frames = value
@@ -94,15 +94,16 @@ class State(object):
     @alpha.setter
     def alpha(self, value):
         self._alpha = value
-    
+
     def _run_simulation(
             self,
             n_steps,
             nlist,
             nlist_exclusions,
             integrator_method,
-            thermostat,
             method_kwargs,
+            thermostat,
+            thermostat_kwargs,
             dt,
             seed,
             r_cut,
@@ -122,9 +123,7 @@ class State(object):
         with gsd.hoomd.open(self.traj_file, "r") as traj:
             last_snap = traj[-1]
         sim.create_state_from_snapshot(last_snap)
-        
         nlist = getattr(hoomd.md.nlist, nlist)
-        thermostat = getattr(hoomd.md.methods.thermostats, thermostat)
         # Create pair objects
         pair_force = None
         for pair in pairs:
@@ -136,7 +135,7 @@ class State(object):
                     pair_force = hoomd_pair_force(
                             nlist=nlist(buffer=20, exclusions=nlist_exclusions),
                             default_r_cut=r_cut
-                    ) 
+                    )
             param_name = (pair.name[0], pair.name[-1]) # Can't use pair.name
             pair_force.params[param_name] = pair.force_entry
 
@@ -178,11 +177,17 @@ class State(object):
         # Create integrator and integration method
         #TODO: Set kT in method_kwargs
         forces = [pair_force, bond_force, angle_force, dihedral_force]
-        integrator = hoomd.md.Integrator(dt=dt) 
-        integrator.forces = [f for f in forces if f] # Filter out None 
+        integrator = hoomd.md.Integrator(dt=dt)
+        integrator.forces = [f for f in forces if f] # Filter out None
+        _thermostat = getattr(hoomd.md.methods.thermostats, thermostat)
+        thermostat = _thermostat(kT=self.kT, **thermostat_kwargs)
         method = getattr(hoomd.md.methods, integrator_method)
         integrator.methods.append(
-                method(filter=hoomd.filter.All(), kT=self.kT, **method_kwargs)
+                method(
+                    filter=hoomd.filter.All(),
+                    thermostat=thermostat,
+                    **method_kwargs
+                )
         )
         sim.operations.add(integrator)
 

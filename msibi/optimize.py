@@ -74,6 +74,7 @@ class MSIBI(object):
             integrator_method,
             thermostat,
             method_kwargs,
+            thermostat_kwargs,
             dt,
             gsd_period,
             n_steps,
@@ -88,6 +89,7 @@ class MSIBI(object):
         self.integrator_method = integrator_method
         self.thermostat = thermostat
         self.method_kwargs = method_kwargs
+        self.thermostat_kwargs = thermostat_kwargs
         self.dt = dt
         self.gsd_period = gsd_period
         self.n_steps = n_steps
@@ -157,6 +159,7 @@ class MSIBI(object):
                     integrator_method=self.integrator_method,
                     method_kwargs=self.method_kwargs,
                     thermostat=self.thermostat,
+                    thermostat_kwargs=self.thermostat_kwargs,
                     dt=self.dt,
                     r_cut=self.r_cut,
                     seed=self.seed,
