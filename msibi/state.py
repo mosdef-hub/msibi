@@ -101,6 +101,7 @@ class State(object):
             nlist,
             nlist_exclusions,
             integrator_method,
+            thermostat,
             method_kwargs,
             dt,
             seed,
@@ -118,11 +119,12 @@ class State(object):
         print(f"Starting simulation {iteration} for state {self}")
         print(f"Running on device {device}")
 
-        with gsd.hoomd.open(self.traj_file, "rb") as traj:
+        with gsd.hoomd.open(self.traj_file, "r") as traj:
             last_snap = traj[-1]
         sim.create_state_from_snapshot(last_snap)
         
         nlist = getattr(hoomd.md.nlist, nlist)
+        thermostat = getattr(hoomd.md.methods.thermostats, thermostat)
         # Create pair objects
         pair_force = None
         for pair in pairs:

@@ -72,23 +72,21 @@ class MSIBI(object):
             self,
             nlist,
             integrator_method,
+            thermostat,
             method_kwargs,
             dt,
             gsd_period,
             n_steps,
-            r_cut=0,
+            r_cut,
             nlist_exclusions=["bond", "angle"],
             seed=42,
             backup_trajectories=False
     ):
-        if integrator_method == "NVE":
-            raise ValueError("The NVE ensemble is not supported with MSIBI")
-
         if nlist not in ["Cell", "Tree", "Stencil"]:
             raise ValueError(f"{nlist} is not a valid neighbor list in Hoomd")
-
         self.nlist = nlist 
         self.integrator_method = integrator_method
+        self.thermostat = thermostat
         self.method_kwargs = method_kwargs
         self.dt = dt
         self.gsd_period = gsd_period

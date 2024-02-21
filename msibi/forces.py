@@ -1,5 +1,6 @@
 import math
 import os
+import warnings
 
 from cmeutils.structure import (
         angle_distribution, bond_distribution, dihedral_distribution, gsd_rdf
@@ -53,14 +54,30 @@ class Force(object):
         )
     @property
     def potential(self):
+        if self.format != "table":
+            #TODO: Set custom warning
+            warnings.warn(f"{self} is not using a table potential.")
+            return None
         return self._potential
 
     @potential.setter
     def potential(self, array):
+        if self.format != "table":
+            #TODO: Make custom error for this
+            raise ValueError(
+                    "Setting potential arrays can only be done "
+                    "for Forces that utilize tables. "
+                    "See msibi.forces.Force.set_quadratic() or "
+                    "msibi.forces.Force.set_from_file()"
+            )
         self._potential = array
     
     @property
     def force(self):
+        if self.format != "table":
+            #TODO: Set custom warning
+            warnings.warn(f"{self} is not using a table potential.")
+            return None
         return -1.0*np.gradient(self.potential, self.dx)
 
     @property
@@ -97,6 +114,7 @@ class Force(object):
         return self._states[state]["target_distribution"]
    
     def plot_target_distribution(self, state):
+        #TODO: Make custom error
         if not self.optimize:
             raise RuntimeError(
                     "This force object is not set to be optimized. "
