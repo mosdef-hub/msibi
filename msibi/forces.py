@@ -142,6 +142,27 @@ class Force(object):
             plt.plot(target[:,0], y_smoothed, label="Smoothed")
             plt.legend()
 
+    def plot_potential_history(self):
+        if not self.optimize:
+            raise RuntimeError(
+                    "This force object is not set to be optimized. "
+            )
+        fig = plt.figure()
+        for idx, i in enumerate(self.potential_history):
+            plt.plot(self.x_range, i, "o-", label=idx)
+        plt.legend(title="Iteration")
+        return fig
+
+    def plot_fit_scores(self, state):
+        if not self.optimize:
+            raise RuntimeError(
+                    "This force object is not set to be optimized. "
+            )
+        fig = plt.figure()
+        plt.plot(self._states[state]["f_fit"], "o-")
+        plt.xlabel("Iteration")
+        plt.ylabel("Fit Score")
+
     def set_target_distribution(self, state, array):
         """"""
         self._states[state]["target_distribution"] = array
@@ -246,6 +267,7 @@ class Force(object):
                 "alpha_form": "linear",
                 "f_fit": [],
                 "distribution_history": [],
+                #TODO: Is this used anywhere?
                 "path": state.dir
         }
 
