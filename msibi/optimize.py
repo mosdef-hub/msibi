@@ -81,7 +81,6 @@ class MSIBI(object):
             r_cut,
             nlist_exclusions=["bond", "angle"],
             seed=42,
-            backup_trajectories=False
     ):
         if nlist not in ["Cell", "Tree", "Stencil"]:
             raise ValueError(f"{nlist} is not a valid neighbor list in Hoomd")
@@ -96,7 +95,6 @@ class MSIBI(object):
         self.r_cut = r_cut
         self.seed = seed
         self.nlist_exclusions = nlist_exclusions
-        self.backup_trajectories = backup_trajectories
         self.states = []
         self.forces = []
         self._optimize_forces = []
@@ -140,7 +138,12 @@ class MSIBI(object):
             )
         self._optimize_forces.append(force)
 
-    def run_optimization(self, n_iterations, _dir=None):
+    def run_optimization(
+            self,
+            n_iterations,
+            backup_trajectories=False,
+            _dir=None
+    ):
         """Runs MSIBI on the potentials set to be optimized.
 
         Parameters
@@ -169,7 +172,7 @@ class MSIBI(object):
                     bonds=self.bonds,
                     angles=self.angles,
                     dihedrals=self.dihedrals,
-                    backup_trajectories=self.backup_trajectories
+                    backup_trajectories=backup_trajectories
                 )
             #TODO: Make sure this working
             self._update_potentials(n)
@@ -213,7 +216,7 @@ class MSIBI(object):
         for state in self.states:
             force._compute_current_distribution(state)
             force._save_current_distribution(state, iteration=iteration)
-            print("{0}, State: {1}, Iteration: {2}: {3:f}".format(
+            print("Force: {0}, State: {1}, Iteration: {2}: {3:f}".format(
                     force.name,
                     state.name,
                     iteration + 1,

@@ -42,8 +42,6 @@ class State(object):
         Path to where the State info with be saved.
     query_traj : str
         Path to the query trajectory.
-    backup_trajectory : bool
-        True if each query trajectory is backed up
 
     """
     def __init__(
@@ -54,7 +52,6 @@ class State(object):
         n_frames,
         alpha=1.0,
         exclude_bonded=True,
-        backup_trajectory=False,
         target_frames=None,
         _dir=None
     ):
@@ -68,8 +65,6 @@ class State(object):
         self.query_traj = os.path.join(self.dir, "query.gsd")
         self.exclude_bonded = exclude_bonded
         self._potential_history = []
-        # TODO: Do we want to support saving backup trajs?
-        self.backup_trajectory = backup_trajectory
 
     def __repr__(self):
         return (
@@ -137,7 +132,10 @@ class State(object):
                             default_r_cut=r_cut
                     )
             param_name = (pair.name[0], pair.name[-1]) # Can't use pair.name
-            pair_force.params[param_name] = pair.force_entry
+            if pair.format == "table":
+                pair_force.params[param_name] = pair._table_entry()
+            else:
+                pair_force.params[param_name] = pair.force_entry
 
         # Create bond objects
         bond_force = None
@@ -148,7 +146,10 @@ class State(object):
                     bond_force = hoomd_bond_force(width=bond.nbins + 1)
                 else:
                     bond_force = hoomd_bond_force()
-            bond_force.params[bond.name] = bond.force_entry
+            if bond.format == "table":
+                bond_force.params[bond.name] = bond._table_entry()
+            else:
+                bond_force.params[bond.name] = bond.force_entry
 
         # Create angle objects
         angle_force = None
@@ -159,7 +160,10 @@ class State(object):
                     angle_force = hoomd_angle_force(width=angle.nbins)
                 else:
                     angle_force = hoomd_angle_force()
-            angle_force.params[angle.name] = angle.force_entry
+            if angle.format == "table":
+                angle_force.params[angle.name] = angle._table_entry()
+            else:
+                angle_force.params[angle.name] = angle.force_entry
 
         # Create dihedral objects
         dihedral_force = None
@@ -172,7 +176,10 @@ class State(object):
                     dihedral_force = hoomd_dihedral_force(width=dih.nbins)
                 else:
                     dihedral_force = hoomd_dihedral_force()
-            dihedral_force.params[dih.name] = dih.force_entry
+            if dih.format == "table":
+                dihedral_force.params[dih.name] = dih._table_entry()
+            else:
+                dihedral_force.params[dih.name] = dih.force_entry
 
         # Create integrator and integration method
         #TODO: Set kT in method_kwargs
@@ -201,8 +208,12 @@ class State(object):
 
         # Run simulation
         sim.run(n_steps)
+        gsd_writer.flush()
         if backup_trajectories:
-            pass #TODO: shutil copy traj file
+            shutil.copy(
+                    self.query_traj,
+                    os.path.join(self.dir, f"query{iteration}.gsd")
+            )
         print(f"Finished simulation {iteration} for state {self}")
         print()
 

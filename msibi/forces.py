@@ -242,8 +242,10 @@ class Force(object):
                 "target_distribution": target_distribution,
                 "current_distribution": None,
                 "alpha": state.alpha,
+                #TODO: Get rid of alpha form?
                 "alpha_form": "linear",
                 "f_fit": [],
+                "distribution_history": [],
                 "path": state.dir
         }
 
@@ -301,8 +303,10 @@ class Force(object):
         self.potential_history.append(np.copy(self.potential))
         for state in self._states:
             kT = state.kT
+            #TODO: Save distribution history?
             current_dist = self._states[state]["current_distribution"]
             target_dist = self._states[state]["target_distribution"]
+            self._states[state]["distribution_history"].append(current_dist)
             N = len(self._states)
             #TODO: Use potential setter here? Does it work with +=?
             self._potential += state.alpha * (
