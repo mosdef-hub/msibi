@@ -145,7 +145,7 @@ class State(object):
             if not bond_force:
                 hoomd_bond_force = getattr(hoomd.md.bond, bond.force_init)
                 if bond.force_init == "Table":
-                    bond_force = hoomd_bond_force(width=bond.nbins)
+                    bond_force = hoomd_bond_force(width=bond.nbins + 1)
                 else:
                     bond_force = hoomd_bond_force()
             bond_force.params[bond.name] = bond.force_entry

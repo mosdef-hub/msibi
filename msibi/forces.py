@@ -8,7 +8,7 @@ from cmeutils.structure import (
 import matplotlib.pyplot as plt
 import numpy as np
 
-from msibi.potentials import quadratic_spring, bond_correction 
+from msibi.potentials import quadratic_spring, bond_correction
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.smoothing import savitzky_golay
 from msibi.utils.sorting import natural_sort
@@ -25,8 +25,14 @@ class Force(object):
         Must match the names found in the State's .gsd trajectory file
 
     """
-    def __init__(self, name, optimize=False, head_correction_form="linear"):
-        self.name = name 
+    def __init__(
+            self,
+            name,
+            optimize=False,
+            nbins=None,
+            head_correction_form="linear"
+    ):
+        self.name = name
         self.optimize = optimize
         self.head_correction_form = head_correction_form
         self.format = None
@@ -35,11 +41,12 @@ class Force(object):
         self.dx = None
         self.x_range = None
         self.potential_history = []
-        self._potential = None 
+        self._potential = None
         self._potential_file = None
         self._smoothing_window = 3
         self._smoothing_order = 1
-        self._nbins = 100
+        #TODO: set param for nbins?
+        self._nbins = nbins
         self._force_type = None #TODO: Do we need this?
         self._states = dict()
         self._head_correction_history = []
@@ -71,7 +78,7 @@ class Force(object):
                     "msibi.forces.Force.set_from_file()"
             )
         self._potential = array
-    
+
     @property
     def force(self):
         if self.format != "table":
@@ -112,7 +119,7 @@ class Force(object):
 
     def target_distribution(self, state):
         return self._states[state]["target_distribution"]
-   
+
     def plot_target_distribution(self, state):
         #TODO: Make custom error
         if not self.optimize:
@@ -146,8 +153,8 @@ class Force(object):
     def distribution_fit(self, state):
         """"""
         return self._calc_fit(state)
-    
-    def set_quadratic(self, k4, k3, k2, x0, x_min, x_max, n_points=101):
+
+    def set_quadratic(self, k4, k3, k2, x0, x_min, x_max):
         """Set a potential based on the following function:
 
             V(x) = k4(l-x0)^4 + k3(l-x0)^3 + k2(l-x0)^2
@@ -155,7 +162,7 @@ class Force(object):
         Using this method will create a table potential V(x) over the range
         x_min - x_max.
 
-        This should be the potential form of choice when setting an initial 
+        This should be the potential form of choice when setting an initial
         guess potential for the force to be optimized.
 
         Parameters
@@ -166,16 +173,14 @@ class Force(object):
             The lower bound of the bond potential lengths
         x_max : float, required
             The upper bound of the bond potential lengths
-        n_points : int, default = 101 
-            The number of points between l_min-l_max used to create
-            the table potential
 
         """
         self.format = "table"
+        #TODO: Properties for these?
         self.x_min = x_min
         self.x_max = x_max
         self.dx = x_max / self.nbins
-        self.x_range = np.arange(x_min, x_max, self.dx)
+        self.x_range = np.arange(x_min, x_max+self.dx, self.dx)
         self.potential = quadratic_spring(self.x_range, x0, k4, k3, k2)
         self.force_init = "Table"
         self.force_entry = self._table_entry()
@@ -201,7 +206,7 @@ class Force(object):
         self._potential_file = file_path
         f = np.loadtxt(self._potential_file)
         self.x_range = f[:,0]
-        self.dx = np.round(self.x_range[1] - self.x_range[0], 3) 
+        self.dx = np.round(self.x_range[1] - self.x_range[0], 3)
         self.x_min = self.x_range[0]
         self.x_max = self.x_range[-1] + self.dx
         self._potential = f[:,1]
@@ -259,7 +264,7 @@ class Force(object):
 
         f_fit = calc_similarity(
                     distribution[:,1],
-                    self._states[state]["target_distribution"][:,1] 
+                    self._states[state]["target_distribution"][:,1]
         )
         self._states[state]["f_fit"].append(f_fit)
     #TODO: Get rid of this func? Pass in correct traj file in other funcs?
@@ -272,7 +277,7 @@ class Force(object):
         return self._get_distribution(state=state, gsd_file=traj)
 
     def _save_current_distribution(self, state, iteration):
-        """Save the current bond length distribution 
+        """Save the current bond length distribution
 
         Parameters
         ----------
@@ -311,10 +316,17 @@ class Force(object):
         self._head_correction_history.append(np.copy(self.potential[0:head_cut]))
         self._tail_correction_history.append(np.copy(self.potential[tail_cut:]))
         self._learned_potential_history.append(np.copy(self.potential[real]))
-        
+
 
 class Bond(Force):
-    def __init__(self, type1, type2, optimize, head_correction_form="linear"):
+    def __init__(
+            self,
+            type1,
+            type2,
+            optimize,
+            nbins=None,
+            head_correction_form="linear"
+    ):
         self.type1, self.type2 = sorted(
                     [type1, type2], key=natural_sort
         )
@@ -324,6 +336,7 @@ class Bond(Force):
         super(Bond, self).__init__(
                 name=name,
                 optimize=optimize,
+                nbins=nbins,
                 head_correction_form=head_correction_form
         )
 
@@ -349,7 +362,7 @@ class Bond(Force):
         self.type = "static"
         self.force_init = "Harmonic"
         self.force_entry = dict(r0=r0, k=k)
-    
+
     def _table_entry(self):
         table_entry = {
                 "r_min": self.x_min,
@@ -369,8 +382,8 @@ class Bond(Force):
                 normalize=True,
                 l_min=self.x_min,
                 l_max=self.x_max,
-                bins=self.nbins
-        )        
+                bins=self.nbins + 1
+        )
 
 
 class Angle(Force):
@@ -380,6 +393,7 @@ class Angle(Force):
             type2,
             type3,
             optimize,
+            nbins=None,
             head_correction_form="linear"
     ):
         self.type1 = type1
@@ -390,6 +404,7 @@ class Angle(Force):
         super(Angle, self).__init__(
                 name=name,
                 optimize=optimize,
+                nbins=nbins,
                 head_correction_form=head_correction_form
         )
 
@@ -401,7 +416,7 @@ class Angle(Force):
         Parameters
         ----------
         t0 : float, required
-            Equilibrium bond angle 
+            Equilibrium bond angle
         k : float, required
             Spring constant
         """
@@ -431,8 +446,8 @@ class Angle(Force):
                 normalize=True,
                 l_min=self.x_min,
                 l_max=self.x_max,
-                bins=self.nbins
-        )        
+                bins=self.nbins + 1
+        )
 
 
 class Pair(Force):
@@ -472,7 +487,7 @@ class Pair(Force):
 
         """
         self.type = "static"
-        self.force_init = "LJ" 
+        self.force_init = "LJ"
         self.force_entry = dict(sigma=sigma, epsilon=epsilon)
 
     def _get_distribution(self, state, gsd_file):
@@ -482,8 +497,8 @@ class Pair(Force):
                 B_name=self.type2,
                 start=-state.n_frames,
                 stop=-1,
-                bins=self.nbins
-        )        
+                bins=self.nbins + 1
+        )
 
 
 class Dihedral(Force):
@@ -494,6 +509,7 @@ class Dihedral(Force):
             type3,
             type4,
             optimize,
+            nbins=None,
             head_correction_form="linear"
     ):
         self.type1 = type1
@@ -506,6 +522,7 @@ class Dihedral(Force):
         super(Dihedral, self).__init__(
                 name=name,
                 optimize=optimize,
+                nbins=nbins,
                 head_correction_form=head_correction_form
         )
 
@@ -550,5 +567,5 @@ class Dihedral(Force):
                 start=-state.n_frames,
                 histogram=True,
                 normalize=True,
-                bins=self.nbins
-        )        
+                bins=self.nbins + 1
+        )
