@@ -7,7 +7,6 @@ import msibi
 from msibi.potentials import pair_tail_correction, save_table_potential
 from msibi.utils.smoothing import savitzky_golay
 from msibi.utils.exceptions import UnsupportedEngine
-from msibi.workers import run_query_simulations
 
 
 class MSIBI(object):
@@ -174,9 +173,8 @@ class MSIBI(object):
                     dihedrals=self.dihedrals,
                     backup_trajectories=backup_trajectories
                 )
-            #TODO: Make sure this working
             self._update_potentials(n)
-
+        #TODO
         # After MSIBI iterations are done: What are we doing?
         # Save final potentials to a text file
         # Skip smoothing here?

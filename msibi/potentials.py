@@ -5,7 +5,7 @@ import numpy as np
 
 from msibi.utils.general import find_nearest
 
-
+#TODO: Move this to the Force class
 def save_table_potential(potential, r, dr, iteration, potential_file):
     """Save the length, potential energy,force values to a text file."""
     F = -1.0 * np.gradient(potential, dr)
