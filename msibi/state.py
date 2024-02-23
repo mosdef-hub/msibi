@@ -1,13 +1,15 @@
 import os
 import shutil
 import warnings
-from msibi import MSIBI, utils
-from msibi.utils.hoomd_run_template import (HOOMD2_HEADER, HOOMD_TEMPLATE)
+
 
 import cmeutils as cme
 from cmeutils.structure import gsd_rdf
 import gsd
 import gsd.hoomd
+import hoomd
+from msibi import MSIBI, utils
+from msibi.utils.hoomd_run_template import (HOOMD2_HEADER, HOOMD_TEMPLATE)
 
 
 class State(object):
@@ -40,8 +42,6 @@ class State(object):
         Path to where the State info with be saved.
     query_traj : str
         Path to the query trajectory.
-    backup_trajectory : bool
-        True if each query trajectory is backed up
 
     """
     def __init__(
@@ -49,72 +49,173 @@ class State(object):
         name,
         kT,
         traj_file,
+        n_frames,
         alpha=1.0,
-        backup_trajectory=False,
+        exclude_bonded=True,
+        target_frames=None,
         _dir=None
     ):
         self.name = name
         self.kT = kT
         self.traj_file = os.path.abspath(traj_file)
+        self._n_frames = n_frames
         self._opt = None
-        if alpha < 0 or alpha > 1:
-            raise ValueError("alpha should be between 0.0 and 1.0")
-        self.alpha = float(alpha)
+        self._alpha = float(alpha)
         self.dir = self._setup_dir(name, kT, dir_name=_dir)
         self.query_traj = os.path.join(self.dir, "query.gsd")
-        self.backup_trajectory = backup_trajectory
+        self.exclude_bonded = exclude_bonded
+        self._potential_history = []
 
-    def _save_runscript(
-        self,
-        n_steps,
-        nlist,
-        nlist_exclusions,
-        integrator,
-        integrator_kwargs,
-        dt,
-        gsd_period,
-        pairs=None,
-        bonds=None,
-        angles=None,
-    ):
-        """Save the input script for the MD engine."""
-        script = list()
-        script.append(
-            HOOMD2_HEADER.format(self.traj_file, nlist, nlist_exclusions)
+    def __repr__(self):
+        return (
+                f"{self.__class__}; "
+                + f"Name: {self.name}; "
+                + f"kT: {self.kT}; "
+                + f"Weight: {self.alpha}"
         )
-        if pairs is not None and len(pairs) > 0:
-            if len(set([p.pair_init for p in pairs])) != 1:
-                raise RuntimeError("Combining different pair potential types "
-                        "is not currently supported in MSIBI."
-                )
-            script.append(pairs[0].pair_init)
-            for pair in pairs:
-                script.append(pair.pair_entry)
-         
-        if bonds is not None and len(bonds) > 0:
-            if len(set([b.bond_init for b in bonds])) != 1:
-                raise RuntimeError("Combining different bond potential types "
-                        "is not currently supported in MSIBI."
-                )
-            script.append(bonds[0].bond_init)
-            for bond in bonds:
-                script.append(bond.bond_entry)
 
-        if angles is not None and len(angles) > 0:
-            if len(set([a.angle_init for a in angles])) != 1:
-                raise RuntimeError("Combining different angle potential types "
-                        "is not currently supported in MSIBI."
+    @property
+    def n_frames(self):
+        return self._n_frames
+
+    @n_frames.setter
+    def n_frames(self, value):
+        self._n_frames = value
+
+    @property
+    def alpha(self):
+        return self._alpha
+
+    @alpha.setter
+    def alpha(self, value):
+        self._alpha = value
+
+    def _run_simulation(
+            self,
+            n_steps,
+            nlist,
+            nlist_exclusions,
+            integrator_method,
+            method_kwargs,
+            thermostat,
+            thermostat_kwargs,
+            dt,
+            seed,
+            r_cut,
+            iteration,
+            gsd_period,
+            pairs=None,
+            bonds=None,
+            angles=None,
+            dihedrals=None,
+            backup_trajectories=False
+    ):
+        device = hoomd.device.auto_select()
+        sim = hoomd.simulation.Simulation(device=device)
+        print(f"Starting simulation {iteration} for state {self}")
+        print(f"Running on device {device}")
+
+        with gsd.hoomd.open(self.traj_file, "r") as traj:
+            last_snap = traj[-1]
+        sim.create_state_from_snapshot(last_snap)
+        nlist = getattr(hoomd.md.nlist, nlist)
+        # Create pair objects
+        pair_force = None
+        for pair in pairs:
+            if not pair_force: # Only create hoomd.md.pair obj once
+                hoomd_pair_force = getattr(hoomd.md.pair, pair.force_init)
+                if pair.force_init == "Table":
+                    pair_force = hoomd_pair_force(width=pair.nbins)
+                else:
+                    pair_force = hoomd_pair_force(
+                            nlist=nlist(buffer=20, exclusions=nlist_exclusions),
+                            default_r_cut=r_cut
+                    )
+            param_name = (pair.name[0], pair.name[-1]) # Can't use pair.name
+            if pair.format == "table":
+                pair_force.params[param_name] = pair._table_entry()
+            else:
+                pair_force.params[param_name] = pair.force_entry
+
+        # Create bond objects
+        bond_force = None
+        for bond in bonds:
+            if not bond_force:
+                hoomd_bond_force = getattr(hoomd.md.bond, bond.force_init)
+                if bond.force_init == "Table":
+                    bond_force = hoomd_bond_force(width=bond.nbins + 1)
+                else:
+                    bond_force = hoomd_bond_force()
+            if bond.format == "table":
+                bond_force.params[bond.name] = bond._table_entry()
+            else:
+                bond_force.params[bond.name] = bond.force_entry
+
+        # Create angle objects
+        angle_force = None
+        for angle in angles:
+            if not angle_force:
+                hoomd_angle_force = getattr(hoomd.md.angle, angle.force_init)
+                if angle.force_init == "Table":
+                    angle_force = hoomd_angle_force(width=angle.nbins)
+                else:
+                    angle_force = hoomd_angle_force()
+            if angle.format == "table":
+                angle_force.params[angle.name] = angle._table_entry()
+            else:
+                angle_force.params[angle.name] = angle.force_entry
+
+        # Create dihedral objects
+        dihedral_force = None
+        for dih in dihedrals:
+            if not dihedral_force:
+                hoomd_dihedral_force = getattr(
+                        hoomd.md.dihedral, dih.force_init
                 )
-            script.append(angles[0].angle_init)
-            for angle in angles:
-                script.append(angle.angle_entry)
+                if dih.force_init == "Table":
+                    dihedral_force = hoomd_dihedral_force(width=dih.nbins)
+                else:
+                    dihedral_force = hoomd_dihedral_force()
+            if dih.format == "table":
+                dihedral_force.params[dih.name] = dih._table_entry()
+            else:
+                dihedral_force.params[dih.name] = dih.force_entry
 
-        integrator_kwargs["kT"] = self.kT
-        script.append(HOOMD_TEMPLATE.format(**locals()))
+        # Create integrator and integration method
+        #TODO: Set kT in method_kwargs
+        forces = [pair_force, bond_force, angle_force, dihedral_force]
+        integrator = hoomd.md.Integrator(dt=dt)
+        integrator.forces = [f for f in forces if f] # Filter out None
+        _thermostat = getattr(hoomd.md.methods.thermostats, thermostat)
+        thermostat = _thermostat(kT=self.kT, **thermostat_kwargs)
+        method = getattr(hoomd.md.methods, integrator_method)
+        integrator.methods.append(
+                method(
+                    filter=hoomd.filter.All(),
+                    thermostat=thermostat,
+                    **method_kwargs
+                )
+        )
+        sim.operations.add(integrator)
 
-        runscript_file = os.path.join(self.dir, "run.py")
-        with open(runscript_file, "w") as fh:
-            fh.writelines("%s\n" % l for l in script)
+        #Create GSD writer
+        gsd_writer = hoomd.write.GSD(
+                filename=self.query_traj,
+                trigger=hoomd.trigger.Periodic(int(gsd_period)),
+                mode="wb",
+        )
+        sim.operations.writers.append(gsd_writer)
+
+        # Run simulation
+        sim.run(n_steps)
+        gsd_writer.flush()
+        if backup_trajectories:
+            shutil.copy(
+                    self.query_traj,
+                    os.path.join(self.dir, f"query{iteration}.gsd")
+            )
+        print(f"Finished simulation {iteration} for state {self}")
+        print()
 
     def _setup_dir(self, name, kT, dir_name=None):
         """Create a state directory each time a new State is created."""
@@ -135,4 +236,3 @@ class State(object):
             print(f"{dir_name} already exists")
             raise
         return os.path.abspath(dir_name)
-

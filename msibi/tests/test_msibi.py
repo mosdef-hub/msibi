@@ -15,7 +15,6 @@ class TestMSIBI(BaseTest):
                 nlist="hoomd.md.nlist.cell",
                 dt=0.001,
                 gsd_period=1000,
-                max_frames=10,
                 n_steps=1e6,
         )
         opt.add_state(state0)
@@ -31,7 +30,6 @@ class TestMSIBI(BaseTest):
                 nlist="hoomd.md.nlist.cell",
                 dt=0.001,
                 gsd_period=1000,
-                max_frames=10,
                 n_steps=1e6,
         )
         opt.add_state(state0)
@@ -39,7 +37,6 @@ class TestMSIBI(BaseTest):
         opt.optimize_pairs(
                 n_iterations=0,
                 r_switch=None,
-                rdf_exclude_bonded=True,
                 smooth_rdfs=False,
                 _dir=tmp_path,
             )
@@ -55,7 +52,6 @@ class TestMSIBI(BaseTest):
                 nlist="hoomd.md.nlist.cell",
                 dt=0.001,
                 gsd_period=1000,
-                max_frames=10,
                 n_steps=1e6,
         )
         opt.add_state(state0)
@@ -75,7 +71,6 @@ class TestMSIBI(BaseTest):
                 nlist="hoomd.md.nlist.cell",
                 dt=0.001,
                 gsd_period=1000,
-                max_frames=10,
                 n_steps=1e6,
         )
         opt.add_state(state0)

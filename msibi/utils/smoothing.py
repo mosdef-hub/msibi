@@ -4,18 +4,23 @@ import numpy as np
 
 
 def savitzky_golay(y, window_size, order, deriv=0, rate=1):
-    """
+    """Smoothing filter used on distributions and potentials
 
     Parameters
     ----------
-    y:
-    window_size:
-    order:
+    y: 1D array-like, required
+        The data sequence to be smoothed
+    window_size : int, required
+        The size of the smoothing window to use; must be an odd number
+    order: int, required
+        The polynomial order used by the smoothing filter
     deriv:
     rate:
 
     Returns
     -------
+    1D array-like
+        Smoothed array of y after passing through the filter
 
     """
     if not (isinstance(window_size, int) and isinstance(order, int)):

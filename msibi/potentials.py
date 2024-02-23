@@ -5,7 +5,7 @@ import numpy as np
 
 from msibi.utils.general import find_nearest
 
-
+#TODO: Move this to the Force class
 def save_table_potential(potential, r, dr, iteration, potential_file):
     """Save the length, potential energy,force values to a text file."""
     F = -1.0 * np.gradient(potential, dr)
@@ -27,8 +27,7 @@ def quadratic_spring(x, x0, k4, k3, k2):
 
         V(x) = k4(x-x0)^4 + k3(x-x0)^3 + k2(x-x0)^2
 
-    Used in creating table potentials for bond stretching and angle
-    potentials.
+    Used in creating table potentials for bonded potentials.
 
     """
     V_x = k4*((x-x0)**4) + k3*((x-x0)**3) + k2*((x-x0)**2)
@@ -164,10 +163,10 @@ def bond_correction(r, V, form):
     tail_correction_V = tail_correction_function(
             r=r, V=head_correction_V, cutoff=tail_cutoff
     )
-    return tail_correction_V
+    return tail_correction_V, real_idx, head_cutoff, tail_cutoff
 
 
-def linear_tail_correction(r, V, cutoff, window=3):
+def linear_tail_correction(r, V, cutoff, window=4):
     """Use a linear function to smoothly force V to a finite value at V(cut).
 
     Parameters
@@ -191,7 +190,7 @@ def linear_tail_correction(r, V, cutoff, window=3):
     return V 
 
 
-def linear_head_correction(r, V, cutoff, window=3):
+def linear_head_correction(r, V, cutoff, window=4):
     """Use a linear function to smoothly force V to a finite value at V(0).
     Parameters
     ----------
@@ -269,4 +268,3 @@ def alpha_array(alpha0, pot_r, form="linear"):
         return alpha0 * (1.0 - pot_r / pot_r[-1])
     else:
         raise ValueError("Unsupported alpha form")
-

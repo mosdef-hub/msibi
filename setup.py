@@ -8,15 +8,6 @@ from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 import sys
 
-try:
-    import mdtraj
-except ImportError:
-    print(
-        "Building and running msibi requires mdtraj. See "
-        "http://mdtraj.org/latest/installation.html for help!"
-    )
-    sys.exit(1)
-
 requirements = ["numpy", "networkx"]
 
 NAME = "msibi"

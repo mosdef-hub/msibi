@@ -1,11 +1,12 @@
 import os
+import shutil
 
 import numpy as np
 
+import msibi
 from msibi.potentials import pair_tail_correction, save_table_potential
 from msibi.utils.smoothing import savitzky_golay
 from msibi.utils.exceptions import UnsupportedEngine
-from msibi.workers import run_query_simulations
 
 
 class MSIBI(object):
@@ -19,22 +20,28 @@ class MSIBI(object):
         may work best for single chain, low density simulations
         When optimizing pair potentials hoomd.md.nlist.cell
         may work best
-    integrator : str, required 
-        The integrator to use in the query simulation.
-        See hoomd-blue.readthedocs.io/en/v2.9.6/module-md-integrate.html
-    integrator_kwargs : dict, required 
+    integrator_method : str, required
+        The integrator_method to use in the query simulation.
+    integrator_kwargs : dict, required
         The args and their values required by the integrator chosen
-    dt : float, required 
+    dt : float, required
         The time step delta
-    gsd_period : int, required 
+    gsd_period : int, required
         The number of frames between snapshots written to query.gsd
-    n_steps : int, required 
+    n_steps : int, required
         How many steps to run the query simulations
-    max_frames : int, required
-        How many snapshots of the trajectories to use in calcualting
-        relevant distributions (RDFs, bond distributions)
+    r_cut : float, optional, default 0
+        Set the r_cut value to use in pair interactions.
+        Leave as zero if pair interactions aren't being used.
     nlist_exclusions : list of str, optional, default ["1-2", "1-3"]
         Sets the pair exclusions used during the optimization simulations
+    seed : int, optional, default 42
+        Random seed to use during the simulation
+    backup_trajectories : bool, optional, default False
+        If False, the query simulation trajectories are
+        overwritten during each iteraiton.
+        If True, the query simulations are saved for
+        each iteration.
 
     Attributes
     ----------
@@ -46,295 +53,175 @@ class MSIBI(object):
         All bonds to be used in the optimization procedure.
     angles : list of msibi.bonds.Angle
         All angles to be used in the optimization procedure.
+    dihedrals : list of msibi.bonds.Dihedral
+        All dihedrals to be used in the optimization procedure.
 
     Methods
     -------
     add_state(state)
-    add_bond(bond)
-    add_angle(angle)
-        Add the required interaction objects. See Pair.py and Bonds.py
+    add_force(msibi.forces.Force)
+        Add the required interaction objects. See forces.py
 
-    optimize_bonds(n_iterations, start_iteration)
+    optimize_bonds(n_iterations)
         Calculates the target bond length distributions for each Bond
         in MSIBI.bonds and optimizes the bonding potential.
-
-    optimize_angles(n_iterations, start_iteration)
-        Calcualtes the target bond angle distribution for each Bond
-        in MSIBI.angles and optimizes the angle potential.
-
-    optimize_pairs(rdf_exclude_bonded, smooth_rdfs, r_switch, n_iterations)
-        Calculates the target RDF for each Pair in MSIBI.pairs
-        and optimizes the pair potential.
 
     """
     def __init__(
             self,
             nlist,
-            integrator,
-            integrator_kwargs,
+            integrator_method,
+            thermostat,
+            method_kwargs,
+            thermostat_kwargs,
             dt,
             gsd_period,
             n_steps,
-            max_frames,
-            nlist_exclusions=["1-2", "1-3"],
+            r_cut,
+            nlist_exclusions=["bond", "angle"],
+            seed=42,
     ):
-        if integrator == "hoomd.md.integrate.nve":
-            raise ValueError("The NVE ensemble is not supported with MSIBI")
-
-        assert nlist in [
-                "hoomd.md.nlist.cell",
-                "hoomd.md.nlist.tree",
-                "hoomd.md.nlist.stencil"
-        ], "Enter a valid Hoomd neighbor list type"
-
-        self.nlist = nlist 
-        self.integrator = integrator
-        self.integrator_kwargs = integrator_kwargs
+        if nlist not in ["Cell", "Tree", "Stencil"]:
+            raise ValueError(f"{nlist} is not a valid neighbor list in Hoomd")
+        self.nlist = nlist
+        self.integrator_method = integrator_method
+        self.thermostat = thermostat
+        self.method_kwargs = method_kwargs
+        self.thermostat_kwargs = thermostat_kwargs
         self.dt = dt
         self.gsd_period = gsd_period
         self.n_steps = n_steps
-        self.max_frames = max_frames
+        self.r_cut = r_cut
+        self.seed = seed
         self.nlist_exclusions = nlist_exclusions
-        # Store all of the needed interaction objects
         self.states = []
-        self.pairs = []
-        self.bonds = []
-        self.angles = []
+        self.forces = []
+        self._optimize_forces = []
 
     def add_state(self, state):
+        """"""
         state._opt = self
         self.states.append(state)
 
-    def add_pair(self, pair):
-        self.pairs.append(pair)
+    def add_force(self, force):
+        """"""
+        self.forces.append(force)
+        if force.optimize:
+            self._add_optimize_force(force)
+        for state in self.states:
+            force._add_state(state)
 
-    def add_bond(self, bond):
-        self.bonds.append(bond)
+    @property
+    def bonds(self):
+        return [f for f in self.forces if isinstance(f, msibi.forces.Bond)]
 
-    def add_angle(self, angle):
-        self.angles.append(angle)
+    @property
+    def angles(self):
+        return [f for f in self.forces if isinstance(f, msibi.forces.Angle)]
 
-    def optimize_bonds(
-            self, n_iterations, start_iteration=0,smooth=True, _dir=None
+    @property
+    def pairs(self):
+        return [f for f in self.forces if isinstance(f, msibi.forces.Pair)]
+
+    @property
+    def dihedrals(self):
+        return [f for f in self.forces if isinstance(f, msibi.forces.Dihedral)]
+
+    def _add_optimize_force(self, force):
+        if not all(
+                [isinstance(force, f.__class__) for f in self._optimize_forces]
+        ):
+            raise RuntimeError(
+                    "Only one type of force (i.e. Bonds, Angles, Pairs, etc) "
+                    "can be set to optimize at a time."
+            )
+        self._optimize_forces.append(force)
+
+    def run_optimization(
+            self,
+            n_iterations,
+            backup_trajectories=False,
+            _dir=None
     ):
-        """Optimize the bond potentials
+        """Runs MSIBI on the potentials set to be optimized.
 
         Parameters
         ----------
-        n_iterations : int, required 
+        n_iterations : int, required
             Number of iterations.
-        start_iteration : int, default 0
-            Start optimization at start_iteration, useful for restarting.
-        smooth : bool, default True
-            If True, the target distribution is smoothed using a 
-            Savitzky-Golay filter
-
         """
-        self.optimization = "bonds"
-        self.smooth_dist = smooth
-        self._add_states()
         self._initialize(potentials_dir=_dir)
-
-        for n in range(start_iteration + n_iterations):
-            print(f"-------- Bond Optimization: Iteration {n} --------")
-            run_query_simulations(self.states)
+        for n in range(n_iterations):
+            print(f"---Optimization: {n+1} of {n_iterations}---")
+            for state in self.states:
+                state._run_simulation(
+                    n_steps=self.n_steps,
+                    nlist=self.nlist,
+                    nlist_exclusions=self.nlist_exclusions,
+                    integrator_method=self.integrator_method,
+                    method_kwargs=self.method_kwargs,
+                    thermostat=self.thermostat,
+                    thermostat_kwargs=self.thermostat_kwargs,
+                    dt=self.dt,
+                    r_cut=self.r_cut,
+                    seed=self.seed,
+                    iteration=n+1,
+                    gsd_period=self.gsd_period,
+                    pairs=self.pairs,
+                    bonds=self.bonds,
+                    angles=self.angles,
+                    dihedrals=self.dihedrals,
+                    backup_trajectories=backup_trajectories
+                )
             self._update_potentials(n)
-        # Save final potential
-        for bond in self.bonds:
-            smoothed_pot = savitzky_golay(
-                    bond.potential, window_size=7, order=1
-            )
-            file_name = f"{bond.name}_smoothed.txt"
-            save_table_potential(
-                    potential=smoothed_pot,
-                    r=bond.l_range,
-                    dr=bond.dl,
-                    iteration=None,
-                    potential_file=os.path.join(self.potentials_dir, file_name)
-            )
-
-    def optimize_angles(
-            self, n_iterations, start_iteration=0, smooth=True, _dir=None
-    ):
-        """Optimize the bond angle potentials
-
-        Parameters
-        ----------
-        n_iterations : int, required 
-            Number of iterations.
-        start_iteration : int, default 0
-            Start optimization at start_iteration, useful for restarting.
-        smooth : bool, default True
-            If True, the target distribution is smoothed using a 
-            Savitzky-Golay filter
-
-        """
-        self.optimization = "angles"
-        self.smooth_dist = smooth
-        self._add_states()
-        self._initialize(potentials_dir=_dir)
-
-        for n in range(start_iteration + n_iterations):
-            print(f"-------- Angle Optimization: Iteration {n} --------")
-            run_query_simulations(self.states)
-            self._update_potentials(n)
-        # Save final potential
-        for angle in self.angles:
-            smoothed_pot = savitzky_golay(
-                    angle.potential, window_size=7, order=1
-            )
-            file_name = f"{angle.name}_smoothed.txt"
-            save_table_potential(
-                    potential=smoothed_pot,
-                    r=angle.theta_range,
-                    dr=angle.dtheta,
-                    iteration=None,
-                    potential_file=os.path.join(self.potentials_dir, file_name)
-            )
-
-    def optimize_pairs(
-        self,
-        n_iterations,
-        start_iteration=0,
-        rdf_exclude_bonded=True,
-        smooth_rdfs=True,
-        r_switch=None,
-        _dir=None
-    ):
-        """Optimize the pair potentials
-
-        Parameters
-        ----------
-        n_iterations : int, required 
-            Number of iterations.
-        start_iteration : int, default 0
-            Start optimization at start_iteration, useful for restarting.
-        rdf_exclude_bonded : bool, default=True
-            If the RDF calculation should exclude correlations between bonded
-            types.
-        smooth_rdfs : bool, default=True
-            Set to True to perform smoothing (Savitzky Golay) on the target
-            and iterative RDFs.
-        r_switch : float, optional, default=None
-            The distance after which a tail correction is applied.
-            If None, then Pair.r_range[-5] is used.
-
-        """
-        self.optimization = "pairs"
-        self.rdf_exclude_bonded = rdf_exclude_bonded
-        self.smooth_rdfs = smooth_rdfs
-        for pair in self.pairs:
-            if r_switch is None:
-                pair.r_switch = pair.r_range[-5]
+        #TODO
+        # After MSIBI iterations are done: What are we doing?
+        # Save final potentials to a text file
+        # Skip smoothing here?
+        for force in self._optimize_forces:
+            if force.smoothing_window and force.smoothing_order:
+                smoothed_pot = savitzky_golay(
+                        y=force.potential,
+                        window_size=force.smoothing_window,
+                        order=force.smoothing_order
+                )
             else:
-                pair.r_switch = r_switch
-
-        self._add_states()
-        self._initialize(potentials_dir=_dir)
-
-        for n in range(start_iteration + n_iterations):
-            print(f"-------- Pair Optimization: Iteration {n} --------")
-            run_query_simulations(self.states)
-            self._update_potentials(n)
-
-        for pair in self.pairs:
-            smoothed_pot = savitzky_golay(
-                    pair.potential, window_size=7, order=1
-            )
-            file_name = f"{pair.name}_smoothed.txt"
+                smoothed_pot = force.potential
+            file_name = f"{force.name}_final.txt"
             save_table_potential(
                     potential=smoothed_pot,
-                    r=pair.r_range,
-                    dr=pair.dr,
+                    r=force.x_range,
+                    dr=force.dx,
                     iteration=None,
                     potential_file=os.path.join(self.potentials_dir, file_name)
             )
-
-    def _add_states(self):
-        """Add State objects to Pairs, Bonds, and Angles.
-        Required step before optimization runs can begin.
-
-        """
-        try:
-            self.smooth_rdfs
-        except AttributeError:
-            self.smooth_rdfs = False
-
-        for pair in self.pairs:
-            for state in self.states:
-                pair._add_state(state)
-
-        for bond in self.bonds:
-            for state in self.states:
-                bond._add_state(state)
-
-        for angle in self.angles:
-            for state in self.states:
-                angle._add_state(state)
 
     def _update_potentials(self, iteration):
         """Update the potentials for the potentials to be optimized."""
-        if self.optimization == "pairs":
-            for pair in self.pairs:
-                self._recompute_rdfs(pair, iteration)
-                pair._update_potential()
-                save_table_potential(
-                        pair.potential,
-                        pair.r_range,
-                        pair.dr,
-                        iteration,
-                        pair._potential_file
-                )
+        for force in self._optimize_forces:
+            self._recompute_distribution(force, iteration)
+            force._update_potential()
+            save_table_potential(
+                    force.potential,
+                    force.x_range,
+                    force.dx,
+                    iteration,
+                    force._potential_file
+            )
 
-        elif self.optimization == "bonds":
-            for bond in self.bonds:
-                self._recompute_distribution(bond, iteration)
-                bond._update_potential()
-                save_table_potential(
-                        bond.potential,
-                        bond.l_range,
-                        bond.dl,
-                        iteration,
-                        bond._potential_file
-                )
-
-        elif self.optimization == "angles":
-            for angle in self.angles:
-                self._recompute_distribution(angle, iteration)
-                angle._update_potential()
-                save_table_potential(
-                        angle.potential,
-                        angle.theta_range,
-                        angle.dtheta,
-                        iteration,
-                        angle._potential_file
-                )
-
-    def _recompute_distribution(self, bond_object, iteration):
+    def _recompute_distribution(self, force, iteration):
         """Recompute the current distribution of bond lengths or angles"""
         for state in self.states:
-            bond_object._compute_current_distribution(state)
-            bond_object._save_current_distribution(state, iteration=iteration)
-            print("{0}, State: {1}, Iteration: {2}: {3:f}".format(
-                    bond_object.name,
+            force._compute_current_distribution(state)
+            force._save_current_distribution(state, iteration=iteration)
+            print("Force: {0}, State: {1}, Iteration: {2}: {3:f}".format(
+                    force.name,
                     state.name,
-                    iteration,
-                    bond_object._states[state]["f_fit"][iteration]
+                    iteration + 1,
+                    force._states[state]["f_fit"][iteration]
                 )
             )
-
-    def _recompute_rdfs(self, pair, iteration):
-        """Recompute the current RDFs for every state used for a given pair."""
-        for state in self.states:
-            pair._compute_current_rdf(state)
-            pair._save_current_rdf(state, iteration=iteration)
-            print("Pair: {0}, State: {1}, Iteration: {2}: {3:f}".format(
-                    pair.name,
-                    state.name,
-                    iteration,
-                    pair._states[state]["f_fit"][iteration]
-                )
-            )
+            print()
 
     def _initialize(self, potentials_dir):
         """Create initial table potentials and the simulation input scripts.
@@ -344,6 +231,7 @@ class MSIBI(object):
         potentials_dir : path, default None
             Directory to store potential files. If None is given, a "potentials"
             folder in the current working directory is used.
+
         """
         if potentials_dir is None:
             self.potentials_dir = os.path.join(os.getcwd(), "potentials")
@@ -352,81 +240,16 @@ class MSIBI(object):
 
         if not os.path.isdir(self.potentials_dir):
             os.mkdir(self.potentials_dir)
-
-        for pair in self.pairs:
-            if pair.pair_type == "table":
-                #TODO Fix handling of r_switch here?
-                pair.r_switch = pair.r_range[-5]
+        for force in self.forces:
+            if force.format == "table" and force.optimize:
                 potential_file = os.path.join(
-                    self.potentials_dir, f"pair_pot.{pair.name}.txt"
+                    self.potentials_dir, f"{force.name}.txt"
                 )
-                pair.update_potential_file(potential_file)
-                V = pair_tail_correction(
-                        pair.r_range, pair.potential, pair.r_switch
-                )
-                pair.potential = V
-                if self.optimization == "pairs":
-                    iteration = 0
-                else:
-                    iteration = None
+                force._potential_file = potential_file
                 save_table_potential(
-                        pair.potential,
-                        pair.r_range,
-                        pair.dr,
-                        iteration,
-                        pair._potential_file
+                        force.potential,
+                        force.x_range,
+                        force.dx,
+                        0,
+                        force._potential_file
                 )
-
-        for bond in self.bonds:
-            if bond.bond_type == "table" and bond._potential_file == "":
-                potential_file = os.path.join(
-                        self.potentials_dir, f"bond_pot.{bond.name}.txt"
-                )
-                bond.update_potential_file(potential_file)
-
-                if self.optimization == "bonds":
-                    iteration = 0
-                else:
-                    iteration = None
-
-                save_table_potential(
-                        bond.potential,
-                        bond.l_range,
-                        bond.dl,
-                        iteration,
-                        bond._potential_file
-                )
-
-        for angle in self.angles:
-            if angle.angle_type == "table" and angle._potential_file == "":
-                potential_file = os.path.join(
-                        self.potentials_dir, f"angle_pot.{angle.name}.txt"
-                )
-                angle.update_potential_file(potential_file)
-
-                if self.optimization == "angles":
-                    iteration = 0
-                else:
-                    iteration = None
-
-                save_table_potential(
-                        angle.potential,
-                        angle.theta_range,
-                        angle.dtheta,
-                        iteration,
-                        angle._potential_file
-                )
-
-        for state in self.states:
-            state._save_runscript(
-                n_steps=int(self.n_steps),
-                nlist=self.nlist,
-                nlist_exclusions=self.nlist_exclusions,
-                integrator=self.integrator,
-                integrator_kwargs=self.integrator_kwargs,
-                dt=self.dt,
-                gsd_period=self.gsd_period,
-                pairs=self.pairs,
-                bonds=self.bonds,
-                angles=self.angles
-            )
