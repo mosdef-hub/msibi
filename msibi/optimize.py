@@ -76,7 +76,6 @@ class MSIBI(object):
             thermostat_kwargs,
             dt,
             gsd_period,
-            n_steps,
             r_cut,
             nlist_exclusions=["bond", "angle"],
             seed=42,
@@ -90,7 +89,6 @@ class MSIBI(object):
         self.thermostat_kwargs = thermostat_kwargs
         self.dt = dt
         self.gsd_period = gsd_period
-        self.n_steps = n_steps
         self.r_cut = r_cut
         self.seed = seed
         self.nlist_exclusions = nlist_exclusions
@@ -139,6 +137,7 @@ class MSIBI(object):
 
     def run_optimization(
             self,
+            n_steps,
             n_iterations,
             backup_trajectories=False,
             _dir=None
@@ -155,7 +154,7 @@ class MSIBI(object):
             print(f"---Optimization: {n+1} of {n_iterations}---")
             for state in self.states:
                 state._run_simulation(
-                    n_steps=self.n_steps,
+                    n_steps=n_steps,
                     nlist=self.nlist,
                     nlist_exclusions=self.nlist_exclusions,
                     integrator_method=self.integrator_method,
