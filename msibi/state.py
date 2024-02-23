@@ -22,11 +22,11 @@ class State(object):
     kT : float
         Unitless heat energy (product of Boltzmann's constant and temperature).
     traj_file : path to a gsd.hoomd.HOOMDTrajectory file
-        The gsd trajectory associated with this state
+        The gsd trajectory associated with this state.
+        This trajectory is used to calcualte the target distributions used 
+        during optimization.
     alpha : float, default 1.0
         The alpha value used to scaale the weight of this state.
-    backup_trajectory : bool, default False
-        True if each query trajectory is backed up
 
     Attributes
     ----------
@@ -35,13 +35,13 @@ class State(object):
     kT : float
         Unitless heat energy (product of Boltzmann's constant and temperature).
     traj_file : path
-        Path to the gsd trajectory associated with this state
+        Path to the gsd trajectory associated with this state.
     alpha : float
         The alpha value used to scaale the weight of this state.
     dir : str
         Path to where the State info with be saved.
     query_traj : str
-        Path to the query trajectory.
+        Path to the query trajectory that is created during each iteration.
 
     """
     def __init__(
@@ -64,7 +64,6 @@ class State(object):
         self.dir = self._setup_dir(name, kT, dir_name=_dir)
         self.query_traj = os.path.join(self.dir, "query.gsd")
         self.exclude_bonded = exclude_bonded
-        self._potential_history = []
 
     def __repr__(self):
         return (
@@ -110,6 +109,7 @@ class State(object):
             dihedrals=None,
             backup_trajectories=False
     ):
+        """Contains the hoomd 4 script used to run each query simulation."""
         device = hoomd.device.auto_select()
         sim = hoomd.simulation.Simulation(device=device)
         print(f"Starting simulation {iteration} for state {self}")
@@ -136,7 +136,6 @@ class State(object):
                 pair_force.params[param_name] = pair._table_entry()
             else:
                 pair_force.params[param_name] = pair.force_entry
-
         # Create bond objects
         bond_force = None
         for bond in bonds:
@@ -150,7 +149,6 @@ class State(object):
                 bond_force.params[bond.name] = bond._table_entry()
             else:
                 bond_force.params[bond.name] = bond.force_entry
-
         # Create angle objects
         angle_force = None
         for angle in angles:
@@ -164,7 +162,6 @@ class State(object):
                 angle_force.params[angle.name] = angle._table_entry()
             else:
                 angle_force.params[angle.name] = angle.force_entry
-
         # Create dihedral objects
         dihedral_force = None
         for dih in dihedrals:
@@ -180,9 +177,7 @@ class State(object):
                 dihedral_force.params[dih.name] = dih._table_entry()
             else:
                 dihedral_force.params[dih.name] = dih.force_entry
-
         # Create integrator and integration method
-        #TODO: Set kT in method_kwargs
         forces = [pair_force, bond_force, angle_force, dihedral_force]
         integrator = hoomd.md.Integrator(dt=dt)
         integrator.forces = [f for f in forces if f] # Filter out None
@@ -197,7 +192,6 @@ class State(object):
                 )
         )
         sim.operations.add(integrator)
-
         #Create GSD writer
         gsd_writer = hoomd.write.GSD(
                 filename=self.query_traj,
@@ -205,7 +199,6 @@ class State(object):
                 mode="wb",
         )
         sim.operations.writers.append(gsd_writer)
-
         # Run simulation
         sim.run(n_steps)
         gsd_writer.flush()
