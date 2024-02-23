@@ -1,4 +1,4 @@
-name: msibi-hoomd4
+name: msibi
 channels:
 - conda-forge
 dependencies:
