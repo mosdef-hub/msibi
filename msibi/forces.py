@@ -21,14 +21,21 @@ class Force(object):
     Parameters
     ----------
     name : str, required
-        The name of the type in the bond.
-        Must match the names found in the State's .gsd trajectory file
-
+        The name of the type in the Force.
+        Must match the names found in the State's .gsd trajectory file.
+    optimize : bool, required
+        Set to True if this force is to be mutable and optimized.
+        Set to False if this force is to be held constant while
+        other forces are optimized.
+    nbins : int, optional
+        This must be a positive integer if this force is being optimized.
+        nbins is used to setting the potenials independent varible (x) range
+        and step size (dx)
     """
     def __init__(
             self,
             name,
-            optimize=False,
+            optimize,
             nbins=None,
             head_correction_form="linear"
     ):
@@ -53,18 +60,23 @@ class Force(object):
         self._tail_correction_history = []
         self._learned_potential_history = []
 
+        if optimize and nbins is None:
+            raise ValueError(
+                    "If this force is set to be optimized, the nbins "
+                    "must be set as a non-zero value"
+            )
+
     def __repr__(self):
         return (
                 f"Type: {self.__class__}; "
                 + f"Name: {self.name}; "
                 + f"Optimize: {self.optimize}"
         )
+
     @property
     def potential(self):
         if self.format != "table":
-            #TODO: Set custom warning
             warnings.warn(f"{self} is not using a table potential.")
-            return None
         return self._potential
 
     @potential.setter
@@ -82,7 +94,6 @@ class Force(object):
     @property
     def force(self):
         if self.format != "table":
-            #TODO: Set custom warning
             warnings.warn(f"{self} is not using a table potential.")
             return None
         return -1.0*np.gradient(self.potential, self.dx)
@@ -118,9 +129,30 @@ class Force(object):
             self._add_state(state)
 
     def target_distribution(self, state):
+        """The target structural distribution corresponding to this foce.
+
+        Parameters
+        ----------
+        state : msibi.state.State, required
+            The state to use in finding the target distribution.
+        """
         return self._states[state]["target_distribution"]
 
     def plot_target_distribution(self, state):
+        """Quick plotting function that shows the target structural
+        distribution corresponding to this forces.
+
+        Parameters
+        ----------
+        state : msibi.state.State, required
+            The state to use in finding the target distribution.
+
+        Notes
+        -----
+        Use this to see how the shape of the target distribution is 
+        affected by your choices for nbins, smoothing window, 
+        and smoothing order.
+        """
         #TODO: Make custom error
         if not self.optimize:
             raise RuntimeError(
@@ -142,18 +174,15 @@ class Force(object):
             plt.plot(target[:,0], y_smoothed, label="Smoothed")
             plt.legend()
 
-    def plot_potential_history(self):
-        if not self.optimize:
-            raise RuntimeError(
-                    "This force object is not set to be optimized. "
-            )
-        fig = plt.figure()
-        for idx, i in enumerate(self.potential_history):
-            plt.plot(self.x_range, i, "o-", label=idx)
-        plt.legend(title="Iteration")
-        return fig
-
     def plot_fit_scores(self, state):
+       """Returns a plot showing the evolution of the distribution
+       matching evolution.
+
+        Parameters
+        ----------
+        state : msibi.state.State, required
+            The state to use in finding the target distribution.
+       """ 
         if not self.optimize:
             raise RuntimeError(
                     "This force object is not set to be optimized. "
@@ -178,7 +207,7 @@ class Force(object):
     def set_quadratic(self, k4, k3, k2, x0, x_min, x_max):
         """Set a potential based on the following function:
 
-            V(x) = k4(l-x0)^4 + k3(l-x0)^3 + k2(l-x0)^2
+            V(x) = k4(x-x0)^4 + k3(x-x0)^3 + k2(x-x0)^2
 
         Using this method will create a table potential V(x) over the range
         x_min - x_max.
@@ -191,13 +220,11 @@ class Force(object):
         x0, k4, k3, k2 : float, required
             The paraters used in the V(x) function described above
         x_min : float, required
-            The lower bound of the bond potential lengths
+            The lower bound of the potential range 
         x_max : float, required
-            The upper bound of the bond potential lengths
-
+            The upper bound of the potential range 
         """
         self.format = "table"
-        #TODO: Properties for these?
         self.x_min = x_min
         self.x_max = x_max
         self.dx = x_max / self.nbins
@@ -213,16 +240,17 @@ class Force(object):
         is the potential enregy at r. The force will be calculated
         from r and V using np.gradient().
 
-        Use this potential setter to set a potential from a previous MSIBI run.
-        For example, use the final potential files from a bond-optimization IBI
-        run to set a static coarse-grained bond potential while you perform
-        IBI runs on angle and pair potentials.
-
         Parameters:
         -----------
         file_path : str, required
             The full path to the table potential text file.
-
+        
+        Notes
+        -----
+        Use this potential setter to set a potential from a previous MSIBI run.
+        For example, use the final potential files from a bond-optimization IBI
+        run to set a static coarse-grained bond potential while you perform
+        IBI runs on angle and/or pair potentials.
         """
         self._potential_file = file_path
         f = np.loadtxt(self._potential_file)
@@ -231,7 +259,7 @@ class Force(object):
         self.x_min = self.x_range[0]
         self.x_max = self.x_range[-1] + self.dx
         self._potential = f[:,1]
-        self.format = "table" #TODO: Still using format attribute?
+        self.format = "table"
         self.force_init = "Table"
         self.force_entry = self.table_entry()
 
@@ -263,11 +291,8 @@ class Force(object):
                 "target_distribution": target_distribution,
                 "current_distribution": None,
                 "alpha": state.alpha,
-                #TODO: Get rid of alpha form?
-                "alpha_form": "linear",
                 "f_fit": [],
                 "distribution_history": [],
-                #TODO: Is this used anywhere?
                 "path": state.dir
         }
 
@@ -325,7 +350,6 @@ class Force(object):
         self.potential_history.append(np.copy(self.potential))
         for state in self._states:
             kT = state.kT
-            #TODO: Save distribution history?
             current_dist = self._states[state]["current_distribution"]
             target_dist = self._states[state]["target_distribution"]
             self._states[state]["distribution_history"].append(current_dist)
