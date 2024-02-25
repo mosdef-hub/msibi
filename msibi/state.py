@@ -3,13 +3,10 @@ import shutil
 import warnings
 
 
-import cmeutils as cme
-from cmeutils.structure import gsd_rdf
 import gsd
 import gsd.hoomd
 import hoomd
 from msibi import MSIBI, utils
-from msibi.utils.hoomd_run_template import (HOOMD2_HEADER, HOOMD_TEMPLATE)
 
 
 class State(object):
@@ -44,6 +41,7 @@ class State(object):
         Path to the query trajectory that is created during each iteration.
 
     """
+
     def __init__(
         self,
         name,
@@ -109,7 +107,12 @@ class State(object):
             dihedrals=None,
             backup_trajectories=False
     ):
-        """Contains the hoomd 4 script used to run each query simulation."""
+        """
+        Contains the hoomd 4 script used to run each query simulation.
+        This method is called in msibi.optimize.
+
+        """
+
         device = hoomd.device.auto_select()
         sim = hoomd.simulation.Simulation(device=device)
         print(f"Starting simulation {iteration} for state {self}")

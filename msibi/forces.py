@@ -3,7 +3,10 @@ import os
 import warnings
 
 from cmeutils.structure import (
-        angle_distribution, bond_distribution, dihedral_distribution, gsd_rdf
+        angle_distribution,
+        bond_distribution,
+        dihedral_distribution,
+        gsd_rdf
 )
 import matplotlib.pyplot as plt
 import numpy as np
@@ -22,8 +25,8 @@ class Force(object):
     and msibi.forces.Dihedral.
 
     Forces in MSIBI can either be held constant (i.e. fixed) or
-    optimized (i.e. mutable). Al
-
+    optimized (i.e. mutable). Only one type of of force
+    can be optimized at a time (i.e. angles, or pairs, etc..)
 
     Parameters
     ----------
@@ -37,8 +40,10 @@ class Force(object):
     nbins : int, optional
         This must be a positive integer if this force is being optimized.
         nbins is used to setting the potenials independent varible (x) range
-        and step size (dx)
+        and step size (dx).
+
     """
+
     def __init__(
             self,
             name,
@@ -46,6 +51,11 @@ class Force(object):
             nbins=None,
             head_correction_form="linear"
     ):
+        if optimize and nbins is None or nbins<=0:
+            raise ValueError(
+                    "If a force is set to be optimized, nbins must be "
+                    "a positive, non-zero integer."
+            )
         self.name = name
         self.optimize = optimize
         self.head_correction_form = head_correction_form
@@ -56,10 +66,10 @@ class Force(object):
         self.x_range = None
         self.potential_history = []
         self._potential = None
+        #TODO: Remove this attr?
         self._potential_file = None
         self._smoothing_window = 3
         self._smoothing_order = 1
-        #TODO: set param for nbins?
         self._nbins = nbins
         self._force_type = None #TODO: Do we need this?
         self._states = dict()
