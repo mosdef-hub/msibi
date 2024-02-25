@@ -7,7 +7,8 @@ import msibi
 
 
 class MSIBI(object):
-    """Management class for orchestrating an MSIBI optimization.
+    """
+    Management class for orchestrating an MSIBI optimization.
 
     Parameters
     ----------
@@ -56,13 +57,15 @@ class MSIBI(object):
     Methods
     -------
     add_state(msibi.state.state)
+        Add a state point to be included in optimizing forces.
     add_force(msibi.forces.Force)
         Add the required interaction objects. See forces.py
-    run_optimization(n_iterations, backup_trajectories)
+    run_optimization(n_iterations, n_steps, backup_trajectories)
         Performs iterations of query simulations and potential updates
         resulting in a final optimized potential.
 
     """
+
     def __init__(
             self,
             nlist,
@@ -101,11 +104,13 @@ class MSIBI(object):
         state : msibi.state.State, required
             Instance of msibi.state.State
         """
+        #TODO: Do we need this?
         state._opt = self
         self.states.append(state)
 
     def add_force(self, force: msibi.forces.Force) -> None:
-        """Add a force to be included in the query simulations.
+        """
+        Add a force to be included in the query simulations.
 
         Parameters
         ----------
@@ -116,6 +121,7 @@ class MSIBI(object):
         -----
         Only one type of force can be optimized at a time.
         Forces not set to be optimized are held fixed during query simulations.
+
         """
         self.forces.append(force)
         if force.optimize:

@@ -1,5 +1,6 @@
 import os
 import shutil
+from typing import Union
 import warnings
 
 
@@ -9,7 +10,8 @@ import hoomd
 
 
 class State(object):
-    """A single state used as part of a multistate optimization.
+    """
+    A single state used as part of a multistate optimization.
 
     Parameters
     ----------
@@ -70,7 +72,8 @@ class State(object):
         )
 
     @property
-    def n_frames(self):
+    def n_frames(self) -> int:
+        """The number of frames used in calculating distributions."""
         return self._n_frames
 
     @n_frames.setter
@@ -78,7 +81,8 @@ class State(object):
         self._n_frames = value
 
     @property
-    def alpha(self):
+    def alpha(self) -> Union[int, float]:
+        """State point weighting value."""
         return self._alpha
 
     @alpha.setter
@@ -105,12 +109,10 @@ class State(object):
             dihedrals=None,
             backup_trajectories=False
     ) -> None:
-        """
-        Contains the hoomd 4 script used to run each query simulation.
+        """Run the hoomd 4 script used to run each query simulation.
         This method is called in msibi.optimize.
 
         """
-
         device = hoomd.device.auto_select()
         sim = hoomd.simulation.Simulation(device=device)
         print(f"Starting simulation {iteration} for state {self}")

@@ -91,10 +91,7 @@ class Force(object):
 
     @property
     def potential(self) -> np.ndarray:
-        """
-        The potential energy values V(x).
-
-        """
+        """The potential energy values V(x)."""
         if self.format != "table":
             warnings.warn(f"{self} is not using a table potential.")
         return self._potential
@@ -113,11 +110,7 @@ class Force(object):
 
     @property
     def force(self) -> np.ndarray:
-        """
-        The force values F(x).
-
-        """
-
+        """The force values F(x)."""
         if self.format != "table":
             warnings.warn(f"{self} is not using a table potential.")
             return None
@@ -125,11 +118,7 @@ class Force(object):
 
     @property
     def smoothing_window(self) -> int:
-        """
-        Window size used in smoothing the distributions.
-
-        """
-
+        """Window size used in smoothing the distributions."""
         return self._smoothing_window
 
     @smoothing_window.setter
@@ -140,9 +129,7 @@ class Force(object):
 
     @property
     def smoothing_order(self) -> int:
-        """
-        The order used in smoothing the distributions.
-        """
+        """The order used in smoothing the distributions."""
         return self._smoothing_order
 
     @smoothing_order.setter
@@ -153,10 +140,7 @@ class Force(object):
 
     @property
     def nbins(self) -> int:
-        """
-        The number of bins used in calculating distributions.
-
-        """
+        """The number of bins used in calculating distributions."""
         return self._nbins
 
     @nbins.setter
@@ -166,8 +150,7 @@ class Force(object):
             self._add_state(state)
 
     def target_distribution(self, state: msibi.state.State) -> np.ndarray:
-        """
-        The target structural distribution corresponding to this foce.
+        """The target structural distribution corresponding to this foce.
 
         Parameters
         ----------
@@ -175,7 +158,6 @@ class Force(object):
             The state to use in finding the target distribution.
 
         """
-
         return self._states[state]["target_distribution"]
 
     def plot_target_distribution(self, state: msibi.state.State) -> None:
@@ -195,7 +177,6 @@ class Force(object):
         and smoothing order.
 
         """
-
         #TODO: Make custom error
         if not self.optimize:
             raise RuntimeError(
@@ -218,8 +199,7 @@ class Force(object):
             plt.legend()
 
     def plot_fit_scores(self, state: msibi.state.State) -> None:
-       """
-       Plots the evolution of the distribution
+       """Plots the evolution of the distribution
        matching evolution.
 
         Parameters
@@ -228,7 +208,6 @@ class Force(object):
             The state to use in finding the target distribution.
 
        """
-
        if not self.optimize:
             raise RuntimeError("This force object is not set to be optimized.")
        fig = plt.figure()
@@ -237,8 +216,7 @@ class Force(object):
        plt.ylabel("Fit Score")
 
     def distribution_history(self, state: msibi.state.State):
-        """
-        Returns the complete query distribution history for a given state.
+        """Get the complete query distribution history for a given state.
 
         Parameters
         ----------
@@ -246,12 +224,10 @@ class Force(object):
             The state to use for calculating the distribution.
 
         """
-
         return self._states[state]["distribution_history"]
 
     def set_target_distribution(self, state: msibi.state.State, array) -> None:
-        """
-        Stores the target distribution for a given state.
+        """Store the target distribution for a given state.
 
         Parameters
         ----------
@@ -266,8 +242,7 @@ class Force(object):
             state: msibi.state.State,
             query: bool=True
     ) -> np.ndarray:
-        """
-        Returns the corresponding distrubution from the most recent
+        """Returns the corresponding distrubution from the most recent
         query simulation.
 
         Parameters
@@ -276,12 +251,10 @@ class Force(object):
             The state to use for calculating the distribution.
 
         """
-
         return self._get_state_distribution(state, query)
 
     def distribution_fit(self, state: msibi.state.State) -> float:
-        """
-        Returns the fit score from the most recent query simulation.
+        """Get the fit score from the most recent query simulation.
 
         Parameters
         ----------
@@ -289,7 +262,6 @@ class Force(object):
             The state to use for calculating the distribution.
 
         """
-
         return self._calc_fit(state)
 
     def set_quadratic(
@@ -301,8 +273,7 @@ class Force(object):
             x_min: Union[float, int],
             x_max: Union[float, int]
     ) -> None:
-        """
-        Set a potential based on the following function:
+        """Set a potential based on the following function:
 
             V(x) = k4(x-x0)^4 + k3(x-x0)^3 + k2(x-x0)^2
 
@@ -320,6 +291,7 @@ class Force(object):
             The lower bound of the potential range
         x_max : float, required
             The upper bound of the potential range
+
         """
         self.format = "table"
         self.x_min = x_min
@@ -331,27 +303,26 @@ class Force(object):
         self.force_entry = self._table_entry()
 
     def set_from_file(self, file_path: str) -> None:
-        """
-        Set a potential from a text file.
-        The columns of the text file must be in the order of r, V.
-        where r is the independent value (i.e. distance) and V
-        is the potential enregy at r. The force will be calculated
-        from r and V using np.gradient().
+        """Set a potential from a text file.
 
         Parameters:
         -----------
         file_path : str, required
             The full path to the table potential text file.
 
-        Notes
-        -----
+        Notes:
+        ------
+        The columns of the text file must be in the order of r, V.
+        where r is the independent value (i.e. distance) and V
+        is the potential enregy at r. The force will be calculated
+        from r and V using np.gradient().
+
         Use this potential setter to set a potential from a previous MSIBI run.
         For example, use the final potential files from a bond-optimization IBI
         run to set a static coarse-grained bond potential while you perform
         IBI runs on angle and/or pair potentials.
 
         """
-
         f = np.loadtxt(file_path)
         self.x_range = f[:,0]
         self.dx = np.round(self.x_range[1] - self.x_range[0], 3)
@@ -363,8 +334,7 @@ class Force(object):
         self.force_entry = self.table_entry()
 
     def _add_state(self, state: msibi.state.State) -> None:
-        """
-        Add a state to be used in optimizing this force.
+        """Add a state to be used in optimizing this force.
 
         Parameters
         ----------
@@ -397,8 +367,7 @@ class Force(object):
         }
 
     def _compute_current_distribution(self, state: msibi.state.State) -> None:
-        """
-        Find the current distribution of the query trajectory
+        """Find the current distribution of the query trajectory
 
         Parameters
         ----------
@@ -406,7 +375,6 @@ class Force(object):
             Instance of a State object previously created.
 
         """
-
         distribution = self._get_state_distribution(state, query=True)
         if self.smoothing_window and self.smoothing_order:
             distribution[:,1] = savitzky_golay(
@@ -431,8 +399,7 @@ class Force(object):
             state: msibi.state.State,
             query: bool
     ) -> np.ndarray:
-        """
-        Get the corresponding distrubiton for a given state.
+        """Get the corresponding distrubiton for a given state.
 
         Parameters
         ----------
@@ -443,7 +410,6 @@ class Force(object):
             If False, uses the state's target trajectory.
 
         """
-
         if query:
             traj = state.query_traj
         else:
@@ -455,8 +421,7 @@ class Force(object):
             state: msibi.state.State,
             iteration: int
     ) -> None:
-        """
-        Save the corresponding distrubiton for a given state to a file.
+        """Save the corresponding distrubiton for a given state to a file.
 
         Parameters
         ----------
@@ -466,7 +431,6 @@ class Force(object):
             Current iteration step, used in the filename.
 
         """
-
         distribution = self._states[state]["current_distribution"]
         distribution[:,0] -= self.dx / 2
         fname = f"dist_{self.name}-state_{state.name}-step_{iteration}.txt"
@@ -474,12 +438,10 @@ class Force(object):
         np.savetxt(fpath, distribution)
 
     def _update_potential(self) -> None:
-        """
-        Compare distributions of current iteration against target,
+        """Compare distributions of current iteration against target,
         and update the potential via Boltzmann inversion.
 
         """
-
         self.potential_history.append(np.copy(self.potential))
         for state in self._states:
             kT = state.kT
@@ -523,8 +485,7 @@ class Bond(Force):
         )
 
     def set_harmonic(self, r0: Union[float, int], k: Union[float, int]) -> None:
-        """
-        Set a fixed harmonic bond potential.
+        """Set a fixed harmonic bond potential.
         Using this method is not compatible force msibi.forces.Force
         objects that are set to be optimized during MSIBI
 
@@ -561,8 +522,7 @@ class Bond(Force):
             state: msibi.state.State,
             gsd_file: str
     ) -> np.ndarray:
-        """
-        Calculate a bond length distribution.
+        """Calculate a bond length distribution.
 
         Parameters
         ----------
@@ -608,8 +568,7 @@ class Angle(Force):
         )
 
     def set_harmonic(self, t0: Union[float, int], k: Union[float, int]) -> None:
-        """
-        Set a fixed harmonic angle potential.
+        """Set a fixed harmonic angle potential.
         Using this method is not compatible force msibi.forces.Force
         objects that are set to be optimized during MSIBI
 
@@ -621,7 +580,6 @@ class Angle(Force):
             Spring constant
 
         """
-
         if self.optimize:
             raise RuntimeError(
                     f"Force {self} is set to be optimized during MSIBI."
@@ -642,8 +600,7 @@ class Angle(Force):
             state: msibi.state.State,
             gsd_file: str
     ) -> np.ndarray:
-        """
-        Calculate a bond angle distribution.
+        """Calculate a bond angle distribution.
 
         Parameters
         ----------
@@ -692,8 +649,7 @@ class Pair(Force):
             epsilon: Union[float, int],
             sigma: Union[float, int]
     ) -> None:
-        """
-        Set a hoomd 12-6 LJ pair potential used during
+        """Set a hoomd 12-6 LJ pair potential used during
         the query simulations.
 
         Parameters
@@ -715,8 +671,7 @@ class Pair(Force):
             state: msibi.state.State,
             gsd_file: str
     ) -> np.ndarray:
-        """
-        Calculate a pair distribution.
+        """Calculate a pair distribution.
 
         Parameters
         ----------
@@ -767,8 +722,7 @@ class Dihedral(Force):
             d: int,
             n: int,
     ) -> None:
-        """
-        Set a fixed harmonic dihedral potential.
+        """Set a fixed harmonic dihedral potential.
 
         Parameters
         ----------
@@ -802,8 +756,7 @@ class Dihedral(Force):
             state: msibi.state.State,
             gsd_file: str
     ) -> np.ndarray:
-        """
-        Calculate a dihedral distribution.
+        """Calculate a dihedral distribution.
 
         Parameters
         ----------
