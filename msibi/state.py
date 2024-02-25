@@ -23,7 +23,7 @@ class State(object):
         Unitless heat energy (product of Boltzmann's constant and temperature).
     traj_file : path to a gsd.hoomd.HOOMDTrajectory file
         The gsd trajectory associated with this state.
-        This trajectory is used to calcualte the target distributions used 
+        This trajectory is used to calcualte the target distributions used
         during optimization.
     alpha : float, default 1.0
         The alpha value used to scaale the weight of this state.
@@ -155,7 +155,7 @@ class State(object):
             if not angle_force:
                 hoomd_angle_force = getattr(hoomd.md.angle, angle.force_init)
                 if angle.force_init == "Table":
-                    angle_force = hoomd_angle_force(width=angle.nbins)
+                    angle_force = hoomd_angle_force(width=angle.nbins + 1)
                 else:
                     angle_force = hoomd_angle_force()
             if angle.format == "table":
@@ -170,7 +170,7 @@ class State(object):
                         hoomd.md.dihedral, dih.force_init
                 )
                 if dih.force_init == "Table":
-                    dihedral_force = hoomd_dihedral_force(width=dih.nbins)
+                    dihedral_force = hoomd_dihedral_force(width=dih.nbins + 1)
                 else:
                     dihedral_force = hoomd_dihedral_force()
             if dih.format == "table":

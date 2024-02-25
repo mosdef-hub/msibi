@@ -466,6 +466,7 @@ class Angle(Force):
         self.type3 = type3
         name = f"{self.type1}-{self.type2}-{self.type3}"
         self._force_type = "angle"
+        self._correction_function = bond_correction
         super(Angle, self).__init__(
                 name=name,
                 optimize=optimize,
