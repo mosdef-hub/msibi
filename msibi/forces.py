@@ -500,17 +500,17 @@ class Angle(Force):
         table_entry = {"U": self.potential, "tau": self.force}
         return table_entry
 
-    def _get_distribution(self, gsd_file):
+    def _get_distribution(self, state, gsd_file):
         return angle_distribution(
-                gsd_file=gsd,
+                gsd_file=gsd_file,
                 A_name=self.type1,
                 B_name=self.type2,
                 C_name=self.type3,
                 start=-state.n_frames,
                 histogram=True,
                 normalize=True,
-                l_min=self.x_min,
-                l_max=self.x_max,
+                theta_min=self.x_min,
+                theta_max=self.x_max,
                 bins=self.nbins + 1
         )
 
