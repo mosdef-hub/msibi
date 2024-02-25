@@ -175,8 +175,9 @@ class MSIBI(object):
         backup_trajectories : bool, optional default False
             If True, copies of the query simulation trajectories
             are saved in their respective msibi.state.State directory.
+
         """
-        #self._initialize(potentials_dir=_dir)
+
         for n in range(n_iterations):
             print(f"---Optimization: {n+1} of {n_iterations}---")
             for state in self.states:
@@ -224,33 +225,3 @@ class MSIBI(object):
                 )
             )
             print()
-    #TODO: Delete this?
-    def _initialize(self, potentials_dir):
-        """Create initial table potentials and the simulation input scripts.
-
-        Parameters
-        ----------
-        potentials_dir : path, default None
-            Directory to store potential files. If None is given, a "potentials"
-            folder in the current working directory is used.
-        """
-        if potentials_dir is None:
-            self.potentials_dir = os.path.join(os.getcwd(), "potentials")
-        else:
-            self.potentials_dir = potentials_dir
-
-        if not os.path.isdir(self.potentials_dir):
-            os.mkdir(self.potentials_dir)
-        for force in self.forces:
-            if force.format == "table" and force.optimize:
-                potential_file = os.path.join(
-                    self.potentials_dir, f"{force.name}.txt"
-                )
-                force._potential_file = potential_file
-                save_table_potential(
-                        force.potential,
-                        force.x_range,
-                        force.dx,
-                        0,
-                        force._potential_file
-                )

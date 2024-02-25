@@ -66,12 +66,9 @@ class Force(object):
         self.x_range = None
         self.potential_history = []
         self._potential = None
-        #TODO: Remove this attr?
-        self._potential_file = None
         self._smoothing_window = 3
         self._smoothing_order = 1
         self._nbins = nbins
-        self._force_type = None #TODO: Do we need this?
         self._states = dict()
         self._head_correction_history = []
         self._tail_correction_history = []
@@ -253,7 +250,7 @@ class Force(object):
         self.x_min = x_min
         self.x_max = x_max
         self.dx = x_max / self.nbins
-        self.x_range = np.arange(x_min, x_max+self.dx, self.dx)
+        self.x_range = np.arange(x_min, x_max + self.dx, self.dx)
         self.potential = quadratic_spring(self.x_range, x0, k4, k3, k2)
         self.force_init = "Table"
         self.force_entry = self._table_entry()
@@ -277,8 +274,7 @@ class Force(object):
         run to set a static coarse-grained bond potential while you perform
         IBI runs on angle and/or pair potentials.
         """
-        self._potential_file = file_path
-        f = np.loadtxt(self._potential_file)
+        f = np.loadtxt(file_path)
         self.x_range = f[:,0]
         self.dx = np.round(self.x_range[1] - self.x_range[0], 3)
         self.x_min = self.x_range[0]
@@ -405,7 +401,6 @@ class Bond(Force):
         self.type1, self.type2 = sorted(
                     [type1, type2], key=natural_sort
         )
-        self._force_type = "bond"
         self._correction_function = bond_correction
         name = f"{self.type1}-{self.type2}"
         super(Bond, self).__init__(
@@ -475,7 +470,6 @@ class Angle(Force):
         self.type2 = type2
         self.type3 = type3
         name = f"{self.type1}-{self.type2}-{self.type3}"
-        self._force_type = "angle"
         self._correction_function = bond_correction
         super(Angle, self).__init__(
                 name=name,
@@ -537,7 +531,6 @@ class Pair(Force):
     ):
         self.type1, self.type2 = sorted( [type1, type2], key=natural_sort)
         name = f"{self.type1}-{self.type2}"
-        self._force_type = "pair"
         self.r_cut = None
         super(Pair, self).__init__(
                 name=name,
@@ -593,7 +586,6 @@ class Dihedral(Force):
         self.type3 = type3
         self.type4 = type4
         name = f"{self.type1}-{self.type2}-{self.type3}-{self.type4}"
-        self._force_type = "dihedral"
         self.table_entry = dict(U=None, tau=None)
         super(Dihedral, self).__init__(
                 name=name,
