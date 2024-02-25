@@ -156,8 +156,8 @@ class Force(object):
 
         Notes
         -----
-        Use this to see how the shape of the target distribution is 
-        affected by your choices for nbins, smoothing window, 
+        Use this to see how the shape of the target distribution is
+        affected by your choices for nbins, smoothing window,
         and smoothing order.
         """
         #TODO: Make custom error
@@ -189,15 +189,13 @@ class Force(object):
         ----------
         state : msibi.state.State, required
             The state to use in finding the target distribution.
-       """ 
-        if not self.optimize:
-            raise RuntimeError(
-                    "This force object is not set to be optimized. "
-            )
-        fig = plt.figure()
-        plt.plot(self._states[state]["f_fit"], "o-")
-        plt.xlabel("Iteration")
-        plt.ylabel("Fit Score")
+       """
+       if not self.optimize:
+            raise RuntimeError("This force object is not set to be optimized.")
+       fig = plt.figure()
+       plt.plot(self._states[state]["f_fit"], "o-")
+       plt.xlabel("Iteration")
+       plt.ylabel("Fit Score")
 
     def set_target_distribution(self, state, array):
         """"""
@@ -227,9 +225,9 @@ class Force(object):
         x0, k4, k3, k2 : float, required
             The paraters used in the V(x) function described above
         x_min : float, required
-            The lower bound of the potential range 
+            The lower bound of the potential range
         x_max : float, required
-            The upper bound of the potential range 
+            The upper bound of the potential range
         """
         self.format = "table"
         self.x_min = x_min
@@ -251,7 +249,7 @@ class Force(object):
         -----------
         file_path : str, required
             The full path to the table potential text file.
-        
+
         Notes
         -----
         Use this potential setter to set a potential from a previous MSIBI run.
