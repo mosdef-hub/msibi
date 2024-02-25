@@ -12,6 +12,7 @@ from cmeutils.structure import (
 import matplotlib.pyplot as plt
 import numpy as np
 
+import msibi
 from msibi.potentials import quadratic_spring, bond_correction
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.smoothing import savitzky_golay
@@ -264,7 +265,7 @@ class Force(object):
             self,
             state: msibi.state.State,
             query: bool=True
-    ) --> np.ndarray:
+    ) -> np.ndarray:
         """
         Returns the corresponding distrubution from the most recent
         query simulation.
@@ -762,9 +763,9 @@ class Dihedral(Force):
     def set_harmonic(
             self,
             phi0: Union[float, int],
-            k: Union[float, int]
-            d: int
-            n: int
+            k: Union[float, int],
+            d: int,
+            n: int,
     ) -> None:
         """
         Set a fixed harmonic dihedral potential.
@@ -796,7 +797,7 @@ class Dihedral(Force):
         table_entry = {"U": self.potential, "tau": self.force}
         return table_entry
 
-    def _get_distribution(:
+    def _get_distribution(
             self,
             state: msibi.state.State,
             gsd_file: str

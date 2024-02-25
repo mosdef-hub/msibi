@@ -6,7 +6,6 @@ import warnings
 import gsd
 import gsd.hoomd
 import hoomd
-from msibi import MSIBI, utils
 
 
 class State(object):

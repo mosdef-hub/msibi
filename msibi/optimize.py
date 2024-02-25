@@ -4,9 +4,6 @@ import shutil
 import numpy as np
 
 import msibi
-from msibi.potentials import pair_tail_correction, save_table_potential
-from msibi.utils.smoothing import savitzky_golay
-from msibi.utils.exceptions import UnsupportedEngine
 
 
 class MSIBI(object):
