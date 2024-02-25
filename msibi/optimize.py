@@ -91,6 +91,7 @@ class MSIBI(object):
         self.r_cut = r_cut
         self.seed = seed
         self.nlist_exclusions = nlist_exclusions
+        self.n_iterations = 0
         self.states = []
         self.forces = []
         self._optimize_forces = []
@@ -108,7 +109,7 @@ class MSIBI(object):
 
     def add_force(self, force):
         """Add a force to be included in the query simulations.
-        
+
         Parameters
         ----------
         force : msibi.forces.Force, required
@@ -162,7 +163,7 @@ class MSIBI(object):
             backup_trajectories=False,
             _dir=None
     ):
-        """Runs query simulations and performs MSIBI 
+        """Runs query simulations and performs MSIBI
         on the potentials set to be optimized.
 
         Parameters
@@ -175,7 +176,7 @@ class MSIBI(object):
             If True, copies of the query simulation trajectories
             are saved in their respective msibi.state.State directory.
         """
-        self._initialize(potentials_dir=_dir)
+        #self._initialize(potentials_dir=_dir)
         for n in range(n_iterations):
             print(f"---Optimization: {n+1} of {n_iterations}---")
             for state in self.states:
@@ -190,7 +191,7 @@ class MSIBI(object):
                     dt=self.dt,
                     r_cut=self.r_cut,
                     seed=self.seed,
-                    iteration=n+1,
+                    iteration=self.n_iterations,
                     gsd_period=self.gsd_period,
                     pairs=self.pairs,
                     bonds=self.bonds,
@@ -198,31 +199,28 @@ class MSIBI(object):
                     dihedrals=self.dihedrals,
                     backup_trajectories=backup_trajectories
                 )
-            self._update_potentials(n)
+            self._update_potentials()
+            self.n_iterations += 1
 
-    def _update_potentials(self, iteration):
+    def _update_potentials(self):
         """Update the potentials for the potentials to be optimized."""
         for force in self._optimize_forces:
-            self._recompute_distribution(force, iteration)
+            self._recompute_distribution(force)
             force._update_potential()
-            save_table_potential(
-                    force.potential,
-                    force.x_range,
-                    force.dx,
-                    iteration,
-                    force._potential_file
-            )
 
-    def _recompute_distribution(self, force, iteration):
+    def _recompute_distribution(self, force):
         """Recompute the current distribution of bond lengths or angles"""
         for state in self.states:
             force._compute_current_distribution(state)
-            force._save_current_distribution(state, iteration=iteration)
+            force._save_current_distribution(
+                    state,
+                    iteration=self.n_iterations
+            )
             print("Force: {0}, State: {1}, Iteration: {2}: {3:f}".format(
                     force.name,
                     state.name,
-                    iteration + 1,
-                    force._states[state]["f_fit"][iteration]
+                    self.n_iterations,
+                    force._states[state]["f_fit"][self.n_iterations]
                 )
             )
             print()
