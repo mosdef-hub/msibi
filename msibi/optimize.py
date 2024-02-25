@@ -167,8 +167,13 @@ class MSIBI(object):
 
         Parameters
         ----------
+        n_steps : int, required
+            Number of simulation steps during each iteration.
         n_iterations : int, required
-            Number of iterations.
+            Number of MSIBI update iterations.
+        backup_trajectories : bool, optional default False
+            If True, copies of the query simulation trajectories
+            are saved in their respective msibi.state.State directory.
         """
         self._initialize(potentials_dir=_dir)
         for n in range(n_iterations):
@@ -230,7 +235,6 @@ class MSIBI(object):
         potentials_dir : path, default None
             Directory to store potential files. If None is given, a "potentials"
             folder in the current working directory is used.
-
         """
         if potentials_dir is None:
             self.potentials_dir = os.path.join(os.getcwd(), "potentials")

@@ -15,8 +15,15 @@ from msibi.utils.sorting import natural_sort
 
 
 class Force(object):
-    """Creates a potential, either to be held constant, or to be
-    optimized.
+    """
+    Base class from which other forces inherit.
+    Don't call this class directly, instead use
+    msibi.forces.Bond, msibi.forces.Angle, msibi.forces.Pair,
+    and msibi.forces.Dihedral.
+
+    Forces in MSIBI can either be held constant (i.e. fixed) or
+    optimized (i.e. mutable). Al
+
 
     Parameters
     ----------
