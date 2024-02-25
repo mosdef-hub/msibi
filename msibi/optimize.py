@@ -224,7 +224,7 @@ class MSIBI(object):
                 )
             )
             print()
-
+    #TODO: Delete this?
     def _initialize(self, potentials_dir):
         """Create initial table potentials and the simulation input scripts.
 

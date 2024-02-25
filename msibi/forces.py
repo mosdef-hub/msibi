@@ -197,6 +197,16 @@ class Force(object):
        plt.xlabel("Iteration")
        plt.ylabel("Fit Score")
 
+    def distribution_history(self, state):
+        """Returns the complete query distribution history for a given state.
+
+        Parameters
+        ----------
+        state : msibi.state.State, required
+            The state to use for calculating the distribution.
+        """
+        return self._states[state]["distribution_history"]
+
     def set_target_distribution(self, state, array):
         """"""
         self._states[state]["target_distribution"] = array
