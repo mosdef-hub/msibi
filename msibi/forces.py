@@ -1,5 +1,6 @@
 import math
 import os
+from typing import Union
 import warnings
 
 from cmeutils.structure import (
@@ -46,10 +47,10 @@ class Force(object):
 
     def __init__(
             self,
-            name,
-            optimize,
-            nbins=None,
-            head_correction_form="linear"
+            name: str,
+            optimize: bool,
+            nbins: int=None,
+            head_correction_form: str="linear"
     ):
         if optimize and nbins is None or nbins<=0:
             raise ValueError(
@@ -88,7 +89,11 @@ class Force(object):
         )
 
     @property
-    def potential(self):
+    def potential(self) -> np.ndarray:
+        """
+        The potential energy values V(x).
+
+        """
         if self.format != "table":
             warnings.warn(f"{self} is not using a table potential.")
         return self._potential
@@ -106,54 +111,75 @@ class Force(object):
         self._potential = array
 
     @property
-    def force(self):
+    def force(self) -> np.ndarray:
+        """
+        The force values F(x).
+
+        """
+
         if self.format != "table":
             warnings.warn(f"{self} is not using a table potential.")
             return None
         return -1.0*np.gradient(self.potential, self.dx)
 
     @property
-    def smoothing_window(self):
+    def smoothing_window(self) -> int:
+        """
+        Window size used in smoothing the distributions.
+
+        """
+
         return self._smoothing_window
 
     @smoothing_window.setter
-    def smoothing_window(self, value):
+    def smoothing_window(self, value: int):
         self._smoothing_window = value
         for state in self._states:
             self._add_state(state)
 
     @property
-    def smoothing_order(self):
+    def smoothing_order(self) -> int:
+        """
+        The order used in smoothing the distributions.
+        """
         return self._smoothing_order
 
     @smoothing_order.setter
-    def smoothing_order(self, value):
+    def smoothing_order(self, value: int):
         self._smoothing_order = value
         for state in self._states:
             self._add_state(state)
 
     @property
-    def nbins(self):
+    def nbins(self) -> int:
+        """
+        The number of bins used in calculating distributions.
+
+        """
         return self._nbins
 
     @nbins.setter
-    def nbins(self, value):
+    def nbins(self, value: int):
         self._nbins =  value
         for state in self._states:
             self._add_state(state)
 
-    def target_distribution(self, state):
-        """The target structural distribution corresponding to this foce.
+    def target_distribution(self, state: msibi.state.State) -> np.ndarray:
+        """
+        The target structural distribution corresponding to this foce.
 
         Parameters
         ----------
         state : msibi.state.State, required
             The state to use in finding the target distribution.
+
         """
+
         return self._states[state]["target_distribution"]
 
-    def plot_target_distribution(self, state):
-        """Quick plotting function that shows the target structural
+    def plot_target_distribution(self, state: msibi.state.State) -> None:
+        """
+        Quick plotting function that shows the target structural
         distribution corresponding to this forces.
 
         Parameters
@@ -166,7 +192,9 @@ class Force(object):
         Use this to see how the shape of the target distribution is
         affected by your choices for nbins, smoothing window,
         and smoothing order.
+
         """
+
         #TODO: Make custom error
         if not self.optimize:
             raise RuntimeError(
@@ -188,15 +216,18 @@ class Force(object):
             plt.plot(target[:,0], y_smoothed, label="Smoothed")
             plt.legend()
 
-    def plot_fit_scores(self, state):
-       """Returns a plot showing the evolution of the distribution
+    def plot_fit_scores(self, state: msibi.state.State) -> None:
+       """
+       Plots the evolution of the distribution
        matching evolution.
 
         Parameters
         ----------
         state : msibi.state.State, required
             The state to use in finding the target distribution.
+
        """
+
        if not self.optimize:
             raise RuntimeError("This force object is not set to be optimized.")
        fig = plt.figure()
@@ -204,30 +235,73 @@ class Force(object):
        plt.xlabel("Iteration")
        plt.ylabel("Fit Score")
 
-    def distribution_history(self, state):
-        """Returns the complete query distribution history for a given state.
+    def distribution_history(self, state: msibi.state.State):
+        """
+        Returns the complete query distribution history for a given state.
 
         Parameters
         ----------
         state : msibi.state.State, required
             The state to use for calculating the distribution.
+
         """
+
         return self._states[state]["distribution_history"]
 
-    def set_target_distribution(self, state, array):
-        """"""
+    def set_target_distribution(self, state: msibi.state.State, array) -> None:
+        """
+        Stores the target distribution for a given state.
+
+        Parameters
+        ----------
+        state: msibi.state.State
+            The state used in finding the distribution.
+
+        """
         self._states[state]["target_distribution"] = array
 
-    def current_distribution(self, state, query=True):
-        """"""
+    def current_distribution(
+            self,
+            state: msibi.state.State,
+            query: bool=True
+    ) --> np.ndarray:
+        """
+        Returns the corresponding distrubution from the most recent
+        query simulation.
+
+        Parameters
+        ----------
+        state : msibi.state.State, required
+            The state to use for calculating the distribution.
+
+        """
+
         return self._get_state_distribution(state, query)
 
-    def distribution_fit(self, state):
-        """"""
+    def distribution_fit(self, state: msibi.state.State) -> float:
+        """
+        Returns the fit score from the most recent query simulation.
+
+        Parameters
+        ----------
+        state : msibi.state.State, required
+            The state to use for calculating the distribution.
+
+        """
+
         return self._calc_fit(state)
 
-    def set_quadratic(self, k4, k3, k2, x0, x_min, x_max):
-        """Set a potential based on the following function:
+    def set_quadratic(
+            self,
+            k4: Union[float, int],
+            k3: Union[float, int],
+            k2: Union[float, int],
+            x0: Union[float, int],
+            x_min: Union[float, int],
+            x_max: Union[float, int]
+    ) -> None:
+        """
+        Set a potential based on the following function:
 
             V(x) = k4(x-x0)^4 + k3(x-x0)^3 + k2(x-x0)^2
 
@@ -255,8 +329,9 @@ class Force(object):
         self.force_init = "Table"
         self.force_entry = self._table_entry()
 
-    def set_from_file(self, file_path):
-        """Creates a potential from a text file.
+    def set_from_file(self, file_path: str) -> None:
+        """
+        Set a potential from a text file.
         The columns of the text file must be in the order of r, V.
         where r is the independent value (i.e. distance) and V
         is the potential enregy at r. The force will be calculated
@@ -273,7 +348,9 @@ class Force(object):
         For example, use the final potential files from a bond-optimization IBI
         run to set a static coarse-grained bond potential while you perform
         IBI runs on angle and/or pair potentials.
+
         """
+
         f = np.loadtxt(file_path)
         self.x_range = f[:,0]
         self.dx = np.round(self.x_range[1] - self.x_range[0], 3)
@@ -284,13 +361,14 @@ class Force(object):
         self.force_init = "Table"
         self.force_entry = self.table_entry()
 
-    def _add_state(self, state):
-        """Add a state to be used in optimizing this Fond.
+    def _add_state(self, state: msibi.state.State) -> None:
+        """
+        Add a state to be used in optimizing this force.
 
         Parameters
         ----------
         state : msibi.state.State
-            Instance of a State object already created.
+            Instance of a State object previously created.
 
         """
         if self.optimize:
@@ -317,8 +395,17 @@ class Force(object):
                 "path": state.dir
         }
 
-    def _compute_current_distribution(self, state):
-        """Find the current distribution of the query trajectory"""
+    def _compute_current_distribution(self, state: msibi.state.State) -> None:
+        """
+        Find the current distribution of the query trajectory
+
+        Parameters
+        ----------
+        state : msibi.state.State
+            Instance of a State object previously created.
+
+        """
+
         distribution = self._get_state_distribution(state, query=True)
         if self.smoothing_window and self.smoothing_order:
             distribution[:,1] = savitzky_golay(
@@ -337,37 +424,61 @@ class Force(object):
                     self._states[state]["target_distribution"][:,1]
         )
         self._states[state]["f_fit"].append(f_fit)
-    #TODO: Get rid of this func? Pass in correct traj file in other funcs?
-    def _get_state_distribution(self, state, query):
-        """Find the bond length distribution of a Bond at a State."""
+
+    def _get_state_distribution(
+            self,
+            state: msibi.state.State,
+            query: bool
+    ) -> np.ndarray:
+        """
+        Get the corresponding distrubiton for a given state.
+
+        Parameters
+        ----------
+        state: msibi.state.State
+            State used in calculating the distribution.
+        query: bool
+            If True, uses the most recent query trajectory.
+            If False, uses the state's target trajectory.
+
+        """
+
         if query:
             traj = state.query_traj
         else:
             traj = state.traj_file
         return self._get_distribution(state=state, gsd_file=traj)
 
-    def _save_current_distribution(self, state, iteration):
-        """Save the current bond length distribution
+    def _save_current_distribution(
+            self,
+            state: msibi.state.State,
+            iteration: int
+    ) -> None:
+        """
+        Save the corresponding distrubiton for a given state to a file.
 
         Parameters
         ----------
         state : State
-            A state object
+            The state used in finding the distribution.
         iteration : int
-            Current iteration step, used in the filename
+            Current iteration step, used in the filename.
 
         """
+
         distribution = self._states[state]["current_distribution"]
         distribution[:,0] -= self.dx / 2
         fname = f"dist_{self.name}-state_{state.name}-step_{iteration}.txt"
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, distribution)
 
-    def _update_potential(self):
-        """Compare distributions of current iteration against target,
-        and update the Bond potential via Boltzmann inversion.
+    def _update_potential(self) -> None:
+        """
+        Compare distributions of current iteration against target,
+        and update the potential via Boltzmann inversion.
 
         """
+
         self.potential_history.append(np.copy(self.potential))
         for state in self._states:
             kT = state.kT
@@ -392,11 +503,11 @@ class Force(object):
 class Bond(Force):
     def __init__(
             self,
-            type1,
-            type2,
-            optimize,
-            nbins=None,
-            head_correction_form="linear"
+            type1: str,
+            type2: str,
+            optimize: bool,
+            nbins: int=None,
+            head_correction_form: str="linear"
     ):
         self.type1, self.type2 = sorted(
                     [type1, type2], key=natural_sort
@@ -410,17 +521,19 @@ class Bond(Force):
                 head_correction_form=head_correction_form
         )
 
-    def set_harmonic(self, r0, k):
-        """Sets a fixed harmonic bond potential.
+    def set_harmonic(self, r0: Union[float, int], k: Union[float, int]) -> None:
+        """
+        Set a fixed harmonic bond potential.
         Using this method is not compatible force msibi.forces.Force
         objects that are set to be optimized during MSIBI
 
         Parameters
         ----------
-        r0 : float, required
+        r0 : (Union[float, int]), required
             Equilibrium bond length
-        k : float, required
+        k : (Union[float, int]), required
             Spring constant
+
         """
         if self.optimize:
             raise RuntimeError(
@@ -433,7 +546,7 @@ class Bond(Force):
         self.force_init = "Harmonic"
         self.force_entry = dict(r0=r0, k=k)
 
-    def _table_entry(self):
+    def _table_entry(self) -> dict:
         table_entry = {
                 "r_min": self.x_min,
                 "r_max": self.x_max,
@@ -442,7 +555,22 @@ class Bond(Force):
         }
         return table_entry
 
-    def _get_distribution(self, state, gsd_file):
+    def _get_distribution(
+            self,
+            state: msibi.state.State,
+            gsd_file: str
+    ) -> np.ndarray:
+        """
+        Calculate a bond length distribution.
+
+        Parameters
+        ----------
+        state: msibi.state.State, required
+            State used in calculating the distribution.
+        gsd_file: str, required
+            Path to the GSD file used.
+
+        """
         return bond_distribution(
                 gsd_file=gsd_file,
                 A_name=self.type1,
@@ -459,12 +587,12 @@ class Bond(Force):
 class Angle(Force):
     def __init__(
             self,
-            type1,
-            type2,
-            type3,
-            optimize,
-            nbins=None,
-            head_correction_form="linear"
+            type1: str,
+            type2: str,
+            type3: str,
+            optimize: bool,
+            nbins: int=None,
+            head_correction_form: str="linear"
     ):
         self.type1 = type1
         self.type2 = type2
@@ -478,18 +606,21 @@ class Angle(Force):
                 head_correction_form=head_correction_form
         )
 
-    def set_harmonic(self, t0, k):
-        """Sets a fixed harmonic angle potential.
+    def set_harmonic(self, t0: Union[float, int], k: Union[float, int]) -> None:
+        """
+        Set a fixed harmonic angle potential.
         Using this method is not compatible force msibi.forces.Force
         objects that are set to be optimized during MSIBI
 
         Parameters
         ----------
-        t0 : float, required
+        t0 : (Union[float, int]), required
             Equilibrium bond angle
-        k : float, required
+        k : (Union[float, int]), required
             Spring constant
+
         """
+
         if self.optimize:
             raise RuntimeError(
                     f"Force {self} is set to be optimized during MSIBI."
@@ -501,11 +632,26 @@ class Angle(Force):
         self.force_init = "Harmonic"
         self.force_entry = dict(t0=t0, k=k)
 
-    def _table_entry(self):
+    def _table_entry(self) -> dict:
         table_entry = {"U": self.potential, "tau": self.force}
         return table_entry
 
-    def _get_distribution(self, state, gsd_file):
+    def _get_distribution(
+            self,
+            state: msibi.state.State,
+            gsd_file: str
+    ) -> np.ndarray:
+        """
+        Calculate a bond angle distribution.
+
+        Parameters
+        ----------
+        state: msibi.state.State, required
+            State used in calculating the distribution.
+        gsd_file: str, required
+            Path to the GSD file used.
+
+        """
         return angle_distribution(
                 gsd_file=gsd_file,
                 A_name=self.type1,
@@ -523,11 +669,12 @@ class Angle(Force):
 class Pair(Force):
     def __init__(
             self,
-            type1,
-            type2,
-            optimize,
-            exclude_bonded=False,
-            head_correction_form="linear"
+            type1: str,
+            type2: str,
+            optimize: bool,
+            nbins: int=None,
+            exclude_bonded: bool=False,
+            head_correction_form: str="linear"
     ):
         self.type1, self.type2 = sorted( [type1, type2], key=natural_sort)
         name = f"{self.type1}-{self.type2}"
@@ -535,23 +682,26 @@ class Pair(Force):
         super(Pair, self).__init__(
                 name=name,
                 optimize=optimize,
+                nbins=nbins,
                 head_correction_form=head_correction_form
         )
 
-    def set_lj(self, epsilon, sigma):
-        """Creates a hoomd 12-6 LJ pair potential used during
-        the query simulations. This method is not compatible when
-        optimizing pair potentials. Rather, this method should
-        only be used to create static pair potentials while optimizing
-        other potentials.
+    def set_lj(
+            self,
+            epsilon: Union[float, int],
+            sigma: Union[float, int]
+    ) -> None:
+        """
+        Set a hoomd 12-6 LJ pair potential used during
+        the query simulations.
 
         Parameters
         ----------
-        epsilon : float, required
+        epsilon : (Union[float, int]), required
             Sets the dept hof the potential energy well.
-        sigma : float, required
+        sigma : (Union[float, int]), required
             Sets the particle size.
-        r_cut : float, required
+        r_cut : (Union[float, int]), required
             Maximum distance used to calculate neighbor pair potentials.
 
         """
@@ -559,7 +709,22 @@ class Pair(Force):
         self.force_init = "LJ"
         self.force_entry = dict(sigma=sigma, epsilon=epsilon)
 
-    def _get_distribution(self, state, gsd_file):
+    def _get_distribution(
+            self,
+            state: msibi.state.State,
+            gsd_file: str
+    ) -> np.ndarray:
+        """
+        Calculate a pair distribution.
+
+        Parameters
+        ----------
+        state: msibi.state.State, required
+            State used in calculating the distribution.
+        gsd_file: str, required
+            Path to the GSD file used.
+
+        """
         return gsd_rdf(
                 gsdfile=gsd_file,
                 A_name=self.type1,
@@ -573,13 +738,13 @@ class Pair(Force):
 class Dihedral(Force):
     def __init__(
             self,
-            type1,
-            type2,
-            type3,
-            type4,
-            optimize,
-            nbins=None,
-            head_correction_form="linear"
+            type1: str,
+            type2: str,
+            type3: str,
+            type4: str,
+            optimize: bool,
+            nbins: int=None,
+            head_correction_form: str="linear"
     ):
         self.type1 = type1
         self.type2 = type2
@@ -594,10 +759,15 @@ class Dihedral(Force):
                 head_correction_form=head_correction_form
         )
 
-    def set_harmonic(self, phi0, k):
-        """Sets a fixed harmonic dihedral potential.
-        Using this method is not compatible force msibi.forces.Force
-        objects that are set to be optimized during MSIBI
+    def set_harmonic(
+            self,
+            phi0: Union[float, int],
+            k: Union[float, int]
+            d: int
+            n: int
+    ) -> None:
+        """
+        Set a fixed harmonic dihedral potential.
 
         Parameters
         ----------
@@ -609,6 +779,7 @@ class Dihedral(Force):
             Sign factor
         n : int, required
             Angle scaling factor
+
         """
         if self.optimize:
             raise RuntimeError(
@@ -621,11 +792,26 @@ class Dihedral(Force):
         self.force_init = "Periodic"
         self.force_entry = dict(phi0=phi0, k=k, d=d, n=n)
 
-    def _table_entry(self):
+    def _table_entry(self) -> dict:
         table_entry = {"U": self.potential, "tau": self.force}
         return table_entry
 
-    def _get_distribution(self, state, gsd_file):
+    def _get_distribution(:
+            self,
+            state: msibi.state.State,
+            gsd_file: str
+    ) -> np.ndarray:
+        """
+        Calculate a dihedral distribution.
+
+        Parameters
+        ----------
+        state: msibi.state.State, required
+            State used in calculating the distribution.
+        gsd_file: str, required
+            Path to the GSD file used.
+
+        """
         return dihedral_distribution(
                 gsd_file=gsd,
                 A_name=self.type1,

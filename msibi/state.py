@@ -44,13 +44,12 @@ class State(object):
 
     def __init__(
         self,
-        name,
-        kT,
-        traj_file,
-        n_frames,
-        alpha=1.0,
-        exclude_bonded=True,
-        target_frames=None,
+        name: str,
+        kT: float,
+        traj_file: str,
+        n_frames: int,
+        alpha: float=1.0,
+        exclude_bonded: bool=True,
         _dir=None
     ):
         self.name = name
@@ -76,7 +75,7 @@ class State(object):
         return self._n_frames
 
     @n_frames.setter
-    def n_frames(self, value):
+    def n_frames(self, value: int):
         self._n_frames = value
 
     @property
@@ -84,7 +83,7 @@ class State(object):
         return self._alpha
 
     @alpha.setter
-    def alpha(self, value):
+    def alpha(self, value: float):
         self._alpha = value
 
     def _run_simulation(
@@ -106,7 +105,7 @@ class State(object):
             angles=None,
             dihedrals=None,
             backup_trajectories=False
-    ):
+    ) -> None:
         """
         Contains the hoomd 4 script used to run each query simulation.
         This method is called in msibi.optimize.

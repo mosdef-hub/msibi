@@ -73,11 +73,11 @@ class MSIBI(object):
             thermostat,
             method_kwargs,
             thermostat_kwargs,
-            dt,
-            gsd_period,
+            dt: float,
+            gsd_period: int,
             r_cut,
-            nlist_exclusions=["bond", "angle"],
-            seed=42,
+            nlist_exclusions: list[str]=["bond", "angle"],
+            seed: int=42,
     ):
         if nlist not in ["Cell", "Tree", "Stencil"]:
             raise ValueError(f"{nlist} is not a valid neighbor list in Hoomd")
@@ -96,7 +96,7 @@ class MSIBI(object):
         self.forces = []
         self._optimize_forces = []
 
-    def add_state(self, state):
+    def add_state(self, state: msibi.state.State) -> None:
         """Add a state point to MSIBI.states.
 
         Parameters
@@ -107,7 +107,7 @@ class MSIBI(object):
         state._opt = self
         self.states.append(state)
 
-    def add_force(self, force):
+    def add_force(self, force: msibi.forces.Force) -> None:
         """Add a force to be included in the query simulations.
 
         Parameters
@@ -158,11 +158,11 @@ class MSIBI(object):
 
     def run_optimization(
             self,
-            n_steps,
-            n_iterations,
-            backup_trajectories=False,
+            n_steps: int,
+            n_iterations: int,
+            backup_trajectories: bool=False,
             _dir=None
-    ):
+    ) -> None:
         """Runs query simulations and performs MSIBI
         on the potentials set to be optimized.
 
@@ -203,13 +203,31 @@ class MSIBI(object):
             self._update_potentials()
             self.n_iterations += 1
 
+    def pickle_forcefield(self, file_path: str) -> None:
+        """
+        Save the Hoomd objects for all forces to a single pickle file.
+
+        Parameters
+        ----------
+        file_path : str, required
+            The path and file name for the pickle file.
+
+        Notes
+        -----
+        Use this method as a convienent way to use the final
+        set of forces in your own Hoomd-Blue script, or with
+        flowerMD (https://github.com/cmelab/flowerMD)
+
+        """
+
+
     def _update_potentials(self):
         """Update the potentials for the potentials to be optimized."""
         for force in self._optimize_forces:
             self._recompute_distribution(force)
             force._update_potential()
 
-    def _recompute_distribution(self, force):
+    def _recompute_distribution(self, force: msibi.forces.Force) -> None:
         """Recompute the current distribution of bond lengths or angles"""
         for state in self.states:
             force._compute_current_distribution(state)
