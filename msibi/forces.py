@@ -11,6 +11,7 @@ from cmeutils.structure import (
 )
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 import msibi
 from msibi.potentials import quadratic_spring, bond_correction
@@ -181,7 +182,7 @@ class Force(object):
         )
 
     def save_potential(self, file_path: str) -> None:
-        """Save the x-range, potential and force to file.
+        """Save the x-range, potential and force to a csv file.
 
         Parameters
         ----------
@@ -190,8 +191,8 @@ class Force(object):
 
         Notes
         -----
-        This method uses numpy.savetxt and saves the data
-        in the order of x, V(x), F(x).
+        This method uses pandas.DataFrame.to_csv() and saves the data
+        in with column labels of 'x', 'potential', 'force'.
 
         If you want to smooth the final potential, use
         msibi.forces.Force.smooth_potential() before
@@ -203,8 +204,12 @@ class Force(object):
                     "This force is not a table potential and "
                     "cannot be saved to a .txt file."
             )
-        data = np.vstack([self.x_range, self.potential, self.force])
-        np.savetxt(file_path, data.T)
+        df = pd.DataFrame({
+            "x": self.x_range,
+            "potential": self.potential,
+            "force": self.force
+        })
+        df.to_csv(file_path, index=False)
 
     def target_distribution(self, state: msibi.state.State) -> np.ndarray:
         """The target structural distribution corresponding to this foce.
@@ -360,32 +365,33 @@ class Force(object):
         self.force_entry = self._table_entry()
 
     def set_from_file(self, file_path: str) -> None:
-        """Set a potential from a text file.
+        """Set a potential from a csv file.
 
         Parameters:
         -----------
         file_path : str, required
-            The full path to the table potential text file.
+            The full path to the table potential csv file.
 
         Notes:
         ------
-        The columns of the text file must be in the order of r, V.
-        where r is the independent value (i.e. distance) and V
-        is the potential enregy at r. The force will be calculated
-        from r and V using np.gradient().
+        This uses pandas.DataFrame.read_csv and expects
+        column names of 'x', 'potential', and  'force'.
 
         Use this potential setter to set a potential from a previous MSIBI run.
         For example, use the final potential files from a bond-optimization IBI
         run to set a static coarse-grained bond potential while you perform
         IBI runs on angle and/or pair potentials.
 
+        Also see: msibi.forces.Force.save_potential()
+
         """
-        f = np.loadtxt(file_path)
+        df = pd.read_csv(file_path)
+        self.x_range = df["x"].values
+        self.potential = df["potential"].values
         self.x_range = f[:,0]
         self.dx = np.round(self.x_range[1] - self.x_range[0], 3)
         self.x_min = self.x_range[0]
         self.x_max = self.x_range[-1] + self.dx
-        self._potential = f[:,1]
         self.format = "table"
         self.force_init = "Table"
 
