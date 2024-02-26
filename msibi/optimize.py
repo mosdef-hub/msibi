@@ -58,13 +58,12 @@ class MSIBI(object):
 
     Methods
     -------
-    add_state(state)
+    add_state(msibi.state.state)
     add_force(msibi.forces.Force)
         Add the required interaction objects. See forces.py
-
-    optimize_bonds(n_iterations)
-        Calculates the target bond length distributions for each Bond
-        in MSIBI.bonds and optimizes the bonding potential.
+    run_optimization(n_iterations, backup_trajectories)
+        Performs iterations of query simulations and potential updates
+        resulting in a final optimized potential.
 
     """
     def __init__(
@@ -76,7 +75,6 @@ class MSIBI(object):
             thermostat_kwargs,
             dt,
             gsd_period,
-            n_steps,
             r_cut,
             nlist_exclusions=["bond", "angle"],
             seed=42,
@@ -90,21 +88,38 @@ class MSIBI(object):
         self.thermostat_kwargs = thermostat_kwargs
         self.dt = dt
         self.gsd_period = gsd_period
-        self.n_steps = n_steps
         self.r_cut = r_cut
         self.seed = seed
         self.nlist_exclusions = nlist_exclusions
+        self.n_iterations = 0
         self.states = []
         self.forces = []
         self._optimize_forces = []
 
     def add_state(self, state):
-        """"""
+        """Add a state point to MSIBI.states.
+
+        Parameters
+        ----------
+        state : msibi.state.State, required
+            Instance of msibi.state.State
+        """
         state._opt = self
         self.states.append(state)
 
     def add_force(self, force):
-        """"""
+        """Add a force to be included in the query simulations.
+
+        Parameters
+        ----------
+        force : msibi.forces.Force, required
+            Instance of msibi.forces.Force
+
+        Notes
+        -----
+        Only one type of force can be optimized at a time.
+        Forces not set to be optimized are held fixed during query simulations.
+        """
         self.forces.append(force)
         if force.optimize:
             self._add_optimize_force(force)
@@ -113,18 +128,22 @@ class MSIBI(object):
 
     @property
     def bonds(self):
+        """All instances of msibi.forces.Bond that have been added."""
         return [f for f in self.forces if isinstance(f, msibi.forces.Bond)]
 
     @property
     def angles(self):
+        """All instances of msibi.forces.Angle that have been added."""
         return [f for f in self.forces if isinstance(f, msibi.forces.Angle)]
 
     @property
     def pairs(self):
+        """All instances of msibi.forces.Pair that have been added."""
         return [f for f in self.forces if isinstance(f, msibi.forces.Pair)]
 
     @property
     def dihedrals(self):
+        """All instances of msibi.forces.Dihedral that have been added."""
         return [f for f in self.forces if isinstance(f, msibi.forces.Dihedral)]
 
     def _add_optimize_force(self, force):
@@ -139,23 +158,31 @@ class MSIBI(object):
 
     def run_optimization(
             self,
+            n_steps,
             n_iterations,
             backup_trajectories=False,
             _dir=None
     ):
-        """Runs MSIBI on the potentials set to be optimized.
+        """Runs query simulations and performs MSIBI
+        on the potentials set to be optimized.
 
         Parameters
         ----------
+        n_steps : int, required
+            Number of simulation steps during each iteration.
         n_iterations : int, required
-            Number of iterations.
+            Number of MSIBI update iterations.
+        backup_trajectories : bool, optional default False
+            If True, copies of the query simulation trajectories
+            are saved in their respective msibi.state.State directory.
+
         """
-        self._initialize(potentials_dir=_dir)
+
         for n in range(n_iterations):
             print(f"---Optimization: {n+1} of {n_iterations}---")
             for state in self.states:
                 state._run_simulation(
-                    n_steps=self.n_steps,
+                    n_steps=n_steps,
                     nlist=self.nlist,
                     nlist_exclusions=self.nlist_exclusions,
                     integrator_method=self.integrator_method,
@@ -165,7 +192,7 @@ class MSIBI(object):
                     dt=self.dt,
                     r_cut=self.r_cut,
                     seed=self.seed,
-                    iteration=n+1,
+                    iteration=self.n_iterations,
                     gsd_period=self.gsd_period,
                     pairs=self.pairs,
                     bonds=self.bonds,
@@ -173,83 +200,28 @@ class MSIBI(object):
                     dihedrals=self.dihedrals,
                     backup_trajectories=backup_trajectories
                 )
-            self._update_potentials(n)
-        #TODO
-        # After MSIBI iterations are done: What are we doing?
-        # Save final potentials to a text file
-        # Skip smoothing here?
-        for force in self._optimize_forces:
-            if force.smoothing_window and force.smoothing_order:
-                smoothed_pot = savitzky_golay(
-                        y=force.potential,
-                        window_size=force.smoothing_window,
-                        order=force.smoothing_order
-                )
-            else:
-                smoothed_pot = force.potential
-            file_name = f"{force.name}_final.txt"
-            save_table_potential(
-                    potential=smoothed_pot,
-                    r=force.x_range,
-                    dr=force.dx,
-                    iteration=None,
-                    potential_file=os.path.join(self.potentials_dir, file_name)
-            )
+            self._update_potentials()
+            self.n_iterations += 1
 
-    def _update_potentials(self, iteration):
+    def _update_potentials(self):
         """Update the potentials for the potentials to be optimized."""
         for force in self._optimize_forces:
-            self._recompute_distribution(force, iteration)
+            self._recompute_distribution(force)
             force._update_potential()
-            save_table_potential(
-                    force.potential,
-                    force.x_range,
-                    force.dx,
-                    iteration,
-                    force._potential_file
-            )
 
-    def _recompute_distribution(self, force, iteration):
+    def _recompute_distribution(self, force):
         """Recompute the current distribution of bond lengths or angles"""
         for state in self.states:
             force._compute_current_distribution(state)
-            force._save_current_distribution(state, iteration=iteration)
+            force._save_current_distribution(
+                    state,
+                    iteration=self.n_iterations
+            )
             print("Force: {0}, State: {1}, Iteration: {2}: {3:f}".format(
                     force.name,
                     state.name,
-                    iteration + 1,
-                    force._states[state]["f_fit"][iteration]
+                    self.n_iterations,
+                    force._states[state]["f_fit"][self.n_iterations]
                 )
             )
             print()
-
-    def _initialize(self, potentials_dir):
-        """Create initial table potentials and the simulation input scripts.
-
-        Parameters
-        ----------
-        potentials_dir : path, default None
-            Directory to store potential files. If None is given, a "potentials"
-            folder in the current working directory is used.
-
-        """
-        if potentials_dir is None:
-            self.potentials_dir = os.path.join(os.getcwd(), "potentials")
-        else:
-            self.potentials_dir = potentials_dir
-
-        if not os.path.isdir(self.potentials_dir):
-            os.mkdir(self.potentials_dir)
-        for force in self.forces:
-            if force.format == "table" and force.optimize:
-                potential_file = os.path.join(
-                    self.potentials_dir, f"{force.name}.txt"
-                )
-                force._potential_file = potential_file
-                save_table_potential(
-                        force.potential,
-                        force.x_range,
-                        force.dx,
-                        0,
-                        force._potential_file
-                )
