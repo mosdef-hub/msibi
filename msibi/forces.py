@@ -7,6 +7,7 @@ from cmeutils.structure import (
 )
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 from msibi.potentials import quadratic_spring, bond_correction
 from msibi.utils.error_calculation import calc_similarity
@@ -234,6 +235,22 @@ class Force(object):
         self.format = "table" #TODO: Still using format attribute?
         self.force_init = "Table"
         self.force_entry = self.table_entry()
+
+    def save_to_file(self, file_path):
+        """Save the potential, forces, and r values to a csv file.
+
+        Parameters
+        ----------
+        file_path : str, required
+            The full path to the file to be saved.
+
+        """
+        df = pd.DataFrame({
+            "r": self.x_range,
+            "potential": self.potential,
+            "force": self.force}
+        )
+        df.to_csv(file_path, index=False)
 
     def _add_state(self, state):
         """Add a state to be used in optimizing this Fond.
