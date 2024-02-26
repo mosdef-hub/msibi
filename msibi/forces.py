@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 
 import msibi
-from msibi.potentials import quadratic_spring, bond_correction
+from msibi.potentials import quadratic_spring, bond_correction, lennard_jones
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.smoothing import savitzky_golay
 from msibi.utils.sorting import natural_sort
@@ -813,8 +813,10 @@ class Pair(Force):
 
     def set_lj(
             self,
+            r_min: Union[float, int],
+            r_cut: Union[float, int],
             epsilon: Union[float, int],
-            sigma: Union[float, int]
+            sigma: Union[float, int],
     ) -> None:
         """Set a hoomd 12-6 LJ pair potential used during
         the query simulations.
@@ -835,7 +837,14 @@ class Pair(Force):
                     "This potential setter cannot be used "
                     "for a force designated for optimization. "
                     "Instead, use set_from_file() or set_quadratic()."
-            )
+            ) 
+        self.dx = (r_cut - r_min) / self.nbins
+        self.x_range = np.arange(r_min, r_cut + self.dx, self.dx)
+        self.potential = lennard_jones(
+                r=self.x_range,
+                epsilon=epsilon,
+                sigma=sigma
+        )
         self.type = "static"
         self.force_init = "LJ"
         self.force_entry = dict(sigma=sigma, epsilon=epsilon, r_cut=self.r_cut)
