@@ -157,6 +157,55 @@ class Force(object):
         for state in self._states:
             self._add_state(state)
 
+    def smooth_potential(self) -> None:
+        """Smooth and overwrite the current potential.
+
+        Note
+        ----
+        This uses a Savitzky Golay smoothing algorithm where the
+        window size and order parameters are set by
+        msibi.forces.Force.smoothing_window and 
+        msibi.forces.Force.smoothing_order.
+        Both of these can be changed using their respective setters.
+
+        """
+        if self.format != "table":
+            raise RuntimeError(
+                    "This force is not a table potential and is not mutable."
+            )
+        potential = np.copy(self.potential)
+        self.potential = savitzky_golay(
+                y=potential, 
+                window_size=self.smoothing_window,
+                order=self.smoothing_order,
+        )
+
+    def save_potential(self, file_path: str) -> None:
+        """Save the x-range, potential and force to file.
+
+        Parameters
+        ----------
+        file_path : str, required
+            File path and name to save table potential to. 
+
+        Notes
+        -----
+        This method uses numpy.savetxt and saves the data
+        in the order of x, V(x), F(x).
+
+        If you want to smooth the final potential, use
+        msibi.forces.Force.smooth_potential() before
+        calling this method.
+
+        """
+        if self.format != "table":
+            raise RuntimeError(
+                    "This force is not a table potential and "
+                    "cannot be saved to a .txt file."
+            )
+        data = np.vstack([self.x_range, self.potential, self.force])
+        np.savetxt(file_path, data.T)
+
     def target_distribution(self, state: msibi.state.State) -> np.ndarray:
         """The target structural distribution corresponding to this foce.
 
