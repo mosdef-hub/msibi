@@ -833,6 +833,8 @@ class Pair(Force):
         self.format = "table"
         self.dx = (r_cut - r_min) / self.nbins
         self.x_range = np.arange(r_min, r_cut + self.dx, self.dx)
+        self.x_min = self.x_range[0]
+        self.r_cut = self.x_range[-1]
         self.potential = lennard_jones(
                 r=self.x_range,
                 epsilon=epsilon,
@@ -864,14 +866,22 @@ class Pair(Force):
             Path to the GSD file used.
 
         """
-        return gsd_rdf(
-                gsdfile=gsd_file,
-                A_name=self.type1,
-                B_name=self.type2,
-                start=-state.n_frames,
-                stop=-1,
-                bins=self.nbins + 1
+        rdf, N = gsd_rdf(
+                    gsdfile=gsd_file,
+                    A_name=self.type1,
+                    B_name=self.type2,
+                    r_min=self.x_min,
+                    r_max=self.r_cut,
+                    exclude_bonded=state.exclude_bonded,
+                    start=-state.n_frames,
+                    stop=-1,
+                    bins=self.nbins + 1
         )
+        x = rdf.bin_centers
+        y = rdf.rdf * N
+        dist = np.vstack([x, y])
+        return dist.T
+
 
 
 class Dihedral(Force):
