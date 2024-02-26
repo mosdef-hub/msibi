@@ -3,6 +3,7 @@ import pickle
 import shutil
 
 import hoomd
+from hoomd.md.methods import ConstantVolume, ConstantPressure
 import numpy as np
 
 import msibi
@@ -14,34 +15,27 @@ class MSIBI(object):
 
     Parameters
     ----------
-    nlist : str, required
-        The type of hoomd neighbor list to use.
-        When optimizing bonded potentials, using hoomd.md.nlist.tree
-        may work best for single chain, low density simulations
-        When optimizing pair potentials hoomd.md.nlist.cell
-        may work best
-    integrator_method : str, required
-        The integrator_method to use in the query simulation.
+    nlist : hoomd.md.list.NeighborList, required
+        The type of Hoomd neighbor list to use.
+    integrator_method : hoomd.md.methods.Method, required
+        The integrator method to use in the query simulation.
+        The only supported options are ConstantVolume or ConstantPressure.
     integrator_kwargs : dict, required
-        The args and their values required by the integrator chosen
+        The arguments and their values required by the integrator chosen
+    thermostat : hoomd.md.methods.thermostat.Thermostat, required
+        The thermostat to be paired with the integrator method.
+    thermostat_kwargs : dict, required
+        The arguments and their values required by the thermostat chosen.
     dt : float, required
         The time step delta
     gsd_period : int, required
         The number of frames between snapshots written to query.gsd
     n_steps : int, required
         How many steps to run the query simulations
-    r_cut : float, optional, default 0
-        Set the r_cut value to use in pair interactions.
-        Leave as zero if pair interactions aren't being used.
     nlist_exclusions : list of str, optional, default ["1-2", "1-3"]
         Sets the pair exclusions used during the optimization simulations
     seed : int, optional, default 42
         Random seed to use during the simulation
-    backup_trajectories : bool, optional, default False
-        If False, the query simulation trajectories are
-        overwritten during each iteraiton.
-        If True, the query simulations are saved for
-        each iteration.
 
     Attributes
     ----------
@@ -73,19 +67,25 @@ class MSIBI(object):
 
     def __init__(
             self,
-            nlist,
-            integrator_method,
-            thermostat,
-            method_kwargs,
-            thermostat_kwargs,
+            nlist: hoomd.md.nlist,
+            integrator_method hoomd.md.methods,
+            thermostat: hoomd.md.methods.thermostats,
+            method_kwargs: dict,
+            thermostat_kwargs: dict,
             dt: float,
             gsd_period: int,
-            r_cut,
             nlist_exclusions: list[str]=["bond", "angle"],
             seed: int=42,
     ):
-        if nlist not in ["Cell", "Tree", "Stencil"]:
-            raise ValueError(f"{nlist} is not a valid neighbor list in Hoomd")
+        if (
+                not isinstance(integrator_method, ConstantVolume) or
+                not isinstance(integrator_method, ConstantPressure)
+        ):
+            raise ValueError(
+                    "MSIBI is only compatible with NVT "
+                    "(hoomd.md.methods.ConstantVolume), or NPT "
+                    "(hoomd.md.methods.ConstantPressure)"
+            )
         self.nlist = nlist
         self.integrator_method = integrator_method
         self.thermostat = thermostat
@@ -93,7 +93,6 @@ class MSIBI(object):
         self.thermostat_kwargs = thermostat_kwargs
         self.dt = dt
         self.gsd_period = gsd_period
-        self.r_cut = r_cut
         self.seed = seed
         self.nlist_exclusions = nlist_exclusions
         self.n_iterations = 0
@@ -243,10 +242,7 @@ class MSIBI(object):
                                 buffer=20,
                                 exclusions=self.nlist_exclusions
                             ),
-                            default_r_cut=self.r_cut
                     )
-            #TODO: this won't work if the pair types aren't single letters
-            param_name = (pair.name[0], pair.name[-1]) # Can't use pair.name
             if pair.format == "table":
                 pair_force.params[pair._pair_name] = pair._table_entry()
             else:

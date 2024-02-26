@@ -43,6 +43,8 @@ class Force(object):
         This must be a positive integer if this force is being optimized.
         nbins is used to setting the potenials independent varible (x) range
         and step size (dx).
+        It is also used in determining the bin size of the target and query
+        distributions.
 
     """
 
@@ -123,6 +125,8 @@ class Force(object):
 
     @smoothing_window.setter
     def smoothing_window(self, value: int):
+        if not isinstance(value, int):
+            raise ValueError("The smoothing window must be an integer.")
         self._smoothing_window = value
         for state in self._states:
             self._add_state(state)
@@ -130,6 +134,8 @@ class Force(object):
     @property
     def smoothing_order(self) -> int:
         """The order used in smoothing the distributions."""
+        if not isinstance(value, int):
+            raise ValueError("The smoothing order must be an integer.")
         return self._smoothing_order
 
     @smoothing_order.setter
@@ -145,6 +151,8 @@ class Force(object):
 
     @nbins.setter
     def nbins(self, value: int):
+        if not isinstance(value, int):
+            raise ValueError("nbins must be an integer.")
         self._nbins =  value
         for state in self._states:
             self._add_state(state)
@@ -331,7 +339,6 @@ class Force(object):
         self._potential = f[:,1]
         self.format = "table"
         self.force_init = "Table"
-        self.force_entry = self.table_entry()
 
     def _add_state(self, state: msibi.state.State) -> None:
         """Add a state to be used in optimizing this force.
@@ -464,6 +471,38 @@ class Force(object):
 
 
 class Bond(Force):
+    """
+    Creates a bond force used in query simulations.
+
+    Parameters
+    ----------
+    type1 : str, required
+        Name of the first particle type in the bond.
+        This must match the types found in the state's target GSD file.
+    type2 : str, required
+        Name of the second particle type in the bond.
+        This must match the types found in the state's target GSD file.
+    optimize : bool, required
+        Set to True if this force is to be mutable and optimized.
+        Set to False if this force is to be held constant while
+        other forces are optimized.
+    nbins : int, optional
+        This must be a positive integer if this force is being optimized.
+        nbins is used to setting the potenials independent varible (x) range
+        and step size (dx).
+        It is also used in determining the bin size of the target and query
+        distributions.
+
+    Notes
+    -----
+    The bond type is sorted so that type1 and type2
+    are listed in alphabetical order, and must match the bond
+    types found in the state's target GSD file bond types.
+
+    For example: `Bond(type1="B", type2="A")` will have `Bond.name = "A-B"`
+
+    """
+
     def __init__(
             self,
             type1: str,
@@ -501,8 +540,8 @@ class Bond(Force):
             raise RuntimeError(
                     f"Force {self} is set to be optimized during MSIBI."
                     "This potential setter cannot be used "
-                    "for a force set for optimization. Instead, use either "
-                    "set_from_file() or set_quadratic()."
+                    "for a force designated for optimization. " 
+                    "Instead, use set_from_file() or set_quadratic()."
             )
         self.type = "static"
         self.force_init = "Harmonic"
@@ -546,6 +585,38 @@ class Bond(Force):
 
 
 class Angle(Force):
+    """
+    Creates an angle force used in query simulations.
+
+    Parameters
+    ----------
+    type1 : str, required
+        Name of the first particle type in the angle.
+        This must match the types found in the state's target GSD file.
+    type2 : str, required
+        Name of the second particle type in the angle.
+        This must match the types found in the state's target GSD file.
+    type3 : str, required
+        Name of the third particle type in the angle.
+        This must match the types found in the state's target GSD file.
+    optimize : bool, required
+        Set to True if this force is to be mutable and optimized.
+        Set to False if this force is to be held constant while
+        other forces are optimized.
+    nbins : int, optional
+        This must be a positive integer if this force is being optimized.
+        nbins is used to setting the potenials independent varible (x) range
+        and step size (dx).
+        It is also used in determining the bin size of the target and query
+        distributions.
+
+    Notes
+    -----
+    The angle type is formed in the order of type1-type2-type3 and must match
+    the same order in the target GSD file angle types.
+
+    """
+
     def __init__(
             self,
             type1: str,
@@ -584,8 +655,8 @@ class Angle(Force):
             raise RuntimeError(
                     f"Force {self} is set to be optimized during MSIBI."
                     "This potential setter cannot be used "
-                    "for a force set for optimization. Instead, use either "
-                    "set_from_file() or set_quadratic()."
+                    "for a force designated for optimization. " 
+                    "Instead, use set_from_file() or set_quadratic()."
             )
         self.type = "static"
         self.force_init = "Harmonic"
@@ -625,28 +696,66 @@ class Angle(Force):
 
 
 class Pair(Force):
+    """
+    Creates a pair force used in query simulations.
+
+    Parameters
+    ----------
+    type1 : str, required
+        Name of the first particle type in the pair.
+        This must match the types found in the state's target GSD file.
+    type2 : str, required
+        Name of the second particle type in the pair.
+        This must match the types found in the state's target GSD file.
+    optimize : bool, required
+        Set to True if this force is to be mutable and optimized.
+        Set to False if this force is to be held constant while
+        other forces are optimized.
+    r_cut : (Union[float, int]) : required
+        Sets the cutoff distance used in Hoomd's neighborlist.
+    nbins : int, optional
+        This must be a positive integer if this force is being optimized.
+        nbins is used to setting the potenials independent varible (x) range
+        and step size (dx).
+        It is also used in determining the bin size of the target and query
+        distributions.
+    exclude_bonded : bool, default False
+        If True, then particles from the same molecule are not
+        included in the RDF calculation.
+        If False, all particles are included.
+
+    Notes
+    -----
+    The pair type is sorted so that type1 and type2
+    are listed in alphabetical order, and must match the pair 
+    types found in the state's target GSD file bond types.
+
+    For example: `Pair(type1="B", type2="A")` will have `Pair.name = "A-B"`
+
+    """
+
     def __init__(
             self,
             type1: str,
             type2: str,
             optimize: bool,
+            r_cut: Union[int, float]
             nbins: int=None,
             exclude_bonded: bool=False,
             head_correction_form: str="linear"
     ):
         self.type1, self.type2 = sorted( [type1, type2], key=natural_sort)
+        self.r_cut = r_cut 
         name = f"{self.type1}-{self.type2}"
-        # Pair types have different naming structure than bonds, angles, etc..
+        # Pair types in hoomd have different naming structure.
         self._pair_name = (type1, type2)
-        #TODO: Set r_cut in pair class
-        self.r_cut = None
         super(Pair, self).__init__(
                 name=name,
                 optimize=optimize,
                 nbins=nbins,
                 head_correction_form=head_correction_form
         )
-    #TODO: need table entry method for pairs
+
     def set_lj(
             self,
             epsilon: Union[float, int],
@@ -665,9 +774,25 @@ class Pair(Force):
             Maximum distance used to calculate neighbor pair potentials.
 
         """
+        if self.optimize:
+            raise RuntimeError(
+                    f"Force {self} is set to be optimized during MSIBI."
+                    "This potential setter cannot be used "
+                    "for a force designated for optimization. " 
+                    "Instead, use set_from_file() or set_quadratic()."
+            )
         self.type = "static"
         self.force_init = "LJ"
-        self.force_entry = dict(sigma=sigma, epsilon=epsilon)
+        self.force_entry = dict(sigma=sigma, epsilon=epsilon, r_cut=self.r_cut)
+
+    def _table_entry(self) -> dict:
+        table_entry = {
+                "r_min": self.x_min,
+                "U": self.potential,
+                "F": self.force,
+                "r_cut": self.r_cut
+        }
+        return table_entry
 
     def _get_distribution(
             self,
@@ -695,6 +820,41 @@ class Pair(Force):
 
 
 class Dihedral(Force):
+    """
+    Creates a dihedral force used in query simulations.
+
+    Parameters
+    ----------
+    type1 : str, required
+        Name of the first particle type in the dihedral.
+        This must match the types found in the state's target GSD file.
+    type2 : str, required
+        Name of the second particle type in the dihedral.
+        This must match the types found in the state's target GSD file.
+    type3 : str, required
+        Name of the third particle type in the dihedral.
+        This must match the types found in the state's target GSD file.
+    type4 : str, required
+        Name of the fourth particle type in the dihedral.
+        This must match the types found in the state's target GSD file.
+    optimize : bool, required
+        Set to True if this force is to be mutable and optimized.
+        Set to False if this force is to be held constant while
+        other forces are optimized.
+    nbins : int, optional
+        This must be a positive integer if this force is being optimized.
+        nbins is used to setting the potenials independent varible (x) range
+        and step size (dx).
+        It is also used in determining the bin size of the target and query
+        distributions.
+
+    Notes
+    -----
+    The dihedral type is formed in the order of type1-type2-type3-type4 and
+    must match the same order in the target GSD file angle types.
+
+    """
+
     def __init__(
             self,
             type1: str,
@@ -710,7 +870,6 @@ class Dihedral(Force):
         self.type3 = type3
         self.type4 = type4
         name = f"{self.type1}-{self.type2}-{self.type3}-{self.type4}"
-        self.table_entry = dict(U=None, tau=None)
         super(Dihedral, self).__init__(
                 name=name,
                 optimize=optimize,
@@ -743,8 +902,8 @@ class Dihedral(Force):
             raise RuntimeError(
                     f"Force {self} is set to be optimized during MSIBI."
                     "This potential setter cannot be used "
-                    "for a force set for optimization. Instead, use either "
-                    "set_from_file() or set_quadratic()."
+                    "for a force designated for optimization. " 
+                    "Instead, use set_from_file() or set_quadratic()."
             )
         self.type = "static"
         self.force_init = "Periodic"

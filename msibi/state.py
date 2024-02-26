@@ -3,8 +3,6 @@ import shutil
 from typing import Union
 import warnings
 
-
-import gsd
 import gsd.hoomd
 import hoomd
 
@@ -17,14 +15,14 @@ class State(object):
     ----------
     name : str
         State name used in creating state directory space and output files.
-    kT : float
+    kT : (Union[float, int])
         Unitless heat energy (product of Boltzmann's constant and temperature).
-    traj_file : path to a gsd.hoomd.HOOMDTrajectory file
+    traj_file : path to a gsd.hoomd file
         The gsd trajectory associated with this state.
-        This trajectory is used to calcualte the target distributions used
+        This trajectory calcualtes the target distributions used
         during optimization.
-    alpha : float, default 1.0
-        The alpha value used to scaale the weight of this state.
+    alpha : (Union[float, int]), default 1.0
+        The alpha value used to scale the weight of this state.
 
     Attributes
     ----------
@@ -117,9 +115,7 @@ class State(object):
         sim.create_state_from_snapshot(last_snap)
         integrator = hoomd.md.Integrator(dt=dt)
         integrator.forces = forces 
-        _thermostat = getattr(hoomd.md.methods.thermostats, thermostat)
-        thermostat = _thermostat(kT=self.kT, **thermostat_kwargs)
-        method = getattr(hoomd.md.methods, integrator_method)
+        thermostat = thermostat(kT=self.kT, **thermostat_kwargs)
         integrator.methods.append(
                 method(
                     filter=hoomd.filter.All(),
@@ -146,7 +142,7 @@ class State(object):
         print(f"Finished simulation {iteration} for state {self}")
         print()
 
-    def _setup_dir(self, name, kT, dir_name=None):
+    def _setup_dir(self, name, kT, dir_name=None) -> str:
         """Create a state directory each time a new State is created."""
         if dir_name is None:
             if not os.path.isdir("states"):
