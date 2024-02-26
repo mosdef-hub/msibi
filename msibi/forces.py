@@ -134,12 +134,12 @@ class Force(object):
     @property
     def smoothing_order(self) -> int:
         """The order used in smoothing the distributions."""
-        if not isinstance(value, int):
-            raise ValueError("The smoothing order must be an integer.")
         return self._smoothing_order
 
     @smoothing_order.setter
     def smoothing_order(self, value: int):
+        if not isinstance(value, int):
+            raise ValueError("The smoothing order must be an integer.")
         self._smoothing_order = value
         for state in self._states:
             self._add_state(state)
@@ -540,7 +540,7 @@ class Bond(Force):
             raise RuntimeError(
                     f"Force {self} is set to be optimized during MSIBI."
                     "This potential setter cannot be used "
-                    "for a force designated for optimization. " 
+                    "for a force designated for optimization. "
                     "Instead, use set_from_file() or set_quadratic()."
             )
         self.type = "static"
@@ -655,7 +655,7 @@ class Angle(Force):
             raise RuntimeError(
                     f"Force {self} is set to be optimized during MSIBI."
                     "This potential setter cannot be used "
-                    "for a force designated for optimization. " 
+                    "for a force designated for optimization. "
                     "Instead, use set_from_file() or set_quadratic()."
             )
         self.type = "static"
@@ -727,7 +727,7 @@ class Pair(Force):
     Notes
     -----
     The pair type is sorted so that type1 and type2
-    are listed in alphabetical order, and must match the pair 
+    are listed in alphabetical order, and must match the pair
     types found in the state's target GSD file bond types.
 
     For example: `Pair(type1="B", type2="A")` will have `Pair.name = "A-B"`
@@ -739,13 +739,13 @@ class Pair(Force):
             type1: str,
             type2: str,
             optimize: bool,
-            r_cut: Union[int, float]
+            r_cut: Union[float, int],
             nbins: int=None,
             exclude_bonded: bool=False,
             head_correction_form: str="linear"
     ):
         self.type1, self.type2 = sorted( [type1, type2], key=natural_sort)
-        self.r_cut = r_cut 
+        self.r_cut = r_cut
         name = f"{self.type1}-{self.type2}"
         # Pair types in hoomd have different naming structure.
         self._pair_name = (type1, type2)
@@ -778,7 +778,7 @@ class Pair(Force):
             raise RuntimeError(
                     f"Force {self} is set to be optimized during MSIBI."
                     "This potential setter cannot be used "
-                    "for a force designated for optimization. " 
+                    "for a force designated for optimization. "
                     "Instead, use set_from_file() or set_quadratic()."
             )
         self.type = "static"
@@ -902,7 +902,7 @@ class Dihedral(Force):
             raise RuntimeError(
                     f"Force {self} is set to be optimized during MSIBI."
                     "This potential setter cannot be used "
-                    "for a force designated for optimization. " 
+                    "for a force designated for optimization. "
                     "Instead, use set_from_file() or set_quadratic()."
             )
         self.type = "static"

@@ -68,8 +68,8 @@ class MSIBI(object):
     def __init__(
             self,
             nlist: hoomd.md.nlist,
-            integrator_method hoomd.md.methods,
-            thermostat: hoomd.md.methods.thermostats,
+            integrator_method: hoomd.md.methods.Method,
+            thermostat: hoomd.md.methods.thermostats.Thermostat,
             method_kwargs: dict,
             thermostat_kwargs: dict,
             dt: float,
@@ -77,10 +77,10 @@ class MSIBI(object):
             nlist_exclusions: list[str]=["bond", "angle"],
             seed: int=42,
     ):
-        if (
-                not isinstance(integrator_method, ConstantVolume) or
-                not isinstance(integrator_method, ConstantPressure)
-        ):
+        if integrator_method not in [
+                hoomd.md.methods.ConstantVolume,
+                hoomd.md.methods.ConstantPressure
+        ]:
             raise ValueError(
                     "MSIBI is only compatible with NVT "
                     "(hoomd.md.methods.ConstantVolume), or NPT "
@@ -185,7 +185,7 @@ class MSIBI(object):
         """
         for n in range(n_iterations):
             print(f"---Optimization: {n+1} of {n_iterations}---")
-            forces = self._build_objects()
+            forces = self._build_force_objects()
             for state in self.states:
                 state._run_simulation(
                     n_steps=n_steps,
@@ -225,8 +225,8 @@ class MSIBI(object):
             )
         f = open(file_path, "wb")
         pickle.dump(forces, f)
-    
-    def _build_foce_objects(self) -> list:
+
+    def _build_force_objects(self) -> list:
         """Creates force objects for query simulations."""
         nlist = getattr(hoomd.md.nlist, self.nlist)
         # Create pair objects

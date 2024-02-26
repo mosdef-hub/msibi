@@ -114,10 +114,10 @@ class State(object):
             last_snap = traj[-1]
         sim.create_state_from_snapshot(last_snap)
         integrator = hoomd.md.Integrator(dt=dt)
-        integrator.forces = forces 
+        integrator.forces = forces
         thermostat = thermostat(kT=self.kT, **thermostat_kwargs)
         integrator.methods.append(
-                method(
+                integrator_method(
                     filter=hoomd.filter.All(),
                     thermostat=thermostat,
                     **method_kwargs
