@@ -228,7 +228,6 @@ class MSIBI(object):
 
     def _build_force_objects(self) -> list:
         """Creates force objects for query simulations."""
-        nlist = getattr(hoomd.md.nlist, self.nlist)
         # Create pair objects
         pair_force = None
         for pair in self.pairs:
@@ -238,7 +237,7 @@ class MSIBI(object):
                     pair_force = hoomd_pair_force(width=pair.nbins)
                 else:
                     pair_force = hoomd_pair_force(
-                            nlist=nlist(
+                            nlist=self.nlist(
                                 buffer=20,
                                 exclusions=self.nlist_exclusions
                             ),
