@@ -165,7 +165,7 @@ class Force(object):
         ----
         This uses a Savitzky Golay smoothing algorithm where the
         window size and order parameters are set by
-        msibi.forces.Force.smoothing_window and 
+        msibi.forces.Force.smoothing_window and
         msibi.forces.Force.smoothing_order.
         Both of these can be changed using their respective setters.
 
@@ -176,7 +176,7 @@ class Force(object):
             )
         potential = np.copy(self.potential)
         self.potential = savitzky_golay(
-                y=potential, 
+                y=potential,
                 window_size=self.smoothing_window,
                 order=self.smoothing_order,
         )
@@ -187,7 +187,7 @@ class Force(object):
         Parameters
         ----------
         file_path : str, required
-            File path and name to save table potential to. 
+            File path and name to save table potential to.
 
         Notes
         -----
@@ -385,14 +385,13 @@ class Force(object):
         Also see: msibi.forces.Force.save_potential()
 
         """
+        self.format = "table"
         df = pd.read_csv(file_path)
         self.x_range = df["x"].values
         self.potential = df["potential"].values
-        self.x_range = f[:,0]
         self.dx = np.round(self.x_range[1] - self.x_range[0], 3)
         self.x_min = self.x_range[0]
         self.x_max = self.x_range[-1] + self.dx
-        self.format = "table"
         self.force_init = "Table"
 
     def _add_state(self, state: msibi.state.State) -> None:
@@ -831,13 +830,7 @@ class Pair(Force):
             Maximum distance used to calculate neighbor pair potentials.
 
         """
-        if self.optimize:
-            raise RuntimeError(
-                    f"Force {self} is set to be optimized during MSIBI."
-                    "This potential setter cannot be used "
-                    "for a force designated for optimization. "
-                    "Instead, use set_from_file() or set_quadratic()."
-            ) 
+        self.format = "table"
         self.dx = (r_cut - r_min) / self.nbins
         self.x_range = np.arange(r_min, r_cut + self.dx, self.dx)
         self.potential = lennard_jones(
@@ -845,9 +838,7 @@ class Pair(Force):
                 epsilon=epsilon,
                 sigma=sigma
         )
-        self.type = "static"
-        self.force_init = "LJ"
-        self.force_entry = dict(sigma=sigma, epsilon=epsilon, r_cut=self.r_cut)
+        self.force_init = "Table"
 
     def _table_entry(self) -> dict:
         table_entry = {
