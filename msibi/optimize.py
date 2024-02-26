@@ -234,7 +234,12 @@ class MSIBI(object):
             if not pair_force: # Only create hoomd.md.pair obj once
                 hoomd_pair_force = getattr(hoomd.md.pair, pair.force_init)
                 if pair.force_init == "Table":
-                    pair_force = hoomd_pair_force(width=pair.nbins)
+                    pair_force = hoomd_pair_force(
+                            nlist=self.nlist(
+                                buffer=20,
+                                exclusions=self.nlist_exclusions
+                            ),
+                    )
                 else:
                     pair_force = hoomd_pair_force(
                             nlist=self.nlist(
@@ -244,6 +249,7 @@ class MSIBI(object):
                     )
             if pair.format == "table":
                 pair_force.params[pair._pair_name] = pair._table_entry()
+                pair_force.r_cut[pair._pair_name] = pair.r_cut
             else:
                 pair_force.params[pair._pair_name] = pair.force_entry
         # Create bond objects

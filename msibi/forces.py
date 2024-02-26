@@ -847,7 +847,6 @@ class Pair(Force):
                 "r_min": self.x_min,
                 "U": self.potential,
                 "F": self.force,
-                "r_cut": self.r_cut
         }
         return table_entry
 
