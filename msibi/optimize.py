@@ -1,6 +1,8 @@
 import os
+import pickle
 import shutil
 
+import hoomd
 import numpy as np
 
 import msibi
@@ -63,6 +65,9 @@ class MSIBI(object):
     run_optimization(n_iterations, n_steps, backup_trajectories)
         Performs iterations of query simulations and potential updates
         resulting in a final optimized potential.
+    pickle_forces()
+        Saves a pickle file containing a list of Hoomd force objects
+        as they existed in the most recent optimization run.
 
     """
 
@@ -109,8 +114,7 @@ class MSIBI(object):
         self.states.append(state)
 
     def add_force(self, force: msibi.forces.Force) -> None:
-        """
-        Add a force to be included in the query simulations.
+        """Add a force to be included in the query simulations.
 
         Parameters
         ----------
@@ -180,35 +184,28 @@ class MSIBI(object):
             are saved in their respective msibi.state.State directory.
 
         """
-
         for n in range(n_iterations):
             print(f"---Optimization: {n+1} of {n_iterations}---")
+            forces = self._build_objects()
             for state in self.states:
                 state._run_simulation(
                     n_steps=n_steps,
-                    nlist=self.nlist,
-                    nlist_exclusions=self.nlist_exclusions,
+                    forces=forces,
                     integrator_method=self.integrator_method,
                     method_kwargs=self.method_kwargs,
                     thermostat=self.thermostat,
                     thermostat_kwargs=self.thermostat_kwargs,
                     dt=self.dt,
-                    r_cut=self.r_cut,
                     seed=self.seed,
                     iteration=self.n_iterations,
                     gsd_period=self.gsd_period,
-                    pairs=self.pairs,
-                    bonds=self.bonds,
-                    angles=self.angles,
-                    dihedrals=self.dihedrals,
                     backup_trajectories=backup_trajectories
                 )
             self._update_potentials()
             self.n_iterations += 1
 
-    def pickle_forcefield(self, file_path: str) -> None:
-        """
-        Save the Hoomd objects for all forces to a single pickle file.
+    def pickle_forces(self, file_path: str) -> None:
+        """Save the Hoomd objects for all forces to a single pickle file.
 
         Parameters
         ----------
@@ -217,14 +214,88 @@ class MSIBI(object):
 
         Notes
         -----
-        Use this method as a convienent way to use the final
+        Use this method as a convienent way to save and use the final
         set of forces in your own Hoomd-Blue script, or with
-        flowerMD (https://github.com/cmelab/flowerMD)
+        flowerMD (https://github.com/cmelab/flowerMD).
 
         """
+        forces = self._build_force_objects()
+        if len(forces) == 0:
+            raise RuntimeError(
+                    "No forces have been created yet. See MSIBI.add_force()"
+            )
+        f = open(file_path, "wb")
+        pickle.dump(forces, f)
+    
+    def _build_foce_objects(self) -> list:
+        """Creates force objects for query simulations."""
+        nlist = getattr(hoomd.md.nlist, self.nlist)
+        # Create pair objects
+        pair_force = None
+        for pair in self.pairs:
+            if not pair_force: # Only create hoomd.md.pair obj once
+                hoomd_pair_force = getattr(hoomd.md.pair, pair.force_init)
+                if pair.force_init == "Table":
+                    pair_force = hoomd_pair_force(width=pair.nbins)
+                else:
+                    pair_force = hoomd_pair_force(
+                            nlist=nlist(
+                                buffer=20,
+                                exclusions=self.nlist_exclusions
+                            ),
+                            default_r_cut=self.r_cut
+                    )
+            #TODO: this won't work if the pair types aren't single letters
+            param_name = (pair.name[0], pair.name[-1]) # Can't use pair.name
+            if pair.format == "table":
+                pair_force.params[pair._pair_name] = pair._table_entry()
+            else:
+                pair_force.params[pair._pair_name] = pair.force_entry
+        # Create bond objects
+        bond_force = None
+        for bond in self.bonds:
+            if not bond_force:
+                hoomd_bond_force = getattr(hoomd.md.bond, bond.force_init)
+                if bond.force_init == "Table":
+                    bond_force = hoomd_bond_force(width=bond.nbins + 1)
+                else:
+                    bond_force = hoomd_bond_force()
+            if bond.format == "table":
+                bond_force.params[bond.name] = bond._table_entry()
+            else:
+                bond_force.params[bond.name] = bond.force_entry
+        # Create angle objects
+        angle_force = None
+        for angle in self.angles:
+            if not angle_force:
+                hoomd_angle_force = getattr(hoomd.md.angle, angle.force_init)
+                if angle.force_init == "Table":
+                    angle_force = hoomd_angle_force(width=angle.nbins + 1)
+                else:
+                    angle_force = hoomd_angle_force()
+            if angle.format == "table":
+                angle_force.params[angle.name] = angle._table_entry()
+            else:
+                angle_force.params[angle.name] = angle.force_entry
+        # Create dihedral objects
+        dihedral_force = None
+        for dih in self.dihedrals:
+            if not dihedral_force:
+                hoomd_dihedral_force = getattr(
+                        hoomd.md.dihedral, dih.force_init
+                )
+                if dih.force_init == "Table":
+                    dihedral_force = hoomd_dihedral_force(width=dih.nbins + 1)
+                else:
+                    dihedral_force = hoomd_dihedral_force()
+            if dih.format == "table":
+                dihedral_force.params[dih.name] = dih._table_entry()
+            else:
+                dihedral_force.params[dih.name] = dih.force_entry
+        forces = [pair_force, bond_force, angle_force, dihedral_force]
+        return [f for f in forces if f] # Filter out any None values
 
-
-    def _update_potentials(self):
+    def _update_potentials(self) -> None:
         """Update the potentials for the potentials to be optimized."""
         for force in self._optimize_forces:
             self._recompute_distribution(force)

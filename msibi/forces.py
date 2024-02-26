@@ -636,6 +636,9 @@ class Pair(Force):
     ):
         self.type1, self.type2 = sorted( [type1, type2], key=natural_sort)
         name = f"{self.type1}-{self.type2}"
+        # Pair types have different naming structure than bonds, angles, etc..
+        self._pair_name = (type1, type2)
+        #TODO: Set r_cut in pair class
         self.r_cut = None
         super(Pair, self).__init__(
                 name=name,
@@ -643,7 +646,7 @@ class Pair(Force):
                 nbins=nbins,
                 head_correction_form=head_correction_form
         )
-
+    #TODO: need table entry method for pairs
     def set_lj(
             self,
             epsilon: Union[float, int],
