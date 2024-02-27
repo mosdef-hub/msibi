@@ -5,22 +5,6 @@ import numpy as np
 
 from msibi.utils.general import find_nearest
 
-#TODO: Move this to the Force class
-def save_table_potential(potential, r, dr, iteration, potential_file):
-    """Save the length, potential energy,force values to a text file."""
-    F = -1.0 * np.gradient(potential, dr)
-    data = np.vstack([r, potential, F])
-    # This file overwritten for each iteration, used during query sim.
-    np.savetxt(potential_file, data.T)
-
-    if iteration != None:
-        basename = os.path.basename(potential_file)
-        basename = "step{0:d}.{1}".format(iteration, basename)
-        dirname = os.path.dirname(potential_file)
-        iteration_filename = os.path.join(dirname, basename)
-        # This file written for viewing evolution of potential.
-        np.savetxt(iteration_filename, data.T)
-
 
 def quadratic_spring(x, x0, k4, k3, k2):
     """Creates a quadratic spring-like potential with the following form
@@ -38,7 +22,11 @@ def mie(r, epsilon, sigma, m, n):
     """The Mie potential functional form"""
     prefactor = (m / (m - n)) * (m / n) ** (n / (m - n))
     V_r = prefactor * epsilon * ((sigma / r) ** m - (sigma / r) ** n)
-    return V_r 
+    return V_r
+
+
+def lennard_jones(r, epsilon, sigma):
+    return mie(r=r, epsilon=epsilon, sigma=sigma, m=12, n=6)
 
 
 def pair_tail_correction(r, V, r_switch):

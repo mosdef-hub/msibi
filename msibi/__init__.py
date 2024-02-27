@@ -1,9 +1,10 @@
-from msibi.optimize import MSIBI
-from msibi.forces import Pair, Bond, Angle, Dihedral
-from msibi.potentials import *
-from msibi.state import State
-from msibi.__version__ import __version__
-from msibi import utils
+from .state import State
+from .forces import Pair, Bond, Angle, Dihedral
+from .optimize import MSIBI
+#from .potentials import *
+#from .potentials import quadratic_spring, mie, lennard_jones, pair_tail_correction 
+from .__version__ import __version__
+from . import utils
 
 __all__ = [
     "__version__",
