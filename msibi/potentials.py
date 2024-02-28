@@ -29,6 +29,91 @@ def lennard_jones(r, epsilon, sigma):
     return mie(r=r, epsilon=epsilon, sigma=sigma, m=12, n=6)
 
 
+def pair_correction(r, V, form, r_switch=2.5):
+    if form == "linear":
+        head_correction_function = linear_head_correction
+        tail_correction_function = pair_tail_correction
+    elif form == "exponential":
+        head_correction_function = exponential_head_correction
+        tail_correction_function = pair_tail_correction
+    else:
+        raise ValueError(f'Unsupported head correction form: "{form}"')
+
+    real_idx = np.where(np.isfinite(V))[0]
+    # Check for continuity of real_indices:
+    if not np.all(np.ediff1d(real_idx) == 1):
+        start = real_idx[0]
+        end = real_idx[-1]
+        # Correct nans, infs that are surrounded by 2 finite numbers
+        for idx, v in enumerate(V[start:end]):
+            if not np.isfinite(v):
+                try:
+                    avg = (V[idx+start-1] + V[idx+start+1]) / 2
+                    V[idx+start] = avg
+                except IndexError:
+                    pass
+        # Trim off edge cases
+        _real_idx = np.where(np.isfinite(V))[0]
+        real_idx = max(
+                [list(g) for g in mit.consecutive_groups(_real_idx)], key=len
+        )
+
+    head_cutoff = real_idx[0] - 1
+    tail_cutoff = real_idx[-1] + 1
+
+    head_correction_V = head_correction_function(r=r, V=V, cutoff=head_cutoff)
+    # Potential with both head correction and tial correciton applied
+    tail_correction_V = tail_correction_function(
+            r=r, V=head_correction_V, r_switch=r_switch
+    )
+    return tail_correction_V, real_idx, head_cutoff, tail_cutoff
+
+
+def bond_correction(r, V, form):
+    """Handles corrections for both the head and tail of
+    bond scretching and angle potentials.
+    """
+    import more_itertools as mit
+
+    if form == "linear":
+        head_correction_function = linear_head_correction
+        tail_correction_function = linear_tail_correction
+    elif form == "exponential":
+        head_correction_function = exponential_head_correction
+        tail_correction_function = exponential_tail_correction
+    else:
+        raise ValueError(f'Unsupported head correction form: "{form}"')
+
+    real_idx = np.where(np.isfinite(V))[0]
+    # Check for continuity of real_indices:
+    if not np.all(np.ediff1d(real_idx) == 1):
+        start = real_idx[0]
+        end = real_idx[-1]
+        # Correct nans, infs that are surrounded by 2 finite numbers
+        for idx, v in enumerate(V[start:end]):
+            if not np.isfinite(v):
+                try:
+                    avg = (V[idx+start-1] + V[idx+start+1]) / 2
+                    V[idx+start] = avg
+                except IndexError:
+                    pass
+        # Trim off edge cases
+        _real_idx = np.where(np.isfinite(V))[0]
+        real_idx = max(
+                [list(g) for g in mit.consecutive_groups(_real_idx)], key=len
+        )
+
+    head_cutoff = real_idx[0] - 1
+    tail_cutoff = real_idx[-1] + 1
+    # Potential with the head correction applied
+    head_correction_V = head_correction_function(r=r, V=V, cutoff=head_cutoff)
+    # Potential with both head correction and tial correciton applied
+    tail_correction_V = tail_correction_function(
+            r=r, V=head_correction_V, cutoff=tail_cutoff
+    )
+    return tail_correction_V, real_idx, head_cutoff, tail_cutoff
+
+
 def pair_tail_correction(r, V, r_switch):
     """Apply a tail correction to a potential making it go to zero smoothly.
 
@@ -57,9 +142,9 @@ def pair_tail_correction(r, V, r_switch):
         / (r_cut ** 2 - r_switch ** 2) ** 3
     )
     return V * S_r
-    
 
-def pair_head_correction(r, V, previous_V, form="linear"):
+
+def pair_head_correction(r, V, previous_V=None, form="linear"):
     """Apply head correction to V making it go to a finite value at V(0).
 
     Parameters
@@ -109,51 +194,6 @@ def pair_head_correction(r, V, previous_V, form="linear"):
         return V
 
 
-def bond_correction(r, V, form):
-    """Handles corrections for both the head and tail of
-    bond scretching and angle potentials.
-    """
-    import more_itertools as mit
-
-    if form == "linear":
-        head_correction_function = linear_head_correction
-        tail_correction_function = linear_tail_correction
-    elif form == "exponential":
-        head_correction_function = exponential_head_correction
-        tail_correction_function = exponential_tail_correction
-    else:
-        raise ValueError(f'Unsupported head correction form: "{form}"')
-
-    real_idx = np.where(np.isfinite(V))[0]
-    # Check for continuity of real_indices:
-    if not np.all(np.ediff1d(real_idx) == 1):
-        start = real_idx[0]
-        end = real_idx[-1]
-        # Correct nans, infs that are surrounded by 2 finite numbers
-        for idx, v in enumerate(V[start:end]):
-            if not np.isfinite(v):
-                try:
-                    avg = (V[idx+start-1] + V[idx+start+1]) / 2
-                    V[idx+start] = avg
-                except IndexError:
-                    pass
-        # Trim off edge cases
-        _real_idx = np.where(np.isfinite(V))[0]
-        real_idx = max(
-                [list(g) for g in mit.consecutive_groups(_real_idx)], key=len
-        )
-
-    head_cutoff = real_idx[0] - 1
-    tail_cutoff = real_idx[-1] + 1
-    # Potential with the head correction applied
-    head_correction_V = head_correction_function(r=r, V=V, cutoff=head_cutoff)
-    # Potential with both head correction and tial correciton applied
-    tail_correction_V = tail_correction_function(
-            r=r, V=head_correction_V, cutoff=tail_cutoff
-    )
-    return tail_correction_V, real_idx, head_cutoff, tail_cutoff
-
-
 def linear_tail_correction(r, V, cutoff, window=4):
     """Use a linear function to smoothly force V to a finite value at V(cut).
 
@@ -175,7 +215,7 @@ def linear_tail_correction(r, V, cutoff, window=4):
     if slope < 0:
         slope = -slope
     V[cutoff:] = slope * (r[cutoff:] - r[cutoff - 1]) + V[cutoff - 1]
-    return V 
+    return V
 
 
 def linear_head_correction(r, V, cutoff, window=4):
@@ -187,7 +227,7 @@ def linear_head_correction(r, V, cutoff, window=4):
     V : np.ndarray
         Potential at each of the separation values
     cutoff : int
-        The first real value of V when iterating forwards 
+        The first real value of V when iterating forwards
     window : int
         Number of data points forward from cutoff to use in slope calculation
 
@@ -237,7 +277,7 @@ def exponential_head_correction(r, V, cutoff):
     V : np.ndarray
         Potential at each of the separation values
     cutoff : int
-        The last non real value of V when iterating forwards 
+        The last non real value of V when iterating forwards
 
     This function fits the small part of the potential to the form:
     V(r) = A*exp(-Br)

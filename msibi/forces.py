@@ -14,7 +14,12 @@ import numpy as np
 import pandas as pd
 
 import msibi
-from msibi.potentials import quadratic_spring, bond_correction, lennard_jones
+from msibi.potentials import (
+        bond_correction,
+        lennard_jones,
+        quadratic_spring,
+        pair_correction
+)
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.smoothing import savitzky_golay
 from msibi.utils.sorting import natural_sort
@@ -54,7 +59,7 @@ class Force(object):
             name: str,
             optimize: bool,
             nbins: int=None,
-            head_correction_form: str="linear"
+            correction_form: str="linear"
     ):
         if optimize and nbins is None or nbins<=0:
             raise ValueError(
@@ -63,7 +68,7 @@ class Force(object):
             )
         self.name = name
         self.optimize = optimize
-        self.head_correction_form = head_correction_form
+        self.correction_form = correction_form
         self.format = None
         self.xmin = None
         self.xmax = None
@@ -517,8 +522,9 @@ class Force(object):
         #TODO: Add correction funcs to Force classes
         #TODO: Smoothing potential before doing head and tail corrections?
         self._potential, real, head_cut, tail_cut = self._correction_function(
-                self.x_range, self.potential, self.head_correction_form
+                self.x_range, self.potential, self.correction_form
         )
+        self.potential_history.append(np.copy(self.potential))
         self._head_correction_history.append(np.copy(self.potential[0:head_cut]))
         self._tail_correction_history.append(np.copy(self.potential[tail_cut:]))
         self._learned_potential_history.append(np.copy(self.potential[real]))
@@ -563,7 +569,7 @@ class Bond(Force):
             type2: str,
             optimize: bool,
             nbins: int=None,
-            head_correction_form: str="linear"
+            correction_form: str="linear"
     ):
         self.type1, self.type2 = sorted(
                     [type1, type2], key=natural_sort
@@ -574,7 +580,7 @@ class Bond(Force):
                 name=name,
                 optimize=optimize,
                 nbins=nbins,
-                head_correction_form=head_correction_form
+                correction_form=correction_form
         )
 
     def set_harmonic(self, r0: Union[float, int], k: Union[float, int]) -> None:
@@ -678,7 +684,7 @@ class Angle(Force):
             type3: str,
             optimize: bool,
             nbins: int=None,
-            head_correction_form: str="linear"
+            correction_form: str="linear"
     ):
         self.type1 = type1
         self.type2 = type2
@@ -689,7 +695,7 @@ class Angle(Force):
                 name=name,
                 optimize=optimize,
                 nbins=nbins,
-                head_correction_form=head_correction_form
+                correction_form=correction_form
         )
 
     def set_harmonic(self, t0: Union[float, int], k: Union[float, int]) -> None:
@@ -796,8 +802,9 @@ class Pair(Force):
             r_cut: Union[float, int],
             nbins: int=None,
             exclude_bonded: bool=False,
-            head_correction_form: str="linear"
+            correction_form: str="linear"
     ):
+        self._correction_function = pair_correction
         self.type1, self.type2 = sorted( [type1, type2], key=natural_sort)
         self.r_cut = r_cut
         name = f"{self.type1}-{self.type2}"
@@ -807,7 +814,7 @@ class Pair(Force):
                 name=name,
                 optimize=optimize,
                 nbins=nbins,
-                head_correction_form=head_correction_form
+                correction_form=correction_form
         )
 
     def set_lj(
@@ -927,7 +934,7 @@ class Dihedral(Force):
             type4: str,
             optimize: bool,
             nbins: int=None,
-            head_correction_form: str="linear"
+            correction_form: str="linear"
     ):
         self.type1 = type1
         self.type2 = type2
@@ -938,7 +945,7 @@ class Dihedral(Force):
                 name=name,
                 optimize=optimize,
                 nbins=nbins,
-                head_correction_form=head_correction_form
+                correction_form=correction_form
         )
 
     def set_harmonic(
