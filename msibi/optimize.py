@@ -15,7 +15,7 @@ class MSIBI(object):
 
     Parameters
     ----------
-    nlist : hoomd.md.list.NeighborList, required
+    nlist : hoomd.md.nlist.NeighborList, required
         The type of Hoomd neighbor list to use.
     integrator_method : hoomd.md.methods.Method, required
         The integrator method to use in the query simulation.
@@ -67,7 +67,7 @@ class MSIBI(object):
 
     def __init__(
             self,
-            nlist: hoomd.md.nlist,
+            nlist: hoomd.md.nlist.NeighborList,
             integrator_method: hoomd.md.methods.Method,
             thermostat: hoomd.md.methods.thermostats.Thermostat,
             method_kwargs: dict,
@@ -232,26 +232,16 @@ class MSIBI(object):
         pair_force = None
         for pair in self.pairs:
             if not pair_force: # Only create hoomd.md.pair obj once
-                hoomd_pair_force = getattr(hoomd.md.pair, pair.force_init)
-                if pair.force_init == "Table":
-                    pair_force = hoomd_pair_force(
-                            nlist=self.nlist(
-                                buffer=20,
-                                exclusions=self.nlist_exclusions
-                            ),
-                    )
-                else:
-                    pair_force = hoomd_pair_force(
-                            nlist=self.nlist(
-                                buffer=20,
-                                exclusions=self.nlist_exclusions
-                            ),
-                    )
-            if pair.format == "table":
-                pair_force.params[pair._pair_name] = pair._table_entry()
-                pair_force.r_cut[pair._pair_name] = pair.r_cut
-            else:
-                pair_force.params[pair._pair_name] = pair.force_entry
+                pair_force = hoomd.md.pair.Table(
+                        nlist=self.nlist(
+                            buffer=0.4,
+                            exclusions=self.nlist_exclusions,
+                            default_r_cut=0
+                        )
+                )
+            pair_force.params[pair._pair_name] = pair._table_entry()
+            pair_force.r_cut[pair._pair_name] = pair.r_cut
+
         # Create bond objects
         bond_force = None
         for bond in self.bonds:
@@ -265,6 +255,7 @@ class MSIBI(object):
                 bond_force.params[bond.name] = bond._table_entry()
             else:
                 bond_force.params[bond.name] = bond.force_entry
+
         # Create angle objects
         angle_force = None
         for angle in self.angles:
