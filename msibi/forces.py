@@ -1000,7 +1000,7 @@ class Dihedral(Force):
 
         """
         return dihedral_distribution(
-                gsd_file=gsd,
+                gsd_file=gsd_file,
                 A_name=self.type1,
                 B_name=self.type2,
                 C_name=self.type3,
