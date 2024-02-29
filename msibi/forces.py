@@ -941,6 +941,7 @@ class Dihedral(Force):
         self.type3 = type3
         self.type4 = type4
         name = f"{self.type1}-{self.type2}-{self.type3}-{self.type4}"
+        self._correction_function = bond_correction
         super(Dihedral, self).__init__(
                 name=name,
                 optimize=optimize,
