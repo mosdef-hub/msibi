@@ -364,7 +364,11 @@ class Force(object):
         self.x_min = x_min
         self.x_max = x_max
         self.dx = x_max / self.nbins
-        self.x_range = np.arange(x_min, x_max + self.dx, self.dx)
+        if isinstance(self, msibi.forces.Dihedral):
+            self.dx *= 2
+            self.x_range = np.arange(x_min, x_max + self.dx/2, self.dx)
+        else:
+            self.x_range = np.arange(x_min, x_max + self.dx, self.dx)
         self.potential = quadratic_spring(self.x_range, x0, k4, k3, k2)
         self.force_init = "Table"
         self.force_entry = self._table_entry()
