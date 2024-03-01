@@ -5,7 +5,6 @@ import shutil
 import numpy as np
 from pkg_resources import resource_filename
 import gc
-import msibi
 
 
 def find_nearest(array, target):
