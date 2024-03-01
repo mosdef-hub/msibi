@@ -95,13 +95,26 @@ class BaseTest:
         return angle
 
     @pytest.fixture
+    def dihedralABAB(self, optimize):
+        dihedral = Dihedral(
+                    type1="A",
+                    type2="B",
+                    type3="A",
+                    type4="B",
+                    optimize=optimize,
+                    nbins=100
+        )
+        dihedral.set_quadratic(x0=0, k4=0, k3=0, k2=100, x_min=-np.pi, x_max=np.pi)
+        return dihedral 
+
+    @pytest.fixture
     def rdfAA(self):
         return self.get_rdf(0)
 
     @pytest.fixture
     def rdfBB(self):
-        return self.get_rdf(0)
+        #return self.get_rdf(0)
 
     @pytest.fixture
     def rdfAB(self):
-        return self.get_rdf(0)
+        #return self.get_rdf(0)

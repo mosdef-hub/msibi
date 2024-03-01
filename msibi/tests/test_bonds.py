@@ -10,83 +10,106 @@ from .base_test import BaseTest
 
 
 class TestBond(BaseTest):
-    def test_bond_name(self, bond):
-        assert bond.name == "0-1"
+    def test_bond_name(self, bond=bondAB(optimize=False)):
+        assert bond.name == "A-B"
+        assert bond.optimize is False
 
-    def test_set_harmonic(self):
-        bond = Bond("0", "1")
+    def test_set_harmonic(self bond=bondAB(optimize=False)):
         bond.set_harmonic(k=500, l0=2)
-        assert bond.bond_type == "static"
-        assert "k=500" in bond.bond_entry
-        assert "r0=2" in bond.bond_entry
+        assert bond.format == "static"
+        assert bond.force_entry["k"] == 500
+        assert bond.force_entry["l0"] == 2 
 
-    def test_set_quadratic(self):
-        bond = Bond("0", "1")
+    def test_set_quadratic(self, bond=bondAB(optimize=True)):
+        assert bond.optimize is True
         bond.set_quadratic(
-                theta0=1,
+                x0=2,
                 k4=1,
                 k3=1,
                 k2=1,
-                n_points=20
+                xmin=1,
+                xmax=3,
         )
         assert bond.bond_type == "table"
+        assert bond.x_range[0] == 1
+        assert bond.x_range[-1] == 3
+        assert len(bond.potential) == bond.nbins + 1 
 
-    def test_save_table_potential(self, tmp_path):
-        bond = Bond("0", "1")
+    def test_save_table_potential(self, tmp_path, bond=bondAB(optimize=True)):
         bond.set_quadratic(
-                theta0=1,
+                x0=2,
                 k4=1,
                 k3=1,
                 k2=1,
-                n_points=20
+                xmin=1,
+                xmax=3,
         )
-        bond.potential_file = os.path.join(tmp_path, "pot.txt")
-        save_table_potential(
-                bond.potential,
-                bond.l_range,
-                bond.dl,
-                None,
-                bond.potential_file
-        )
-        assert os.path.isfile(bond.potential_file)
+        path = os.path.join(tmp_path, "AB_bond.csv")
+        bond.save_potential(path)
+        assert os.path.isfile(path)
 
-    def test_angle_name(self, angle):
-        assert angle.name == "0-1-2"
+class TestAngle(BaseTest):
+    def test_angle_name(self, angle=angleABA(optimize=False)):
+        assert angle.name == "A-B-A"
+        assert angle.optimize is False
 
-    def test_set_harmonic(self):
-        angle = Angle("0", "1", "2")
+    def test_set_angle_harmonic(self):
         angle.set_harmonic(k=500, theta0=2)
         assert angle.angle_type == "static"
-        assert "k=500" in angle.angle_entry
-        assert "t0=2" in angle.angle_entry
+        assert angle.force_entry["t0"] = 2
+        assert angle.force_entry["k"] = 500 
 
-    def test_set_quadratic(self):
-        angle = Angle("0", "1", "2")
+    def test_set_quadratic(self, angle=angleABA(optimize=True)):
         angle.set_quadratic(
-                theta0=1,
-                k4=1,
-                k3=1,
-                k2=1,
-                n_points=20
+                theta0=2,
+                k4=0,
+                k3=0,
+                k2=100,
         )
-        assert angle.angle_type == "table"
+        assert angle.format == "table"
+        assert len(angle.x_range) == angle.nbins + 1
 
-    def test_save_table_potential(self, tmp_path):
-        angle = Angle("0", "1", "2")
+    def test_save_angle_potential(
+            self,
+            tmp_path,
+            angle=angleABA(optimize=True)
+    ):
         angle.set_quadratic(
-                theta0=1,
-                k4=1,
-                k3=1,
-                k2=1,
-                n_points=20
+                theta0=2,
+                k4=0,
+                k3=0,
+                k2=100,
         )
-        angle.potential_file = os.path.join(tmp_path, "pot.txt")
-        save_table_potential(
-                angle.potential,
-                angle.theta_range,
-                angle.dtheta,
-                None,
-                angle.potential_file
-        )
-        assert os.path.isfile(angle.potential_file)
+        path = os.path.join(tmp_path, "ABA_angle.csv")
+        angle.save_potential(path)
+        assert os.path.isfile(path)
 
+class TestPair(BaseTest):
+    def test_pair_name(self, pair=pairAB(optimize=False)):
+        assert pair.name == "A-B"
+        assert pair._pair_name = ("A", "B")
+        assert pair.optimize is False
+
+    def test_set_lj(self, pair=pairAB(optimize=True)):
+        angle.set_quadratic(
+                theta0=2,
+                k4=0,
+                k3=0,
+                k2=100,
+        )
+        assert pair.format == "table"
+
+    def test_save_angle_potential(
+            self,
+            tmp_path,
+            angle=angleABA(optimize=True)
+    ):
+        angle.set_quadratic(
+                theta0=2,
+                k4=0,
+                k3=0,
+                k2=100,
+        )
+        path = os.path.join(tmp_path, "ABA_angle.csv")
+        angle.save_potential(path)
+        assert os.path.isfile(path)
