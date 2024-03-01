@@ -4,10 +4,10 @@ from typing import Union
 import warnings
 
 from cmeutils.structure import (
-        angle_distribution,
-        bond_distribution,
-        dihedral_distribution,
-        gsd_rdf
+    angle_distribution,
+    bond_distribution,
+    dihedral_distribution,
+    gsd_rdf
 )
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,10 +15,10 @@ import pandas as pd
 
 import msibi
 from msibi.potentials import (
-        bond_correction,
-        lennard_jones,
-        quadratic_spring,
-        pair_correction
+    bond_correction,
+    lennard_jones,
+    quadratic_spring,
+    pair_correction
 )
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.smoothing import savitzky_golay
@@ -58,13 +58,13 @@ class Force(object):
             self,
             name: str,
             optimize: bool,
-            nbins: int=None,
-            correction_form: str="linear"
+            nbins: int = None,
+            correction_form: str = "linear"
     ):
-        if optimize and nbins is None or nbins<=0:
+        if optimize and nbins is None or nbins <= 0:
             raise ValueError(
-                    "If a force is set to be optimized, nbins must be "
-                    "a positive, non-zero integer."
+                "If a force is set to be optimized, nbins must be "
+                "a positive, non-zero integer."
             )
         self.name = name
         self.optimize = optimize
@@ -86,8 +86,8 @@ class Force(object):
 
         if optimize and nbins is None:
             raise ValueError(
-                    "If this force is set to be optimized, the nbins "
-                    "must be set as a non-zero value"
+                "If this force is set to be optimized, the nbins "
+                "must be set as a non-zero value"
             )
 
     def __repr__(self):
@@ -107,12 +107,12 @@ class Force(object):
     @potential.setter
     def potential(self, array):
         if self.format != "table":
-            #TODO: Make custom error for this
+            # TODO: Make custom error for this
             raise ValueError(
-                    "Setting potential arrays can only be done "
-                    "for Forces that utilize tables. "
-                    "See msibi.forces.Force.set_quadratic() or "
-                    "msibi.forces.Force.set_from_file()"
+                "Setting potential arrays can only be done "
+                "for Forces that utilize tables. "
+                "See msibi.forces.Force.set_quadratic() or "
+                "msibi.forces.Force.set_from_file()"
             )
         self._potential = array
 
@@ -122,7 +122,7 @@ class Force(object):
         if self.format != "table":
             warnings.warn(f"{self} is not using a table potential.")
             return None
-        return -1.0*np.gradient(self.potential, self.dx)
+        return -1.0 * np.gradient(self.potential, self.dx)
 
     @property
     def smoothing_window(self) -> int:
@@ -159,7 +159,7 @@ class Force(object):
     def nbins(self, value: int):
         if not isinstance(value, int):
             raise ValueError("nbins must be an integer.")
-        self._nbins =  value
+        self._nbins = value
         for state in self._states:
             self._add_state(state)
 
@@ -177,13 +177,13 @@ class Force(object):
         """
         if self.format != "table":
             raise RuntimeError(
-                    "This force is not a table potential and is not mutable."
+                "This force is not a table potential and is not mutable."
             )
         potential = np.copy(self.potential)
         self.potential = savitzky_golay(
-                y=potential,
-                window_size=self.smoothing_window,
-                order=self.smoothing_order,
+            y=potential,
+            window_size=self.smoothing_window,
+            order=self.smoothing_order,
         )
 
     def save_potential(self, file_path: str) -> None:
@@ -206,8 +206,8 @@ class Force(object):
         """
         if self.format != "table":
             raise RuntimeError(
-                    "This force is not a table potential and "
-                    "cannot be saved to a .txt file."
+                "This force is not a table potential and "
+                "cannot be saved to a .txt file."
             )
         df = pd.DataFrame({
             "x": self.x_range,
@@ -227,15 +227,17 @@ class Force(object):
         """
         return self._states[state]["target_distribution"]
 
-    def plot_target_distribution(self, state: msibi.state.State) -> None:
+    def plot_target_distribution(self, state: msibi.state.State, file_path=None) -> None:
         """
         Quick plotting function that shows the target structural
-        distribution corresponding to this forces.
+        distribution corresponding to the forces.
 
         Parameters
         ----------
         state : msibi.state.State, required
             The state to use in finding the target distribution.
+        file_path : str, optional
+            If given, the plot will be saved to this location.
 
         Notes
         -----
@@ -244,43 +246,102 @@ class Force(object):
         and smoothing order.
 
         """
-        #TODO: Make custom error
+        # TODO: Make custom error
         if not self.optimize:
             raise RuntimeError(
-                    "This force object is not set to be optimized. "
-                    "The target distribution is not calculated."
+                "This force object is not set to be optimized. "
+                "The target distribution is not calculated."
             )
         target = self.target_distribution(state)
         fig = plt.figure()
         plt.title(f"State {state.name}: {self.name} Target")
         plt.ylabel("P(x)")
         plt.xlabel("x")
-        plt.plot(target[:,0], target[:,1])
+        plt.plot(target[:, 0], target[:, 1])
         if self.smoothing_window:
             y_smoothed = savitzky_golay(
-                    target[:,1],
-                    window_size=self.smoothing_window,
-                    order=self.smoothing_order
+                target[:, 1],
+                window_size=self.smoothing_window,
+                order=self.smoothing_order
             )
-            plt.plot(target[:,0], y_smoothed, label="Smoothed")
+            plt.plot(target[:, 0], y_smoothed, label="Smoothed")
             plt.legend()
+        if file_path:
+            plt.savefig(file_path)
 
-    def plot_fit_scores(self, state: msibi.state.State) -> None:
-       """Plots the evolution of the distribution
-       matching evolution.
+    def plot_fit_scores(self, state: msibi.state.State, file_path=None) -> None:
+        """Plots the evolution of the distribution matching evolution.
 
         Parameters
         ----------
         state : msibi.state.State, required
             The state to use in finding the target distribution.
+        file_path : str, optional
+            If given, the plot will be saved to this location.
 
        """
-       if not self.optimize:
+        if not self.optimize:
             raise RuntimeError("This force object is not set to be optimized.")
-       fig = plt.figure()
-       plt.plot(self._states[state]["f_fit"], "o-")
-       plt.xlabel("Iteration")
-       plt.ylabel("Fit Score")
+        fig = plt.figure()
+        plt.plot(self._states[state]["f_fit"], "o-")
+        plt.xlabel("Iteration")
+        plt.ylabel("Fit Score")
+        plt.title(f"State {state.name}: {self.name} Fit Score")
+        if file_path:
+            plt.savefig(file_path)
+
+    def plot_potentials(self, file_path=None) -> None:
+        """Plots the optimized potential energy.
+
+        Parameters
+        ----------
+        file_path : str, optional
+            If given, the plot will be saved to this location.
+
+        """
+        plt.plot(self.x_range, self.potential, "o-")
+        plt.xlim(1, 2)
+        plt.ylim(-10, 40)
+        plt.xlabel("x")
+        plt.ylabel("Potential")
+        plt.title(f"{self.name} Potential")
+        if file_path:
+            plt.savefig(file_path)
+
+    def plot_potential_history(self, file_path=None) -> None:
+        """Plots the history of the optimized potential energy.
+
+        Parameters
+        ----------
+        file_path : str, optional
+            If given, the plot will be saved to this location.
+
+        """
+        for i, pot in enumerate(self.potential_history):
+            plt.plot(self.x_range, pot, "o-", label=i)
+
+        plt.xlim(1, 2)
+        plt.ylim(-10, 40)
+        plt.legend()
+        plt.xlabel("x")
+        plt.ylabel("Potential")
+        plt.title(f"{self.name} Potential History")
+        if file_path:
+            plt.savefig(file_path)
+
+    def plot_distribution_comparison(self, state: msibi.state.State, file_path=None):
+        final_dist = self.distribution_history(state=state)[-1]
+        target_dist = self.target_distrdisibution(state=state)
+
+        plt.plot(final_dist[:, 0], final_dist[:, 1], "o-", label="MSIBI")
+        plt.plot(target_dist[:, 0], target_dist[:, 1], "o-", label="Target")
+
+        plt.legend()
+        plt.xlabel("x")
+        plt.ylabel("P(x)")
+        plt.title(f"{self.name} MSIBI vs Target Distribution")
+        if file_path:
+            plt.savefig(file_path)
 
     def distribution_history(self, state: msibi.state.State):
         """Get the complete query distribution history for a given state.
@@ -307,7 +368,7 @@ class Force(object):
     def current_distribution(
             self,
             state: msibi.state.State,
-            query: bool=True
+            query: bool = True
     ) -> np.ndarray:
         """Returns the corresponding distrubution from the most recent
         query simulation.
@@ -410,26 +471,26 @@ class Force(object):
         """
         if self.optimize:
             target_distribution = self._get_state_distribution(
-                    state=state, query=False
+                state=state, query=False
             )
             if self.smoothing_window and self.smoothing_order:
-                target_distribution[:,1] = savitzky_golay(
-                        y=target_distribution[:,1],
-                        window_size=self.smoothing_window,
-                        order=self.smoothing_order,
-                        deriv=0,
-                        rate=1
+                target_distribution[:, 1] = savitzky_golay(
+                    y=target_distribution[:, 1],
+                    window_size=self.smoothing_window,
+                    order=self.smoothing_order,
+                    deriv=0,
+                    rate=1
                 )
 
         else:
             target_distribution = None
         self._states[state] = {
-                "target_distribution": target_distribution,
-                "current_distribution": None,
-                "alpha": state.alpha,
-                "f_fit": [],
-                "distribution_history": [],
-                "path": state.dir
+            "target_distribution": target_distribution,
+            "current_distribution": None,
+            "alpha": state.alpha,
+            "f_fit": [],
+            "distribution_history": [],
+            "path": state.dir
         }
 
     def _compute_current_distribution(self, state: msibi.state.State) -> None:
@@ -443,20 +504,20 @@ class Force(object):
         """
         distribution = self._get_state_distribution(state, query=True)
         if self.smoothing_window and self.smoothing_order:
-            distribution[:,1] = savitzky_golay(
-                    y=distribution[:,1],
-                    window_size=self.smoothing_window,
-                    order=self.smoothing_order,
-                    deriv=0,
-                    rate=1
+            distribution[:, 1] = savitzky_golay(
+                y=distribution[:, 1],
+                window_size=self.smoothing_window,
+                order=self.smoothing_order,
+                deriv=0,
+                rate=1
             )
-            negative_idx = np.where(distribution[:,1] < 0)[0]
-            distribution[:,1][negative_idx] = 0
+            negative_idx = np.where(distribution[:, 1] < 0)[0]
+            distribution[:, 1][negative_idx] = 0
         self._states[state]["current_distribution"] = distribution
 
         f_fit = calc_similarity(
-                    distribution[:,1],
-                    self._states[state]["target_distribution"][:,1]
+            distribution[:, 1],
+            self._states[state]["target_distribution"][:, 1]
         )
         self._states[state]["f_fit"].append(f_fit)
 
@@ -498,7 +559,7 @@ class Force(object):
 
         """
         distribution = self._states[state]["current_distribution"]
-        distribution[:,0] -= self.dx / 2
+        distribution[:, 0] -= self.dx / 2
         fname = f"dist_{self.name}-state_{state.name}-step_{iteration}.txt"
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, distribution)
@@ -515,14 +576,14 @@ class Force(object):
             target_dist = self._states[state]["target_distribution"]
             self._states[state]["distribution_history"].append(current_dist)
             N = len(self._states)
-            #TODO: Use potential setter here? Does it work with +=?
+            # TODO: Use potential setter here? Does it work with +=?
             self._potential += state.alpha * (
-                    kT * np.log(current_dist[:,1] / target_dist[:,1]) / N
+                    kT * np.log(current_dist[:, 1] / target_dist[:, 1]) / N
             )
-        #TODO: Add correction funcs to Force classes
-        #TODO: Smoothing potential before doing head and tail corrections?
+        # TODO: Add correction funcs to Force classes
+        # TODO: Smoothing potential before doing head and tail corrections?
         self._potential, real, head_cut, tail_cut = self._correction_function(
-                self.x_range, self.potential, self.correction_form
+            self.x_range, self.potential, self.correction_form
         )
         self.potential_history.append(np.copy(self.potential))
         self._head_correction_history.append(np.copy(self.potential[0:head_cut]))
@@ -568,19 +629,19 @@ class Bond(Force):
             type1: str,
             type2: str,
             optimize: bool,
-            nbins: int=None,
-            correction_form: str="linear"
+            nbins: int = None,
+            correction_form: str = "linear"
     ):
         self.type1, self.type2 = sorted(
-                    [type1, type2], key=natural_sort
+            [type1, type2], key=natural_sort
         )
         self._correction_function = bond_correction
         name = f"{self.type1}-{self.type2}"
         super(Bond, self).__init__(
-                name=name,
-                optimize=optimize,
-                nbins=nbins,
-                correction_form=correction_form
+            name=name,
+            optimize=optimize,
+            nbins=nbins,
+            correction_form=correction_form
         )
 
     def set_harmonic(self, r0: Union[float, int], k: Union[float, int]) -> None:
@@ -598,10 +659,10 @@ class Bond(Force):
         """
         if self.optimize:
             raise RuntimeError(
-                    f"Force {self} is set to be optimized during MSIBI."
-                    "This potential setter cannot be used "
-                    "for a force designated for optimization. "
-                    "Instead, use set_from_file() or set_quadratic()."
+                f"Force {self} is set to be optimized during MSIBI."
+                "This potential setter cannot be used "
+                "for a force designated for optimization. "
+                "Instead, use set_from_file() or set_quadratic()."
             )
         self.type = "static"
         self.force_init = "Harmonic"
@@ -609,10 +670,10 @@ class Bond(Force):
 
     def _table_entry(self) -> dict:
         table_entry = {
-                "r_min": self.x_min,
-                "r_max": self.x_max,
-                "U": self.potential,
-                "F": self.force
+            "r_min": self.x_min,
+            "r_max": self.x_max,
+            "U": self.potential,
+            "F": self.force
         }
         return table_entry
 
@@ -632,15 +693,15 @@ class Bond(Force):
 
         """
         return bond_distribution(
-                gsd_file=gsd_file,
-                A_name=self.type1,
-                B_name=self.type2,
-                start=-state.n_frames,
-                histogram=True,
-                normalize=True,
-                l_min=self.x_min,
-                l_max=self.x_max,
-                bins=self.nbins + 1
+            gsd_file=gsd_file,
+            A_name=self.type1,
+            B_name=self.type2,
+            start=-state.n_frames,
+            histogram=True,
+            normalize=True,
+            l_min=self.x_min,
+            l_max=self.x_max,
+            bins=self.nbins + 1
         )
 
 
@@ -683,8 +744,8 @@ class Angle(Force):
             type2: str,
             type3: str,
             optimize: bool,
-            nbins: int=None,
-            correction_form: str="linear"
+            nbins: int = None,
+            correction_form: str = "linear"
     ):
         self.type1 = type1
         self.type2 = type2
@@ -692,10 +753,10 @@ class Angle(Force):
         name = f"{self.type1}-{self.type2}-{self.type3}"
         self._correction_function = bond_correction
         super(Angle, self).__init__(
-                name=name,
-                optimize=optimize,
-                nbins=nbins,
-                correction_form=correction_form
+            name=name,
+            optimize=optimize,
+            nbins=nbins,
+            correction_form=correction_form
         )
 
     def set_harmonic(self, t0: Union[float, int], k: Union[float, int]) -> None:
@@ -713,10 +774,10 @@ class Angle(Force):
         """
         if self.optimize:
             raise RuntimeError(
-                    f"Force {self} is set to be optimized during MSIBI."
-                    "This potential setter cannot be used "
-                    "for a force designated for optimization. "
-                    "Instead, use set_from_file() or set_quadratic()."
+                f"Force {self} is set to be optimized during MSIBI."
+                "This potential setter cannot be used "
+                "for a force designated for optimization. "
+                "Instead, use set_from_file() or set_quadratic()."
             )
         self.type = "static"
         self.force_init = "Harmonic"
@@ -742,16 +803,16 @@ class Angle(Force):
 
         """
         return angle_distribution(
-                gsd_file=gsd_file,
-                A_name=self.type1,
-                B_name=self.type2,
-                C_name=self.type3,
-                start=-state.n_frames,
-                histogram=True,
-                normalize=True,
-                theta_min=self.x_min,
-                theta_max=self.x_max,
-                bins=self.nbins + 1
+            gsd_file=gsd_file,
+            A_name=self.type1,
+            B_name=self.type2,
+            C_name=self.type3,
+            start=-state.n_frames,
+            histogram=True,
+            normalize=True,
+            theta_min=self.x_min,
+            theta_max=self.x_max,
+            bins=self.nbins + 1
         )
 
 
@@ -800,21 +861,21 @@ class Pair(Force):
             type2: str,
             optimize: bool,
             r_cut: Union[float, int],
-            nbins: int=None,
-            exclude_bonded: bool=False,
-            correction_form: str="linear"
+            nbins: int = None,
+            exclude_bonded: bool = False,
+            correction_form: str = "linear"
     ):
         self._correction_function = pair_correction
-        self.type1, self.type2 = sorted( [type1, type2], key=natural_sort)
+        self.type1, self.type2 = sorted([type1, type2], key=natural_sort)
         self.r_cut = r_cut
         name = f"{self.type1}-{self.type2}"
         # Pair types in hoomd have different naming structure.
         self._pair_name = (type1, type2)
         super(Pair, self).__init__(
-                name=name,
-                optimize=optimize,
-                nbins=nbins,
-                correction_form=correction_form
+            name=name,
+            optimize=optimize,
+            nbins=nbins,
+            correction_form=correction_form
         )
 
     def set_lj(
@@ -843,17 +904,17 @@ class Pair(Force):
         self.x_min = self.x_range[0]
         self.r_cut = self.x_range[-1]
         self.potential = lennard_jones(
-                r=self.x_range,
-                epsilon=epsilon,
-                sigma=sigma
+            r=self.x_range,
+            epsilon=epsilon,
+            sigma=sigma
         )
         self.force_init = "Table"
 
     def _table_entry(self) -> dict:
         table_entry = {
-                "r_min": self.x_min,
-                "U": self.potential,
-                "F": self.force,
+            "r_min": self.x_min,
+            "U": self.potential,
+            "F": self.force,
         }
         return table_entry
 
@@ -873,21 +934,20 @@ class Pair(Force):
 
         """
         rdf, N = gsd_rdf(
-                    gsdfile=gsd_file,
-                    A_name=self.type1,
-                    B_name=self.type2,
-                    r_min=self.x_min,
-                    r_max=self.r_cut,
-                    exclude_bonded=state.exclude_bonded,
-                    start=-state.n_frames,
-                    stop=-1,
-                    bins=self.nbins + 1
+            gsdfile=gsd_file,
+            A_name=self.type1,
+            B_name=self.type2,
+            r_min=self.x_min,
+            r_max=self.r_cut,
+            exclude_bonded=state.exclude_bonded,
+            start=-state.n_frames,
+            stop=-1,
+            bins=self.nbins + 1
         )
         x = rdf.bin_centers
         y = rdf.rdf * N
         dist = np.vstack([x, y])
         return dist.T
-
 
 
 class Dihedral(Force):
@@ -933,8 +993,8 @@ class Dihedral(Force):
             type3: str,
             type4: str,
             optimize: bool,
-            nbins: int=None,
-            correction_form: str="linear"
+            nbins: int = None,
+            correction_form: str = "linear"
     ):
         self.type1 = type1
         self.type2 = type2
@@ -942,10 +1002,10 @@ class Dihedral(Force):
         self.type4 = type4
         name = f"{self.type1}-{self.type2}-{self.type3}-{self.type4}"
         super(Dihedral, self).__init__(
-                name=name,
-                optimize=optimize,
-                nbins=nbins,
-                correction_form=correction_form
+            name=name,
+            optimize=optimize,
+            nbins=nbins,
+            correction_form=correction_form
         )
 
     def set_harmonic(
@@ -971,10 +1031,10 @@ class Dihedral(Force):
         """
         if self.optimize:
             raise RuntimeError(
-                    f"Force {self} is set to be optimized during MSIBI."
-                    "This potential setter cannot be used "
-                    "for a force designated for optimization. "
-                    "Instead, use set_from_file() or set_quadratic()."
+                f"Force {self} is set to be optimized during MSIBI."
+                "This potential setter cannot be used "
+                "for a force designated for optimization. "
+                "Instead, use set_from_file() or set_quadratic()."
             )
         self.type = "static"
         self.force_init = "Periodic"
@@ -1000,13 +1060,13 @@ class Dihedral(Force):
 
         """
         return dihedral_distribution(
-                gsd_file=gsd,
-                A_name=self.type1,
-                B_name=self.type2,
-                C_name=self.type3,
-                D_name=self.type4,
-                start=-state.n_frames,
-                histogram=True,
-                normalize=True,
-                bins=self.nbins + 1
+            gsd_file=gsd,
+            A_name=self.type1,
+            B_name=self.type2,
+            C_name=self.type3,
+            D_name=self.type4,
+            start=-state.n_frames,
+            histogram=True,
+            normalize=True,
+            bins=self.nbins + 1
         )
