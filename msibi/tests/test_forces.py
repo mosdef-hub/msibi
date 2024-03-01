@@ -121,7 +121,7 @@ class TestPair(BaseTest):
 class TestDihedral(BaseTest):
     def test_dihedral_name(self, dihedral):
         assert dihedral.name == "A-B-A-B"
-        assert angle.optimize is False
+        assert dihedral.optimize is False
 
     def test_set_dihedral_harmonic(self, dihedral):
         dihedral.set_harmonic(k=500, phi0=0, d=-1, n=1)
