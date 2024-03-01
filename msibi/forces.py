@@ -331,7 +331,7 @@ class Force(object):
 
     def plot_distribution_comparison(self, state: msibi.state.State, file_path=None):
         final_dist = self.distribution_history(state=state)[-1]
-        target_dist = self.target_distrdisibution(state=state)
+        target_dist = self.target_distribution(state=state)
 
         plt.plot(final_dist[:, 0], final_dist[:, 1], "o-", label="MSIBI")
         plt.plot(target_dist[:, 0], target_dist[:, 1], "o-", label="Target")
