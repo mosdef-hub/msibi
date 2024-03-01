@@ -3,7 +3,7 @@ import pytest
 
 import numpy as np
 
-from msibi import Angle, Bond, Pair, State
+from msibi import Angle, Bond, Dihedral, Pair, State
 
 
 test_assets = os.path.join(os.path.dirname(__file__), "assets")
@@ -17,7 +17,7 @@ class BaseTest:
                 name="X",
                 alpha=alpha,
                 kT=1.0,
-                traj_file=os.path.join(test_assets, "stateX.gsd")
+                traj_file=os.path.join(test_assets, "stateX.gsd"),
                 n_frames=100
         )
         return state 
@@ -28,7 +28,7 @@ class BaseTest:
                 name="Y",
                 alpha=alpha,
                 kT=1.0,
-                traj_file=os.path.join(test_assets, "stateY.gsd")
+                traj_file=os.path.join(test_assets, "stateY.gsd"),
                 n_frames=100
         )
         return state 
@@ -46,65 +46,62 @@ class BaseTest:
         return pair
 
     @pytest.fixture
-    def pairB(self, optimize):
+    def pairB(self):
         pair = Pair(
                 type1="B",
                 type2="B",
                 r_cut=3.0,
                 nbins=100,
-                optimize=optimize,
+                optimize=False,
                 exclude_bonded=True
         )
         pair.set_lj(sigma=1.5, epsilon=1, r_cut=3.0, r_min=0.1)
         return pair
 
     @pytest.fixture
-    def pairAB(self, optimize):
+    def pairAB(self):
         pair = Pair(
                 type1="A",
                 type2="B",
                 r_cut=3.0,
                 nbins=100,
-                optimize=optimize,
+                optimize=False,
                 exclude_bonded=True
         )
         pair.set_lj(sigma=1.5, epsilon=1, r_cut=3.0, r_min=0.1)
         return pair
     
     @pytest.fixture
-    def bondAB(self, optimize):
+    def bond(self):
         bond = Bond(
             type1="A",
             type2="B",
-            optimize=optimize,
+            optimize=False,
             nbins=100
         )
-        bond.set_quadratic(x0=1, k4=0, k3=0, k2=300, x_min=0, x_max=2)
         return bond
 
     @pytest.fixture
-    def angleABA(self, optimize):
+    def angle(self):
         angle = Angle(
                 type1="A",
                 type2="B",
                 type3="A",
-                optimize=optimize,
+                optimize=False,
                 nbins=100
         )
-        angle.set_quadratic(x0=1, k4=0, k3=0, k2=200, x_min=0, x_max=np.pi)
         return angle
 
     @pytest.fixture
-    def dihedralABAB(self, optimize):
+    def dihedral(self):
         dihedral = Dihedral(
                     type1="A",
                     type2="B",
                     type3="A",
                     type4="B",
-                    optimize=optimize,
+                    optimize=False,
                     nbins=100
         )
-        dihedral.set_quadratic(x0=0, k4=0, k3=0, k2=100, x_min=-np.pi, x_max=np.pi)
         return dihedral 
 
     @pytest.fixture
@@ -113,8 +110,8 @@ class BaseTest:
 
     @pytest.fixture
     def rdfBB(self):
-        #return self.get_rdf(0)
+        pass
 
     @pytest.fixture
     def rdfAB(self):
-        #return self.get_rdf(0)
+        pass

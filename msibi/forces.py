@@ -597,7 +597,7 @@ class Bond(Force):
                     "for a force designated for optimization. "
                     "Instead, use set_from_file() or set_quadratic()."
             )
-        self.type = "static"
+        self.format = "static"
         self.force_init = "Harmonic"
         self.force_entry = dict(r0=r0, k=k)
 
@@ -712,7 +712,7 @@ class Angle(Force):
                     "for a force designated for optimization. "
                     "Instead, use set_from_file() or set_quadratic()."
             )
-        self.type = "static"
+        self.format = "static"
         self.force_init = "Harmonic"
         self.force_entry = dict(t0=t0, k=k)
 
@@ -969,7 +969,7 @@ class Dihedral(Force):
                     "for a force designated for optimization. "
                     "Instead, use set_from_file() or set_quadratic()."
             )
-        self.type = "static"
+        self.format = "static"
         self.force_init = "Periodic"
         self.force_entry = dict(phi0=phi0, k=k, d=d, n=n)
 
