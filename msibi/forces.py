@@ -322,12 +322,12 @@ class Force(object):
 
         plt.xlim(1, 2)
         plt.ylim(-10, 40)
-        plt.legend()
+        plt.legend(bbox_to_anchor=(1.05, 1))
         plt.xlabel("x")
         plt.ylabel("Potential")
         plt.title(f"{self.name} Potential History")
         if file_path:
-            plt.savefig(file_path)
+            plt.savefig(file_path, bbox_inches='tight')
 
     def plot_distribution_comparison(self, state: msibi.state.State, file_path=None):
         final_dist = self.distribution_history(state=state)[-1]
