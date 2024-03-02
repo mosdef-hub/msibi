@@ -1,15 +1,29 @@
 import os
+
+import hoomd
 import pytest
 
 import numpy as np
 
-from msibi import Angle, Bond, Dihedral, Pair, State
+from msibi import MSIBI, Angle, Bond, Dihedral, Pair, State
 
 
 test_assets = os.path.join(os.path.dirname(__file__), "assets")
 
 
 class BaseTest:
+    @pytest.fixture
+    def msibi(self):
+        msibi = MSIBI(
+            nlist=hoomd.md.nlist.Cell,
+            integrator_method=hoomd.md.methods.ConstantVolume,
+            thermostat=hoomd.md.methods.thermostats.MTTK,
+            method_kwargs={},
+            thermostat_kwargs={"tau": 0.01},
+            dt=0.003,
+            gsd_period=int(1e3),
+        )
+        return msibi
 
     @pytest.fixture
     def stateX(self, tmp_path):
@@ -35,6 +49,7 @@ class BaseTest:
         )
         return state 
 
+
     @pytest.fixture
     def pairA(self):
         pair = Pair(
@@ -42,6 +57,7 @@ class BaseTest:
                 type2="A",
                 r_cut=3.0,
                 nbins=100,
+                optimize=False,
                 exclude_bonded=True
         )
         pair.set_lj(sigma=2, epsilon=2, r_cut=3.0, r_min=0.1)

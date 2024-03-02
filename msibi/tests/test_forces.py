@@ -18,6 +18,7 @@ class TestForce(BaseTest):
                 x_max=3,
         )
         assert bond.dx == 0.03
+
     def test_potential_setter(self, bond):
         bond.set_quadratic(
                 x0=2,
@@ -30,6 +31,7 @@ class TestForce(BaseTest):
         initial_pot = np.copy(bond.potential)
         bond.potential = bond.potential * 2
         assert np.allclose(bond.potential, initial_pot * 2)
+
     def test_smooth_potential(self, bond):
         bond.set_quadratic(
                 x0=2,
@@ -96,6 +98,8 @@ class TestBond(BaseTest):
         path = os.path.join(tmp_path, "AB_bond.csv")
         bond.save_potential(path)
         assert os.path.isfile(path)
+
+
 class TestAngle(BaseTest):
     def test_angle_name(self, angle):
         assert angle.name == "A-B-A"
@@ -154,7 +158,6 @@ class TestPair(BaseTest):
         assert len(pairAB._table_entry()["F"]) == len(pairAB.x_range)
         assert pairAB.x_range[0] == 0.1
         assert pairAB.x_range[-1] == 3.0
-
 
     def test_save_angle_potential(self, tmp_path, pairAB):
         pairAB.set_lj(

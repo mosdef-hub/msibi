@@ -1,83 +1,36 @@
 import pytest
-
+import hoomd
 from msibi import MSIBI
 
 from .base_test import BaseTest
 
-n_bins = 151
 
 
 class TestMSIBI(BaseTest):
-    def test_add_potential_objects(self, state0, pairs, bond, angle):
-        opt = MSIBI(
-                integrator="hoomd.md.integrate.nvt",
-                integrator_kwargs={"tau": 0.1},
-                nlist="hoomd.md.nlist.cell",
-                dt=0.001,
-                gsd_period=1000,
-                n_steps=1e6,
-        )
-        opt.add_state(state0)
-        opt.add_pair(pairs[0])
-        opt.add_bond(bond)
-        opt.add_angle(angle)
-        assert len(opt.pairs) == len(opt.bonds) == len(opt.angles) == 1
+    def test_init(self, msibi):
+        assert msibi.n_iterations == 0
+        assert isinstance(msibi.nlist(buffer=0.20), hoomd.md.nlist.Cell)
+        assert isinstance(msibi.integrator_method(filter=hoomd.filter.All()), hoomd.md.methods.ConstantVolume)
+        assert isinstance(msibi.thermostat(kT=1.0, tau=0.01), hoomd.md.methods.thermostats.MTTK)
 
-    def test_opt_pairs(self, state0, pairs, tmp_path):
-        opt = MSIBI(
-                integrator="hoomd.md.integrate.nvt",
-                integrator_kwargs={"tau": 0.1},
-                nlist="hoomd.md.nlist.cell",
-                dt=0.001,
-                gsd_period=1000,
-                n_steps=1e6,
-        )
-        opt.add_state(state0)
-        opt.add_pair(pairs[0])
-        opt.optimize_pairs(
-                n_iterations=0,
-                r_switch=None,
-                smooth_rdfs=False,
-                _dir=tmp_path,
-            )
-        assert opt.optimization == "pairs"
-        assert pairs[0].r_switch == pairs[0].r_range[-5]
-        for key in pairs[0]._states.keys():
-            assert key == state0
+    def test_add_state(self, msibi, stateX):
+        msibi.add_state(stateX)
+        assert msibi.states[0] == stateX
+        assert len(msibi.states) == 1
 
-    def test_opt_bonds(self, state0, bond, tmp_path):
-        opt = MSIBI(
-                integrator="hoomd.md.integrate.nvt",
-                integrator_kwargs={"tau": 0.1},
-                nlist="hoomd.md.nlist.cell",
-                dt=0.001,
-                gsd_period=1000,
-                n_steps=1e6,
-        )
-        opt.add_state(state0)
-        opt.add_bond(bond)
-        opt.optimize_bonds(
-                n_iterations=0,
-            )
-        assert opt.optimization == "bonds"
-        for key in bond._states.keys():
-            assert key == state0
+    def test_add_forces(self, msibi, pairA, bond, angle, dihedral):
+        msibi.add_force(pairA)
+        msibi.add_force(bond)
+        msibi.add_force(angle)
+        msibi.add_force(dihedral)
+        assert msibi.forces[0] == pairA
+        assert msibi.forces[1] == bond
+        assert msibi.forces[2] == angle
+        assert msibi.forces[3] == dihedral
+        assert len(msibi.forces) == 4
+        assert len(msibi.pairs) == 1
+        assert len(msibi.bonds) == 1
+        assert len(msibi.angles) == 1
+        assert len(msibi.dihedrals) == 1
 
-    @pytest.mark.skip(reason="Need better toy system")
-    def test_opt_angles(self, state0, angle, tmp_path):
-        opt = MSIBI(
-                integrator="hoomd.md.integrate.nvt",
-                integrator_kwargs={"tau": 0.1},
-                nlist="hoomd.md.nlist.cell",
-                dt=0.001,
-                gsd_period=1000,
-                n_steps=1e6,
-        )
-        opt.add_state(state0)
-        opt.add_angle(angle)
-        opt.optimize_angles(
-                n_iterations=0,
-            )
-        assert opt.optimization == "angles"
-        for key in angle._states.keys():
-            assert key == state0
+
