@@ -18,4 +18,3 @@ class TestState(BaseTest):
     def test_n_frames(self, stateX):
         stateX.nframes = 50
         assert stateX.nframes == 50
-

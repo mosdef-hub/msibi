@@ -7,7 +7,47 @@ from msibi import MSIBI, State, Bond, Angle
 
 from .base_test import BaseTest
 
+class TestForce(BaseTest):
+    def test_dx(self, bond):
+        bond.set_quadratic(
+                x0=2,
+                k4=1,
+                k3=1,
+                k2=1,
+                x_min=1,
+                x_max=3,
+        )
+        assert bond.dx == 0.03
 
+    def test_potential_setter(self, bond):
+        bond.set_quadratic(
+                x0=2,
+                k4=0,
+                k3=0,
+                k2=100,
+                x_min=1,
+                x_max=3,
+        )
+        initial_pot = np.copy(bond.potential)
+        bond.potential = bond.potential * 2
+        assert np.allclose(bond.potential, initial_pot * 2)
+    def test_smooth_potential(self, bond):
+        bond.set_quadratic(
+                x0=2,
+                k4=0,
+                k3=0,
+                k2=100,
+                x_min=1,
+                x_max=3,
+        )
+        # add noise to the potential
+        bond.potential = bond.potential + np.random.normal(0, 0.5, bond.potential.shape)
+        noisy_pot = np.copy(bond.potential)
+        bond.smoothing_window = 5
+        bond.smooth_potential()
+        assert bond.smoothing_window == 5
+        for i, j in zip(bond.potential, noisy_pot):
+            assert i != j
 class TestBond(BaseTest):
     def test_bond_name(self, bond):
         assert bond.name == "A-B"
@@ -44,8 +84,6 @@ class TestBond(BaseTest):
         path = os.path.join(tmp_path, "AB_bond.csv")
         bond.save_potential(path)
         assert os.path.isfile(path)
-
-
 class TestAngle(BaseTest):
     def test_angle_name(self, angle):
         assert angle.name == "A-B-A"
