@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pytest
 
-from msibi import MSIBI, State, Bond, Angle 
+from msibi import Bond, Angle, Dihedral, Pair
 
 from .base_test import BaseTest
 
@@ -18,7 +18,6 @@ class TestForce(BaseTest):
                 x_max=3,
         )
         assert bond.dx == 0.03
-
     def test_potential_setter(self, bond):
         bond.set_quadratic(
                 x0=2,
@@ -40,7 +39,6 @@ class TestForce(BaseTest):
                 x_min=1,
                 x_max=3,
         )
-        # add noise to the potential
         bond.potential = bond.potential + np.random.normal(0, 0.5, bond.potential.shape)
         noisy_pot = np.copy(bond.potential)
         bond.smoothing_window = 5
@@ -48,6 +46,20 @@ class TestForce(BaseTest):
         assert bond.smoothing_window == 5
         for i, j in zip(bond.potential, noisy_pot):
             assert i != j
+
+    def test_smoothing_window(self, bond):
+        bond.smoothing_window = 5
+        assert bond.smoothing_window == 5
+
+    def test_smoothing_order(self, bond):
+        bond.smoothing_order = 3
+        assert bond.smoothing_order == 3
+
+    def test_nbins(self, bond):
+        bond.nbins = 60
+        assert bond.nbins == 60
+
+
 class TestBond(BaseTest):
     def test_bond_name(self, bond):
         assert bond.name == "A-B"
