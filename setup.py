@@ -4,7 +4,7 @@ iterative Boltzmann inversion.
 """
 
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 import sys
 
@@ -39,6 +39,14 @@ setup(
     url="http://github.com/cmelab/msibi",
     author="Chris Jones",
     author_email=("chrisjones4@u.boisestate.edu"),
+    packages=find_packages(
+        exclude=("tests", "docs")
+    ),
+    package_data={
+        "msibi":[
+            "msibi/**"
+        ]
+    },
     license="MIT",
     zip_safe=False,
     test_suite="tests",
