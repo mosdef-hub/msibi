@@ -2,8 +2,6 @@
 
 # MultiState Iterative Boltzmann Inversion (MS-IBI)
 ----------------------------------------
-[![build_cpu](https://github.com/cmelab/msibi/actions/workflows/build_cpu.yml/badge.svg)](https://github.com/cmelab/msibi/actions/workflows/build_cpu.yml)
-[![build_gpu](https://github.com/cmelab/msibi/actions/workflows/build_gpu.yml/badge.svg)](https://github.com/cmelab/msibi/actions/workflows/build_gpu.yml)
 [![pytest](https://github.com/cmelab/msibi/actions/workflows/pytest.yml/badge.svg)](https://github.com/cmelab/msibi/actions/workflows/pytest.yml)
 [![codecov](https://codecov.io/gh/cmelab/msibi/branch/master/graph/badge.svg?token=7NFPBMBN0I)](https://codecov.io/gh/cmelab/msibi)
 
@@ -18,10 +16,6 @@ conda env create -f environment.yml
 conda activate msibi
 pip install .
 ```
-
-
-### Tutorials
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/cmelab/msibi/master?urlpath=tree/msibi/tutorials/lj/LJ_Tutorial.ipynb) - Tutorial showing how to recreate the Lennard Jones potential using MS-IBI
 
 
 ### Citation [![Citing MSIBI](https://img.shields.io/badge/DOI-10.1063%2F1.4880555-blue.svg)](http://dx.doi.org/10.1063/1.4880555)
