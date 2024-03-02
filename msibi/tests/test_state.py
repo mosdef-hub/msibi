@@ -1,13 +1,21 @@
+import os
+
+import numpy as np
 import pytest
 
-from msibi.state import State
+from msibi import MSIBI, State, Bond, Angle 
+
+from .base_test import BaseTest
 
 
-@pytest.mark.skipif(True, reason="Needs implementing!")
-def test_init():
-    pass
+class TestState(BaseTest):
+    def test_state_init(self, tmp_path, stateX):
+        assert stateX.name == "X"
+        assert stateX.alpha == 1.0
+        assert stateX.kT == 1.0
+        assert os.path.exists(os.path.join(tmp_path, "states/X_1.0/"))
 
+    def test_n_frames(self, stateX):
+        stateX.nframes = 50
+        assert stateX.nframes == 50
 
-@pytest.mark.skipif(True, reason="Needs implementing!")
-def test_save_runscript():
-    pass

@@ -12,24 +12,26 @@ test_assets = os.path.join(os.path.dirname(__file__), "assets")
 class BaseTest:
 
     @pytest.fixture
-    def stateX(self, alpha):
+    def stateX(self, tmp_path):
         state = State(
                 name="X",
-                alpha=alpha,
+                alpha=1.0,
                 kT=1.0,
                 traj_file=os.path.join(test_assets, "stateX.gsd"),
-                n_frames=100
+                n_frames=100,
+                _dir=tmp_path
         )
         return state 
 
     @pytest.fixture
-    def stateY(self, alpha):
+    def stateY(self, tmp_path):
         state = State(
                 name="Y",
-                alpha=alpha,
+                alpha=1.0,
                 kT=1.0,
                 traj_file=os.path.join(test_assets, "stateY.gsd"),
-                n_frames=100
+                n_frames=100,
+                _dir=tmp_path
         )
         return state 
 
