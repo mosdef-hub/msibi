@@ -13,10 +13,12 @@ class TestMSIBI(BaseTest):
         assert isinstance(msibi.integrator_method(filter=hoomd.filter.All()), hoomd.md.methods.ConstantVolume)
         assert isinstance(msibi.thermostat(kT=1.0, tau=0.01), hoomd.md.methods.thermostats.MTTK)
 
-    def test_add_state(self, msibi, stateX):
+    def test_add_state(self, msibi, stateX, stateY):
         msibi.add_state(stateX)
+        msibi.add_state(stateY)
         assert msibi.states[0] == stateX
-        assert len(msibi.states) == 1
+        assert msibi.states[1] == stateY
+        assert len(msibi.states) == 2
 
     def test_add_forces(self, msibi, pairA, bond, angle, dihedral):
         msibi.add_force(pairA)
@@ -32,5 +34,7 @@ class TestMSIBI(BaseTest):
         assert len(msibi.bonds) == 1
         assert len(msibi.angles) == 1
         assert len(msibi.dihedrals) == 1
+
+    
 
 
