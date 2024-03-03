@@ -61,7 +61,7 @@ class Force(object):
             nbins: int=None,
             correction_form: str="linear"
     ):
-        if optimize and nbins is None or nbins<=0:
+        if optimize and nbins is None or nbins and nbins<=0:
             raise ValueError(
                     "If a force is set to be optimized, nbins must be "
                     "a positive, non-zero integer."
