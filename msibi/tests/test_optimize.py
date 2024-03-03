@@ -69,6 +69,3 @@ class TestMSIBI(BaseTest):
         assert msibi.n_iterations == 1
         ff = msibi._build_force_objects()
         assert len(ff) == 2
-
-
-
