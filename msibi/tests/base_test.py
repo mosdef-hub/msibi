@@ -31,8 +31,8 @@ class BaseTest:
                 name="X",
                 alpha=1.0,
                 kT=1.0,
-                traj_file=os.path.join(test_assets, "stateX.gsd"),
-                n_frames=100,
+                traj_file=os.path.join(test_assets, "AB-1.0kT.gsd"),
+                n_frames=10,
                 _dir=tmp_path
         )
         return state 
@@ -42,8 +42,8 @@ class BaseTest:
         state = State(
                 name="Y",
                 alpha=1.0,
-                kT=1.0,
-                traj_file=os.path.join(test_assets, "stateY.gsd"),
+                kT=4.0,
+                traj_file=os.path.join(test_assets, "AB-4.0kT.gsd"),
                 n_frames=100,
                 _dir=tmp_path
         )
