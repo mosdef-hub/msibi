@@ -210,6 +210,43 @@ class Force(object):
         })
         df.to_csv(file_path, index=False)
 
+    def save_potential_history(self, file_path: str) -> None:
+        """Save the potential history of the force to a `npy` file.
+
+        Parameters
+        ----------
+        file_path : str, required
+            File path and name to save table potential history to.
+
+        """
+        if self.format != "table":
+            raise RuntimeError(
+                "This force is not a table potential and "
+                "cannot be saved to a .txt file."
+            )
+        np.save(file_path, np.asarray(self.potential_history))
+
+    def save_state_data(self, state: msibi.state.State, file_path: str) -> None:
+        """Save the distribution data of a state as a a dictionary to a file.
+
+        Parameters
+        ----------
+        state : msibi.state.State, required
+            The state to use in finding the target distribution.
+        file_path : str, required
+            File path and name to save the `npz` file.
+        """
+
+        state_dict = self._states[state]
+        state_data = {
+            "target_distribution": state_dict["target_distribution"],
+            "current_distribution": state_dict["current_distribution"],
+            "distribution_history": np.asarray(state_dict["distribution_history"]),
+            "f_fit": np.asarray(state_dict["f_fit"])
+        }
+        np.savez(file_path, **state_data)
+
+
     def target_distribution(self, state: msibi.state.State) -> np.ndarray:
         """The target structural distribution corresponding to this foce.
 
@@ -1060,17 +1097,6 @@ class Dihedral(Force):
 
         """
         return dihedral_distribution(
-<<<<<<< HEAD
-            gsd_file=gsd,
-            A_name=self.type1,
-            B_name=self.type2,
-            C_name=self.type3,
-            D_name=self.type4,
-            start=-state.n_frames,
-            histogram=True,
-            normalize=True,
-            bins=self.nbins + 1
-=======
                 gsd_file=gsd_file,
                 A_name=self.type1,
                 B_name=self.type2,
@@ -1080,5 +1106,4 @@ class Dihedral(Force):
                 histogram=True,
                 normalize=True,
                 bins=self.nbins + 1
->>>>>>> upstream/main
         )
