@@ -50,6 +50,37 @@ class TestForce(BaseTest):
         for i, j in zip(bond.potential, noisy_pot):
             assert i != j
 
+    def test_set_from_file(self):
+        bond = Bond(type1="A", type2="B", optimize=True, nbins=60)
+        bond.set_quadratic(x_min=0.0, x_max=3.0, x0=1, k2=200, k3=0, k4=0)
+        bond.save_potential("test.csv")
+        bond2 = Bond(type1="A", type2="B", optimize=True, nbins=60)
+        bond2.set_from_file("test.csv")
+        assert np.allclose(bond.potential, bond2.potential)
+        os.remove("test.csv")
+
+    def test_fit_scores(self, msibi, stateX, stateY):
+        msibi.gsd_period = 10
+        bond = Bond(type1="A", type2="B", optimize=True, nbins=60)
+        bond.set_quadratic(x_min=0.0, x_max=3.0, x0=1, k2=200, k3=0, k4=0)
+        angle = Angle(type1="A", type2="B", type3="A", optimize=False)
+        angle.set_harmonic(k=500, t0=2)
+        angle2 = Angle(type1="B", type2="A", type3="B", optimize=False)
+        angle2.set_harmonic(k=500, t0=2)
+        msibi.add_state(stateX)
+        msibi.add_state(stateY)
+        msibi.add_force(bond)
+        msibi.add_force(angle)
+        msibi.add_force(angle2)
+        init_bond_pot = np.copy(bond.potential)
+        msibi.run_optimization(n_steps=500, n_iterations=1)
+        assert len(bond._states[stateY]["f_fit"]) == 1
+        assert len(bond._states[stateX]["f_fit"]) == 1
+        bond.plot_fit_scores(state=stateY)
+        bond.plot_fit_scores(state=stateX)
+        with pytest.raises(RuntimeError):
+            angle.plot_fit_scores(state=stateY)
+
     def test_smoothing_window(self, bond):
         bond.smoothing_window = 5
         assert bond.smoothing_window == 5

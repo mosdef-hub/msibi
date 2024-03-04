@@ -49,6 +49,11 @@ class TestMSIBI(BaseTest):
         assert msibi.n_iterations == 1
         ff = msibi._build_force_objects()
         assert len(ff) == 1
+        assert len(bond.distribution_history(state=stateX)) == 1
+        assert len(bond.potential_history) == 2
+        assert len(bond._head_correction_history) == 1
+        assert len(bond._tail_correction_history) == 1
+        assert len(bond._learned_potential_history) == 1
 
     def test_run_with_static_force(self, msibi, stateX, stateY):
         msibi.gsd_period = 10
