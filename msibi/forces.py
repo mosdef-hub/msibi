@@ -321,7 +321,7 @@ class Force(object):
         if file_path:
             plt.savefig(file_path)
 
-    def plot_potentials(self, file_path=None, xlim=(1, 2), ylim=((-10, 40)) -> None:
+    def plot_potentials(self, file_path=None, xlim=(1, 2), ylim=(-10, 40)) -> None:
         """Plots the optimized potential energy.
 
         Parameters
@@ -339,7 +339,7 @@ class Force(object):
         if file_path:
             plt.savefig(file_path)
 
-    def plot_potential_history(self, file_path=None, xlim=(1, 2), ylim=((-10, 40)) -> None:
+    def plot_potential_history(self, file_path=None, xlim=(1, 2), ylim=(-10, 40)) -> None:
         """Plots the history of the optimized potential energy.
 
         Parameters
