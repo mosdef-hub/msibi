@@ -11,4 +11,5 @@ dependencies:
 - cmeutils >=1.2
 - more-itertools
 - pytest
+- pytest-cov
 - pre-commit
