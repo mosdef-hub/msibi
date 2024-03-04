@@ -84,12 +84,6 @@ class Force(object):
         self._tail_correction_history = []
         self._learned_potential_history = []
 
-        if optimize and nbins is None:
-            raise ValueError(
-                    "If this force is set to be optimized, the nbins "
-                    "must be set as a non-zero value"
-            )
-
     def __repr__(self):
         return (
                 f"Type: {self.__class__}; "
