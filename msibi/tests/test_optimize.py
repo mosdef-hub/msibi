@@ -49,6 +49,11 @@ class TestMSIBI(BaseTest):
         assert msibi.n_iterations == 1
         ff = msibi._build_force_objects()
         assert len(ff) == 1
+        assert len(bond.distribution_history(state=stateX)) == 1
+        assert len(bond.potential_history) == 2
+        assert len(bond._head_correction_history) == 1
+        assert len(bond._tail_correction_history) == 1
+        assert len(bond._learned_potential_history) == 1
 
     def test_run_with_static_force(self, msibi, stateX, stateY):
         msibi.gsd_period = 10
@@ -69,3 +74,54 @@ class TestMSIBI(BaseTest):
         assert msibi.n_iterations == 1
         ff = msibi._build_force_objects()
         assert len(ff) == 2
+
+    def test_run_with_all_forces(self, msibi, stateX, stateY):
+        msibi.add_state(stateX)
+        msibi.add_state(stateY)
+
+        bond = Bond(type1="A", type2="B", optimize=False, nbins=60)
+        bond.set_harmonic(r0=1.1, k=100)
+        msibi.add_force(bond)
+
+        angle = Angle(type1="A", type2="B", type3="A", optimize=False)
+        angle.set_harmonic(t0=1.9, k=100)
+        msibi.add_force(angle)
+        angle2 = Angle(type1="B", type2="A", type3="B", optimize=False)
+        angle2.set_harmonic(t0=2.3, k=100)
+        msibi.add_force(angle2)
+
+        pair = Pair(type1="A", type2="B", r_cut=3.0, nbins=60, optimize=True, exclude_bonded=True)
+        pair.set_lj(sigma=1.5, epsilon=1, r_cut=3.0, r_min=0.1)
+        msibi.add_force(pair)
+        pair2 = Pair(type1="A", type2="A", r_cut=3.0, nbins=60, optimize=True, exclude_bonded=True)
+        pair2.set_lj(sigma=2, epsilon=2, r_cut=3.0, r_min=0.1)
+        msibi.add_force(pair2)
+        pair3 = Pair(type1="B", type2="B", r_cut=3.0, nbins=60, optimize=True, exclude_bonded=True)
+        pair3.set_lj(sigma=1.5, epsilon=1, r_cut=3.0, r_min=0.1)
+        msibi.add_force(pair3)
+        dihedral = Dihedral(type1="A", type2="B", type3="A", type4="B", optimize=False)
+        dihedral.set_harmonic(k=100, phi0=0, d=-1, n=1)
+        msibi.add_force(dihedral)
+
+        msibi.run_optimization(n_steps=500, n_iterations=0)
+
+    def test_raise_errors(self, msibi, stateX, stateY):
+        with pytest.raises(RuntimeError):
+            msibi.pickle_forces(file_path="test.pkl")
+
+        bond = Bond(type1="A", type2="B", optimize=True, nbins=60)
+        angle = Angle(type1="A", type2="B", type3="A", optimize=True, nbins=60)
+        with pytest.raises(RuntimeError):
+            msibi.add_force(bond)
+            msibi.add_force(angle)
+
+        with pytest.raises(ValueError):
+            msibi = MSIBI(
+                nlist=hoomd.md.nlist.Cell,
+                integrator_method=hoomd.md.methods.DisplacementCapped,
+                method_kwargs=dict(),
+                thermostat=hoomd.md.methods.thermostats.MTTK,
+                thermostat_kwargs=dict(tau=0.01),
+                dt=0.003,
+                gsd_period=int(1e3),
+            )
