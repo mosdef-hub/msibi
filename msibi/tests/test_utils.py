@@ -12,7 +12,9 @@ def test_calc_similarity():
     assert calc_similarity(a, b) == 1.0
     b *= -1
     assert calc_similarity(a, b) == 0.0
-
+    arr1 = np.random.random(10)
+    arr2 = np.random.random(10)
+    assert calc_similarity(arr1, arr2) == calc_similarity(arr2, arr1)
 
 def test_find_nearest():
     a = np.arange(10)

@@ -8,7 +8,6 @@ from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 import sys
 
-requirements = ["numpy", "networkx"]
 
 NAME = "msibi"
 # Load the package's __version__.py module as a dictionary.
@@ -36,15 +35,19 @@ setup(
     description=(
         "A package for optimizing coarse-grained force fields using " +
         "multistate iterative Boltzmann inversion."
-        ),
+    ),
     url="http://github.com/cmelab/msibi",
-    author="Christoph Klein, Timothy C. Moore",
-    author_email=(
-        "christoph.klein@vanderbilt.edu, timothy.c.moore@vanderbilt.edu"
-        ),
+    author="Chris Jones",
+    author_email=("chrisjones4@u.boisestate.edu"),
+    packages=find_packages(
+        exclude=("tests", "docs")
+    ),
+    package_data={
+        "msibi":[
+            "msibi/**"
+        ]
+    },
     license="MIT",
-    packages=find_packages(),
-    install_requires=requirements,
     zip_safe=False,
     test_suite="tests",
     cmdclass={"test": PyTest},

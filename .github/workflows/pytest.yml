@@ -4,15 +4,15 @@ on:
   push:
     branches: [ master ]
     paths:
-      - '.github/workflows/pytest.yml'
-      - 'environment-cpu.yml'
-      - 'msibi/**'
+      - msibi/**
+      - environment-dev.yml
+      - .github/workflows/pytest.yml
   pull_request:
     branches: [ master ]
     paths:
-      - 'msibi/**'
-      - 'environment-cpu.yml'
-      - '.github/workflows/pytest.yml'
+      - msibi/**
+      - environment-dev.yml
+      - .github/workflows/pytest.yml
   # Allows workflow to be manually triggered
   workflow_dispatch:
 
@@ -27,9 +27,9 @@ jobs:
     - name: Build environment
       uses: conda-incubator/setup-miniconda@v2
       with:
-        environment-file: environment-cpu.yml
+        environment-file: environment-dev.yml
         miniforge-variant: Mambaforge
-        miniforge-version: 4.9.2-4
+        miniforge-version: 23.11.0-0 
         use-mamba: true
     
     - name: Install package
@@ -38,10 +38,10 @@ jobs:
  
     - name: Run pytest with coverage report
       shell: bash -l {0}
-      run: python -m pytest --cov=./ --cov-report=xml -v
+      run: python -m pytest -rs -v --cov=./ --cov-report=xml
           
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.xml

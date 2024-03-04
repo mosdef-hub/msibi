@@ -1,87 +1,135 @@
 import os
+
+import hoomd
 import pytest
 
 import numpy as np
 
-from msibi import Angle, Bond, Pair, State
+from msibi import MSIBI, Angle, Bond, Dihedral, Pair, State
 
 
-dr = 0.1 / 6.0
-r = np.arange(0, 2.5 + dr, dr)
-k_B = 1.9872041e-3  # kcal/mol-K
-T = 298.0  # K
 test_assets = os.path.join(os.path.dirname(__file__), "assets")
 
 
 class BaseTest:
     @pytest.fixture
-    def state0(self, tmp_path):
-        return self.init_state(0, tmp_path)
+    def msibi(self):
+        msibi = MSIBI(
+            nlist=hoomd.md.nlist.Cell,
+            integrator_method=hoomd.md.methods.ConstantVolume,
+            thermostat=hoomd.md.methods.thermostats.MTTK,
+            method_kwargs={},
+            thermostat_kwargs={"tau": 0.01},
+            dt=0.003,
+            gsd_period=int(1e3),
+        )
+        return msibi
 
     @pytest.fixture
-    def state1(self, tmp_path):
-        return self.init_state(1, tmp_path)
+    def stateX(self, tmp_path):
+        state = State(
+                name="X",
+                alpha=1.0,
+                kT=1.0,
+                traj_file=os.path.join(test_assets, "AB-1.0kT.gsd"),
+                n_frames=10,
+                _dir=tmp_path
+        )
+        return state 
 
     @pytest.fixture
-    def pairs(self):
-        pair0 = Pair("0", "0")
-        pair0.set_table_potential(
-                epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=len(r)
+    def stateY(self, tmp_path):
+        state = State(
+                name="Y",
+                alpha=1.0,
+                kT=4.0,
+                traj_file=os.path.join(test_assets, "AB-4.0kT.gsd"),
+                n_frames=100,
+                _dir=tmp_path
         )
-        pair1 = Pair("1", "1")
-        pair1.set_table_potential(
-                epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=len(r)
+        return state 
+
+
+    @pytest.fixture
+    def pairA(self):
+        pair = Pair(
+                type1="A",
+                type2="A",
+                r_cut=3.0,
+                nbins=100,
+                optimize=False,
+                exclude_bonded=True
         )
-        pair2 = Pair("2", "2")
-        pair2.set_table_potential(
-                epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=len(r)
+        pair.set_lj(sigma=2, epsilon=2, r_cut=3.0, r_min=0.1)
+        return pair
+
+    @pytest.fixture
+    def pairB(self):
+        pair = Pair(
+                type1="B",
+                type2="B",
+                r_cut=3.0,
+                nbins=100,
+                optimize=False,
+                exclude_bonded=True
         )
-        pair01 = Pair("0", "1")
-        pair01.set_table_potential(
-                epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=len(r)
+        pair.set_lj(sigma=1.5, epsilon=1, r_cut=3.0, r_min=0.1)
+        return pair
+
+    @pytest.fixture
+    def pairAB(self):
+        pair = Pair(
+                type1="A",
+                type2="B",
+                r_cut=3.0,
+                nbins=100,
+                optimize=False,
+                exclude_bonded=True
         )
-        pair02 = Pair("0", "2")
-        pair02.set_table_potential(
-                epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=len(r)
-        )
-        pair12 = Pair("1", "2")
-        pair12.set_table_potential(
-                epsilon=1, sigma=1, r_min=0, r_max=2.5, n_points=len(r)
-        )
-        return [pair0, pair1, pair2, pair01, pair02, pair12]
+        pair.set_lj(sigma=1.5, epsilon=1, r_cut=3.0, r_min=0.1)
+        return pair
     
     @pytest.fixture
     def bond(self):
-        bond = Bond("0", "1")
-        bond.set_quadratic(l0=1, k4=1, k3=1, k2=1, l_min=0, l_max=2)
+        bond = Bond(
+            type1="A",
+            type2="B",
+            optimize=False,
+            nbins=100
+        )
         return bond
 
     @pytest.fixture
     def angle(self):
-        angle = Angle("0", "1", "2")
-        angle.set_harmonic(k=1, theta0=1)
-        angle.set_quadratic(theta0=1, k4=1, k3=1, k2=1)
+        angle = Angle(
+                type1="A",
+                type2="B",
+                type3="A",
+                optimize=False,
+                nbins=100
+        )
         return angle
 
     @pytest.fixture
-    def rdf0(self):
+    def dihedral(self):
+        dihedral = Dihedral(
+                    type1="A",
+                    type2="B",
+                    type3="A",
+                    type4="B",
+                    optimize=False,
+                    nbins=100
+        )
+        return dihedral 
+
+    @pytest.fixture
+    def rdfAA(self):
         return self.get_rdf(0)
 
     @pytest.fixture
-    def rdf1(self):
-        return self.get_rdf(1)
+    def rdfBB(self):
+        pass
 
-    def get_rdf(self, state_n):
-        return np.loadtxt(os.path.join(test_assets, f"target-rdf{state_n}.txt"))
-
-    def init_state(self, state_n, tmp_path):
-        traj_filename = os.path.join(test_assets, f"query{state_n}.gsd")
-        state = State(
-            name=f"state{state_n}",
-            kT=T,
-            max_frames=5,
-            alpha=0.5,
-            traj_file=traj_filename,
-            _dir=tmp_path
-        )
-        return state
+    @pytest.fixture
+    def rdfAB(self):
+        pass
