@@ -125,7 +125,7 @@ class Force(object):
 
     @smoothing_window.setter
     def smoothing_window(self, value: int):
-        if not isinstance(value, int):
+        if not isinstance(value, int) or value <= 0:
             raise ValueError("The smoothing window must be an integer.")
         self._smoothing_window = value
         for state in self._states:
@@ -138,7 +138,7 @@ class Force(object):
 
     @smoothing_order.setter
     def smoothing_order(self, value: int):
-        if not isinstance(value, int):
+        if not isinstance(value, int) or value <= 0:
             raise ValueError("The smoothing order must be an integer.")
         self._smoothing_order = value
         for state in self._states:
@@ -151,7 +151,7 @@ class Force(object):
 
     @nbins.setter
     def nbins(self, value: int):
-        if not isinstance(value, int):
+        if not isinstance(value, int) or value <= 0:
             raise ValueError("nbins must be an integer.")
         self._nbins =  value
         for state in self._states:

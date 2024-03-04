@@ -31,6 +31,7 @@ class TestForce(BaseTest):
         initial_pot = np.copy(bond.potential)
         bond.potential = bond.potential * 2
         assert np.allclose(bond.potential, initial_pot * 2)
+        assert bond.format == "table"
 
     def test_smooth_potential(self, bond):
         bond.set_quadratic(
@@ -61,6 +62,48 @@ class TestForce(BaseTest):
         bond.nbins = 60
         assert bond.nbins == 60
 
+    def test_set_potential_error(self):
+        bond = Bond(type1="A", type2="B", optimize=False)
+        bond.set_harmonic(k=500, r0=2)
+        with pytest.raises(ValueError):
+            bond.potential = np.array([1, 2, 3])
+
+    def test_plot_target_dist(self, stateX):
+        angle = Angle(type1="A", type2="B", type3="A", optimize=True, nbins=60)
+        angle.set_quadratic(x0=2, k4=0, k3=0, k2=100, x_min=0, x_max=np.pi)
+        angle._add_state(stateX)
+        angle.plot_target_distribution(state=stateX)
+
+    def test_static_warnings(self):
+        bond = Bond(type1="A", type2="B", optimize=False)
+        bond.set_harmonic(k=500, r0=2)
+        with pytest.warns(UserWarning):
+            bond.potential
+            bond.force
+
+    def test_bad_smoothing_args(self, bond):
+        with pytest.raises(ValueError):
+            bond.smoothing_window = 0
+        with pytest.raises(ValueError):
+            bond.smoothing_window = 4.5
+        with pytest.raises(ValueError):
+            bond.smoothing_order = 0
+        with pytest.raises(ValueError):
+            bond.smoothing_order = 2.2
+        with pytest.raises(ValueError):
+            bond.nbins = 20.5
+        with pytest.raises(ValueError):
+            bond.nbins = 0
+        angle = Angle(type1="A", type2="B", type3="A", optimize=False)
+        angle.set_harmonic(k=500, t0=2)
+        with pytest.raises(RuntimeError):
+            angle.smooth_potential()
+
+    def test_save_static_force(self):
+        angle = Angle(type1="A", type2="B", type3="A", optimize=False)
+        angle.set_harmonic(k=500, t0=2)
+        with pytest.raises(RuntimeError):
+            angle.save_potential("test.csv")
 
 class TestBond(BaseTest):
     def test_bond_name(self, bond):
