@@ -61,7 +61,7 @@ class Force(object):
             nbins: int = None,
             correction_form: str = "linear"
     ):
-        if optimize and nbins is None or nbins <= 0:
+        if optimize and nbins is None or nbins and nbins<=0:
             raise ValueError(
                 "If a force is set to be optimized, nbins must be "
                 "a positive, non-zero integer."
@@ -83,12 +83,6 @@ class Force(object):
         self._head_correction_history = []
         self._tail_correction_history = []
         self._learned_potential_history = []
-
-        if optimize and nbins is None:
-            raise ValueError(
-                "If this force is set to be optimized, the nbins "
-                "must be set as a non-zero value"
-            )
 
     def __repr__(self):
         return (
@@ -131,7 +125,7 @@ class Force(object):
 
     @smoothing_window.setter
     def smoothing_window(self, value: int):
-        if not isinstance(value, int):
+        if not isinstance(value, int) or value <= 0:
             raise ValueError("The smoothing window must be an integer.")
         self._smoothing_window = value
         for state in self._states:
@@ -144,7 +138,7 @@ class Force(object):
 
     @smoothing_order.setter
     def smoothing_order(self, value: int):
-        if not isinstance(value, int):
+        if not isinstance(value, int) or value <= 0:
             raise ValueError("The smoothing order must be an integer.")
         self._smoothing_order = value
         for state in self._states:
@@ -157,7 +151,7 @@ class Force(object):
 
     @nbins.setter
     def nbins(self, value: int):
-        if not isinstance(value, int):
+        if not isinstance(value, int) or value <= 0:
             raise ValueError("nbins must be an integer.")
         self._nbins = value
         for state in self._states:
@@ -425,7 +419,11 @@ class Force(object):
         self.x_min = x_min
         self.x_max = x_max
         self.dx = x_max / self.nbins
-        self.x_range = np.arange(x_min, x_max + self.dx, self.dx)
+        if isinstance(self, msibi.forces.Dihedral):
+            self.dx *= 2
+            self.x_range = np.arange(x_min, x_max + self.dx/2, self.dx)
+        else:
+            self.x_range = np.arange(x_min, x_max + self.dx, self.dx)
         self.potential = quadratic_spring(self.x_range, x0, k4, k3, k2)
         self.force_init = "Table"
         self.force_entry = self._table_entry()
@@ -460,21 +458,6 @@ class Force(object):
         self.x_max = self.x_range[-1] + self.dx
         self.force_init = "Table"
 
-    def save_to_file(self, file_path):
-        """Save the potential, forces, and r values to a csv file.
-
-        Parameters
-        ----------
-        file_path : str, required
-            The full path to the file to be saved.
-
-        """
-        df = pd.DataFrame({
-            "r": self.x_range,
-            "potential": self.potential,
-            "force": self.force}
-        )
-        df.to_csv(file_path, index=False)
 
     def _add_state(self, state):
         """Add a state to be used in optimizing this Fond.
@@ -680,7 +663,7 @@ class Bond(Force):
                 "for a force designated for optimization. "
                 "Instead, use set_from_file() or set_quadratic()."
             )
-        self.type = "static"
+        self.format = "static"
         self.force_init = "Harmonic"
         self.force_entry = dict(r0=r0, k=k)
 
@@ -795,7 +778,7 @@ class Angle(Force):
                 "for a force designated for optimization. "
                 "Instead, use set_from_file() or set_quadratic()."
             )
-        self.type = "static"
+        self.format = "static"
         self.force_init = "Harmonic"
         self.force_entry = dict(t0=t0, k=k)
 
@@ -1017,6 +1000,7 @@ class Dihedral(Force):
         self.type3 = type3
         self.type4 = type4
         name = f"{self.type1}-{self.type2}-{self.type3}-{self.type4}"
+        self._correction_function = bond_correction
         super(Dihedral, self).__init__(
             name=name,
             optimize=optimize,
@@ -1052,7 +1036,7 @@ class Dihedral(Force):
                 "for a force designated for optimization. "
                 "Instead, use set_from_file() or set_quadratic()."
             )
-        self.type = "static"
+        self.format = "static"
         self.force_init = "Periodic"
         self.force_entry = dict(phi0=phi0, k=k, d=d, n=n)
 
@@ -1076,6 +1060,7 @@ class Dihedral(Force):
 
         """
         return dihedral_distribution(
+<<<<<<< HEAD
             gsd_file=gsd,
             A_name=self.type1,
             B_name=self.type2,
@@ -1085,4 +1070,15 @@ class Dihedral(Force):
             histogram=True,
             normalize=True,
             bins=self.nbins + 1
+=======
+                gsd_file=gsd_file,
+                A_name=self.type1,
+                B_name=self.type2,
+                C_name=self.type3,
+                D_name=self.type4,
+                start=-state.n_frames,
+                histogram=True,
+                normalize=True,
+                bins=self.nbins + 1
+>>>>>>> upstream/main
         )

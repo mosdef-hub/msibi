@@ -3,7 +3,7 @@ channels:
 - conda-forge
 dependencies:
 - cuda-version=11.8
-- freud >=2.13
+- freud =2.13.2
 - gsd >=3.0
 - hoomd >=4.0
 - python >=3.9

@@ -10,7 +10,7 @@ msibi/tutorials/lj/state*/run.py
 *.dcd
 .DS_Store
 *.egg-info
-
+*.idea/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

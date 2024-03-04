@@ -48,7 +48,7 @@ class State(object):
         traj_file: str,
         n_frames: int,
         alpha: float=1.0,
-        exclude_bonded: bool=True,
+        exclude_bonded: bool=True, #TODO: Do we use this here or in Force?
         _dir=None
     ):
         self.name = name
