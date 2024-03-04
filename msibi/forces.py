@@ -227,7 +227,7 @@ class Force(object):
         np.save(file_path, np.asarray(self.potential_history))
 
     def save_state_data(self, state: msibi.state.State, file_path: str) -> None:
-        """Save the distribution data of a state as a a dictionary to a file.
+        """Save the distribution data of a state as a a dictionary to a `npz` file.
 
         Parameters
         ----------
