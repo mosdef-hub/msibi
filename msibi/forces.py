@@ -246,7 +246,6 @@ class Force(object):
         }
         np.savez(file_path, **state_data)
 
-
     def target_distribution(self, state: msibi.state.State) -> np.ndarray:
         """The target structural distribution corresponding to this foce.
 

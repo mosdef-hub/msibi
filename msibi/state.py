@@ -23,6 +23,10 @@ class State(object):
         during optimization.
     alpha : (Union[float, int]), default 1.0
         The alpha value used to scale the weight of this state.
+    alpha_form: str, optional
+        Alpha can be a constant number that is applied to the potential at all
+        independent values (x), or it can be a linear function that approaches
+        zero as x approaches x_cut.
 
     Attributes
     ----------
@@ -48,6 +52,7 @@ class State(object):
         traj_file: str,
         n_frames: int,
         alpha: float=1.0,
+        alpha_form: str = "constant"
         exclude_bonded: bool=True, #TODO: Do we use this here or in Force?
         _dir=None
     ):
@@ -81,7 +86,10 @@ class State(object):
     @property
     def alpha(self) -> Union[int, float]:
         """State point weighting value."""
-        return self._alpha
+        if self.alpha_form == "constant":
+            return self._alpha
+        else:
+            return alpha_array(alpha0=self._alpha, pot_r=)
 
     @alpha.setter
     def alpha(self, value: float):
