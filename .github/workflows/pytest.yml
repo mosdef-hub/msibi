@@ -17,13 +17,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  pytest:
+  test:
+    if: github.event.pull_request.draft == false
+    name: MSIBI Tests
     runs-on: ${{ matrix.os }} 
     strategy:
       fail-fast: false
-    matrix:
-      os: [macOS-latest, ubuntu-latest]
-      python-version: [3.10, 3.11, 3.12]
+      matrix:
+        os: [macOS-latest, ubuntu-latest]
+        python-version: [3.10, 3.11, 3.12]
 
     steps:
     - name: Check out repository
