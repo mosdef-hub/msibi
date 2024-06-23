@@ -123,6 +123,10 @@ class BaseTest:
         return dihedral 
 
     @pytest.fixture
+    def traj_file_path(self):
+        return os.path.join(test_assets, "AB-1.0kT.gsd")
+
+    @pytest.fixture
     def rdfAA(self):
         return self.get_rdf(0)
 

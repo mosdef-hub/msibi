@@ -5,6 +5,7 @@ import warnings
 
 import gsd.hoomd
 import hoomd
+import numpy as np
 
 from msibi.potentials import alpha_array
 
@@ -99,7 +100,7 @@ class State(object):
     def alpha0(self, value: float):
         self._alpha0 = value
 
-    def alpha(self, pot_x_range) -> Union[int, float]:
+    def alpha(self, pot_x_range=None) -> Union[int, float, np.ndarray]:
         """State point weighting value."""
         if self.alpha_form == "constant":
             return self.alpha0
