@@ -2,7 +2,7 @@ name: pytest
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
     paths:
       - msibi/**
       - environment-dev.yml
@@ -15,7 +15,7 @@ on:
       - .github/workflows/pytest.yml
   issue_comment:
     types: [created]
-    branches: [ main ]
+    branches: [ master ]
     paths:
       - msibi/**
       - environment-dev.yml
