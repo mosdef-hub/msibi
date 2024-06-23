@@ -349,7 +349,4 @@ def exponential_head_correction(r, V, cutoff):
 
 def alpha_array(alpha0, pot_r, form="linear"):
     """Generate an array of alpha values used for scaling in the IBI step. """
-    if form == "linear":
-        return alpha0 * (1.0 - pot_r / pot_r[-1])
-    else:
-        raise ValueError("Unsupported alpha form")
+    return alpha0 * (1.0 - pot_r / pot_r[-1])

@@ -21,10 +21,6 @@ def test_calc_alpha_array():
     assert alpha[0] == alpha0
     assert alpha[-1] == 0.0
 
-    form = "margaret-thatcher"
-    with pytest.raises(ValueError):
-        alpha = alpha_array(alpha0, r, form)
-
 
 def test_head_correction():
     dr = 0.05
