@@ -100,11 +100,25 @@ class State(object):
     def alpha0(self, value: float):
         self._alpha0 = value
 
-    def alpha(self, pot_x_range=None) -> Union[int, float, np.ndarray]:
-        """State point weighting value."""
+    def alpha(self, pot_x_range: np.ndarray=None) -> Union[float, np.ndarray]:
+        """State point weighting value.
+        
+        Parameters
+        ----------
+        pot_x_range : np.ndarray, optional, default = None
+            The x value range for the potential being optimized.
+            This is used to generate an array of alpha values, so
+            must be defined when msibi.State.alpha_form is "linear".
+        """
         if self.alpha_form == "constant":
             return self.alpha0
         else:
+            if pot_x_range is None:
+                raise ValueError(
+                        "A potential's x value range must be "
+                        "given when an msibi.State.state is using "
+                        "an alpha form that is not `constant`."
+                )
             return alpha_array(
                     alpha0=self.alpha0,
                     pot_r=pot_x_range,

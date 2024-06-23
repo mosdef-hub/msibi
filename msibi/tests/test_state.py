@@ -39,6 +39,19 @@ class TestState(BaseTest):
         assert alpha_array[1] != state.alpha0 
         assert alpha_array[0] == state.alpha0
 
+    def test_linear_alpha_form_no_pot(self, traj_file_path, tmp_path):
+        state = State(
+                name="X",
+                alpha0=1.0,
+                kT=1.0,
+                traj_file=traj_file_path,
+                n_frames=10,
+                alpha_form="linear",
+                _dir=tmp_path
+        )
+        with pytest.raises(ValueError):
+            state.alpha(pot_x_range=None)
+
     def test_bad_alpha_form(self, traj_file_path, tmp_path):
         with pytest.raises(ValueError):
             State(
