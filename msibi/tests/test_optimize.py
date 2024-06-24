@@ -135,9 +135,9 @@ class TestMSIBI(BaseTest):
         pair3.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
         msibi.add_force(pair3)
 
-        #dihedral = Dihedral(type1="A", type2="B", type3="A", type4="B", optimize=False)
-        #dihedral.set_harmonic(k=100, phi0=0, d=-1, n=1)
-        #msibi.add_force(dihedral)
+        dihedral = Dihedral(type1="B", type2="A", type3="B", type4="A", optimize=False)
+        dihedral.set_harmonic(k=100, phi0=0, d=-1, n=1)
+        msibi.add_force(dihedral)
 
         msibi.run_optimization(n_steps=500, n_iterations=1)
 
