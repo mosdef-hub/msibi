@@ -100,7 +100,7 @@ class State(object):
     def alpha0(self, value: float):
         self._alpha0 = value
 
-    def alpha(self, pot_x_range: np.ndarray=None) -> Union[float, np.ndarray]:
+    def alpha(self, pot_x_range: np.ndarray=None, dx: float=None) -> Union[float, np.ndarray]:
         """State point weighting value.
         
         Parameters
@@ -113,7 +113,7 @@ class State(object):
         if self.alpha_form == "constant":
             return self.alpha0
         else:
-            if pot_x_range is None:
+            if pot_x_range is None or dx is None:
                 raise ValueError(
                         "A potential's x value range must be "
                         "given when an msibi.State.state is using "
@@ -122,6 +122,7 @@ class State(object):
             return alpha_array(
                     alpha0=self.alpha0,
                     pot_r=pot_x_range,
+                    dr=dx,
                     form=self.alpha_form,
             )
 

@@ -33,11 +33,11 @@ class TestState(BaseTest):
                 alpha_form="linear",
                 _dir=tmp_path
         )
-        alpha_array = state.alpha(pot_x_range=np.arange(0, 2, 0.1) )
+        alpha_array = state.alpha(pot_x_range=np.arange(0.1, 2.1, 0.1),dx=0.1)
         assert len(alpha_array) == 20
-        assert alpha_array[-1] == 0
+        assert np.round(alpha_array[-1], 5) == 0
         assert alpha_array[1] != state.alpha0 
-        assert alpha_array[0] == state.alpha0
+        assert np.round(alpha_array[0], 5) == state.alpha0
 
     def test_linear_alpha_form_no_pot(self, traj_file_path, tmp_path):
         state = State(

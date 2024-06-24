@@ -612,7 +612,7 @@ class Force(object):
             self._states[state]["distribution_history"].append(current_dist)
             N = len(self._states)
             # TODO: Use potential setter here? Does it work with +=?
-            alpha_array = state.alpha(pot_x_range=self.x_range)
+            alpha_array = state.alpha(pot_x_range=self.x_range, dx=self.dx)
             self._potential += alpha_array * (
                     kT * np.log(current_dist[:, 1] / target_dist[:, 1]) / N
             )
