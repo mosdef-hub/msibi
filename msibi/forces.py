@@ -246,7 +246,6 @@ class Force(object):
         }
         np.savez(file_path, **state_data)
 
-
     def target_distribution(self, state: msibi.state.State) -> np.ndarray:
         """The target structural distribution corresponding to this foce.
 
@@ -523,7 +522,7 @@ class Force(object):
         self._states[state] = {
             "target_distribution": target_distribution,
             "current_distribution": None,
-            "alpha": state.alpha,
+            "alpha0": state.alpha0,
             "f_fit": [],
             "distribution_history": [],
             "path": state.dir
@@ -613,7 +612,8 @@ class Force(object):
             self._states[state]["distribution_history"].append(current_dist)
             N = len(self._states)
             # TODO: Use potential setter here? Does it work with +=?
-            self._potential += state.alpha * (
+            alpha_array = state.alpha(pot_x_range=self.x_range, dx=self.dx)
+            self._potential += alpha_array * (
                     kT * np.log(current_dist[:, 1] / target_dist[:, 1]) / N
             )
         # TODO: Add correction funcs to Force classes

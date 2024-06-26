@@ -29,7 +29,7 @@ class BaseTest:
     def stateX(self, tmp_path):
         state = State(
                 name="X",
-                alpha=1.0,
+                alpha0=1.0,
                 kT=1.0,
                 traj_file=os.path.join(test_assets, "AB-1.0kT.gsd"),
                 n_frames=10,
@@ -38,10 +38,23 @@ class BaseTest:
         return state 
 
     @pytest.fixture
+    def stateX_linear_alpha(self, tmp_path):
+        state = State(
+                name="X",
+                alpha0=1.0,
+                kT=1.0,
+                traj_file=os.path.join(test_assets, "AB-1.0kT.gsd"),
+                n_frames=10,
+                alpha_form="linear",
+                _dir=tmp_path
+        )
+        return state 
+
+    @pytest.fixture
     def stateY(self, tmp_path):
         state = State(
                 name="Y",
-                alpha=1.0,
+                alpha0=1.0,
                 kT=4.0,
                 traj_file=os.path.join(test_assets, "AB-4.0kT.gsd"),
                 n_frames=100,
@@ -121,6 +134,10 @@ class BaseTest:
                     nbins=100
         )
         return dihedral 
+
+    @pytest.fixture
+    def traj_file_path(self):
+        return os.path.join(test_assets, "AB-1.0kT.gsd")
 
     @pytest.fixture
     def rdfAA(self):

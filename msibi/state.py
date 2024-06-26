@@ -5,6 +5,9 @@ import warnings
 
 import gsd.hoomd
 import hoomd
+import numpy as np
+
+from msibi.potentials import alpha_array
 
 
 class State(object):
@@ -21,8 +24,12 @@ class State(object):
         The gsd trajectory associated with this state.
         This trajectory calcualtes the target distributions used
         during optimization.
-    alpha : (Union[float, int]), default 1.0
-        The alpha value used to scale the weight of this state.
+    alpha0 : (Union[float, int]), default 1.0
+        The base alpha value used to scale the weight of this state.
+    alpha_form: str, optional
+        Alpha can be a constant number that is applied to the potential at all
+        independent values (x), or it can be a linear function that approaches
+        zero as x approaches x_cut.
 
     Attributes
     ----------
@@ -32,8 +39,8 @@ class State(object):
         Unitless heat energy (product of Boltzmann's constant and temperature).
     traj_file : path
         Path to the gsd trajectory associated with this state.
-    alpha : float
-        The alpha value used to scaale the weight of this state.
+    alpha0 : float
+        The base alpha value used to scaale the weight of this state.
     dir : str
         Path to where the State info with be saved.
     query_traj : str
@@ -47,16 +54,22 @@ class State(object):
         kT: float,
         traj_file: str,
         n_frames: int,
-        alpha: float=1.0,
+        alpha0: float=1.0,
+        alpha_form: str = "constant",
         exclude_bonded: bool=True, #TODO: Do we use this here or in Force?
         _dir=None
     ):
+        if alpha_form.lower() not in ["constant", "linear"]:
+            raise ValueError(
+                    "The only supported alpha forms are `constant` and `linear`"
+            )
         self.name = name
         self.kT = kT
         self.traj_file = os.path.abspath(traj_file)
         self._n_frames = n_frames
         self._opt = None
-        self._alpha = float(alpha)
+        self._alpha0 = float(alpha0)
+        self.alpha_form = alpha_form
         self.dir = self._setup_dir(name, kT, dir_name=_dir)
         self.query_traj = os.path.join(self.dir, "query.gsd")
         self.exclude_bonded = exclude_bonded
@@ -66,7 +79,7 @@ class State(object):
                 f"{self.__class__}; "
                 + f"Name: {self.name}; "
                 + f"kT: {self.kT}; "
-                + f"Weight: {self.alpha}"
+                + f"Alpha0: {self.alpha0}"
         )
 
     @property
@@ -79,13 +92,39 @@ class State(object):
         self._n_frames = value
 
     @property
-    def alpha(self) -> Union[int, float]:
-        """State point weighting value."""
-        return self._alpha
+    def alpha0(self) -> Union[int, float]:
+        """State point base weighting value."""
+        return self._alpha0
 
-    @alpha.setter
-    def alpha(self, value: float):
-        self._alpha = value
+    @alpha0.setter
+    def alpha0(self, value: float):
+        self._alpha0 = value
+
+    def alpha(self, pot_x_range: np.ndarray=None, dx: float=None) -> Union[float, np.ndarray]:
+        """State point weighting value.
+        
+        Parameters
+        ----------
+        pot_x_range : np.ndarray, optional, default = None
+            The x value range for the potential being optimized.
+            This is used to generate an array of alpha values, so
+            must be defined when msibi.State.alpha_form is "linear".
+        """
+        if self.alpha_form == "constant":
+            return self.alpha0
+        else:
+            if pot_x_range is None or dx is None:
+                raise ValueError(
+                        "A potential's x value range must be "
+                        "given when an msibi.State.state is using "
+                        "an alpha form that is not `constant`."
+                )
+            return alpha_array(
+                    alpha0=self.alpha0,
+                    pot_r=pot_x_range,
+                    dr=dx,
+                    form=self.alpha_form,
+            )
 
     def _run_simulation(
             self,
