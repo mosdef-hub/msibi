@@ -20,6 +20,10 @@ Forces
    :members:
    :show-inheritance:
 
+.. autoclass:: msibi.forces.Pair
+   :members:
+   :show-inheritance:
+
 .. autoclass:: msibi.forces.Dihedral
    :members:
    :show-inheritance:
