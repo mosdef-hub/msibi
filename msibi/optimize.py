@@ -13,6 +13,15 @@ class MSIBI(object):
     """
     Management class for orchestrating an MSIBI optimization.
 
+    Notes
+    -----
+    This package is very object oriented. This class should be
+    created first, followed by at least one `msibi.state.State` 
+    instance and at least one `msibi.forces.Force` instance.
+
+    Then, use the methods `MSIBI.add_state()` and `MSIBI.add_force()` 
+    before beginning the optimization runs using `MSIBI.run_optimization()`.
+
     Parameters
     ----------
     nlist : hoomd.md.nlist.NeighborList, required
@@ -36,32 +45,6 @@ class MSIBI(object):
         Sets the pair exclusions used during the optimization simulations
     seed : int, optional, default 42
         Random seed to use during the simulation
-
-    Attributes
-    ----------
-    states : list of msibi.state.State
-        All states to be used in the optimization procedure.
-    pairs : list of msibi.pair.Pair
-        All pairs to be used in the optimization procedure.
-    bonds : list of msibi.bonds.Bond
-        All bonds to be used in the optimization procedure.
-    angles : list of msibi.bonds.Angle
-        All angles to be used in the optimization procedure.
-    dihedrals : list of msibi.bonds.Dihedral
-        All dihedrals to be used in the optimization procedure.
-
-    Methods
-    -------
-    add_state(msibi.state.state)
-        Add a state point to be included in optimizing forces.
-    add_force(msibi.forces.Force)
-        Add the required interaction objects. See forces.py
-    run_optimization(n_iterations, n_steps, backup_trajectories)
-        Performs iterations of query simulations and potential updates
-        resulting in a final optimized potential.
-    pickle_forces()
-        Saves a pickle file containing a list of Hoomd force objects
-        as they existed in the most recent optimization run.
 
     """
 
@@ -107,6 +90,11 @@ class MSIBI(object):
         ----------
         state : msibi.state.State, required
             Instance of msibi.state.State
+
+        Notes
+        -----
+        At least 1 state point must be added before optimization can occur.
+
         """
         #TODO: Do we need this?
         state._opt = self
@@ -214,8 +202,7 @@ class MSIBI(object):
         Notes
         -----
         Use this method as a convienent way to save and use the final
-        set of forces in your own Hoomd-Blue script, or with
-        flowerMD (https://github.com/cmelab/flowerMD).
+        set of forces in your own Hoomd-Blue script.
 
         """
         forces = self._build_force_objects()

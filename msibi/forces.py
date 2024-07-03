@@ -32,9 +32,15 @@ class Force(object):
     msibi.forces.Bond, msibi.forces.Angle, msibi.forces.Pair,
     and msibi.forces.Dihedral.
 
+    Notes
+    -----
     Forces in MSIBI can either be held constant (i.e. fixed) or
-    optimized (i.e. mutable). Only one type of of force
-    can be optimized at a time (i.e. angles, or pairs, etc..)
+    optimized (i.e. mutable).
+    Only one type of force can be optimized at a time.
+    For example, you can optimize multiple angle potentials
+    during one optimization run, but you cannot
+    optimize a bond and an angle potential in the same
+    optimization run.
 
     Parameters
     ----------
@@ -373,7 +379,7 @@ class Force(object):
         if file_path:
             plt.savefig(file_path)
 
-    def distribution_history(self, state: msibi.state.State):
+    def distribution_history(self, state: msibi.state.State) -> np.ndarray:
         """Get the complete query distribution history for a given state.
 
         Parameters
