@@ -17,7 +17,7 @@ import msibi
 from msibi.potentials import (
     bond_correction,
     lennard_jones,
-    quadratic_spring,
+    polynomial_potential,
     pair_correction
 )
 from msibi.utils.error_calculation import calc_similarity
@@ -28,7 +28,7 @@ from msibi.utils.sorting import natural_sort
 class Force(object):
     """
     Base class from which other forces inherit.
-    Don't call this class directly, instead use
+    Don't use this class directly, instead use
     msibi.forces.Bond, msibi.forces.Angle, msibi.forces.Pair,
     and msibi.forces.Dihedral.
 
@@ -39,7 +39,7 @@ class Force(object):
     Only one type of force can be optimized at a time.
     For example, you can optimize multiple angle potentials
     during one optimization run, but you cannot
-    optimize a bond and an angle potential in the same
+    optimize a pair and an angle potential in the same
     optimization run.
 
     Parameters
@@ -48,8 +48,8 @@ class Force(object):
         The name of the type in the Force.
         Must match the names found in the State's .gsd trajectory file.
     optimize : bool, required
-        Set to True if this force is to be mutable and optimized.
-        Set to False if this force is to be held constant while
+        Set to `True` if this force is to be mutable and optimized.
+        Set to `False` if this force is to be held constant while
         other forces are optimized.
     nbins : int, optional
         This must be a positive integer if this force is being optimized.
@@ -57,6 +57,11 @@ class Force(object):
         and step size (dx).
         It is also used in determining the bin size of the target and query
         distributions.
+        If this force is not being optimied, leave this as `None`.
+    correction_form: str, optional, default `linear`
+        The type of correciton to apply to the head
+        and tail of the force (only the head for msibi.forc.Pair).
+        Right now, only "linear" is supported.
 
     """
 
@@ -111,7 +116,7 @@ class Force(object):
             raise ValueError(
                 "Setting potential arrays can only be done "
                 "for Forces that utilize tables. "
-                "See msibi.forces.Force.set_quadratic() or "
+                "See msibi.forces.Force.set_polynomial() or "
                 "msibi.forces.Force.set_from_file()"
             )
         self._potential = array
@@ -428,7 +433,7 @@ class Force(object):
         """
         return self._calc_fit(state)
 
-    def set_quadratic(
+    def set_polynomial(
             self,
             k4: Union[float, int],
             k3: Union[float, int],
@@ -466,7 +471,13 @@ class Force(object):
             self.x_range = np.arange(x_min, x_max + self.dx/2, self.dx)
         else:
             self.x_range = np.arange(x_min, x_max + self.dx, self.dx)
-        self.potential = quadratic_spring(self.x_range, x0, k4, k3, k2)
+        self.potential = polynomial_potential(
+                self.x_range,
+                x0,
+                k4,
+                k3,
+                k2
+        )
         self.force_init = "Table"
         self.force_entry = self._table_entry()
 
@@ -704,7 +715,7 @@ class Bond(Force):
                 f"Force {self} is set to be optimized during MSIBI."
                 "This potential setter cannot be used "
                 "for a force designated for optimization. "
-                "Instead, use set_from_file() or set_quadratic()."
+                "Instead, use set_from_file() or set_polynomial()."
             )
         self.format = "static"
         self.force_init = "Harmonic"
@@ -819,7 +830,7 @@ class Angle(Force):
                 f"Force {self} is set to be optimized during MSIBI."
                 "This potential setter cannot be used "
                 "for a force designated for optimization. "
-                "Instead, use set_from_file() or set_quadratic()."
+                "Instead, use set_from_file() or set_polynomial()."
             )
         self.format = "static"
         self.force_init = "Harmonic"
@@ -1077,7 +1088,7 @@ class Dihedral(Force):
                 f"Force {self} is set to be optimized during MSIBI."
                 "This potential setter cannot be used "
                 "for a force designated for optimization. "
-                "Instead, use set_from_file() or set_quadratic()."
+                "Instead, use set_from_file() or set_polynomial()."
             )
         self.format = "static"
         self.force_init = "Periodic"

@@ -9,7 +9,7 @@ from .base_test import BaseTest
 
 class TestForce(BaseTest):
     def test_dx(self, bond):
-        bond.set_quadratic(
+        bond.set_polynomial(
                 x0=2,
                 k4=1,
                 k3=1,
@@ -20,7 +20,7 @@ class TestForce(BaseTest):
         assert bond.dx == 0.03
 
     def test_potential_setter(self, bond):
-        bond.set_quadratic(
+        bond.set_polynomial(
                 x0=2,
                 k4=0,
                 k3=0,
@@ -34,7 +34,7 @@ class TestForce(BaseTest):
         assert bond.format == "table"
 
     def test_smooth_potential(self, bond):
-        bond.set_quadratic(
+        bond.set_polynomial(
                 x0=2,
                 k4=0,
                 k3=0,
@@ -52,7 +52,7 @@ class TestForce(BaseTest):
 
     def test_set_from_file(self):
         bond = Bond(type1="A", type2="B", optimize=True, nbins=60)
-        bond.set_quadratic(x_min=0.0, x_max=3.0, x0=1, k2=200, k3=0, k4=0)
+        bond.set_polynomial(x_min=0.0, x_max=3.0, x0=1, k2=200, k3=0, k4=0)
         bond.save_potential("test.csv")
         bond2 = Bond(type1="A", type2="B", optimize=True, nbins=60)
         bond2.set_from_file("test.csv")
@@ -62,7 +62,7 @@ class TestForce(BaseTest):
     def test_fit_scores(self, msibi, stateX, stateY):
         msibi.gsd_period = 10
         bond = Bond(type1="A", type2="B", optimize=True, nbins=60)
-        bond.set_quadratic(x_min=0.0, x_max=3.0, x0=1, k2=200, k3=0, k4=0)
+        bond.set_polynomial(x_min=0.0, x_max=3.0, x0=1, k2=200, k3=0, k4=0)
         angle = Angle(type1="A", type2="B", type3="A", optimize=False)
         angle.set_harmonic(k=500, t0=2)
         angle2 = Angle(type1="B", type2="A", type3="B", optimize=False)
@@ -101,7 +101,7 @@ class TestForce(BaseTest):
 
     def test_plot_target_dist(self, stateX):
         angle = Angle(type1="A", type2="B", type3="A", optimize=True, nbins=60)
-        angle.set_quadratic(x0=2, k4=0, k3=0, k2=100, x_min=0, x_max=np.pi)
+        angle.set_polynomial(x0=2, k4=0, k3=0, k2=100, x_min=0, x_max=np.pi)
         angle._add_state(stateX)
         angle.plot_target_distribution(state=stateX)
 
@@ -146,8 +146,8 @@ class TestBond(BaseTest):
         assert bond.force_entry["k"] == 500
         assert bond.force_entry["r0"] == 2 
 
-    def test_set_quadratic(self, bond):
-        bond.set_quadratic(
+    def test_set_polynomial(self, bond):
+        bond.set_polynomial(
                 x0=1.5,
                 k4=0,
                 k3=0,
@@ -161,7 +161,7 @@ class TestBond(BaseTest):
         assert np.around(bond.x_range[-1], 1) == 3.0
 
     def test_save_table_potential(self, tmp_path, bond):
-        bond.set_quadratic(
+        bond.set_polynomial(
                 x0=2,
                 k4=1,
                 k3=1,
@@ -185,8 +185,8 @@ class TestAngle(BaseTest):
         assert angle.force_entry["t0"] == 2
         assert angle.force_entry["k"] == 500 
 
-    def test_set_quadratic(self, angle):
-        angle.set_quadratic(
+    def test_set_polynomial(self, angle):
+        angle.set_polynomial(
                 x0=2,
                 k4=0,
                 k3=0,
@@ -200,7 +200,7 @@ class TestAngle(BaseTest):
         assert np.allclose(angle.x_range[-1], np.pi, atol=1e-3)
 
     def test_save_angle_potential(self, tmp_path, angle):
-        angle.set_quadratic(
+        angle.set_polynomial(
                 x0=2,
                 k4=0,
                 k3=0,
@@ -258,8 +258,8 @@ class TestDihedral(BaseTest):
         assert dihedral.force_entry["d"] == -1 
         assert dihedral.force_entry["n"] == 1 
 
-    def test_set_dihedral_quadratic(self, dihedral):
-        dihedral.set_quadratic(
+    def test_set_dihedral_polynomail(self, dihedral):
+        dihedral.set_polynomial(
                 x0=0,
                 k4=0,
                 k3=0,
@@ -273,7 +273,7 @@ class TestDihedral(BaseTest):
         assert np.allclose(dihedral.x_range[-1], np.pi, atol=1e-3)
 
     def test_save_angle_potential(self, tmp_path, dihedral):
-        dihedral.set_quadratic(
+        dihedral.set_polynomial(
                 x0=0,
                 k4=0,
                 k3=0,

@@ -3,18 +3,25 @@ from math import factorial
 import numpy as np
 
 
-def savitzky_golay(y, window_size, order, deriv=0, rate=1):
-    """Smoothing filter used on distributions and potentials
+def savitzky_golay(
+        y: np.ndarray,
+        window_size: int,
+        order: int,
+        deriv: int=0,
+        rate: int=1
+) -> np.ndarray:
+    """Smoothing filter used on distributions and potentials.
 
     Parameters
     ----------
     y: 1D array-like, required
-        The data sequence to be smoothed
+        The data sequence to be smoothed.
     window_size : int, required
-        The size of the smoothing window to use; must be an odd number
+        The size of the smoothing window to use; must be an odd number.
     order: int, required
-        The polynomial order used by the smoothing filter
-    deriv:
+        The polynomial order used by the smoothing filter.
+    deriv: int, optional, defualt 0
+        The order of the derivative to compute.
     rate:
 
     Returns

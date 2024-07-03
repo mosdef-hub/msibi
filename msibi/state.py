@@ -21,30 +21,22 @@ class State(object):
     kT : (Union[float, int])
         Unitless heat energy (product of Boltzmann's constant and temperature).
     traj_file : path to a gsd.hoomd file
-        The gsd trajectory associated with this state.
+        The target gsd trajectory associated with this state.
         This trajectory calcualtes the target distributions used
         during optimization.
+    n_frames : int, required
+        The number of frames to use when calculating distributions.
+        When calculating distributions, the last `n_frames` of the
+        trajectory will be used.
     alpha0 : (Union[float, int]), default 1.0
         The base alpha value used to scale the weight of this state.
-    alpha_form: str, optional
+    alpha_form: str, optional, default 'constant'
         Alpha can be a constant number that is applied to the potential at all
         independent values (x), or it can be a linear function that approaches
         zero as x approaches x_cut.
-
-    Attributes
-    ----------
-    name : str
-        State name
-    kT : float
-        Unitless heat energy (product of Boltzmann's constant and temperature).
-    traj_file : path
-        Path to the gsd trajectory associated with this state.
-    alpha0 : float
-        The base alpha value used to scaale the weight of this state.
-    dir : str
-        Path to where the State info with be saved.
-    query_traj : str
-        Path to the query trajectory that is created during each iteration.
+    exclude_bonded: bool, optional, default `False`
+        If `True` then any beads that belong to the same molecle
+        are not included in radial distribution funciton calculations.
 
     """
 
@@ -56,7 +48,7 @@ class State(object):
         n_frames: int,
         alpha0: float=1.0,
         alpha_form: str = "constant",
-        exclude_bonded: bool=True, #TODO: Do we use this here or in Force?
+        exclude_bonded: bool=False, #TODO: Do we use this here or in Force?
         _dir=None
     ):
         if alpha_form.lower() not in ["constant", "linear"]:
@@ -89,6 +81,7 @@ class State(object):
 
     @n_frames.setter
     def n_frames(self, value: int):
+        """Set the number of frames to use for calculating distributions."""
         self._n_frames = value
 
     @property
@@ -98,6 +91,7 @@ class State(object):
 
     @alpha0.setter
     def alpha0(self, value: float):
+        """Set the value of alpha0 for this state."""
         self._alpha0 = value
 
     def alpha(self, pot_x_range: np.ndarray=None, dx: float=None) -> Union[float, np.ndarray]:
@@ -141,7 +135,7 @@ class State(object):
             backup_trajectories: bool=False
     ) -> None:
         """Run the hoomd 4 script used to run each query simulation.
-        This method is called in msibi.optimize.
+        This method is called in msibi.optimize().
 
         """
         device = hoomd.device.auto_select()
