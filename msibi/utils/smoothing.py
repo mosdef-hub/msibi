@@ -43,7 +43,7 @@ def savitzky_golay(
             for k in range(-half_window, half_window + 1)
         ]
     )
-    m = np.linalg.pinv(b).A[deriv] ** deriv * factorial(deriv)
+    m = np.linalg.pinv(b).A[deriv] * 1**deriv * factorial(deriv)
     firstvals = y[0] - np.abs(y[1 : half_window + 1][::-1] - y[0])
     lastvals = y[-1] + np.abs(y[-half_window - 1 : -1][::-1] - y[-1])
     y = np.concatenate((firstvals, y, lastvals))

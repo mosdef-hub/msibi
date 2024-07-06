@@ -531,7 +531,6 @@ class Force(object):
                     window_size=self.smoothing_window,
                     order=self.smoothing_order,
                     deriv=0,
-                    rate=1,
                 )
 
         else:
@@ -561,7 +560,6 @@ class Force(object):
                 window_size=self.smoothing_window,
                 order=self.smoothing_order,
                 deriv=0,
-                rate=1,
             )
             negative_idx = np.where(distribution[:, 1] < 0)[0]
             distribution[:, 1][negative_idx] = 0
