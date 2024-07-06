@@ -7,12 +7,12 @@ from scipy.optimize import curve_fit
 from msibi.utils.general import find_nearest
 
 
-def quadratic_spring(x, x0, k4, k3, k2):
-    """Creates a quadratic spring-like potential with the following form
+def polynomial_potential(x, x0, k4, k3, k2):
+    """Creates a polynomial potential with the following form
 
         V(x) = k4(x-x0)^4 + k3(x-x0)^3 + k2(x-x0)^2
 
-    Used in creating table potentials for bonded potentials.
+    Can be used in creating table potentials.
 
     """
     V_x = k4 * ((x - x0) ** 4) + k3 * ((x - x0) ** 3) + k2 * ((x - x0) ** 2)
@@ -20,13 +20,17 @@ def quadratic_spring(x, x0, k4, k3, k2):
 
 
 def mie(r, epsilon, sigma, m, n):
-    """The Mie potential functional form"""
+    """The Mie potential functional form.
+
+    Can be used for creating table Mie potentials.
+    """
     prefactor = (m / (m - n)) * (m / n) ** (n / (m - n))
     V_r = prefactor * epsilon * ((sigma / r) ** m - (sigma / r) ** n)
     return V_r
 
 
 def lennard_jones(r, epsilon, sigma):
+    """Create an LJ 12-6 table potential."""
     return mie(r=r, epsilon=epsilon, sigma=sigma, m=12, n=6)
 
 
@@ -79,9 +83,6 @@ def bond_correction(r, V, form):
     if form == "linear":
         head_correction_function = linear_head_correction
         tail_correction_function = linear_tail_correction
-    elif form == "linear_optimized":
-        head_correction_function = linear_head_correction_optimized
-        tail_correction_function = linear_tail_correction_optimized
     elif form == "exponential":
         head_correction_function = exponential_head_correction
         tail_correction_function = exponential_tail_correction
@@ -141,9 +142,9 @@ def pair_tail_correction(r, V, r_switch):
     S_r = np.ones_like(r)
     r = r[idx_r_switch:]
     S_r[idx_r_switch:] = (
-            (r_cut ** 2 - r ** 2) ** 2
-            * (r_cut ** 2 + 2 * r ** 2 - 3 * r_switch ** 2)
-            / (r_cut ** 2 - r_switch ** 2) ** 3
+        (r_cut**2 - r**2) ** 2
+        * (r_cut**2 + 2 * r**2 - 3 * r_switch**2)
+        / (r_cut**2 - r_switch**2) ** 3
     )
     return V * S_r
 
@@ -201,30 +202,6 @@ def pair_head_correction(r, V, previous_V=None, form="linear"):
 def linear_tail_correction(r, V, cutoff, window=6):
     """Use a linear function to smoothly force V to a finite value at V(cut).
 
-    Parameters
-    ----------
-    r : np.ndarray
-        Separation values
-    V : np.ndarray
-        Potential at each of the separation values
-    cutoff : int
-        The last real value of V when iterating backwards
-    window : int
-        Number of data points backward from cutoff to use in slope calculation
-
-    """
-    slope = (
-                    V[cutoff - 1] - V[cutoff - window]
-            ) / (r[cutoff - 1] - r[cutoff - window])
-    if slope < 0:
-        slope = -slope
-    V[cutoff:] = slope * (r[cutoff:] - r[cutoff - 1]) + V[cutoff - 1]
-    return V
-
-
-def linear_tail_correction_optimized(r, V, cutoff, window=6):
-    """Use a linear function to smoothly force V to a finite value at V(cut).
-
     This function uses scipy.optimize.curve_fit to find the slope and intercept
     of the linear function that is used to correct the tail of the potential.
 
@@ -244,35 +221,14 @@ def linear_tail_correction_optimized(r, V, cutoff, window=6):
     def linear(x, m, b):
         return m * x + b
 
-    popt, pcov = curve_fit(linear, r[cutoff - window:cutoff], V[cutoff - window:cutoff])
+    popt, pcov = curve_fit(
+        linear, r[cutoff - window : cutoff], V[cutoff - window : cutoff]
+    )
     V[cutoff:] = linear(r[cutoff:], *popt)
     return V
 
 
 def linear_head_correction(r, V, cutoff, window=6):
-    """Use a linear function to smoothly force V to a finite value at V(0).
-    Parameters
-    ----------
-    r : np.ndarray
-        Separation values
-    V : np.ndarray
-        Potential at each of the separation values
-    cutoff : int
-        The first real value of V when iterating forwards
-    window : int
-        Number of data points forward from cutoff to use in slope calculation
-
-    """
-    slope = (
-                    V[cutoff + 1] - V[cutoff + window]
-            ) / (r[cutoff + 1] - r[cutoff + window])
-    if slope > 0:
-        slope = -slope
-    V[: cutoff + 1] = slope * (r[: cutoff + 1] - r[cutoff + 1]) + V[cutoff + 1]
-    return V
-
-
-def linear_head_correction_optimized(r, V, cutoff, window=6):
     """Use a linear function to smoothly force V to a finite value at V(0).
 
     This function uses scipy.optimize.curve_fit to find the slope and intercept
@@ -293,8 +249,10 @@ def linear_head_correction_optimized(r, V, cutoff, window=6):
     def linear(x, m, b):
         return m * x + b
 
-    popt, pcov = curve_fit(linear, r[cutoff + 1:cutoff + window], V[cutoff + 1:cutoff + window])
-    V[:cutoff + 1] = linear(r[:cutoff + 1], *popt)
+    popt, pcov = curve_fit(
+        linear, r[cutoff + 1 : cutoff + window], V[cutoff + 1 : cutoff + window]
+    )
+    V[: cutoff + 1] = linear(r[: cutoff + 1], *popt)
     return V
 
 
@@ -314,9 +272,10 @@ def exponential_tail_correction(r, V, cutoff):
     V(r) = A*exp(Br)
 
     """
-    raise RuntimeError("Exponential tail corrections are not implemented."
-                       "Use the linear correction form when optimizing bonds and angles."
-                       )
+    raise RuntimeError(
+        "Exponential tail corrections are not implemented."
+        "Use the linear correction form when optimizing bonds and angles."
+    )
     dr = r[cutoff - 1] - r[cutoff - 2]
     B = np.log(V[cutoff - 1] / V[cutoff - 2]) / dr
     A = V[cutoff - 1] * np.exp(B * r[cutoff - 1])
@@ -343,10 +302,10 @@ def exponential_head_correction(r, V, cutoff):
     dr = r[cutoff + 2] - r[cutoff + 1]
     B = np.log(V[cutoff + 1] / V[cutoff + 2]) / dr
     A = V[cutoff + 1] * np.exp(B * r[cutoff + 1])
-    V[:cutoff + 1] = A * np.exp(-B * r[:cutoff + 1])
+    V[: cutoff + 1] = A * np.exp(-B * r[: cutoff + 1])
     return V
 
 
 def alpha_array(alpha0, pot_r, dr, form="linear"):
-    """Generate an array of alpha values used for scaling in the IBI step. """
+    """Generate an array of alpha values used for scaling in the IBI step."""
     return alpha0 * (1.0 - (pot_r - dr) / (pot_r[-1] - dr))

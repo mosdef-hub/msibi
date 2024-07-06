@@ -1,24 +1,23 @@
-import math
 import os
-from typing import Union
 import warnings
+from typing import Union
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 from cmeutils.structure import (
     angle_distribution,
     bond_distribution,
     dihedral_distribution,
-    gsd_rdf
+    gsd_rdf,
 )
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 
 import msibi
 from msibi.potentials import (
     bond_correction,
     lennard_jones,
-    quadratic_spring,
-    pair_correction
+    pair_correction,
+    polynomial_potential,
 )
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.smoothing import savitzky_golay
@@ -28,13 +27,19 @@ from msibi.utils.sorting import natural_sort
 class Force(object):
     """
     Base class from which other forces inherit.
-    Don't call this class directly, instead use
+    Don't use this class directly, instead use
     msibi.forces.Bond, msibi.forces.Angle, msibi.forces.Pair,
     and msibi.forces.Dihedral.
 
+    Notes
+    -----
     Forces in MSIBI can either be held constant (i.e. fixed) or
-    optimized (i.e. mutable). Only one type of of force
-    can be optimized at a time (i.e. angles, or pairs, etc..)
+    optimized (i.e. mutable).
+    Only one type of force can be optimized at a time.
+    For example, you can optimize multiple angle potentials
+    during one optimization run, but you cannot
+    optimize a pair and an angle potential in the same
+    optimization run.
 
     Parameters
     ----------
@@ -42,8 +47,8 @@ class Force(object):
         The name of the type in the Force.
         Must match the names found in the State's .gsd trajectory file.
     optimize : bool, required
-        Set to True if this force is to be mutable and optimized.
-        Set to False if this force is to be held constant while
+        Set to `True` if this force is to be mutable and optimized.
+        Set to `False` if this force is to be held constant while
         other forces are optimized.
     nbins : int, optional
         This must be a positive integer if this force is being optimized.
@@ -51,17 +56,22 @@ class Force(object):
         and step size (dx).
         It is also used in determining the bin size of the target and query
         distributions.
+        If this force is not being optimied, leave this as `None`.
+    correction_form: str, optional, default `linear`
+        The type of correciton to apply to the head
+        and tail of the force (only the head for msibi.forc.Pair).
+        Right now, only "linear" is supported.
 
     """
 
     def __init__(
-            self,
-            name: str,
-            optimize: bool,
-            nbins: int = None,
-            correction_form: str = "linear"
+        self,
+        name: str,
+        optimize: bool,
+        nbins: int = None,
+        correction_form: str = "linear",
     ):
-        if optimize and nbins is None or nbins and nbins<=0:
+        if optimize and nbins is None or nbins and nbins <= 0:
             raise ValueError(
                 "If a force is set to be optimized, nbins must be "
                 "a positive, non-zero integer."
@@ -86,9 +96,9 @@ class Force(object):
 
     def __repr__(self):
         return (
-                f"Type: {self.__class__}; "
-                + f"Name: {self.name}; "
-                + f"Optimize: {self.optimize}"
+            f"Type: {self.__class__}; "
+            + f"Name: {self.name}; "
+            + f"Optimize: {self.optimize}"
         )
 
     @property
@@ -105,7 +115,7 @@ class Force(object):
             raise ValueError(
                 "Setting potential arrays can only be done "
                 "for Forces that utilize tables. "
-                "See msibi.forces.Force.set_quadratic() or "
+                "See msibi.forces.Force.set_polynomial() or "
                 "msibi.forces.Force.set_from_file()"
             )
         self._potential = array
@@ -203,11 +213,13 @@ class Force(object):
                 "This force is not a table potential and "
                 "cannot be saved to a .txt file."
             )
-        df = pd.DataFrame({
-            "x": self.x_range,
-            "potential": self.potential,
-            "force": self.force
-        })
+        df = pd.DataFrame(
+            {
+                "x": self.x_range,
+                "potential": self.potential,
+                "force": self.force,
+            }
+        )
         df.to_csv(file_path, index=False)
 
     def save_potential_history(self, file_path: str) -> None:
@@ -241,8 +253,10 @@ class Force(object):
         state_data = {
             "target_distribution": state_dict["target_distribution"],
             "current_distribution": state_dict["current_distribution"],
-            "distribution_history": np.asarray(state_dict["distribution_history"]),
-            "f_fit": np.asarray(state_dict["f_fit"])
+            "distribution_history": np.asarray(
+                state_dict["distribution_history"]
+            ),
+            "f_fit": np.asarray(state_dict["f_fit"]),
         }
         np.savez(file_path, **state_data)
 
@@ -257,7 +271,9 @@ class Force(object):
         """
         return self._states[state]["target_distribution"]
 
-    def plot_target_distribution(self, state: msibi.state.State, file_path=None) -> None:
+    def plot_target_distribution(
+        self, state: msibi.state.State, file_path=None
+    ) -> None:
         """
         Quick plotting function that shows the target structural
         distribution corresponding to the forces.
@@ -283,7 +299,6 @@ class Force(object):
                 "The target distribution is not calculated."
             )
         target = self.target_distribution(state)
-        fig = plt.figure()
         plt.title(f"State {state.name}: {self.name} Target")
         plt.ylabel("P(x)")
         plt.xlabel("x")
@@ -292,7 +307,7 @@ class Force(object):
             y_smoothed = savitzky_golay(
                 target[:, 1],
                 window_size=self.smoothing_window,
-                order=self.smoothing_order
+                order=self.smoothing_order,
             )
             plt.plot(target[:, 0], y_smoothed, label="Smoothed")
             plt.legend()
@@ -309,10 +324,9 @@ class Force(object):
         file_path : str, optional
             If given, the plot will be saved to this location.
 
-       """
+        """
         if not self.optimize:
             raise RuntimeError("This force object is not set to be optimized.")
-        fig = plt.figure()
         plt.plot(self._states[state]["f_fit"], "o-")
         plt.xlabel("Iteration")
         plt.ylabel("Fit Score")
@@ -320,7 +334,9 @@ class Force(object):
         if file_path:
             plt.savefig(file_path)
 
-    def plot_potentials(self, file_path=None, xlim=(1, 2), ylim=(-10, 40)) -> None:
+    def plot_potentials(
+        self, file_path=None, xlim=(1, 2), ylim=(-10, 40)
+    ) -> None:
         """Plots the optimized potential energy.
 
         Parameters
@@ -338,7 +354,9 @@ class Force(object):
         if file_path:
             plt.savefig(file_path)
 
-    def plot_potential_history(self, file_path=None, xlim=(1, 2), ylim=(-10, 40)) -> None:
+    def plot_potential_history(
+        self, file_path=None, xlim=(1, 2), ylim=(-10, 40)
+    ) -> None:
         """Plots the history of the optimized potential energy.
 
         Parameters
@@ -357,9 +375,11 @@ class Force(object):
         plt.ylabel("Potential")
         plt.title(f"{self.name} Potential History")
         if file_path:
-            plt.savefig(file_path, bbox_inches='tight')
+            plt.savefig(file_path, bbox_inches="tight")
 
-    def plot_distribution_comparison(self, state: msibi.state.State, file_path=None):
+    def plot_distribution_comparison(
+        self, state: msibi.state.State, file_path=None
+    ):
         final_dist = self.distribution_history(state=state)[-1]
         target_dist = self.target_distribution(state=state)
 
@@ -373,7 +393,7 @@ class Force(object):
         if file_path:
             plt.savefig(file_path)
 
-    def distribution_history(self, state: msibi.state.State):
+    def distribution_history(self, state: msibi.state.State) -> np.ndarray:
         """Get the complete query distribution history for a given state.
 
         Parameters
@@ -396,9 +416,7 @@ class Force(object):
         self._states[state]["target_distribution"] = array
 
     def current_distribution(
-            self,
-            state: msibi.state.State,
-            query: bool = True
+        self, state: msibi.state.State, query: bool = True
     ) -> np.ndarray:
         """Returns the corresponding distrubution from the most recent
         query simulation.
@@ -422,18 +440,18 @@ class Force(object):
         """
         return self._calc_fit(state)
 
-    def set_quadratic(
-            self,
-            k4: Union[float, int],
-            k3: Union[float, int],
-            k2: Union[float, int],
-            x0: Union[float, int],
-            x_min: Union[float, int],
-            x_max: Union[float, int]
+    def set_polynomial(
+        self,
+        k4: Union[float, int],
+        k3: Union[float, int],
+        k2: Union[float, int],
+        x0: Union[float, int],
+        x_min: Union[float, int],
+        x_max: Union[float, int],
     ) -> None:
         """Set a potential based on the following function:
 
-            V(x) = k4(x-x0)^4 + k3(x-x0)^3 + k2(x-x0)^2
+            :math:`V(x) = k4(x-x_{0})^{4} + k3(x-x_{0})^{3} + k2(x-x_{0})^{2}`
 
         Using this method will create a table potential V(x) over the range
         x_min - x_max.
@@ -457,10 +475,10 @@ class Force(object):
         self.dx = x_max / self.nbins
         if isinstance(self, msibi.forces.Dihedral):
             self.dx *= 2
-            self.x_range = np.arange(x_min, x_max + self.dx/2, self.dx)
+            self.x_range = np.arange(x_min, x_max + self.dx / 2, self.dx)
         else:
             self.x_range = np.arange(x_min, x_max + self.dx, self.dx)
-        self.potential = quadratic_spring(self.x_range, x0, k4, k3, k2)
+        self.potential = polynomial_potential(self.x_range, x0, k4, k3, k2)
         self.force_init = "Table"
         self.force_entry = self._table_entry()
 
@@ -494,7 +512,6 @@ class Force(object):
         self.x_max = self.x_range[-1] + self.dx
         self.force_init = "Table"
 
-
     def _add_state(self, state):
         """Add a state to be used in optimizing this Fond.
 
@@ -514,7 +531,6 @@ class Force(object):
                     window_size=self.smoothing_window,
                     order=self.smoothing_order,
                     deriv=0,
-                    rate=1
                 )
 
         else:
@@ -525,7 +541,7 @@ class Force(object):
             "alpha0": state.alpha0,
             "f_fit": [],
             "distribution_history": [],
-            "path": state.dir
+            "path": state.dir,
         }
 
     def _compute_current_distribution(self, state: msibi.state.State) -> None:
@@ -544,22 +560,18 @@ class Force(object):
                 window_size=self.smoothing_window,
                 order=self.smoothing_order,
                 deriv=0,
-                rate=1
             )
             negative_idx = np.where(distribution[:, 1] < 0)[0]
             distribution[:, 1][negative_idx] = 0
         self._states[state]["current_distribution"] = distribution
 
         f_fit = calc_similarity(
-            distribution[:, 1],
-            self._states[state]["target_distribution"][:, 1]
+            distribution[:, 1], self._states[state]["target_distribution"][:, 1]
         )
         self._states[state]["f_fit"].append(f_fit)
 
     def _get_state_distribution(
-            self,
-            state: msibi.state.State,
-            query: bool
+        self, state: msibi.state.State, query: bool
     ) -> np.ndarray:
         """Get the corresponding distrubiton for a given state.
 
@@ -579,9 +591,7 @@ class Force(object):
         return self._get_distribution(state=state, gsd_file=traj)
 
     def _save_current_distribution(
-            self,
-            state: msibi.state.State,
-            iteration: int
+        self, state: msibi.state.State, iteration: int
     ) -> None:
         """Save the corresponding distrubiton for a given state to a file.
 
@@ -614,7 +624,7 @@ class Force(object):
             # TODO: Use potential setter here? Does it work with +=?
             alpha_array = state.alpha(pot_x_range=self.x_range, dx=self.dx)
             self._potential += alpha_array * (
-                    kT * np.log(current_dist[:, 1] / target_dist[:, 1]) / N
+                kT * np.log(current_dist[:, 1] / target_dist[:, 1]) / N
             )
         # TODO: Add correction funcs to Force classes
         # TODO: Smoothing potential before doing head and tail corrections?
@@ -622,7 +632,9 @@ class Force(object):
             self.x_range, self.potential, self.correction_form
         )
         self.potential_history.append(np.copy(self.potential))
-        self._head_correction_history.append(np.copy(self.potential[0:head_cut]))
+        self._head_correction_history.append(
+            np.copy(self.potential[0:head_cut])
+        )
         self._tail_correction_history.append(np.copy(self.potential[tail_cut:]))
         self._learned_potential_history.append(np.copy(self.potential[real]))
 
@@ -661,23 +673,21 @@ class Bond(Force):
     """
 
     def __init__(
-            self,
-            type1: str,
-            type2: str,
-            optimize: bool,
-            nbins: int = None,
-            correction_form: str = "linear"
+        self,
+        type1: str,
+        type2: str,
+        optimize: bool,
+        nbins: int = None,
+        correction_form: str = "linear",
     ):
-        self.type1, self.type2 = sorted(
-            [type1, type2], key=natural_sort
-        )
+        self.type1, self.type2 = sorted([type1, type2], key=natural_sort)
         self._correction_function = bond_correction
         name = f"{self.type1}-{self.type2}"
         super(Bond, self).__init__(
             name=name,
             optimize=optimize,
             nbins=nbins,
-            correction_form=correction_form
+            correction_form=correction_form,
         )
 
     def set_harmonic(self, r0: Union[float, int], k: Union[float, int]) -> None:
@@ -698,7 +708,7 @@ class Bond(Force):
                 f"Force {self} is set to be optimized during MSIBI."
                 "This potential setter cannot be used "
                 "for a force designated for optimization. "
-                "Instead, use set_from_file() or set_quadratic()."
+                "Instead, use set_from_file() or set_polynomial()."
             )
         self.format = "static"
         self.force_init = "Harmonic"
@@ -709,14 +719,12 @@ class Bond(Force):
             "r_min": self.x_min,
             "r_max": self.x_max,
             "U": self.potential,
-            "F": self.force
+            "F": self.force,
         }
         return table_entry
 
     def _get_distribution(
-            self,
-            state: msibi.state.State,
-            gsd_file: str
+        self, state: msibi.state.State, gsd_file: str
     ) -> np.ndarray:
         """Calculate a bond length distribution.
 
@@ -737,7 +745,7 @@ class Bond(Force):
             normalize=True,
             l_min=self.x_min,
             l_max=self.x_max,
-            bins=self.nbins + 1
+            bins=self.nbins + 1,
         )
 
 
@@ -775,13 +783,13 @@ class Angle(Force):
     """
 
     def __init__(
-            self,
-            type1: str,
-            type2: str,
-            type3: str,
-            optimize: bool,
-            nbins: int = None,
-            correction_form: str = "linear"
+        self,
+        type1: str,
+        type2: str,
+        type3: str,
+        optimize: bool,
+        nbins: int = None,
+        correction_form: str = "linear",
     ):
         self.type1 = type1
         self.type2 = type2
@@ -792,7 +800,7 @@ class Angle(Force):
             name=name,
             optimize=optimize,
             nbins=nbins,
-            correction_form=correction_form
+            correction_form=correction_form,
         )
 
     def set_harmonic(self, t0: Union[float, int], k: Union[float, int]) -> None:
@@ -813,7 +821,7 @@ class Angle(Force):
                 f"Force {self} is set to be optimized during MSIBI."
                 "This potential setter cannot be used "
                 "for a force designated for optimization. "
-                "Instead, use set_from_file() or set_quadratic()."
+                "Instead, use set_from_file() or set_polynomial()."
             )
         self.format = "static"
         self.force_init = "Harmonic"
@@ -824,9 +832,7 @@ class Angle(Force):
         return table_entry
 
     def _get_distribution(
-            self,
-            state: msibi.state.State,
-            gsd_file: str
+        self, state: msibi.state.State, gsd_file: str
     ) -> np.ndarray:
         """Calculate a bond angle distribution.
 
@@ -848,7 +854,7 @@ class Angle(Force):
             normalize=True,
             theta_min=self.x_min,
             theta_max=self.x_max,
-            bins=self.nbins + 1
+            bins=self.nbins + 1,
         )
 
 
@@ -892,14 +898,14 @@ class Pair(Force):
     """
 
     def __init__(
-            self,
-            type1: str,
-            type2: str,
-            optimize: bool,
-            r_cut: Union[float, int],
-            nbins: int = None,
-            exclude_bonded: bool = False,
-            correction_form: str = "linear"
+        self,
+        type1: str,
+        type2: str,
+        optimize: bool,
+        r_cut: Union[float, int],
+        nbins: int = None,
+        exclude_bonded: bool = False,
+        correction_form: str = "linear",
     ):
         self._correction_function = pair_correction
         self.type1, self.type2 = sorted([type1, type2], key=natural_sort)
@@ -911,15 +917,15 @@ class Pair(Force):
             name=name,
             optimize=optimize,
             nbins=nbins,
-            correction_form=correction_form
+            correction_form=correction_form,
         )
 
     def set_lj(
-            self,
-            r_min: Union[float, int],
-            r_cut: Union[float, int],
-            epsilon: Union[float, int],
-            sigma: Union[float, int],
+        self,
+        r_min: Union[float, int],
+        r_cut: Union[float, int],
+        epsilon: Union[float, int],
+        sigma: Union[float, int],
     ) -> None:
         """Set a hoomd 12-6 LJ pair potential used during
         the query simulations.
@@ -940,9 +946,7 @@ class Pair(Force):
         self.x_min = self.x_range[0]
         self.r_cut = self.x_range[-1]
         self.potential = lennard_jones(
-            r=self.x_range,
-            epsilon=epsilon,
-            sigma=sigma
+            r=self.x_range, epsilon=epsilon, sigma=sigma
         )
         self.force_init = "Table"
 
@@ -955,9 +959,7 @@ class Pair(Force):
         return table_entry
 
     def _get_distribution(
-            self,
-            state: msibi.state.State,
-            gsd_file: str
+        self, state: msibi.state.State, gsd_file: str
     ) -> np.ndarray:
         """Calculate a pair distribution.
 
@@ -978,7 +980,7 @@ class Pair(Force):
             exclude_bonded=state.exclude_bonded,
             start=-state.n_frames,
             stop=-1,
-            bins=self.nbins + 1
+            bins=self.nbins + 1,
         )
         x = rdf.bin_centers
         y = rdf.rdf * N
@@ -1023,14 +1025,14 @@ class Dihedral(Force):
     """
 
     def __init__(
-            self,
-            type1: str,
-            type2: str,
-            type3: str,
-            type4: str,
-            optimize: bool,
-            nbins: int = None,
-            correction_form: str = "linear"
+        self,
+        type1: str,
+        type2: str,
+        type3: str,
+        type4: str,
+        optimize: bool,
+        nbins: int = None,
+        correction_form: str = "linear",
     ):
         self.type1 = type1
         self.type2 = type2
@@ -1042,15 +1044,15 @@ class Dihedral(Force):
             name=name,
             optimize=optimize,
             nbins=nbins,
-            correction_form=correction_form
+            correction_form=correction_form,
         )
 
     def set_harmonic(
-            self,
-            phi0: Union[float, int],
-            k: Union[float, int],
-            d: int,
-            n: int,
+        self,
+        phi0: Union[float, int],
+        k: Union[float, int],
+        d: int,
+        n: int,
     ) -> None:
         """Set a fixed harmonic dihedral potential.
 
@@ -1071,7 +1073,7 @@ class Dihedral(Force):
                 f"Force {self} is set to be optimized during MSIBI."
                 "This potential setter cannot be used "
                 "for a force designated for optimization. "
-                "Instead, use set_from_file() or set_quadratic()."
+                "Instead, use set_from_file() or set_polynomial()."
             )
         self.format = "static"
         self.force_init = "Periodic"
@@ -1082,9 +1084,7 @@ class Dihedral(Force):
         return table_entry
 
     def _get_distribution(
-            self,
-            state: msibi.state.State,
-            gsd_file: str
+        self, state: msibi.state.State, gsd_file: str
     ) -> np.ndarray:
         """Calculate a dihedral distribution.
 
@@ -1097,13 +1097,13 @@ class Dihedral(Force):
 
         """
         return dihedral_distribution(
-                gsd_file=gsd_file,
-                A_name=self.type1,
-                B_name=self.type2,
-                C_name=self.type3,
-                D_name=self.type4,
-                start=-state.n_frames,
-                histogram=True,
-                normalize=True,
-                bins=self.nbins + 1
+            gsd_file=gsd_file,
+            A_name=self.type1,
+            B_name=self.type2,
+            C_name=self.type3,
+            D_name=self.type4,
+            start=-state.n_frames,
+            histogram=True,
+            normalize=True,
+            bins=self.nbins + 1,
         )

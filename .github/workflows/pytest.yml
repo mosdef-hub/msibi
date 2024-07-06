@@ -26,10 +26,11 @@ on:
 jobs:
   pytest:
     if: github.event.pull_request.draft == false
+    name: MSIBI Tests (python)
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, macOS-13, ubuntu-latest]
+        os: [ubuntu-latest]
         python-version: ['3.10', '3.11', '3.12']
 
     runs-on: ${{ matrix.os }}
@@ -60,6 +61,37 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.xml
+  arch-test:
+    if: github.event.pull_request.draft == false
+    name: MSIBI Tests (arch)
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, macOS-13, ubuntu-latest]
+        python-version: ['3.12']
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    - name: Build environment
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        environment-file: environment-dev.yml
+        python-version: ${{ matrix.python-version }}
+        miniforge-variant: Mambaforge
+        miniforge-version: 4.9.2-4
+        use-mamba: true
+
+    - name: Install package
+      shell: bash -l {0}
+      run: pip install .
+
+    - name: Run pytest with coverage report
+      shell: bash -l {0}
+      run: python -m pytest -rs -v --cov=./ --cov-report=xml
 
   test-tutorials:
     if: ${{ github.event.issue.pull_request && github.event.comment.body== '/testtutorials'}}

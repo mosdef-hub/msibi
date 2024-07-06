@@ -1,4 +1,4 @@
-<img src="/docs/msibi.png" height="400">
+<img src="/docs/msibi.png" height="300">
 
 # MultiState Iterative Boltzmann Inversion (MS-IBI)
 ----------------------------------------
@@ -29,8 +29,7 @@ If you use this package, please cite the above paper. The BibTeX reference is
       journal = "The Journal of Chemical Physics",
       year = "2014",
       volume = "140",
-      number = "22", 
-      doi = "http://dx.doi.org/10.1063/1.4880555" 
+      number = "22",
+      doi = "http://dx.doi.org/10.1063/1.4880555"
 }
 ```
-

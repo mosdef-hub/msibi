@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pytest
 
-from msibi import MSIBI, State, Bond, Angle 
+from msibi import State
 
 from .base_test import BaseTest
 
@@ -25,29 +25,29 @@ class TestState(BaseTest):
 
     def test_linear_alpha_form(self, traj_file_path, tmp_path):
         state = State(
-                name="X",
-                alpha0=1.0,
-                kT=1.0,
-                traj_file=traj_file_path,
-                n_frames=10,
-                alpha_form="linear",
-                _dir=tmp_path
+            name="X",
+            alpha0=1.0,
+            kT=1.0,
+            traj_file=traj_file_path,
+            n_frames=10,
+            alpha_form="linear",
+            _dir=tmp_path,
         )
-        alpha_array = state.alpha(pot_x_range=np.arange(0.1, 2.1, 0.1),dx=0.1)
+        alpha_array = state.alpha(pot_x_range=np.arange(0.1, 2.1, 0.1), dx=0.1)
         assert len(alpha_array) == 20
         assert np.round(alpha_array[-1], 5) == 0
-        assert alpha_array[1] != state.alpha0 
+        assert alpha_array[1] != state.alpha0
         assert np.round(alpha_array[0], 5) == state.alpha0
 
     def test_linear_alpha_form_no_pot(self, traj_file_path, tmp_path):
         state = State(
-                name="X",
-                alpha0=1.0,
-                kT=1.0,
-                traj_file=traj_file_path,
-                n_frames=10,
-                alpha_form="linear",
-                _dir=tmp_path
+            name="X",
+            alpha0=1.0,
+            kT=1.0,
+            traj_file=traj_file_path,
+            n_frames=10,
+            alpha_form="linear",
+            _dir=tmp_path,
         )
         with pytest.raises(ValueError):
             state.alpha(pot_x_range=None)
@@ -61,5 +61,5 @@ class TestState(BaseTest):
                 traj_file=traj_file_path,
                 n_frames=10,
                 alpha_form="exponential",
-                _dir=tmp_path
+                _dir=tmp_path,
             )

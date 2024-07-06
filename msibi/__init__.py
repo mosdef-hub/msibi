@@ -1,10 +1,8 @@
-from .state import State
-from .forces import Pair, Bond, Angle, Dihedral
-from .optimize import MSIBI
-#from .potentials import *
-#from .potentials import quadratic_spring, mie, lennard_jones, pair_tail_correction 
+# isort: skip_file
 from .__version__ import __version__
-from . import utils
+from .state import State
+from .forces import Angle, Bond, Dihedral, Pair
+from .optimize import MSIBI
 
 __all__ = [
     "__version__",
@@ -14,5 +12,5 @@ __all__ = [
     "Bond",
     "Angle",
     "Dihedral",
-    "utils"
+    "utils",
 ]
