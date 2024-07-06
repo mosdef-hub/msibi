@@ -1,4 +1,4 @@
-name: msibi-readthedocs
+name: msibi-docs
 channels:
   - conda-forge
 dependencies:
