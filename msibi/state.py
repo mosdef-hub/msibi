@@ -1,7 +1,6 @@
 import os
 import shutil
 from typing import Union
-import warnings
 
 import gsd.hoomd
 import hoomd
@@ -46,14 +45,14 @@ class State(object):
         kT: float,
         traj_file: str,
         n_frames: int,
-        alpha0: float=1.0,
+        alpha0: float = 1.0,
         alpha_form: str = "constant",
-        exclude_bonded: bool=False, #TODO: Do we use this here or in Force?
-        _dir=None
+        exclude_bonded: bool = False,  # TODO: Do we use this here or in Force?
+        _dir=None,
     ):
         if alpha_form.lower() not in ["constant", "linear"]:
             raise ValueError(
-                    "The only supported alpha forms are `constant` and `linear`"
+                "The only supported alpha forms are `constant` and `linear`"
             )
         self.name = name
         self.kT = kT
@@ -68,10 +67,10 @@ class State(object):
 
     def __repr__(self):
         return (
-                f"{self.__class__}; "
-                + f"Name: {self.name}; "
-                + f"kT: {self.kT}; "
-                + f"Alpha0: {self.alpha0}"
+            f"{self.__class__}; "
+            + f"Name: {self.name}; "
+            + f"kT: {self.kT}; "
+            + f"Alpha0: {self.alpha0}"
         )
 
     @property
@@ -94,9 +93,11 @@ class State(object):
         """Set the value of alpha0 for this state."""
         self._alpha0 = value
 
-    def alpha(self, pot_x_range: np.ndarray=None, dx: float=None) -> Union[float, np.ndarray]:
+    def alpha(
+        self, pot_x_range: np.ndarray = None, dx: float = None
+    ) -> Union[float, np.ndarray]:
         """State point weighting value.
-        
+
         Parameters
         ----------
         pot_x_range : np.ndarray, optional, default = None
@@ -109,30 +110,30 @@ class State(object):
         else:
             if pot_x_range is None or dx is None:
                 raise ValueError(
-                        "A potential's x value range must be "
-                        "given when an msibi.State.state is using "
-                        "an alpha form that is not `constant`."
+                    "A potential's x value range must be "
+                    "given when an msibi.State.state is using "
+                    "an alpha form that is not `constant`."
                 )
             return alpha_array(
-                    alpha0=self.alpha0,
-                    pot_r=pot_x_range,
-                    dr=dx,
-                    form=self.alpha_form,
+                alpha0=self.alpha0,
+                pot_r=pot_x_range,
+                dr=dx,
+                form=self.alpha_form,
             )
 
     def _run_simulation(
-            self,
-            n_steps: int,
-            forces: list,
-            integrator_method: str,
-            method_kwargs: dict,
-            thermostat: str,
-            thermostat_kwargs: dict,
-            dt: float,
-            seed: int,
-            iteration: int,
-            gsd_period: int,
-            backup_trajectories: bool=False
+        self,
+        n_steps: int,
+        forces: list,
+        integrator_method: str,
+        method_kwargs: dict,
+        thermostat: str,
+        thermostat_kwargs: dict,
+        dt: float,
+        seed: int,
+        iteration: int,
+        gsd_period: int,
+        backup_trajectories: bool = False,
     ) -> None:
         """Run the hoomd 4 script used to run each query simulation.
         This method is called in msibi.optimize().
@@ -150,18 +151,18 @@ class State(object):
         integrator.forces = forces
         thermostat = thermostat(kT=self.kT, **thermostat_kwargs)
         integrator.methods.append(
-                integrator_method(
-                    filter=hoomd.filter.All(),
-                    thermostat=thermostat,
-                    **method_kwargs
-                )
+            integrator_method(
+                filter=hoomd.filter.All(),
+                thermostat=thermostat,
+                **method_kwargs,
+            )
         )
         sim.operations.add(integrator)
-        #Create GSD writer
+        # Create GSD writer
         gsd_writer = hoomd.write.GSD(
-                filename=self.query_traj,
-                trigger=hoomd.trigger.Periodic(int(gsd_period)),
-                mode="wb",
+            filename=self.query_traj,
+            trigger=hoomd.trigger.Periodic(int(gsd_period)),
+            mode="wb",
         )
         sim.operations.writers.append(gsd_writer)
         # Run simulation
@@ -169,8 +170,7 @@ class State(object):
         gsd_writer.flush()
         if backup_trajectories:
             shutil.copy(
-                    self.query_traj,
-                    os.path.join(self.dir, f"query{iteration}.gsd")
+                self.query_traj, os.path.join(self.dir, f"query{iteration}.gsd")
             )
         print(f"Finished simulation {iteration} for state {self}")
         print()
@@ -182,9 +182,7 @@ class State(object):
                 os.mkdir("states")
             dir_name = os.path.join("states", f"{name}_{kT}")
         else:
-            if not os.path.isdir(
-                    os.path.join(dir_name, "states")
-                    ):
+            if not os.path.isdir(os.path.join(dir_name, "states")):
                 os.mkdir(os.path.join(dir_name, "states"))
             dir_name = os.path.join(dir_name, "states", f"{name}_{kT}")
         try:

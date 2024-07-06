@@ -4,11 +4,10 @@ import numpy as np
 
 
 def savitzky_golay(
-        y: np.ndarray,
-        window_size: int,
-        order: int,
-        deriv: int=0,
-        rate: int=1
+    y: np.ndarray,
+    window_size: int,
+    order: int,
+    deriv: int = 0,
 ) -> np.ndarray:
     """Smoothing filter used on distributions and potentials.
 
@@ -22,7 +21,6 @@ def savitzky_golay(
         The polynomial order used by the smoothing filter.
     deriv: int, optional, defualt 0
         The order of the derivative to compute.
-    rate:
 
     Returns
     -------
@@ -41,11 +39,11 @@ def savitzky_golay(
     half_window = (window_size - 1) // 2
     b = np.mat(
         [
-            [k ** i for i in order_range]
+            [k**i for i in order_range]
             for k in range(-half_window, half_window + 1)
         ]
     )
-    m = np.linalg.pinv(b).A[deriv] * rate ** deriv * factorial(deriv)
+    m = np.linalg.pinv(b).A[deriv] ** deriv * factorial(deriv)
     firstvals = y[0] - np.abs(y[1 : half_window + 1][::-1] - y[0])
     lastvals = y[-1] + np.abs(y[-half_window - 1 : -1][::-1] - y[-1])
     y = np.concatenate((firstvals, y, lastvals))

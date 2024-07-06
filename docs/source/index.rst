@@ -21,10 +21,10 @@ Resources
 
 
 .. toctree::
-   :maxdepth: 1 
+   :maxdepth: 1
    :caption: Python API
 
-   optimize 
+   optimize
    forces
    state
 
@@ -41,8 +41,8 @@ If you use msibi in your research, please cite the following paper:
          journal = "The Journal of Chemical Physics",
          year = "2014",
          volume = "140",
-         number = "22", 
-         doi = "http://dx.doi.org/10.1063/1.4880555" 
+         number = "22",
+         doi = "http://dx.doi.org/10.1063/1.4880555"
    }
 
 

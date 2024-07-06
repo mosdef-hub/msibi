@@ -1,8 +1,8 @@
-from .state import State
-from .forces import Pair, Bond, Angle, Dihedral
-from .optimize import MSIBI
-from .__version__ import __version__
 from . import utils
+from .__version__ import __version__
+from .forces import Angle, Bond, Dihedral, Pair
+from .optimize import MSIBI
+from .state import State
 
 __all__ = [
     "__version__",
@@ -12,5 +12,5 @@ __all__ = [
     "Bond",
     "Angle",
     "Dihedral",
-    "utils"
+    "utils",
 ]

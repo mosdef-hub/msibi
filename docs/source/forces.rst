@@ -6,7 +6,7 @@ Forces
 .. toctree::
    :maxdepth: 1
 
-.. rubric:: Overview 
+.. rubric:: Overview
 
 .. autoclass:: msibi.forces.Force
    :members:

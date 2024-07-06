@@ -3,7 +3,7 @@ State
 
 .. rubric:: Overview
 
-.. py:currentmodule:: msibi.state 
+.. py:currentmodule:: msibi.state
 
 .. rubric:: Details
 

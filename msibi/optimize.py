@@ -1,10 +1,6 @@
-import os
 import pickle
-import shutil
 
 import hoomd
-from hoomd.md.methods import ConstantVolume, ConstantPressure
-import numpy as np
 
 import msibi
 
@@ -16,10 +12,10 @@ class MSIBI(object):
     Notes
     -----
     This package is very object oriented. This class should be
-    created first, followed by at least one `msibi.state.State` 
+    created first, followed by at least one `msibi.state.State`
     instance and at least one `msibi.forces.Force` instance.
 
-    Then, use the methods `MSIBI.add_state()` and `MSIBI.add_force()` 
+    Then, use the methods `MSIBI.add_state()` and `MSIBI.add_force()`
     before beginning the optimization runs using `MSIBI.run_optimization()`.
 
     Parameters
@@ -49,25 +45,25 @@ class MSIBI(object):
     """
 
     def __init__(
-            self,
-            nlist: hoomd.md.nlist.NeighborList,
-            integrator_method: hoomd.md.methods.Method,
-            thermostat: hoomd.md.methods.thermostats.Thermostat,
-            method_kwargs: dict,
-            thermostat_kwargs: dict,
-            dt: float,
-            gsd_period: int,
-            nlist_exclusions: list[str]=["bond", "angle"],
-            seed: int=42,
+        self,
+        nlist: hoomd.md.nlist.NeighborList,
+        integrator_method: hoomd.md.methods.Method,
+        thermostat: hoomd.md.methods.thermostats.Thermostat,
+        method_kwargs: dict,
+        thermostat_kwargs: dict,
+        dt: float,
+        gsd_period: int,
+        nlist_exclusions: list[str] = ["bond", "angle"],
+        seed: int = 42,
     ):
         if integrator_method not in [
-                hoomd.md.methods.ConstantVolume,
-                hoomd.md.methods.ConstantPressure
+            hoomd.md.methods.ConstantVolume,
+            hoomd.md.methods.ConstantPressure,
         ]:
             raise ValueError(
-                    "MSIBI is only compatible with NVT "
-                    "(hoomd.md.methods.ConstantVolume), or NPT "
-                    "(hoomd.md.methods.ConstantPressure)"
+                "MSIBI is only compatible with NVT "
+                "(hoomd.md.methods.ConstantVolume), or NPT "
+                "(hoomd.md.methods.ConstantPressure)"
             )
         self.nlist = nlist
         self.integrator_method = integrator_method
@@ -96,7 +92,7 @@ class MSIBI(object):
         At least 1 state point must be added before optimization can occur.
 
         """
-        #TODO: Do we need this?
+        # TODO: Do we need this?
         state._opt = self
         self.states.append(state)
 
@@ -142,20 +138,20 @@ class MSIBI(object):
 
     def _add_optimize_force(self, force):
         if not all(
-                [isinstance(force, f.__class__) for f in self._optimize_forces]
+            [isinstance(force, f.__class__) for f in self._optimize_forces]
         ):
             raise RuntimeError(
-                    "Only one type of force (i.e. Bonds, Angles, Pairs, etc) "
-                    "can be set to optimize at a time."
+                "Only one type of force (i.e. Bonds, Angles, Pairs, etc) "
+                "can be set to optimize at a time."
             )
         self._optimize_forces.append(force)
 
     def run_optimization(
-            self,
-            n_steps: int,
-            n_iterations: int,
-            backup_trajectories: bool=False,
-            _dir=None
+        self,
+        n_steps: int,
+        n_iterations: int,
+        backup_trajectories: bool = False,
+        _dir=None,
     ) -> None:
         """Runs query simulations and performs MSIBI
         on the potentials set to be optimized.
@@ -186,7 +182,7 @@ class MSIBI(object):
                     seed=self.seed,
                     iteration=self.n_iterations,
                     gsd_period=self.gsd_period,
-                    backup_trajectories=backup_trajectories
+                    backup_trajectories=backup_trajectories,
                 )
             self._update_potentials()
             self.n_iterations += 1
@@ -208,7 +204,7 @@ class MSIBI(object):
         forces = self._build_force_objects()
         if len(forces) == 0:
             raise RuntimeError(
-                    "No forces have been created yet. See MSIBI.add_force()"
+                "No forces have been created yet. See MSIBI.add_force()"
             )
         f = open(file_path, "wb")
         pickle.dump(forces, f)
@@ -218,13 +214,13 @@ class MSIBI(object):
         # Create pair objects
         pair_force = None
         for pair in self.pairs:
-            if not pair_force: # Only create hoomd.md.pair obj once
+            if not pair_force:  # Only create hoomd.md.pair obj once
                 pair_force = hoomd.md.pair.Table(
-                        nlist=self.nlist(
-                            buffer=0.4,
-                            exclusions=self.nlist_exclusions,
-                            default_r_cut=0
-                        )
+                    nlist=self.nlist(
+                        buffer=0.4,
+                        exclusions=self.nlist_exclusions,
+                        default_r_cut=0,
+                    )
                 )
             pair_force.params[pair._pair_name] = pair._table_entry()
             pair_force.r_cut[pair._pair_name] = pair.r_cut
@@ -261,7 +257,7 @@ class MSIBI(object):
         for dih in self.dihedrals:
             if not dihedral_force:
                 hoomd_dihedral_force = getattr(
-                        hoomd.md.dihedral, dih.force_init
+                    hoomd.md.dihedral, dih.force_init
                 )
                 if dih.force_init == "Table":
                     dihedral_force = hoomd_dihedral_force(width=dih.nbins + 1)
@@ -272,7 +268,7 @@ class MSIBI(object):
             else:
                 dihedral_force.params[dih.name] = dih.force_entry
         forces = [pair_force, bond_force, angle_force, dihedral_force]
-        return [f for f in forces if f] # Filter out any None values
+        return [f for f in forces if f]  # Filter out any None values
 
     def _update_potentials(self) -> None:
         """Update the potentials for the potentials to be optimized."""
@@ -284,15 +280,13 @@ class MSIBI(object):
         """Recompute the current distribution of bond lengths or angles"""
         for state in self.states:
             force._compute_current_distribution(state)
-            force._save_current_distribution(
-                    state,
-                    iteration=self.n_iterations
-            )
-            print("Force: {0}, State: {1}, Iteration: {2}: {3:f}".format(
+            force._save_current_distribution(state, iteration=self.n_iterations)
+            print(
+                "Force: {0}, State: {1}, Iteration: {2}: {3:f}".format(
                     force.name,
                     state.name,
                     self.n_iterations,
-                    force._states[state]["f_fit"][self.n_iterations]
+                    force._states[state]["f_fit"][self.n_iterations],
                 )
             )
             print()

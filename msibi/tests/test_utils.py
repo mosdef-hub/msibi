@@ -16,6 +16,7 @@ def test_calc_similarity():
     arr2 = np.random.random(10)
     assert calc_similarity(arr1, arr2) == calc_similarity(arr2, arr1)
 
+
 def test_find_nearest():
     a = np.arange(10)
     idx, nearest = find_nearest(a, 2.1)
@@ -30,7 +31,7 @@ def test_savitzky_golay():
     assert y.shape == y2.shape
     assert np.allclose(y, y2)
 
-    y = x ** 3.0
+    y = x**3.0
     y2 = savitzky_golay(y, 3, 1)
     assert calc_similarity(y, y2) > 0.99
 

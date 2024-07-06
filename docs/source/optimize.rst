@@ -3,7 +3,7 @@ Optimize
 
 .. rubric:: Overview
 
-.. py:currentmodule:: msibi.optimize 
+.. py:currentmodule:: msibi.optimize
 
 .. rubric:: Details
 

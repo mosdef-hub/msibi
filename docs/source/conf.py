@@ -16,9 +16,9 @@ sys.path.insert(0, os.path.abspath("../.."))
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-        "sphinx.ext.autodoc",
-        "sphinx.ext.napoleon",
-        "sphinx.ext.mathjax",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.mathjax",
 ]
 autodoc_mock_imports = []
 

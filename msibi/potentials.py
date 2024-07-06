@@ -83,9 +83,6 @@ def bond_correction(r, V, form):
     if form == "linear":
         head_correction_function = linear_head_correction
         tail_correction_function = linear_tail_correction
-    elif form == "linear_optimized":
-        head_correction_function = linear_head_correction_optimized
-        tail_correction_function = linear_tail_correction_optimized
     elif form == "exponential":
         head_correction_function = exponential_head_correction
         tail_correction_function = exponential_tail_correction
@@ -145,9 +142,9 @@ def pair_tail_correction(r, V, r_switch):
     S_r = np.ones_like(r)
     r = r[idx_r_switch:]
     S_r[idx_r_switch:] = (
-            (r_cut ** 2 - r ** 2) ** 2
-            * (r_cut ** 2 + 2 * r ** 2 - 3 * r_switch ** 2)
-            / (r_cut ** 2 - r_switch ** 2) ** 3
+        (r_cut**2 - r**2) ** 2
+        * (r_cut**2 + 2 * r**2 - 3 * r_switch**2)
+        / (r_cut**2 - r_switch**2) ** 3
     )
     return V * S_r
 
@@ -224,7 +221,9 @@ def linear_tail_correction(r, V, cutoff, window=6):
     def linear(x, m, b):
         return m * x + b
 
-    popt, pcov = curve_fit(linear, r[cutoff - window:cutoff], V[cutoff - window:cutoff])
+    popt, pcov = curve_fit(
+        linear, r[cutoff - window : cutoff], V[cutoff - window : cutoff]
+    )
     V[cutoff:] = linear(r[cutoff:], *popt)
     return V
 
@@ -250,8 +249,10 @@ def linear_head_correction(r, V, cutoff, window=6):
     def linear(x, m, b):
         return m * x + b
 
-    popt, pcov = curve_fit(linear, r[cutoff + 1:cutoff + window], V[cutoff + 1:cutoff + window])
-    V[:cutoff + 1] = linear(r[:cutoff + 1], *popt)
+    popt, pcov = curve_fit(
+        linear, r[cutoff + 1 : cutoff + window], V[cutoff + 1 : cutoff + window]
+    )
+    V[: cutoff + 1] = linear(r[: cutoff + 1], *popt)
     return V
 
 
@@ -271,9 +272,10 @@ def exponential_tail_correction(r, V, cutoff):
     V(r) = A*exp(Br)
 
     """
-    raise RuntimeError("Exponential tail corrections are not implemented."
-                       "Use the linear correction form when optimizing bonds and angles."
-                       )
+    raise RuntimeError(
+        "Exponential tail corrections are not implemented."
+        "Use the linear correction form when optimizing bonds and angles."
+    )
     dr = r[cutoff - 1] - r[cutoff - 2]
     B = np.log(V[cutoff - 1] / V[cutoff - 2]) / dr
     A = V[cutoff - 1] * np.exp(B * r[cutoff - 1])
@@ -300,10 +302,10 @@ def exponential_head_correction(r, V, cutoff):
     dr = r[cutoff + 2] - r[cutoff + 1]
     B = np.log(V[cutoff + 1] / V[cutoff + 2]) / dr
     A = V[cutoff + 1] * np.exp(B * r[cutoff + 1])
-    V[:cutoff + 1] = A * np.exp(-B * r[:cutoff + 1])
+    V[: cutoff + 1] = A * np.exp(-B * r[: cutoff + 1])
     return V
 
 
 def alpha_array(alpha0, pot_r, dr, form="linear"):
-    """Generate an array of alpha values used for scaling in the IBI step. """
+    """Generate an array of alpha values used for scaling in the IBI step."""
     return alpha0 * (1.0 - (pot_r - dr) / (pot_r[-1] - dr))
