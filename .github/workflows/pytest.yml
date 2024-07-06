@@ -32,7 +32,7 @@ jobs:
       - name: Install Mamba
         uses: mamba-org/setup-micromamba@v1
         with:
-          generate-run-shell: false
+          generate-run-shell: true
           environment-file: environment-dev.yml
           create-args: >-
             python=${{ matrix.python-version }}
@@ -70,7 +70,7 @@ jobs:
       - name: Install Mamba
         uses: mamba-org/setup-micromamba@v1
         with:
-          generate-run-shell: false
+          generate-run-shell: true
           environment-file: environment-dev.yml
           create-args: >-
             python=${{ matrix.python-version }}
