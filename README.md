@@ -1,4 +1,4 @@
-<img src="/docs/msibi.png" height="300">
+<img src="/docs/images/msibi.png" height="300">
 
 # MultiState Iterative Boltzmann Inversion (MS-IBI)
 ----------------------------------------
