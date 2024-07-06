@@ -444,7 +444,7 @@ class Force(object):
     ) -> None:
         """Set a potential based on the following function:
 
-            V(x) = k4(x-x0)^4 + k3(x-x0)^3 + k2(x-x0)^2
+            :math:`V(x) = k4(x-x_{0})^{4} + k3(x-x_{0})^{3} + k2(x-x_{0})^{2}`
 
         Using this method will create a table potential V(x) over the range
         x_min - x_max.
