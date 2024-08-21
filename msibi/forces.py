@@ -24,7 +24,7 @@ from msibi.utils.smoothing import savitzky_golay
 from msibi.utils.sorting import natural_sort
 
 
-class Force(object):
+class Force:
     """
     Base class from which other forces inherit.
     Don't use this class directly, instead use
@@ -130,11 +130,24 @@ class Force(object):
 
     @property
     def smoothing_window(self) -> int:
-        """Window size used in smoothing the distributions."""
+        """Window size used in smoothing the distributions and potentials."""
         return self._smoothing_window
 
     @smoothing_window.setter
     def smoothing_window(self, value: int):
+        """Window size used in smoothing the distributions and potentials.
+
+        Notes
+        -----
+        After you have created your State and Force objects, change
+        this property and check the effect on distributions using
+        `msibi.forces.Force.plot_distribution_comparison()` before
+        running optimizaitons.
+
+        Also see:
+            msibi.forces.Force.nbins
+            msibi.forces.Foce.smoothing_order
+        """
         if not isinstance(value, int) or value <= 0:
             raise ValueError("The smoothing window must be an integer.")
         self._smoothing_window = value
@@ -148,6 +161,19 @@ class Force(object):
 
     @smoothing_order.setter
     def smoothing_order(self, value: int):
+        """The order used in smoothing distributions and potentials.
+
+        Notes
+        -----
+        After you have created your State and Force objects, change
+        this property and check the effect on distributions using
+        `msibi.forces.Force.plot_distribution_comparison()` before
+        running optimizaitons.
+
+        Also see:
+            msibi.forces.Force.smoothing_window
+            msibi.forces.Foce.nbins
+        """
         if not isinstance(value, int) or value <= 0:
             raise ValueError("The smoothing order must be an integer.")
         self._smoothing_order = value
@@ -156,11 +182,27 @@ class Force(object):
 
     @property
     def nbins(self) -> int:
-        """The number of bins used in calculating distributions."""
+        """The number of bins used in calculating distributions and
+        used in the x-range of the potential.
+        """
         return self._nbins
 
     @nbins.setter
     def nbins(self, value: int):
+        """The number of bins used in calculating distributions and
+        used in the x-range of the potential.
+
+        Notes
+        -----
+        After you have created your State and Force objects, change
+        this property and check the effect on distributions using
+        `msibi.forces.Force.plot_distribution_comparison()` before
+        running optimizaitons.
+
+        Also see:
+            msibi.forces.Force.smoothing_window
+            msibi.forces.Foce.smoothing_order
+        """
         if not isinstance(value, int) or value <= 0:
             raise ValueError("nbins must be an integer.")
         self._nbins = value
@@ -211,7 +253,7 @@ class Force(object):
         if self.format != "table":
             raise RuntimeError(
                 "This force is not a table potential and "
-                "cannot be saved to a .txt file."
+                "cannot be saved to a pandas DataFrame csv."
             )
         df = pd.DataFrame(
             {
@@ -229,12 +271,11 @@ class Force(object):
         ----------
         file_path : str, required
             File path and name to save table potential history to.
-
         """
         if self.format != "table":
             raise RuntimeError(
                 "This force is not a table potential and "
-                "cannot be saved to a .txt file."
+                "cannot be saved to a .npy file."
             )
         np.save(file_path, np.asarray(self.potential_history))
 
@@ -248,7 +289,6 @@ class Force(object):
         file_path : str, required
             File path and name to save the `npz` file.
         """
-
         state_dict = self._states[state]
         state_data = {
             "target_distribution": state_dict["target_distribution"],
@@ -267,7 +307,6 @@ class Force(object):
         ----------
         state : msibi.state.State, required
             The state to use in finding the target distribution.
-
         """
         return self._states[state]["target_distribution"]
 
@@ -276,7 +315,7 @@ class Force(object):
     ) -> None:
         """
         Quick plotting function that shows the target structural
-        distribution corresponding to the forces.
+        distribution corresponding to the force and a state point.
 
         Parameters
         ----------
@@ -290,7 +329,6 @@ class Force(object):
         Use this to see how the shape of the target distribution is
         affected by your choices for nbins, smoothing window,
         and smoothing order.
-
         """
         # TODO: Make custom error
         if not self.optimize:
@@ -323,7 +361,6 @@ class Force(object):
             The state to use in finding the target distribution.
         file_path : str, optional
             If given, the plot will be saved to this location.
-
         """
         if not self.optimize:
             raise RuntimeError("This force object is not set to be optimized.")
@@ -343,7 +380,6 @@ class Force(object):
         ----------
         file_path : str, optional
             If given, the plot will be saved to this location.
-
         """
         plt.plot(self.x_range, self.potential, "o-")
         plt.xlim(xlim)
@@ -363,7 +399,10 @@ class Force(object):
         ----------
         file_path : str, optional
             If given, the plot will be saved to this location.
-
+        xlim : Iterable of length two
+            Sets the x-axis limits on the plot.
+        ylim : Iterable of length two
+            Sets the y-axis limits on the plot.
         """
         for i, pot in enumerate(self.potential_history):
             plt.plot(self.x_range, pot, "o-", label=i)
@@ -389,7 +428,6 @@ class Force(object):
         plt.legend()
         plt.xlabel("x")
         plt.ylabel("P(x)")
-        plt.title(f"{self.name} MSIBI vs Target Distribution")
         if file_path:
             plt.savefig(file_path)
 
@@ -411,7 +449,6 @@ class Force(object):
         ----------
         state: msibi.state.State
             The state used in finding the distribution.
-
         """
         self._states[state]["target_distribution"] = array
 
@@ -425,7 +462,6 @@ class Force(object):
         ----------
         state : msibi.state.State, required
             The state to use for calculating the distribution.
-
         """
         return self._get_state_distribution(state, query)
 
@@ -436,7 +472,6 @@ class Force(object):
         ----------
         state : msibi.state.State, required
             The state to use for calculating the distribution.
-
         """
         return self._calc_fit(state)
 
@@ -467,7 +502,6 @@ class Force(object):
             The lower bound of the potential range
         x_max : float, required
             The upper bound of the potential range
-
         """
         self.format = "table"
         self.x_min = x_min
@@ -501,7 +535,6 @@ class Force(object):
         IBI runs on angle and/or pair potentials.
 
         Also see: msibi.forces.Force.save_potential()
-
         """
         self.format = "table"
         df = pd.read_csv(file_path)
@@ -513,13 +546,12 @@ class Force(object):
         self.force_init = "Table"
 
     def _add_state(self, state):
-        """Add a state to be used in optimizing this Fond.
+        """Add a state to be used in optimizing this Force.
 
         Parameters
         ----------
         state : msibi.state.State
             Instance of a State object previously created.
-
         """
         if self.optimize:
             target_distribution = self._get_state_distribution(
@@ -545,13 +577,12 @@ class Force(object):
         }
 
     def _compute_current_distribution(self, state: msibi.state.State) -> None:
-        """Find the current distribution of the query trajectory
+        """Find the current distribution of the query trajectory.
 
         Parameters
         ----------
         state : msibi.state.State
             Instance of a State object previously created.
-
         """
         distribution = self._get_state_distribution(state, query=True)
         if self.smoothing_window and self.smoothing_order:
@@ -582,7 +613,6 @@ class Force(object):
         query: bool
             If True, uses the most recent query trajectory.
             If False, uses the state's target trajectory.
-
         """
         if query:
             traj = state.query_traj
@@ -601,7 +631,6 @@ class Force(object):
             The state used in finding the distribution.
         iteration : int
             Current iteration step, used in the filename.
-
         """
         distribution = self._states[state]["current_distribution"]
         distribution[:, 0] -= self.dx / 2
@@ -612,7 +641,6 @@ class Force(object):
     def _update_potential(self) -> None:
         """Compare distributions of current iteration against target,
         and update the potential via Boltzmann inversion.
-
         """
         self.potential_history.append(np.copy(self.potential))
         for state in self._states:
@@ -640,8 +668,7 @@ class Force(object):
 
 
 class Bond(Force):
-    """
-    Creates a bond force used in query simulations.
+    """Creates a bond force used in query simulations.
 
     Parameters
     ----------
@@ -669,7 +696,6 @@ class Bond(Force):
     types found in the state's target GSD file bond types.
 
     For example: `Bond(type1="B", type2="A")` will have `Bond.name = "A-B"`
-
     """
 
     def __init__(
@@ -701,7 +727,6 @@ class Bond(Force):
             Equilibrium bond length
         k : (Union[float, int]), required
             Spring constant
-
         """
         if self.optimize:
             raise RuntimeError(
@@ -715,6 +740,7 @@ class Bond(Force):
         self.force_entry = dict(r0=r0, k=k)
 
     def _table_entry(self) -> dict:
+        """Set the correct entry to use in `hoomd.md.bond.Table`"""
         table_entry = {
             "r_min": self.x_min,
             "r_max": self.x_max,
@@ -734,7 +760,6 @@ class Bond(Force):
             State used in calculating the distribution.
         gsd_file: str, required
             Path to the GSD file used.
-
         """
         return bond_distribution(
             gsd_file=gsd_file,
@@ -750,8 +775,7 @@ class Bond(Force):
 
 
 class Angle(Force):
-    """
-    Creates an angle force used in query simulations.
+    """Creates an angle force used in query simulations.
 
     Parameters
     ----------
@@ -779,7 +803,6 @@ class Angle(Force):
     -----
     The angle type is formed in the order of type1-type2-type3 and must match
     the same order in the target GSD file angle types.
-
     """
 
     def __init__(
@@ -814,7 +837,6 @@ class Angle(Force):
             Equilibrium bond angle
         k : (Union[float, int]), required
             Spring constant
-
         """
         if self.optimize:
             raise RuntimeError(
@@ -828,6 +850,7 @@ class Angle(Force):
         self.force_entry = dict(t0=t0, k=k)
 
     def _table_entry(self) -> dict:
+        """Set the correct entry to use in `hoomd.md.angle.Table`"""
         table_entry = {"U": self.potential, "tau": self.force}
         return table_entry
 
@@ -842,7 +865,6 @@ class Angle(Force):
             State used in calculating the distribution.
         gsd_file: str, required
             Path to the GSD file used.
-
         """
         return angle_distribution(
             gsd_file=gsd_file,
@@ -859,8 +881,7 @@ class Angle(Force):
 
 
 class Pair(Force):
-    """
-    Creates a pair force used in query simulations.
+    """Creates a pair force used in query simulations.
 
     Parameters
     ----------
@@ -894,7 +915,6 @@ class Pair(Force):
     types found in the state's target GSD file bond types.
 
     For example: `Pair(type1="B", type2="A")` will have `Pair.name = "A-B"`
-
     """
 
     def __init__(
@@ -911,7 +931,7 @@ class Pair(Force):
         self.type1, self.type2 = sorted([type1, type2], key=natural_sort)
         self.r_cut = r_cut
         name = f"{self.type1}-{self.type2}"
-        # Pair types in hoomd have different naming structure.
+        # Pair types in hoomd have a different tuple naming structure.
         self._pair_name = (type1, type2)
         super(Pair, self).__init__(
             name=name,
@@ -927,7 +947,7 @@ class Pair(Force):
         epsilon: Union[float, int],
         sigma: Union[float, int],
     ) -> None:
-        """Set a hoomd 12-6 LJ pair potential used during
+        """Set a 12-6 LJ pair potential used during
         the query simulations.
 
         Parameters
@@ -938,7 +958,6 @@ class Pair(Force):
             Sets the particle size.
         r_cut : (Union[float, int]), required
             Maximum distance used to calculate neighbor pair potentials.
-
         """
         self.format = "table"
         self.dx = (r_cut - r_min) / self.nbins
@@ -951,6 +970,7 @@ class Pair(Force):
         self.force_init = "Table"
 
     def _table_entry(self) -> dict:
+        """Set the correct entry to use in `hoomd.md.pair.Table`"""
         table_entry = {
             "r_min": self.x_min,
             "U": self.potential,
@@ -961,7 +981,7 @@ class Pair(Force):
     def _get_distribution(
         self, state: msibi.state.State, gsd_file: str
     ) -> np.ndarray:
-        """Calculate a pair distribution.
+        """Calculate a pair distribution (RDF).
 
         Parameters
         ----------
@@ -969,7 +989,6 @@ class Pair(Force):
             State used in calculating the distribution.
         gsd_file: str, required
             Path to the GSD file used.
-
         """
         rdf, N = gsd_rdf(
             gsdfile=gsd_file,
@@ -989,8 +1008,7 @@ class Pair(Force):
 
 
 class Dihedral(Force):
-    """
-    Creates a dihedral force used in query simulations.
+    """Creates a dihedral force used in query simulations.
 
     Parameters
     ----------
@@ -1021,7 +1039,6 @@ class Dihedral(Force):
     -----
     The dihedral type is formed in the order of type1-type2-type3-type4 and
     must match the same order in the target GSD file angle types.
-
     """
 
     def __init__(
@@ -1080,13 +1097,14 @@ class Dihedral(Force):
         self.force_entry = dict(phi0=phi0, k=k, d=d, n=n)
 
     def _table_entry(self) -> dict:
+        """Set the correct entry to use in `hoomd.md.dihedral.Table`"""
         table_entry = {"U": self.potential, "tau": self.force}
         return table_entry
 
     def _get_distribution(
         self, state: msibi.state.State, gsd_file: str
     ) -> np.ndarray:
-        """Calculate a dihedral distribution.
+        """Calculate a dihedral angle distribution.
 
         Parameters
         ----------
@@ -1094,7 +1112,6 @@ class Dihedral(Force):
             State used in calculating the distribution.
         gsd_file: str, required
             Path to the GSD file used.
-
         """
         return dihedral_distribution(
             gsd_file=gsd_file,

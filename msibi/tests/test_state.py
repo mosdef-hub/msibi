@@ -19,6 +19,13 @@ class TestState(BaseTest):
         stateX.nframes = 50
         assert stateX.nframes == 50
 
+    def test_alpha0_setter(self, stateX):
+        assert stateX.alpha0 == 1.0
+        stateX.alpha0 = 0.5
+        assert stateX.alpha0 == 0.5
+        with pytest.raises(ValueError):
+            stateX.alpha0 = -0.5
+
     def test_constant_alpha_form(self, stateX):
         assert stateX.alpha_form == "constant"
         assert stateX.alpha() == stateX.alpha0

@@ -6,8 +6,7 @@ import msibi
 
 
 class MSIBI(object):
-    """
-    Management class for orchestrating an MSIBI optimization.
+    """Management class for orchestrating an MSIBI optimization.
 
     Notes
     -----
@@ -41,7 +40,6 @@ class MSIBI(object):
         Sets the pair exclusions used during the optimization simulations
     seed : int, optional, default 42
         Random seed to use during the simulation
-
     """
 
     def __init__(
@@ -90,9 +88,8 @@ class MSIBI(object):
         Notes
         -----
         At least 1 state point must be added before optimization can occur.
-
         """
-        # TODO: Do we need this?
+        # TODO: Do we still need the ._opt attr?
         state._opt = self
         self.states.append(state)
 
@@ -108,7 +105,6 @@ class MSIBI(object):
         -----
         Only one type of force can be optimized at a time.
         Forces not set to be optimized are held fixed during query simulations.
-
         """
         self.forces.append(force)
         if force.optimize:
@@ -117,26 +113,27 @@ class MSIBI(object):
             force._add_state(state)
 
     @property
-    def bonds(self):
+    def bonds(self) -> list:
         """All instances of msibi.forces.Bond that have been added."""
         return [f for f in self.forces if isinstance(f, msibi.forces.Bond)]
 
     @property
-    def angles(self):
+    def angles(self) -> list:
         """All instances of msibi.forces.Angle that have been added."""
         return [f for f in self.forces if isinstance(f, msibi.forces.Angle)]
 
     @property
-    def pairs(self):
+    def pairs(self) -> list:
         """All instances of msibi.forces.Pair that have been added."""
         return [f for f in self.forces if isinstance(f, msibi.forces.Pair)]
 
     @property
-    def dihedrals(self):
+    def dihedrals(self) -> list:
         """All instances of msibi.forces.Dihedral that have been added."""
         return [f for f in self.forces if isinstance(f, msibi.forces.Dihedral)]
 
-    def _add_optimize_force(self, force):
+    def _add_optimize_force(self, force: msibi.forces.Force) -> None:
+        """Check that all forces to be optimized are the same type."""
         if not all(
             [isinstance(force, f.__class__) for f in self._optimize_forces]
         ):
@@ -165,7 +162,6 @@ class MSIBI(object):
         backup_trajectories : bool, optional default False
             If True, copies of the query simulation trajectories
             are saved in their respective msibi.state.State directory.
-
         """
         for n in range(n_iterations):
             print(f"---Optimization: {n+1} of {n_iterations}---")
@@ -199,7 +195,6 @@ class MSIBI(object):
         -----
         Use this method as a convienent way to save and use the final
         set of forces in your own Hoomd-Blue script.
-
         """
         forces = self._build_force_objects()
         if len(forces) == 0:
@@ -277,7 +272,7 @@ class MSIBI(object):
             force._update_potential()
 
     def _recompute_distribution(self, force: msibi.forces.Force) -> None:
-        """Recompute the current distribution of bond lengths or angles"""
+        """Recompute the current distribution of bond lengths or angles."""
         for state in self.states:
             force._compute_current_distribution(state)
             force._save_current_distribution(state, iteration=self.n_iterations)

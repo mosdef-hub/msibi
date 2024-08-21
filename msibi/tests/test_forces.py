@@ -127,6 +127,8 @@ class TestForce(BaseTest):
             bond.nbins = 20.5
         with pytest.raises(ValueError):
             bond.nbins = 0
+        with pytest.raises(ValueError):
+            bond.nbins = -50
         angle = Angle(type1="A", type2="B", type3="A", optimize=False)
         angle.set_harmonic(k=500, t0=2)
         with pytest.raises(RuntimeError):

@@ -10,8 +10,7 @@ from msibi.potentials import alpha_array
 
 
 class State(object):
-    """
-    A single state used as part of a multistate optimization.
+    """A single state used as part of a multistate optimization.
 
     Parameters
     ----------
@@ -36,7 +35,6 @@ class State(object):
     exclude_bonded: bool, optional, default `False`
         If `True` then any beads that belong to the same molecle
         are not included in radial distribution funciton calculations.
-
     """
 
     def __init__(
@@ -91,6 +89,8 @@ class State(object):
     @alpha0.setter
     def alpha0(self, value: float):
         """Set the value of alpha0 for this state."""
+        if value < 0:
+            raise ValueError("alpha0 must be equal to or larger than zero.")
         self._alpha0 = value
 
     def alpha(
@@ -135,9 +135,8 @@ class State(object):
         gsd_period: int,
         backup_trajectories: bool = False,
     ) -> None:
-        """Run the hoomd 4 script used to run each query simulation.
+        """The Hoomd 4 script used to run each query simulation.
         This method is called in msibi.optimize().
-
         """
         device = hoomd.device.auto_select()
         sim = hoomd.simulation.Simulation(device=device)
