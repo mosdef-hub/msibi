@@ -37,7 +37,7 @@ setup(
         "A package for optimizing coarse-grained force fields using "
         + "multistate iterative Boltzmann inversion."
     ),
-    url="http://github.com/cmelab/msibi",
+    url="http://github.com/mosdef-hub/msibi",
     author="Chris Jones",
     author_email=("chrisjones4@u.boisestate.edu"),
     packages=find_packages(exclude=("tests", "docs")),

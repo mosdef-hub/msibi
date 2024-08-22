@@ -5,8 +5,7 @@ comment:
     require_base: no        # [yes :: must have a base report to post]
     require_head: yes       # [yes :: must have a head report to post]
     branches:               # branch names that can post comment
-        - "master"
+        - "main"
 ignore:
     - "msibi/tests"
     - "setup.py"
-    - "msibi/tutorials"
