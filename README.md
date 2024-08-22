@@ -2,8 +2,8 @@
 
 # MultiState Iterative Boltzmann Inversion (MS-IBI)
 ----------------------------------------
-[![pytest](https://github.com/cmelab/msibi/actions/workflows/pytest.yml/badge.svg)](https://github.com/cmelab/msibi/actions/workflows/pytest.yml)
-[![codecov](https://codecov.io/gh/cmelab/msibi/branch/main/graph/badge.svg?token=7NFPBMBN0I)](https://codecov.io/gh/cmelab/msibi)
+[![pytest](https://github.com/mosdef-hub/msibi/actions/workflows/pytest.yml/badge.svg)](https://github.com/mosdef-hub/msibi/actions/workflows/pytest.yml)
+[![codecov](https://codecov.io/gh/mosdef-hub/msibi/branch/main/graph/badge.svg?token=7NFPBMBN0I)](https://codecov.io/gh/mosdef-hub/msibi)
 [![Citing MSIBI](https://img.shields.io/badge/DOI-10.1063%2F1.4880555-blue.svg)](http://dx.doi.org/10.1063/1.4880555)
 
 A package to help you manage and run coarse-grain potential optimizations using multistate iterative Boltzmann inversion.
@@ -17,7 +17,7 @@ mamba install -c conda-forge msibi
 
 ### Install from source:
 ```bash
-git clone https://github.com/cmelab/msibi.git
+git clone https://github.com/mosdef-hub/msibi.git
 cd msibi
 mamba env create -f environment.yml
 mamba activate msibi

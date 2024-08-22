@@ -13,9 +13,7 @@ Quick start
 Resources
 =========
 
-- `GitHub Repository <https://github.com/cmelab/msibi>`_: Source code and issue tracker.
-
-- `Tutorials <https://github.com/cmelab/msibi/tree/main/tutorials>`_: Examples of how to use msibi.
+- `GitHub Repository <https://github.com/mosdef-hub/msibi>`_: Source code and issue tracker.
 
 - `MSIBI paper <https://doi.org/10.1063/1.4880555>`_: Explanation of the MSIBI method.
 
