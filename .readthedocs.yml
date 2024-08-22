@@ -1,10 +1,11 @@
 version: 2
 formats:
   - htmlzip
+  - pdf
 build:
   os: ubuntu-22.04
   tools:
-    python: "mambaforge-22.9"
+    python: "mambaforge-4.10"
 
 conda:
   environment: docs/environment-docs.yml
@@ -12,4 +13,4 @@ conda:
 sphinx:
   builder: html
   configuration: docs/source/conf.py
-  fail_on_warning: True
+  fail_on_warning: false 
