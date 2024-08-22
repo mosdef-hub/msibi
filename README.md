@@ -62,9 +62,9 @@ pairAA.save_potential("pairAA.csv")
 ### Example: Multiple states, multiple forces
 - Here is an example of learning a pair potential using multiple state points and forces.
 - In this example, we set fixed bond and angle potentials that are included during iteration simulations.
-- The bond potential will set a fixed harmonic force, while the angle potnetial will be set from a table potential file.
+- The bond potential will set a fixed harmonic force, while the angle potential will be set from a table potential file.
 - This illustrates a use case of stringing together multiple MSIBI optimizations.
-	- For example, one MSIBI optimization can be used to learn and obtain an coarse-grained angle potnetial table file which can then be set and held fixed while learning pair potentials in a subsequent MSIBI optimization.
+	- For example, one MSIBI optimization can be used to learn and obtain a coarse-grained angle potnetial table file which can then be set and held fixed while learning pair potentials in a subsequent MSIBI optimization.
 
 ```python
 import hoomd
@@ -91,7 +91,7 @@ bondAA = Bond(type1="A", type2="A", optimize=False)
 bondAA.set_harmonic(r0=1.4, k=200)
 optimize.add_force(bondAA)
 
-# Add angle and load previously obtained table potential (e.g. Running IBI to learn an angle potential)
+# Add angle and load previously obtained table potential 
 angleAA = Angle(type1="A", type2="A", type3="A", optimize=False)
 angleAA.set_from_file("angleAA.csv")
 optimize.add_force(angleAA)
