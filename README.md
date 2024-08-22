@@ -4,6 +4,7 @@
 ----------------------------------------
 [![pytest](https://github.com/cmelab/msibi/actions/workflows/pytest.yml/badge.svg)](https://github.com/cmelab/msibi/actions/workflows/pytest.yml)
 [![codecov](https://codecov.io/gh/cmelab/msibi/branch/main/graph/badge.svg?token=7NFPBMBN0I)](https://codecov.io/gh/cmelab/msibi)
+[![Citing MSIBI](https://img.shields.io/badge/DOI-10.1063%2F1.4880555-blue.svg)](http://dx.doi.org/10.1063/1.4880555)
 
 A package to help you manage and run coarse-grain potential optimizations using multistate iterative Boltzmann inversion.
 
@@ -103,7 +104,7 @@ pairAA.save_potential("AA_final.csv")
 ```
 
 
-## Citing MSIBI [![Citing MSIBI](https://img.shields.io/badge/DOI-10.1063%2F1.4880555-blue.svg)](http://dx.doi.org/10.1063/1.4880555)
+## Citing MSIBI
 Details of the underlying method and its validation can be found [here](http://dx.doi.org/10.1063/1.4880555).
 
 If you use this package, please cite the above paper. The BibTeX reference is
