@@ -1,9 +1,3 @@
-# Files generated during tutorial runs
-msibi/tutorials/*
-msibi/tutorials/lj/rdfs/pair*
-msibi/tutorials/lj/state*/*.txt
-msibi/tutorials/lj/potentials/
-msibi/tutorials/lj/state*/run.py
 # Default files
 *.ipynb
 *.pyc
