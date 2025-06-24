@@ -4,9 +4,16 @@
 ----------------------------------------
 [![pytest](https://github.com/cmelab/msibi/actions/workflows/pytest.yml/badge.svg)](https://github.com/cmelab/msibi/actions/workflows/pytest.yml)
 [![codecov](https://codecov.io/gh/cmelab/msibi/branch/main/graph/badge.svg?token=7NFPBMBN0I)](https://codecov.io/gh/cmelab/msibi)
+[![Citing MSIBI](https://img.shields.io/badge/DOI-10.1063%2F1.4880555-blue.svg)](http://dx.doi.org/10.1063/1.4880555)
 
-A package to help you manage and run pair potential optimizations using multistate iterative Boltzmann inversion.
+A package to help you manage and run coarse-grain potential optimizations using multistate iterative Boltzmann inversion.
 
+## Installing MSIBI
+
+### Install from conda-forge:
+```
+conda install -c conda-forge msibi
+```
 
 ### Install from source:
 ```bash
@@ -17,11 +24,12 @@ conda activate msibi
 pip install .
 ```
 
-### Using MSIBI
+## Using MSIBI
 The MSIBI package is designed to be very object oriented. Any force optimization runs requires at least one `msibi.state.State` instance, `msibi.force.Force` instance and `msibi.optimize.MSIBI` instance. More state and forces can be added as needed.
 
-MSIBI uses [Hoomd-Blue](https://hoomd-blue.readthedocs.io/en/latest/) to run optimization simulations. It is not required that you be familiar with Hoomd to use MSIBI as the simulation script for Hoomd is automatically generated. However, it is required that you pass in the choice of [Hoomd method](https://hoomd-blue.readthedocs.io/en/latest/module-md-methods.html), [Hoomd neighbor list](https://hoomd-blue.readthedocs.io/en/latest/module-md-nlist.html), and [Hoomd thermostat](https://hoomd-blue.readthedocs.io/en/latest/module-md-methods-thermostats.html) 
+MSIBI uses [Hoomd-Blue](https://hoomd-blue.readthedocs.io/en/latest/) to run optimization simulations. It is not required that you be familiar with Hoomd to use MSIBI as the simulation script is automatically generated and ran. However, it is required that you pass in the choice of [Hoomd method](https://hoomd-blue.readthedocs.io/en/latest/module-md-methods.html), [Hoomd neighbor list](https://hoomd-blue.readthedocs.io/en/latest/module-md-nlist.html), and [Hoomd thermostat](https://hoomd-blue.readthedocs.io/en/latest/module-md-methods-thermostats.html) to the `msibi.optimize.MSIBI` instance. 
 
+### Quick Example:
 Here is a simple example using MSIBI to learn a bond-stretching force from a single state point:
 
 ```python
@@ -62,7 +70,7 @@ AB_bond.save_potential("AB_bond.csv")
 ```
 
 
-### Citation [![Citing MSIBI](https://img.shields.io/badge/DOI-10.1063%2F1.4880555-blue.svg)](http://dx.doi.org/10.1063/1.4880555)
+## Citing MSIBI
 Details of the underlying method and its validation can be found [here](http://dx.doi.org/10.1063/1.4880555).
 
 If you use this package, please cite the above paper. The BibTeX reference is
