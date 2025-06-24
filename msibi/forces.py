@@ -340,14 +340,14 @@ class Force:
         plt.title(f"State {state.name}: {self.name} Target")
         plt.ylabel("P(x)")
         plt.xlabel("x")
-        plt.plot(target[:, 0], target[:, 1])
+        plt.plot(target[:, 0], target[:, 1], marker="^", label="Target")
         if self.smoothing_window:
             y_smoothed = savitzky_golay(
                 target[:, 1],
                 window_size=self.smoothing_window,
                 order=self.smoothing_order,
             )
-            plt.plot(target[:, 0], y_smoothed, label="Smoothed")
+            plt.plot(target[:, 0], y_smoothed, marker="o", label="Smoothed")
             plt.legend()
         if file_path:
             plt.savefig(file_path)
@@ -371,8 +371,8 @@ class Force:
         if file_path:
             plt.savefig(file_path)
 
-    def plot_potentials(
-        self, file_path=None, xlim=(1, 2), ylim=(-10, 40)
+    def plot_potential(
+        self, file_path=None, xlim=(0, 2), ylim=(-10, 40)
     ) -> None:
         """Plots the optimized potential energy.
 
@@ -544,6 +544,7 @@ class Force:
         self.x_min = self.x_range[0]
         self.x_max = self.x_range[-1] + self.dx
         self.force_init = "Table"
+        self.nbins = len(self.x_range) - 1
 
     def _add_state(self, state):
         """Add a state to be used in optimizing this Force.

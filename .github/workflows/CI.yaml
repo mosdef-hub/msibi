@@ -30,7 +30,7 @@ jobs:
         name: Checkout Branch / Pull Request
 
       - name: Install Mamba
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-dev.yml
           create-args: >-
@@ -43,7 +43,7 @@ jobs:
         run: python -m pytest -v --cov=msibi --cov-report=xml --cov-append --cov-config=setup.cfg --color yes --pyargs msibi 
 
       - name: Upload Coverage Report
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           name: MSIBI-Coverage
           verbose: true
@@ -55,7 +55,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macOS-latest, macOS-13, ubuntu-latest]
+        os: [macOS-latest, ubuntu-latest]
         python-version: ["3.12"]
 
     defaults:
@@ -67,7 +67,7 @@ jobs:
         name: Checkout Branch / Pull Request
 
       - name: Install Mamba
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-dev.yml
           create-args: >-

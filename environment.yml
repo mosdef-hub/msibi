@@ -2,9 +2,9 @@ name: msibi
 channels:
 - conda-forge
 dependencies:
-- freud >=3.0
+- freud >=3.0,<3.2
 - gsd >=3.0
-- hoomd >=4.0
+- hoomd >=4.0,<5.0
 - python >=3.10
 - pandas
 - cmeutils >=1.3
