@@ -29,7 +29,7 @@ The MSIBI package is designed to be very object oriented. Any force optimization
 
 MSIBI uses [Hoomd-Blue](https://hoomd-blue.readthedocs.io/en/latest/) to run optimization simulations. It is not required that you be familiar with Hoomd to use MSIBI as the simulation script is automatically generated and ran. However, it is required that you pass in the choice of [Hoomd method](https://hoomd-blue.readthedocs.io/en/latest/module-md-methods.html), [Hoomd neighbor list](https://hoomd-blue.readthedocs.io/en/latest/module-md-nlist.html), and [Hoomd thermostat](https://hoomd-blue.readthedocs.io/en/latest/module-md-methods-thermostats.html) to the `msibi.optimize.MSIBI` class. Since MSIBI utilizes Hoomd-Blue, this means that MSIBI can run on GPUs, see [Hoomd's installation guide](https://hoomd-blue.readthedocs.io/en/latest/installation.html) for instructions on ensuring your environment includes a GPU build of hoomd.
 
-### Quick Example:
+### Quick Example: Optimizing bond-stretching
 Here is a simple example using MSIBI to learn a bond-stretching force from a single state point:
 
 ```python
@@ -37,12 +37,12 @@ Here is a simple example using MSIBI to learn a bond-stretching force from a sin
 # Set simulation parameters, call `add_state` and `add_force` methods to store other MSIBI objects.
 optimizer = MSIBI(
 	nlist=hoomd.md.nlist.Cell,
-    integrator_method=hoomd.md.methods.ConstantVolume,
+    	integrator_method=hoomd.md.methods.ConstantVolume,
 	thermostat=hoomd.md.methods.thermostats.MTTK,
-    thermostat_kwargs={"tau": 0.1},
-    method_kwargs={},
+    	thermostat_kwargs={"tau": 0.1},
+    	method_kwargs={},
 	dt=0.0001,
-	gsd_period=int(1e3)
+	gsd_period=int(1e4)
 )
 
 # Create a State instance, pass in a path to the target trajectory
@@ -65,18 +65,17 @@ optimizer.run_optimization(n_iterations=10, n_steps=2e5)
 AA_bond.plot_distribution_comparison(state=stateA)
 AB_bond.plot_distribution_comparison(state=stateA)
 
-<<<<<<< HEAD
-# Run 20 MSIBI iterations
-optimizer.run_optimization(n_steps=2e6, n_iterations=20)
-pairAA.save_potential("pairAA.csv")
+# Save potentials
+AA_bond.save_potential("AA_bond.csv")
+AB_bond.save_potential("AB_bond.csv")
 ```
 
-### Example: Multiple states, multiple forces
+### Quick Example: Multiple states, multiple forces
 - Here is an example of learning a pair potential using multiple state points and forces.
 - In this example, we set fixed bond and angle potentials that are included during iteration simulations.
 - The bond potential will set a fixed harmonic force, while the angle potential will be set from a table potential file.
 - This illustrates a use case of stringing together multiple MSIBI optimizations.
-	- For example, one MSIBI optimization can be used to learn and obtain a coarse-grained angle potential table file which can then be set and held fixed while learning pair potentials in a subsequent MSIBI optimization.
+- For example, one MSIBI optimization can be used to learn and obtain a coarse-grained angle potential table file which can then be set and held fixed while learning pair potentials in a subsequent MSIBI optimization.
 
 ```python
 import hoomd
@@ -84,10 +83,10 @@ from msibi import MSIBI, State, Pair, Bond, Angle
 
 optimizer = MSIBI(
 	nlist=hoomd.md.nlist.Cell,
-    integrator_method=hoomd.md.methods.ConstantVolume,
+	integrator_method=hoomd.md.methods.ConstantVolume,
 	thermostat=hoomd.md.methods.thermostats.MTTK,
-    thermostat_kwargs={"tau": 0.1},
-    method_kwargs={},
+	thermostat_kwargs={"tau": 0.1},
+	method_kwargs={},
 	dt=0.0001,
 	gsd_period=int(1e4)
 )
