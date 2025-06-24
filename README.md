@@ -29,78 +29,44 @@ The MSIBI package is designed to be very object oriented. Any force optimization
 
 MSIBI uses [Hoomd-Blue](https://hoomd-blue.readthedocs.io/en/latest/) to run optimization simulations. It is not required that you be familiar with Hoomd to use MSIBI as the simulation script is automatically generated and ran. However, it is required that you pass in the choice of [Hoomd method](https://hoomd-blue.readthedocs.io/en/latest/module-md-methods.html), [Hoomd neighbor list](https://hoomd-blue.readthedocs.io/en/latest/module-md-nlist.html), and [Hoomd thermostat](https://hoomd-blue.readthedocs.io/en/latest/module-md-methods-thermostats.html) to the `msibi.optimize.MSIBI` instance. 
 
-### Example: Single state, single force
-- Here is an example of learning a pair potential using a single state point with only one bead type.
+### Quick Example:
+Here is a simple example using MSIBI to learn a bond-stretching force from a single state point:
 
 ```python
-import hoomd
-from msibi import MSIBI, State, Pair 
-
+# This is the context/management class for MSIBI
+# Set simulation parameters, call `add_state` and `add_force` methods to store other MSIBI objects.
 optimizer = MSIBI(
 	nlist=hoomd.md.nlist.Cell,
-	integrator=hoomd.md.methods.ConstantVolume,
+    integrator_method=hoomd.md.methods.ConstantVolume,
 	thermostat=hoomd.md.methods.thermostats.MTTK,
+    thermostat_kwargs={"tau": 0.1},
+    method_kwargs={},
 	dt=0.0001,
-	gsd_period=int(1e4)
+	gsd_period=int(1e3)
 )
 
 # Create a State instance, pass in a path to the target trajectory
-stateA = State(name="A", kT=2.0, traj_file="stateA.gsd", alpha=1.0, n_frames=50)
+stateA = State(name="A", kT=5.0, traj_file="cg_trajectory.gsd", alpha0=0.7, n_frames=100)
+
+# For each force you want to optimize, create an instance, set optimize=True
+AA_bond = Bond(type1="A", type2="A", optimize=True, nbins=80)
+AA_bond.set_polynomial(x_min=0.0, x_max=0.5, x0=0.22, k2=100000, k3=0, k4=0)
+AA_bond.smoothing_window = 5
+AB_bond = Bond(type1="A", type2="B", optimize=True, nbins=80)
+AB_bond.set_polynomial(x_min=0.0, x_max=0.5, x0=0.22, k2=100000, k3=0, k4=0)
+AB_bond.smoothing_window = 5
+# Add all states and forces to the optimization class (MSIBI)
 optimizer.add_state(stateA)
+optimizer.add_force(AA_bond)
+optimizer.add_force(AB_bond)
+optimizer.run_optimization(n_iterations=10, n_steps=2e5)
 
-# Create a Pair instance to be optimized
-pairAA = Pair(type1="A", type2="A", optimize=True, r_cut=3.0, nbins=100) 
-# Call the set_lj() method to set an initial guess potential
-pairAA.set_lj(r_min=0.001, r_cut=3.0, epsilon=1.0, sigma=1.0)
-optimizer.add_force(pairAA)
+# See distribution comparison
+AA_bond.plot_distribution_comparison(state=stateA)
+AB_bond.plot_distribution_comparison(state=stateA)
 
-# Run 20 MSIBI iterations
-optimizer.run_optimization(n_steps=2e6, n_iterations=20)
-pairAA.save_potential("AA_final.csv")
-```
-
-### Example: Multiple states, multiple forces
-- Here is an example of learning a pair potential using multiple state points.
-- In this example, we set fixed bond and angle potentials which are assumed to have been learned from previous MSIBI runs.
-
-```python
-import hoomd
-from msibi import MSIBI, State, Pair, Bond, Angle 
-
-optimizer = MSIBI(
-	nlist=hoomd.md.nlist.Cell,
-	integrator=hoomd.md.methods.ConstantVolume,
-	thermostat=hoomd.md.methods.thermostats.MTTK,
-	dt=0.0001,
-	gsd_period=int(1e4)
-)
-
-# Create 3 State instances, pass in a path to the target trajectory
-stateA = State(name="A", kT=2.0, traj_file="stateA.gsd", alpha=0.2, n_frames=50)
-stateB = State(name="B", kT=4.0, traj_file="stateB.gsd", alpha=0.5, n_frames=50)
-stateC = State(name="C", kT=6.0, traj_file="stateC.gsd", alpha=0.3, n_frames=50)
-optimizer.add_state(stateA)
-optimizer.add_state(stateB)
-optimizer.add_state(stateC)
-
-# Add bond and angle forces learned from previous MSIBI runs
-bondAA = Bond(type1="A", type2="A", optimize=False)
-bondAA.set_from_file("bondAA.csv")
-optimize.add_force(bondAA)
-
-angleAA = Angle(type1="A", type2="A", type3="A", optimize=False)
-angleAA.set_from_file("angleAA.csv")
-optimize.add_force(angleAA)
-
-# Create a Pair instance to be optimized.
-pairAA = Pair(type1="A", type2="A", optimize=True, r_cut=3.0, nbins=100) 
-# Call the set_lj() method to set an initial guess potential
-pairAA.set_lj(r_min=0.001, r_cut=3.0, epsilon=1.0, sigma=1.0)
-optimizer.add_force(pairAA)
-
-# Run 20 MSIBI iterations
-optimizer.run_optimization(n_steps=2e6, n_iterations=20)
-pairAA.save_potential("AA_final.csv")
+AA_bond.save_potential("AA_bond.csv")
+AB_bond.save_potential("AB_bond.csv")
 ```
 
 
