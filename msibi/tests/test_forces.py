@@ -57,9 +57,10 @@ class TestForce(BaseTest):
         bond = Bond(type1="A", type2="B", optimize=True, nbins=60)
         bond.set_polynomial(x_min=0.0, x_max=3.0, x0=1, k2=200, k3=0, k4=0)
         bond.save_potential("test.csv")
-        bond2 = Bond(type1="A", type2="B", optimize=True, nbins=60)
+        bond2 = Bond(type1="A", type2="B", optimize=False)
         bond2.set_from_file("test.csv")
         assert np.allclose(bond.potential, bond2.potential)
+        assert bond2.nbins == bond.nbins == 60
         os.remove("test.csv")
 
     def test_fit_scores(self, msibi, stateX, stateY):
