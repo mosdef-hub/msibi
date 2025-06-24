@@ -13,3 +13,5 @@ dependencies:
 - pytest
 - pytest-cov
 - pre-commit
+- pip:
+    - build
