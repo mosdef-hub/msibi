@@ -1,53 +1,125 @@
-##############################################################################
-# MSIBI: A package for optimizing coarse-grained force fields using multistate
-#   iterative Boltzmann inversion.
-# Copyright (c) 2017 Vanderbilt University and the Authors
-#
-# Authors: Christoph Klein, Timothy C. Moore
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files, to deal
-# in MSIBI without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# # copies of MSIBI, and to permit persons to whom MSIBI is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of MSIBI.
-#
-# MSIBI IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH MSIBI OR THE USE OR OTHER DEALINGS ALONG WITH
-# MSIBI.
-#
-# You should have received a copy of the MIT license.
-# If not, see <https://opensource.org/licenses/MIT/>.
-##############################################################################
+import warnings
 
-from __future__ import division
-
+import more_itertools as mit
 import numpy as np
+from scipy.optimize import curve_fit
 
 from msibi.utils.general import find_nearest
 
-__all__ = ['mie', 'morse']
+
+def polynomial_potential(x, x0, k4, k3, k2):
+    """Creates a polynomial potential with the following form
+
+        V(x) = k4(x-x0)^4 + k3(x-x0)^3 + k2(x-x0)^2
+
+    Can be used in creating table potentials.
+
+    """
+    V_x = k4 * ((x - x0) ** 4) + k3 * ((x - x0) ** 3) + k2 * ((x - x0) ** 2)
+    return V_x
 
 
-def mie(r, eps, sig, m=12, n=6):
-    """Mie pair potential.  """
-    prefactor = (m  / (m - n)) * (m / n)**(n / (m - n))
-    return prefactor * eps * ((sig / r) ** m - (sig / r) ** n)
+def mie(r, epsilon, sigma, m, n):
+    """The Mie potential functional form.
+
+    Can be used for creating table Mie potentials.
+    """
+    prefactor = (m / (m - n)) * (m / n) ** (n / (m - n))
+    V_r = prefactor * epsilon * ((sigma / r) ** m - (sigma / r) ** n)
+    return V_r
 
 
-def morse(r, D, alpha, r0):
-    """Morse pair potential. """
-    return D * (np.exp(-2 * alpha * (r - r0)) - 2 * np.exp(-alpha * (r - r0)))
+def lennard_jones(r, epsilon, sigma):
+    """Create an LJ 12-6 table potential."""
+    return mie(r=r, epsilon=epsilon, sigma=sigma, m=12, n=6)
 
 
-def tail_correction(r, V, r_switch):
+def pair_correction(r, V, form, r_switch=2.5):
+    if form == "linear":
+        head_correction_function = linear_head_correction
+        tail_correction_function = pair_tail_correction
+    elif form == "exponential":
+        head_correction_function = exponential_head_correction
+        tail_correction_function = pair_tail_correction
+    else:
+        raise ValueError(f'Unsupported head correction form: "{form}"')
+
+    real_idx = np.where(np.isfinite(V))[0]
+    # Check for continuity of real_indices:
+    if not np.all(np.ediff1d(real_idx) == 1):
+        start = real_idx[0]
+        end = real_idx[-1]
+        # Correct nans, infs that are surrounded by 2 finite numbers
+        for idx, v in enumerate(V[start:end]):
+            if not np.isfinite(v):
+                try:
+                    avg = (V[idx + start - 1] + V[idx + start + 1]) / 2
+                    V[idx + start] = avg
+                except IndexError:
+                    pass
+        # Trim off edge cases
+        _real_idx = np.where(np.isfinite(V))[0]
+        real_idx = max(
+            [list(g) for g in mit.consecutive_groups(_real_idx)], key=len
+        )
+
+    head_cutoff = real_idx[0] - 1
+    tail_cutoff = real_idx[-1] + 1
+
+    head_correction_V = head_correction_function(r=r, V=V, cutoff=head_cutoff)
+    # Potential with both head correction and tial correciton applied
+    tail_correction_V = tail_correction_function(
+        r=r, V=head_correction_V, r_switch=r_switch
+    )
+    return tail_correction_V, real_idx, head_cutoff, tail_cutoff
+
+
+def bond_correction(r, V, form):
+    """Handles corrections for both the head and tail of
+    bond scretching and angle potentials.
+    """
+    import more_itertools as mit
+
+    if form == "linear":
+        head_correction_function = linear_head_correction
+        tail_correction_function = linear_tail_correction
+    elif form == "exponential":
+        head_correction_function = exponential_head_correction
+        tail_correction_function = exponential_tail_correction
+    else:
+        raise ValueError(f'Unsupported head correction form: "{form}"')
+
+    real_idx = np.where(np.isfinite(V))[0]
+    # Check for continuity of real_indices:
+    if not np.all(np.ediff1d(real_idx) == 1):
+        start = real_idx[0]
+        end = real_idx[-1]
+        # Correct nans, infs that are surrounded by 2 finite numbers
+        for idx, v in enumerate(V[start:end]):
+            if not np.isfinite(v):
+                try:
+                    avg = (V[idx + start - 1] + V[idx + start + 1]) / 2
+                    V[idx + start] = avg
+                except IndexError:
+                    pass
+        # Trim off edge cases
+        _real_idx = np.where(np.isfinite(V))[0]
+        real_idx = max(
+            [list(g) for g in mit.consecutive_groups(_real_idx)], key=len
+        )
+
+    head_cutoff = real_idx[0] - 1
+    tail_cutoff = real_idx[-1] + 1
+    # Potential with the head correction applied
+    head_correction_V = head_correction_function(r=r, V=V, cutoff=head_cutoff)
+    # Potential with both head correction and tial correciton applied
+    tail_correction_V = tail_correction_function(
+        r=r, V=head_correction_V, cutoff=tail_cutoff
+    )
+    return tail_correction_V, real_idx, head_cutoff, tail_cutoff
+
+
+def pair_tail_correction(r, V, r_switch):
     """Apply a tail correction to a potential making it go to zero smoothly.
 
     Parameters
@@ -69,13 +141,15 @@ def tail_correction(r, V, r_switch):
 
     S_r = np.ones_like(r)
     r = r[idx_r_switch:]
-    S_r[idx_r_switch:] = ((r_cut ** 2 - r ** 2) ** 2 *
-                          (r_cut ** 2 + 2 * r ** 2 - 3 * r_switch ** 2) /
-                          (r_cut ** 2 - r_switch ** 2) ** 3)
+    S_r[idx_r_switch:] = (
+        (r_cut**2 - r**2) ** 2
+        * (r_cut**2 + 2 * r**2 - 3 * r_switch**2)
+        / (r_cut**2 - r_switch**2) ** 3
+    )
     return V * S_r
 
 
-def head_correction(r, V, previous_V, form='linear'):
+def pair_head_correction(r, V, previous_V=None, form="linear"):
     """Apply head correction to V making it go to a finite value at V(0).
 
     Parameters
@@ -90,12 +164,12 @@ def head_correction(r, V, previous_V, form='linear'):
         The form of the smoothing function used.
 
     """
-    if form == 'linear':
+    if form == "linear":
         correction_function = linear_head_correction
-    elif form == 'exponential':
+    elif form == "exponential":
         correction_function = exponential_head_correction
     else:
-        raise ValueError('Unsupported head correction form: "{0}"'.format(form))
+        raise ValueError(f'Unsupported head correction form: "{form}"')
 
     for i, pot_value in enumerate(V[::-1]):
         # Apply correction function because either of the following is true:
@@ -104,27 +178,108 @@ def head_correction(r, V, previous_V, form='linear'):
         if np.isnan(pot_value) or np.isposinf(pot_value):
             last_real = V.shape[0] - i - 1
             if last_real > len(V) - 2:
-                raise RuntimeError('Undefined values in tail of potential.'
-                                   'This probably means you need better '
-                                   'sampling at this state point.')
+                raise RuntimeError(
+                    "Undefined values in tail of potential."
+                    "This probably means you need better "
+                    "sampling at this state point."
+                )
             return correction_function(r, V, last_real)
         # Retain old potential at small r because:
         #   * current rdf = 0, target rdf > 0 --> -inf values in potential.
         elif np.isneginf(pot_value):
             last_neginf = V.shape[0] - i - 1
-            for i, pot_value in enumerate(V[:last_neginf+1]):
+            for i, pot_value in enumerate(V[: last_neginf + 1]):
                 V[i] = previous_V[i]
             return V
     else:
-        # TODO: Raise error?
-        #       This means that all potential values are well behaved.
-        pass
+        warnings.warn(
+            "No inf/nan values in your potential--this is unusual!"
+            "No head correction applied"
+        )
+        return V
 
 
-def linear_head_correction(r, V, cutoff):
-    """Use a linear function to smoothly force V to a finite value at V(0). """
-    slope = ((V[cutoff+1] - V[cutoff+2]) / (r[cutoff+1] - r[cutoff+2]))
-    V[:cutoff + 1] = slope * (r[:cutoff + 1] - r[cutoff + 1]) + V[cutoff + 1]
+def linear_tail_correction(r, V, cutoff, window=6):
+    """Use a linear function to smoothly force V to a finite value at V(cut).
+
+    This function uses scipy.optimize.curve_fit to find the slope and intercept
+    of the linear function that is used to correct the tail of the potential.
+
+    Parameters
+    ----------
+    r : np.ndarray
+        Separation values
+    V : np.ndarray
+        Potential at each of the separation values
+    cutoff : int
+        The last real value of V when iterating backwards
+    window : int
+        Number of data points backward from cutoff to use in slope calculation
+
+    """
+
+    def linear(x, m, b):
+        return m * x + b
+
+    popt, pcov = curve_fit(
+        linear, r[cutoff - window : cutoff], V[cutoff - window : cutoff]
+    )
+    V[cutoff:] = linear(r[cutoff:], *popt)
+    return V
+
+
+def linear_head_correction(r, V, cutoff, window=6):
+    """Use a linear function to smoothly force V to a finite value at V(0).
+
+    This function uses scipy.optimize.curve_fit to find the slope and intercept
+    of the linear function that is used to correct the head of the potential.
+
+    Parameters
+    ----------
+    r : np.ndarray
+        Separation values
+    V : np.ndarray
+        Potential at each of the separation values
+    cutoff : int
+        The first real value of V when iterating forwards
+    window : int
+        Number of data points forward from cutoff to use in slope calculation
+    """
+
+    def linear(x, m, b):
+        return m * x + b
+
+    popt, pcov = curve_fit(
+        linear, r[cutoff + 1 : cutoff + window], V[cutoff + 1 : cutoff + window]
+    )
+    V[: cutoff + 1] = linear(r[: cutoff + 1], *popt)
+    return V
+
+
+def exponential_tail_correction(r, V, cutoff):
+    """Use an exponential function to smoothly force V to a finite value at V(cut)
+
+    Parameters
+    ----------
+    r : np.ndarray
+        Separation values
+    V : np.ndarray
+        Potential at each of the separation values
+    cutoff : int
+        The last non-real value of V when iterating backwards
+
+    This function fits the small part of the potential to the form:
+    V(r) = A*exp(Br)
+
+    """
+    raise RuntimeError(
+        "Exponential tail corrections are not implemented."
+        "Use the linear correction form when optimizing bonds and angles."
+    )
+    dr = r[cutoff - 1] - r[cutoff - 2]
+    B = np.log(V[cutoff - 1] / V[cutoff - 2]) / dr
+    A = V[cutoff - 1] * np.exp(B * r[cutoff - 1])
+    V[cutoff:] = A * np.exp(B * r[cutoff:])
     return V
 
 
@@ -138,20 +293,19 @@ def exponential_head_correction(r, V, cutoff):
     V : np.ndarray
         Potential at each of the separation values
     cutoff : int
-        The last real value of V when iterating backwards
+        The last non real value of V when iterating forwards
 
     This function fits the small part of the potential to the form:
     V(r) = A*exp(-Br)
+
     """
-    dr = r[cutoff+2] - r[cutoff+1]
-    B = np.log(V[cutoff+1] / V[cutoff+2]) / dr
-    A = V[cutoff+1] * np.exp(B * r[cutoff+1])
-    V[:cutoff+1] = A * np.exp(-B * r[:cutoff+1])
+    dr = r[cutoff + 2] - r[cutoff + 1]
+    B = np.log(V[cutoff + 1] / V[cutoff + 2]) / dr
+    A = V[cutoff + 1] * np.exp(B * r[cutoff + 1])
+    V[: cutoff + 1] = A * np.exp(-B * r[: cutoff + 1])
+    return V
 
 
-def alpha_array(alpha0, pot_r, form='linear'):
-    """Generate an array of alpha values used for scaling in the IBI step. """
-    if form == 'linear':
-        return alpha0 * (1.0 - pot_r / pot_r[-1])
-    else:
-        raise ValueError('Unsupported alpha form')
+def alpha_array(alpha0, pot_r, dr, form="linear"):
+    """Generate an array of alpha values used for scaling in the IBI step."""
+    return alpha0 * (1.0 - (pot_r - dr) / (pot_r[-1] - dr))

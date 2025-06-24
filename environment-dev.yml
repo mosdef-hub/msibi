@@ -1,4 +1,4 @@
-name: msibi
+name: msibi-dev
 channels:
 - conda-forge
 dependencies:
@@ -10,3 +10,6 @@ dependencies:
 - cmeutils >=1.3
 - numpy <2.0
 - more-itertools
+- pytest
+- pytest-cov
+- pre-commit

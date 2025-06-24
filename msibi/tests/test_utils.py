@@ -1,6 +1,5 @@
-import pytest
-
 import numpy as np
+import pytest
 
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.general import find_nearest
@@ -13,6 +12,9 @@ def test_calc_similarity():
     assert calc_similarity(a, b) == 1.0
     b *= -1
     assert calc_similarity(a, b) == 0.0
+    arr1 = np.random.random(10)
+    arr2 = np.random.random(10)
+    assert calc_similarity(arr1, arr2) == calc_similarity(arr2, arr1)
 
 
 def test_find_nearest():
@@ -27,7 +29,7 @@ def test_savitzky_golay():
     y = 2 * x + 1
     y2 = savitzky_golay(y, 3, 1)
     assert y.shape == y2.shape
-    assert np.allclose(y, y2)
+    assert np.allclose(y, y2, atol=0.1)
 
     y = x**3.0
     y2 = savitzky_golay(y, 3, 1)

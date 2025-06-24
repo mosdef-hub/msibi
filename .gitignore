@@ -1,9 +1,10 @@
 # Default files
+*.ipynb
 *.pyc
 *.dcd
 .DS_Store
 *.egg-info
-
+*.idea/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
