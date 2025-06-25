@@ -50,10 +50,10 @@ stateA = State(name="A", kT=5.0, traj_file="cg_trajectory.gsd", alpha0=0.7, n_fr
 
 # For each force you want to optimize, create an instance, set optimize=True
 AA_bond = Bond(type1="A", type2="A", optimize=True, nbins=80)
-AA_bond.set_polynomial(x_min=0.0, x_max=0.5, x0=0.22, k2=100000, k3=0, k4=0)
+AA_bond.set_polynomial(x_min=0.0, x_max=0.5, x0=0.22, k2=5000, k3=0, k4=0)
 AA_bond.smoothing_window = 5
 AB_bond = Bond(type1="A", type2="B", optimize=True, nbins=80)
-AB_bond.set_polynomial(x_min=0.0, x_max=0.5, x0=0.22, k2=100000, k3=0, k4=0)
+AB_bond.set_polynomial(x_min=0.0, x_max=0.5, x0=0.22, k2=5000, k3=0, k4=0)
 AB_bond.smoothing_window = 5
 # Add all states and forces to the optimization class (MSIBI)
 optimizer.add_state(stateA)
@@ -101,7 +101,7 @@ optimizer.add_state(stateC)
 
 # Add bond and set a harmonic force (e.g. fit to Boltzmann inverse of the distribtion) 
 bondAA = Bond(type1="A", type2="A", optimize=False)
-bondAA.set_harmonic(r0=1.4, k=200)
+bondAA.set_harmonic(r0=1.4, k=800)
 optimize.add_force(bondAA)
 
 # Add angle and load previously obtained table potential 
