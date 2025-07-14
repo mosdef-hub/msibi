@@ -10,7 +10,7 @@ from msibi.potentials import alpha_array
 
 
 class State(object):
-    """A single state used as part of a multistate optimization.
+    """A single state point used as part of a multistate optimization.
 
     Parameters
     ----------
@@ -111,7 +111,7 @@ class State(object):
             if pot_x_range is None or dx is None:
                 raise ValueError(
                     "A potential's x value range must be "
-                    "given when an msibi.State.state is using "
+                    "given when an `msibi.state.State` is using "
                     "an alpha form that is not `constant`."
                 )
             return alpha_array(
@@ -135,8 +135,8 @@ class State(object):
         gsd_period: int,
         backup_trajectories: bool = False,
     ) -> None:
-        """The Hoomd 4 script used to run each query simulation.
-        This method is called in msibi.optimize().
+        """The HOOMD-Blue script used to run each query simulation.
+        This method is called in :meth:msibi.optimize.run_optimization.
         """
         device = hoomd.device.auto_select()
         sim = hoomd.simulation.Simulation(device=device)
@@ -174,7 +174,7 @@ class State(object):
         print(f"Finished simulation {iteration} for state {self}")
         print()
 
-    def _setup_dir(self, name, kT, dir_name=None) -> str:
+    def _setup_dir(self, name: str, kT: float, dir_name: str = None) -> str:
         """Create a state directory each time a new State is created."""
         if dir_name is None:
             if not os.path.isdir("states"):

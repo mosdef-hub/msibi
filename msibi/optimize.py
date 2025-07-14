@@ -8,14 +8,14 @@ import msibi
 class MSIBI(object):
     """Management class for orchestrating an MSIBI optimization.
 
-    Notes
+    Note
     -----
     This package is very object oriented. This class should be
-    created first, followed by at least one `msibi.state.State`
-    instance and at least one `msibi.forces.Force` instance.
+    created first, followed by at least one :class:`msibi.state.State`
+    instance and at least one :class:`msibi.forces.Force` instance.
 
-    Then, use the methods `MSIBI.add_state()` and `MSIBI.add_force()`
-    before beginning the optimization runs using `MSIBI.run_optimization()`.
+    Then, use the methods :meth:`MSIBI.add_state` and :meth:`MSIBI.add_force`
+    before beginning the optimization runs using :meth:`MSIBI.run_optimization`.
 
     Parameters
     ----------
@@ -78,16 +78,16 @@ class MSIBI(object):
         self._optimize_forces = []
 
     def add_state(self, state: msibi.state.State) -> None:
-        """Add a state point to MSIBI.states.
+        """Add a state point to be included in query simulations.
 
         Parameters
         ----------
-        state : msibi.state.State, required
-            Instance of msibi.state.State
+        state : :class:msibi.state.State, required
+            A state point to be included in query simulations
 
-        Notes
-        -----
-        At least 1 state point must be added before optimization can occur.
+        Note
+        ----
+        At least one state point must be added before optimization can occur.
         """
         # TODO: Do we still need the ._opt attr?
         state._opt = self
@@ -98,11 +98,11 @@ class MSIBI(object):
 
         Parameters
         ----------
-        force : msibi.forces.Force, required
-            Instance of msibi.forces.Force
+        force : :class:msibi.forces.Force, required
+            A force to be included in query simulations
 
-        Notes
-        -----
+        Note
+        ----
         Only one type of force can be optimized at a time.
         Forces not set to be optimized are held fixed during query simulations.
         """
@@ -114,22 +114,22 @@ class MSIBI(object):
 
     @property
     def bonds(self) -> list:
-        """All instances of msibi.forces.Bond that have been added."""
+        """All instances of :class:msibi.forces.Bond included in query simulations."""
         return [f for f in self.forces if isinstance(f, msibi.forces.Bond)]
 
     @property
     def angles(self) -> list:
-        """All instances of msibi.forces.Angle that have been added."""
+        """All instances of :class:`msibi.forces.Angle` included in query simulations."""
         return [f for f in self.forces if isinstance(f, msibi.forces.Angle)]
 
     @property
     def pairs(self) -> list:
-        """All instances of msibi.forces.Pair that have been added."""
+        """All instances of :class:msibi.forces.Pair included in query simulations."""
         return [f for f in self.forces if isinstance(f, msibi.forces.Pair)]
 
     @property
     def dihedrals(self) -> list:
-        """All instances of msibi.forces.Dihedral that have been added."""
+        """All instances of :class:msibi.forces.Dihedral included in query simulations."""
         return [f for f in self.forces if isinstance(f, msibi.forces.Dihedral)]
 
     def _add_optimize_force(self, force: msibi.forces.Force) -> None:
@@ -151,7 +151,7 @@ class MSIBI(object):
         _dir=None,
     ) -> None:
         """Runs query simulations and performs MSIBI
-        on the potentials set to be optimized.
+        on the forces set to be optimized.
 
         Parameters
         ----------
@@ -160,8 +160,8 @@ class MSIBI(object):
         n_iterations : int, required
             Number of MSIBI update iterations.
         backup_trajectories : bool, optional default False
-            If True, copies of the query simulation trajectories
-            are saved in their respective msibi.state.State directory.
+            If ``True``, copies of the query simulation trajectories
+            are saved in their respective :class:msibi.state.State directory.
         """
         for n in range(n_iterations):
             print(f"---Optimization: {n+1} of {n_iterations}---")
@@ -184,17 +184,17 @@ class MSIBI(object):
             self.n_iterations += 1
 
     def pickle_forces(self, file_path: str) -> None:
-        """Save the Hoomd objects for all forces to a single pickle file.
+        """Save the HOOMD-Blue force objects for all forces to a single pickle file.
 
         Parameters
         ----------
         file_path : str, required
             The path and file name for the pickle file.
 
-        Notes
-        -----
+        Note
+        ----
         Use this method as a convienent way to save and use the final
-        set of forces in your own Hoomd-Blue script.
+        set of forces to be used in your own HOOMD-Blue script.
         """
         forces = self._build_force_objects()
         if len(forces) == 0:
@@ -272,7 +272,7 @@ class MSIBI(object):
             force._update_potential()
 
     def _recompute_distribution(self, force: msibi.forces.Force) -> None:
-        """Recompute the current distribution of bond lengths or angles."""
+        """Recompute the current distribution."""
         for state in self.states:
             force._compute_current_distribution(state)
             force._save_current_distribution(state, iteration=self.n_iterations)

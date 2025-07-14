@@ -188,7 +188,7 @@ class TestMSIBI(BaseTest):
         dihedral = Dihedral(
             type1="B", type2="A", type3="B", type4="A", optimize=False
         )
-        dihedral.set_harmonic(k=100, phi0=0, d=-1, n=1)
+        dihedral.set_periodic(k=100, phi0=0, d=-1, n=1)
         msibi.add_force(dihedral)
 
         msibi.run_optimization(n_steps=500, n_iterations=1)

@@ -233,7 +233,7 @@ class TestDihedral(BaseTest):
         assert dihedral.optimize is False
 
     def test_set_dihedral_harmonic(self, dihedral):
-        dihedral.set_harmonic(k=500, phi0=0, d=-1, n=1)
+        dihedral.set_periodic(k=500, phi0=0, d=-1, n=1)
         assert dihedral.format == "static"
         assert dihedral.force_entry["phi0"] == 0
         assert dihedral.force_entry["k"] == 500
