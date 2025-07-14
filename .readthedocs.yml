@@ -1,16 +1,22 @@
 version: 2
+
 formats:
   - htmlzip
-  - pdf
+
 build:
-  os: ubuntu-22.04
+  os: ubuntu-24.04
   tools:
-    python: "mambaforge-4.10"
+    python: "miniconda-latest"
 
 conda:
   environment: docs/environment-docs.yml
 
 sphinx:
   builder: html
-  configuration: docs/source/conf.py
-  fail_on_warning: false 
+  configuration: docs/conf.py
+  fail_on_warning: True
+
+python:
+  install:
+    - method: pip
+      path: .

@@ -79,7 +79,7 @@ AB_bond.save_potential("AB_bond.csv")
 
 ```python
 import hoomd
-from msibi import MSIBI, State, Pair, Bond, Angle 
+from msibi import MSIBI, State, Pair, Bond, Angle
 
 optimizer = MSIBI(
 	nlist=hoomd.md.nlist.Cell,
@@ -99,18 +99,18 @@ optimizer.add_state(stateA)
 optimizer.add_state(stateB)
 optimizer.add_state(stateC)
 
-# Add bond and set a harmonic force (e.g. fit to Boltzmann inverse of the distribtion) 
+# Add bond and set a harmonic force (e.g. fit to Boltzmann inverse of the distribtion)
 bondAA = Bond(type1="A", type2="A", optimize=False)
 bondAA.set_harmonic(r0=1.4, k=800)
 optimize.add_force(bondAA)
 
-# Add angle and load previously obtained table potential 
+# Add angle and load previously obtained table potential
 angleAA = Angle(type1="A", type2="A", type3="A", optimize=False)
 angleAA.set_from_file("angleAA.csv")
 optimize.add_force(angleAA)
 
 # Create a Pair instance to be optimized.
-pairAA = Pair(type1="A", type2="A", optimize=True, r_cut=3.0, nbins=100) 
+pairAA = Pair(type1="A", type2="A", optimize=True, r_cut=3.0, nbins=100)
 # Call the set_lj() method to set an initial guess potential
 pairAA.set_lj(r_min=0.001, r_cut=3.0, epsilon=1.0, sigma=1.0)
 optimizer.add_force(pairAA)

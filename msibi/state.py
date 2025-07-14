@@ -10,7 +10,7 @@ from msibi.potentials import alpha_array
 
 
 class State(object):
-    """A single state used as part of a multistate optimization.
+    """A single state point used as part of a multistate optimization.
 
     Parameters
     ----------
@@ -22,18 +22,18 @@ class State(object):
         The target gsd trajectory associated with this state.
         This trajectory calcualtes the target distributions used
         during optimization.
-    n_frames : int, required
+    n_frames : int
         The number of frames to use when calculating distributions.
         When calculating distributions, the last `n_frames` of the
         trajectory will be used.
-    alpha0 : (Union[float, int]), default 1.0
+    alpha0 : (Union[float, int]), default=1.0
         The base alpha value used to scale the weight of this state.
     alpha_form: str, optional, default 'constant'
         Alpha can be a constant number that is applied to the potential at all
         independent values (x), or it can be a linear function that approaches
         zero as x approaches x_cut.
-    exclude_bonded: bool, optional, default `False`
-        If `True` then any beads that belong to the same molecle
+    exclude_bonded: bool, optional, default=False
+        If ``True`` then any beads that belong to the same molecle
         are not included in radial distribution funciton calculations.
     """
 
@@ -111,7 +111,7 @@ class State(object):
             if pot_x_range is None or dx is None:
                 raise ValueError(
                     "A potential's x value range must be "
-                    "given when an msibi.State.state is using "
+                    "given when an `msibi.state.State` is using "
                     "an alpha form that is not `constant`."
                 )
             return alpha_array(
@@ -135,8 +135,9 @@ class State(object):
         gsd_period: int,
         backup_trajectories: bool = False,
     ) -> None:
-        """The Hoomd 4 script used to run each query simulation.
-        This method is called in msibi.optimize().
+        """Runs HOOMD-Blue query simulations.
+
+        This method is called in :meth:msibi.optimize.run_optimization.
         """
         device = hoomd.device.auto_select()
         sim = hoomd.simulation.Simulation(device=device)
@@ -174,7 +175,7 @@ class State(object):
         print(f"Finished simulation {iteration} for state {self}")
         print()
 
-    def _setup_dir(self, name, kT, dir_name=None) -> str:
+    def _setup_dir(self, name: str, kT: float, dir_name: str = None) -> str:
         """Create a state directory each time a new State is created."""
         if dir_name is None:
             if not os.path.isdir("states"):

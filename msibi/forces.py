@@ -1,6 +1,6 @@
 import os
 import warnings
-from typing import Union
+from typing import Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -26,49 +26,53 @@ from msibi.utils.sorting import natural_sort
 
 class Force:
     """
-    Base class from which other forces inherit.
+    Base class from which all other forces inherit.
     Don't use this class directly, instead use
-    msibi.forces.Bond, msibi.forces.Angle, msibi.forces.Pair,
-    and msibi.forces.Dihedral.
+    :class:`Bond`, :class:`Angle`, :class:`Pair`, and :class:`Dihedral`.
 
-    Notes
-    -----
-    Forces in MSIBI can either be held constant (i.e. fixed) or
-    optimized (i.e. mutable).
-    Only one type of force can be optimized at a time.
-    For example, you can optimize multiple angle potentials
-    during one optimization run, but you cannot
-    optimize a pair and an angle potential in the same
-    optimization run.
+    .. warning::
+
+        This class should not be instantiated directly by users.
+        It can be used for ``isinstance`` or ``issubclass``.
+
+    .. note::
+
+        Forces in MSIBI can either be held constant (i.e., fixed) or
+        optimized (i.e., mutable).
+
+        Only one type of force can be optimized at a time.
+        For example, you can optimize multiple ``Angle`` potentials
+        during one optimization run, but you cannot
+        optimize a ``Pair`` and an ``Angle`` potential in the same
+        optimization run.
 
     Parameters
     ----------
-    name : str, required
+    name : str
         The name of the type in the Force.
         Must match the names found in the State's .gsd trajectory file.
-    optimize : bool, required
+    optimize : bool
         Set to `True` if this force is to be mutable and optimized.
         Set to `False` if this force is to be held constant while
         other forces are optimized.
     nbins : int, optional
         This must be a positive integer if this force is being optimized.
-        nbins is used to setting the potenials independent varible (x) range
+        nbins is used for setting the potenials independent varible (x) range
         and step size (dx).
         It is also used in determining the bin size of the target and query
         distributions.
         If this force is not being optimied, leave this as `None`.
-    correction_form: str, optional, default `linear`
+    correction_form: str, default = `linear`
         The type of correciton to apply to the head
         and tail of the force (only the head for msibi.forc.Pair).
         Right now, only "linear" is supported.
-
     """
 
     def __init__(
         self,
         name: str,
         optimize: bool,
-        nbins: int = None,
+        nbins: Optional[int] = None,
         correction_form: str = "linear",
     ):
         if optimize and nbins is None or nbins and nbins <= 0:
@@ -115,8 +119,8 @@ class Force:
             raise ValueError(
                 "Setting potential arrays can only be done "
                 "for Forces that utilize tables. "
-                "See msibi.forces.Force.set_polynomial() or "
-                "msibi.forces.Force.set_from_file()"
+                "See :meth:`msibi.forces.Force.set_polynomial` or "
+                ":meth:`msibi.forces.Force.set_from_file`"
             )
         self._potential = array
 
@@ -135,19 +139,7 @@ class Force:
 
     @smoothing_window.setter
     def smoothing_window(self, value: int):
-        """Window size used in smoothing the distributions and potentials.
-
-        Notes
-        -----
-        After you have created your State and Force objects, change
-        this property and check the effect on distributions using
-        `msibi.forces.Force.plot_distribution_comparison()` before
-        running optimizaitons.
-
-        Also see:
-            msibi.forces.Force.nbins
-            msibi.forces.Foce.smoothing_order
-        """
+        """Window size used in smoothing the distributions and potentials."""
         if not isinstance(value, int) or value <= 0:
             raise ValueError("The smoothing window must be an integer.")
         self._smoothing_window = value
@@ -156,24 +148,12 @@ class Force:
 
     @property
     def smoothing_order(self) -> int:
-        """The order used in smoothing the distributions."""
+        """The order used in Savitzky Golay filter."""
         return self._smoothing_order
 
     @smoothing_order.setter
     def smoothing_order(self, value: int):
-        """The order used in smoothing distributions and potentials.
-
-        Notes
-        -----
-        After you have created your State and Force objects, change
-        this property and check the effect on distributions using
-        `msibi.forces.Force.plot_distribution_comparison()` before
-        running optimizaitons.
-
-        Also see:
-            msibi.forces.Force.smoothing_window
-            msibi.forces.Foce.nbins
-        """
+        """The order used in Savitzky Golay filter."""
         if not isinstance(value, int) or value <= 0:
             raise ValueError("The smoothing order must be an integer.")
         self._smoothing_order = value
@@ -182,27 +162,12 @@ class Force:
 
     @property
     def nbins(self) -> int:
-        """The number of bins used in calculating distributions and
-        used in the x-range of the potential.
-        """
+        """The number of bins used in distributions and x-range of the potential."""
         return self._nbins
 
     @nbins.setter
     def nbins(self, value: int):
-        """The number of bins used in calculating distributions and
-        used in the x-range of the potential.
-
-        Notes
-        -----
-        After you have created your State and Force objects, change
-        this property and check the effect on distributions using
-        `msibi.forces.Force.plot_distribution_comparison()` before
-        running optimizaitons.
-
-        Also see:
-            msibi.forces.Force.smoothing_window
-            msibi.forces.Foce.smoothing_order
-        """
+        """The number of bins used in distributions and x-range of the potential."""
         if not isinstance(value, int) or value <= 0:
             raise ValueError("nbins must be an integer.")
         self._nbins = value
@@ -212,13 +177,14 @@ class Force:
     def smooth_potential(self) -> None:
         """Smooth and overwrite the current potential.
 
-        Note
-        ----
-        This uses a Savitzky Golay smoothing algorithm where the
-        window size and order parameters are set by
-        msibi.forces.Force.smoothing_window and
-        msibi.forces.Force.smoothing_order.
-        Both of these can be changed using their respective setters.
+        .. note::
+
+            This uses a Savitzky Golay smoothing algorithm where the
+            window size and order parameters are set by
+            :meth:`msibi.forces.Force.smoothing_window` and
+            :meth:`msibi.forces.Force.smoothing_order`.
+
+            Both of these can be changed using their respective setters.
 
         """
         if self.format != "table":
@@ -233,22 +199,21 @@ class Force:
         )
 
     def save_potential(self, file_path: str) -> None:
-        """Save the x-range, potential and force to a csv file.
+        """Save the x-range, potential and force to a `.csv` file.
+
+        .. note::
+
+            This method uses ``pandas.DataFrame.to_csv`` and saves the data
+            in with column labels of "x", "potential", and "force".
+
+            If you want to smooth the final potential, use
+            :meth:`msibi.forces.Force.smooth_potential` before
+            calling this method.
 
         Parameters
         ----------
-        file_path : str, required
+        file_path : str
             File path and name to save table potential to.
-
-        Notes
-        -----
-        This method uses pandas.DataFrame.to_csv() and saves the data
-        in with column labels of 'x', 'potential', 'force'.
-
-        If you want to smooth the final potential, use
-        msibi.forces.Force.smooth_potential() before
-        calling this method.
-
         """
         if self.format != "table":
             raise RuntimeError(
@@ -265,11 +230,11 @@ class Force:
         df.to_csv(file_path, index=False)
 
     def save_potential_history(self, file_path: str) -> None:
-        """Save the potential history of the force to a `npy` file.
+        """Save the potential history of the force to a `.npy` file.
 
         Parameters
         ----------
-        file_path : str, required
+        file_path : str
             File path and name to save table potential history to.
         """
         if self.format != "table":
@@ -280,14 +245,20 @@ class Force:
         np.save(file_path, np.asarray(self.potential_history))
 
     def save_state_data(self, state: msibi.state.State, file_path: str) -> None:
-        """Save the distribution data of a state as a a dictionary to a `npz` file.
+        """Save the distribution data of a state as a a dictionary to a `.npz` file.
+
+        .. note::
+
+            This saves the state points target distribution, current distribution
+            distribution history and f-fit scores for the corresponding potential
+            to the `.npz` file.
 
         Parameters
         ----------
-        state : msibi.state.State, required
+        state : :class:`msibi.state.State`, required
             The state to use in finding the target distribution.
         file_path : str, required
-            File path and name to save the `npz` file.
+            File path and name to save the `.npz` file.
         """
         state_dict = self._states[state]
         state_data = {
@@ -301,34 +272,32 @@ class Force:
         np.savez(file_path, **state_data)
 
     def target_distribution(self, state: msibi.state.State) -> np.ndarray:
-        """The target structural distribution corresponding to this foce.
+        """The target structural distribution corresponding to this force.
 
         Parameters
         ----------
-        state : msibi.state.State, required
-            The state to use in finding the target distribution.
+        state : msibi.state.State
+            The state point to use in finding the target distribution.
         """
         return self._states[state]["target_distribution"]
 
     def plot_target_distribution(
-        self, state: msibi.state.State, file_path=None
+        self, state: msibi.state.State, file_path: str = None
     ) -> None:
-        """
-        Quick plotting function that shows the target structural
-        distribution corresponding to the force and a state point.
+        """Plot the target distribution corresponding to this force and state point.
+
+        .. note::
+
+            Use this to see how the shape of the target distribution is
+            affected by your choices for nbins, smoothing window,
+            and smoothing order.
 
         Parameters
         ----------
-        state : msibi.state.State, required
+        state : msibi.state.State
             The state to use in finding the target distribution.
         file_path : str, optional
             If given, the plot will be saved to this location.
-
-        Notes
-        -----
-        Use this to see how the shape of the target distribution is
-        affected by your choices for nbins, smoothing window,
-        and smoothing order.
         """
         # TODO: Make custom error
         if not self.optimize:
@@ -352,12 +321,14 @@ class Force:
         if file_path:
             plt.savefig(file_path)
 
-    def plot_fit_scores(self, state: msibi.state.State, file_path=None) -> None:
-        """Plots the evolution of the distribution matching evolution.
+    def plot_fit_scores(
+        self, state: msibi.state.State, file_path: str = None
+    ) -> None:
+        """Plot the evolution of the distribution matching fit scores.
 
         Parameters
         ----------
-        state : msibi.state.State, required
+        state : msibi.state.State
             The state to use in finding the target distribution.
         file_path : str, optional
             If given, the plot will be saved to this location.
@@ -372,18 +343,29 @@ class Force:
             plt.savefig(file_path)
 
     def plot_potential(
-        self, file_path=None, xlim=(0, 2), ylim=(-10, 40)
+        self,
+        file_path: Optional[str] = None,
+        xlim: Optional[tuple] = None,
+        ylim: Optional[tuple] = None,
     ) -> None:
-        """Plots the optimized potential energy.
+        """Plot the currently optimized potential energy.
 
         Parameters
         ----------
         file_path : str, optional
             If given, the plot will be saved to this location.
+        xlim : tuple, optional
+            If given, sets the limits for the x-range of the plot.
+            If not given, uses the entire x-range used in optimization.
+        ylim : tuple, optional
+            If given, sets the limits for the y-range of the plot.
+            If not given, uses the entire y-range of the learned potential.
         """
         plt.plot(self.x_range, self.potential, "o-")
-        plt.xlim(xlim)
-        plt.ylim(ylim)
+        if xlim:
+            plt.xlim(xlim)
+        if ylim:
+            plt.ylim(ylim)
         plt.xlabel("x")
         plt.ylabel("Potential")
         plt.title(f"{self.name} Potential")
@@ -391,24 +373,30 @@ class Force:
             plt.savefig(file_path)
 
     def plot_potential_history(
-        self, file_path=None, xlim=(1, 2), ylim=(-10, 40)
+        self,
+        file_path: Optional[str] = None,
+        xlim: Optional[tuple] = None,
+        ylim: Optional[tuple] = None,
     ) -> None:
-        """Plots the history of the optimized potential energy.
+        """Plot the history of the optimized potential energy.
 
         Parameters
         ----------
         file_path : str, optional
             If given, the plot will be saved to this location.
-        xlim : Iterable of length two
-            Sets the x-axis limits on the plot.
-        ylim : Iterable of length two
-            Sets the y-axis limits on the plot.
+        xlim : tuple, optional
+            If given, sets the limits for the x-range of the plot.
+            If not given, uses the entire x-range used in optimization.
+        ylim : tuple, optional
+            If given, sets the limits for the y-range of the plot.
+            If not given, uses the entire y-range of the learned potential.
         """
         for i, pot in enumerate(self.potential_history):
             plt.plot(self.x_range, pot, "o-", label=i)
-
-        plt.xlim(xlim)
-        plt.ylim(ylim)
+        if xlim:
+            plt.xlim(xlim)
+        if ylim:
+            plt.ylim(ylim)
         plt.legend(bbox_to_anchor=(1.05, 1))
         plt.xlabel("x")
         plt.ylabel("Potential")
@@ -417,8 +405,19 @@ class Force:
             plt.savefig(file_path, bbox_inches="tight")
 
     def plot_distribution_comparison(
-        self, state: msibi.state.State, file_path=None
-    ):
+        self,
+        state: msibi.state.State,
+        file_path: Optional[str] = None,
+    ) -> None:
+        """Plot the target distribution and most recent query distribution.
+
+        Parameters
+        ----------
+        state : msibi.state.State
+            The state to use in finding the target distribution.
+        file_path : str, optional
+            If given, the plot will be saved to this location.
+        """
         final_dist = self.distribution_history(state=state)[-1]
         target_dist = self.target_distribution(state=state)
 
@@ -436,50 +435,51 @@ class Force:
 
         Parameters
         ----------
-        state : msibi.state.State, required
-            The state to use for calculating the distribution.
+        state : msibi.state.State
+            The state point to use for calculating the distribution.
 
         """
         return self._states[state]["distribution_history"]
 
-    def set_target_distribution(self, state: msibi.state.State, array) -> None:
+    def set_target_distribution(
+        self, state: msibi.state.State, array: np.ndarray
+    ) -> None:
         """Store the target distribution for a given state.
 
         Parameters
         ----------
         state: msibi.state.State
-            The state used in finding the distribution.
+            The state point used in finding the distribution.
+        array : np.ndarray
+            The 2D array representing the target distribution for this state point.
         """
         self._states[state]["target_distribution"] = array
 
-    def current_distribution(
-        self, state: msibi.state.State, query: bool = True
-    ) -> np.ndarray:
-        """Returns the corresponding distrubution from the most recent
-        query simulation.
+    def current_distribution(self, state: msibi.state.State) -> np.ndarray:
+        """Distrubution of the most recent iteration for a given state point.
 
         Parameters
         ----------
-        state : msibi.state.State, required
-            The state to use for calculating the distribution.
+        state : msibi.state.State
+            The state point used for calculating the distribution.
         """
-        return self._get_state_distribution(state, query)
+        return self._get_state_distribution(state, query=True)
 
     def distribution_fit(self, state: msibi.state.State) -> float:
         """Get the fit score from the most recent query simulation.
 
         Parameters
         ----------
-        state : msibi.state.State, required
-            The state to use for calculating the distribution.
+        state : msibi.state.State
+            The state point used for calculating the distribution.
         """
         return self._calc_fit(state)
 
     def set_polynomial(
         self,
-        k4: Union[float, int],
-        k3: Union[float, int],
         k2: Union[float, int],
+        k3: Union[float, int],
+        k4: Union[float, int],
         x0: Union[float, int],
         x_min: Union[float, int],
         x_max: Union[float, int],
@@ -488,19 +488,24 @@ class Force:
 
             :math:`V(x) = k4(x-x_{0})^{4} + k3(x-x_{0})^{3} + k2(x-x_{0})^{2}`
 
-        Using this method will create a table potential V(x) over the range
-        x_min - x_max.
+        .. note::
 
-        This should be the potential form of choice when setting an initial
-        guess potential for the force to be optimized.
+            Using this method will create a table potential V(x) over the range
+            x_min - x_max.
+
+            This is useful for easily setting initial guess potentials for bond, angle and dihedral
+            forces to be optimized. Also see :meth:`msibi.forces.Force.set_from_file`.
+
+            See :meth:`msibi.forces.Pair.set_lj` for setting an initial guess potential for
+            a non-bonded pair force to be optimized.
 
         Parameters
         ----------
-        x0, k4, k3, k2 : float, required
+        x0, k2, k3, k4 : float
             The paraters used in the V(x) function described above
-        x_min : float, required
+        x_min : float
             The lower bound of the potential range
-        x_max : float, required
+        x_max : float
             The upper bound of the potential range
         """
         self.format = "table"
@@ -517,24 +522,27 @@ class Force:
         self.force_entry = self._table_entry()
 
     def set_from_file(self, file_path: str) -> None:
-        """Set a potential from a csv file.
+        """Set a potential from a `.csv` file.
 
-        Parameters:
+        .. warning::
+
+            This uses `pandas.DataFrame.read_csv` and expects
+            column names of "x", "potential", and "force".
+
+        .. tip::
+
+            Use this potential setter to set a potential from a previous MSIBI run.
+            For example, use the final potential files from a bond-optimization IBI
+            run to set a static coarse-grained bond potential while you perform
+            IBI runs on angle and/or pair potentials.
+
+            Also see: :meth:`msibi.forces.Force.save_potential`
+
+        Parameters
         -----------
-        file_path : str, required
+        file_path : str
             The full path to the table potential csv file.
 
-        Notes:
-        ------
-        This uses pandas.DataFrame.read_csv and expects
-        column names of 'x', 'potential', and  'force'.
-
-        Use this potential setter to set a potential from a previous MSIBI run.
-        For example, use the final potential files from a bond-optimization IBI
-        run to set a static coarse-grained bond potential while you perform
-        IBI runs on angle and/or pair potentials.
-
-        Also see: msibi.forces.Force.save_potential()
         """
         self.format = "table"
         df = pd.read_csv(file_path)
@@ -546,7 +554,7 @@ class Force:
         self.force_init = "Table"
         self.nbins = len(self.x_range) - 1
 
-    def _add_state(self, state):
+    def _add_state(self, state: msibi.state.State) -> None:
         """Add a state to be used in optimizing this Force.
 
         Parameters
@@ -612,8 +620,8 @@ class Force:
         state: msibi.state.State
             State used in calculating the distribution.
         query: bool
-            If True, uses the most recent query trajectory.
-            If False, uses the state's target trajectory.
+            If `True`, uses the most recent query trajectory.
+            If `False`, uses the state's target trajectory.
         """
         if query:
             traj = state.query_traj
@@ -624,12 +632,12 @@ class Force:
     def _save_current_distribution(
         self, state: msibi.state.State, iteration: int
     ) -> None:
-        """Save the corresponding distrubiton for a given state to a file.
+        """Save the corresponding distrubiton for a given `State` to a file.
 
         Parameters
         ----------
-        state : State
-            The state used in finding the distribution.
+        state : msibi.state.State
+            The state point used in finding the distribution.
         iteration : int
             Current iteration step, used in the filename.
         """
@@ -669,34 +677,34 @@ class Force:
 
 
 class Bond(Force):
-    """Creates a bond force used in query simulations.
+    """Creates a bond stretching :class:`Force` used in query simulations.
+
+    .. note::
+
+        The bond type is sorted so that ``type1`` and ``type2``
+        are listed in alphabetical order, and must match the bond
+        types found in the state's target GSD file bond types.
+
+        For example: ``Bond(type1="B", type2="A")`` will have ``Bond.name = "A-B"``
 
     Parameters
     ----------
-    type1 : str, required
+    type1 : str
         Name of the first particle type in the bond.
         This must match the types found in the state's target GSD file.
-    type2 : str, required
+    type2 : str
         Name of the second particle type in the bond.
         This must match the types found in the state's target GSD file.
-    optimize : bool, required
+    optimize : bool
         Set to True if this force is to be mutable and optimized.
         Set to False if this force is to be held constant while
         other forces are optimized.
     nbins : int, optional
         This must be a positive integer if this force is being optimized.
-        nbins is used to setting the potenials independent varible (x) range
+        nbins is used for setting the potenials independent varible (x) range
         and step size (dx).
         It is also used in determining the bin size of the target and query
         distributions.
-
-    Notes
-    -----
-    The bond type is sorted so that type1 and type2
-    are listed in alphabetical order, and must match the bond
-    types found in the state's target GSD file bond types.
-
-    For example: `Bond(type1="B", type2="A")` will have `Bond.name = "A-B"`
     """
 
     def __init__(
@@ -704,7 +712,7 @@ class Bond(Force):
         type1: str,
         type2: str,
         optimize: bool,
-        nbins: int = None,
+        nbins: Optional[int] = None,
         correction_form: str = "linear",
     ):
         self.type1, self.type2 = sorted([type1, type2], key=natural_sort)
@@ -719,29 +727,38 @@ class Bond(Force):
 
     def set_harmonic(self, r0: Union[float, int], k: Union[float, int]) -> None:
         """Set a fixed harmonic bond potential.
-        Using this method is not compatible force msibi.forces.Force
-        objects that are set to be optimized during MSIBI
+
+        .. warning::
+
+            Using this method is not compatible with :class:`Force`
+            objects that are set to be optimized during MSIBI.
+
+        .. note::
+
+            For more information on harmonic bond potentials, refer to the
+            `HOOMD-blue harmonic bond documentation <https://hoomd-blue.readthedocs.io/en/latest/hoomd/md/bond/harmonic.html>`_.
 
         Parameters
         ----------
-        r0 : (Union[float, int]), required
-            Equilibrium bond length
-        k : (Union[float, int]), required
-            Spring constant
+        r0 : (Union[float, int])
+            Equilibrium bond length [length]
+        k : (Union[float, int])
+            Spring constant [energy]
+
         """
         if self.optimize:
             raise RuntimeError(
                 f"Force {self} is set to be optimized during MSIBI."
                 "This potential setter cannot be used "
                 "for a force designated for optimization. "
-                "Instead, use set_from_file() or set_polynomial()."
+                "Instead, use `set_from_file` or `set_polynomial`."
             )
         self.format = "static"
         self.force_init = "Harmonic"
         self.force_entry = dict(r0=r0, k=k)
 
     def _table_entry(self) -> dict:
-        """Set the correct entry to use in `hoomd.md.bond.Table`"""
+        """Set the correct entry to use in ``hoomd.md.bond.Table``"""
         table_entry = {
             "r_min": self.x_min,
             "r_max": self.x_max,
@@ -757,7 +774,7 @@ class Bond(Force):
 
         Parameters
         ----------
-        state: msibi.state.State, required
+        state: msibi.state.State
             State used in calculating the distribution.
         gsd_file: str, required
             Path to the GSD file used.
@@ -776,34 +793,34 @@ class Bond(Force):
 
 
 class Angle(Force):
-    """Creates an angle force used in query simulations.
+    """Creates a bond angle :class:`Force` used in query simulations.
+
+    .. note ::
+
+        The angle type is formed in the order of ``type1-type2-type3``
+        and must match the same order in the target GSD file angle types.
 
     Parameters
     ----------
-    type1 : str, required
+    type1 : str
         Name of the first particle type in the angle.
         This must match the types found in the state's target GSD file.
-    type2 : str, required
+    type2 : str
         Name of the second particle type in the angle.
         This must match the types found in the state's target GSD file.
-    type3 : str, required
+    type3 : str
         Name of the third particle type in the angle.
         This must match the types found in the state's target GSD file.
-    optimize : bool, required
-        Set to True if this force is to be mutable and optimized.
-        Set to False if this force is to be held constant while
+    optimize : bool
+        Set to ``True`` if this force is to be mutable and optimized.
+        Set to ``False`` if this force is to be held constant while
         other forces are optimized.
-    nbins : int, optional
+    nbins : int, otional
         This must be a positive integer if this force is being optimized.
-        nbins is used to setting the potenials independent varible (x) range
+        nbins is used for setting the potenials independent varible (x) range
         and step size (dx).
         It is also used in determining the bin size of the target and query
         distributions.
-
-    Notes
-    -----
-    The angle type is formed in the order of type1-type2-type3 and must match
-    the same order in the target GSD file angle types.
     """
 
     def __init__(
@@ -812,7 +829,7 @@ class Angle(Force):
         type2: str,
         type3: str,
         optimize: bool,
-        nbins: int = None,
+        nbins: Optional[int] = None,
         correction_form: str = "linear",
     ):
         self.type1 = type1
@@ -829,29 +846,38 @@ class Angle(Force):
 
     def set_harmonic(self, t0: Union[float, int], k: Union[float, int]) -> None:
         """Set a fixed harmonic angle potential.
-        Using this method is not compatible force msibi.forces.Force
-        objects that are set to be optimized during MSIBI
+
+        .. warning::
+
+            Using this method is not compatible with :class:`Force`
+            objects that are set to be optimized during MSIBI.
+
+        .. note::
+
+            For more information on harmonic angle potentials, refer to the
+            `HOOMD-blue harmonic angle documentation <https://hoomd-blue.readthedocs.io/en/latest/hoomd/md/angle/harmonic.html>`_.
 
         Parameters
         ----------
-        t0 : (Union[float, int]), required
-            Equilibrium bond angle
-        k : (Union[float, int]), required
-            Spring constant
+        t0 : (Union[float, int])
+            Equilibrium bond angle [radians]
+        k : (Union[float, int])
+            Spring constant [energy]
+
         """
         if self.optimize:
             raise RuntimeError(
                 f"Force {self} is set to be optimized during MSIBI."
                 "This potential setter cannot be used "
                 "for a force designated for optimization. "
-                "Instead, use set_from_file() or set_polynomial()."
+                "Instead, use `set_from_file` or `set_polynomial`."
             )
         self.format = "static"
         self.force_init = "Harmonic"
         self.force_entry = dict(t0=t0, k=k)
 
     def _table_entry(self) -> dict:
-        """Set the correct entry to use in `hoomd.md.angle.Table`"""
+        """Set the correct entry to use in ``hoomd.md.angle.Table``"""
         table_entry = {"U": self.potential, "tau": self.force}
         return table_entry
 
@@ -862,9 +888,9 @@ class Angle(Force):
 
         Parameters
         ----------
-        state: msibi.state.State, required
+        state: msibi.state.State
             State used in calculating the distribution.
-        gsd_file: str, required
+        gsd_file: str
             Path to the GSD file used.
         """
         return angle_distribution(
@@ -882,40 +908,40 @@ class Angle(Force):
 
 
 class Pair(Force):
-    """Creates a pair force used in query simulations.
+    """Creates a non-bonded pair :class:`Force` used in query simulations.
+
+    .. note::
+
+        The pair type is sorted so that ``type1`` and ``type2``
+        are listed in alphabetical order, and must match the pair
+        types found in the state's target GSD file bond types.
+
+        For example: ``Pair(type1="B", type2="A")`` will have ``Pair.name = "A-B"``
 
     Parameters
     ----------
-    type1 : str, required
+    type1 : str
         Name of the first particle type in the pair.
         This must match the types found in the state's target GSD file.
-    type2 : str, required
+    type2 : str
         Name of the second particle type in the pair.
         This must match the types found in the state's target GSD file.
-    optimize : bool, required
-        Set to True if this force is to be mutable and optimized.
-        Set to False if this force is to be held constant while
+    optimize : bool
+        Set to ``True`` if this force is to be mutable and optimized.
+        Set to ``False`` if this force is to be held constant while
         other forces are optimized.
-    r_cut : (Union[float, int]) : required
+    r_cut : (Union[float, int])
         Sets the cutoff distance used in Hoomd's neighborlist.
     nbins : int, optional
         This must be a positive integer if this force is being optimized.
-        nbins is used to setting the potenials independent varible (x) range
+        nbins is used for setting the potenials independent varible (x) range
         and step size (dx).
         It is also used in determining the bin size of the target and query
         distributions.
-    exclude_bonded : bool, default False
-        If True, then particles from the same molecule are not
+    exclude_bonded : bool
+        If ``True``, then particles from the same molecule are not
         included in the RDF calculation.
-        If False, all particles are included.
-
-    Notes
-    -----
-    The pair type is sorted so that type1 and type2
-    are listed in alphabetical order, and must match the pair
-    types found in the state's target GSD file bond types.
-
-    For example: `Pair(type1="B", type2="A")` will have `Pair.name = "A-B"`
+        If ``False``, all particles are included.
     """
 
     def __init__(
@@ -924,7 +950,7 @@ class Pair(Force):
         type2: str,
         optimize: bool,
         r_cut: Union[float, int],
-        nbins: int = None,
+        nbins: Optional[int] = None,
         exclude_bonded: bool = False,
         correction_form: str = "linear",
     ):
@@ -948,17 +974,22 @@ class Pair(Force):
         epsilon: Union[float, int],
         sigma: Union[float, int],
     ) -> None:
-        """Set a 12-6 LJ pair potential used during
-        the query simulations.
+        """Set a 12-6 Lennard Jones table pair potential used in query simulations.
+
+        .. note::
+
+            This creates a table potential from the LJ 12-6 function with the
+            given parameters. Use this to create an initial guess when optimizing
+            a :class:`Pair` force. It can still be used to set a static potential.
 
         Parameters
         ----------
-        epsilon : (Union[float, int]), required
+        epsilon : (Union[float, int])
             Sets the dept hof the potential energy well.
-        sigma : (Union[float, int]), required
+        sigma : (Union[float, int])
             Sets the particle size.
-        r_cut : (Union[float, int]), required
-            Maximum distance used to calculate neighbor pair potentials.
+        r_cut : (Union[float, int])
+            Maximum distance used to calculate neighbors.
         """
         self.format = "table"
         self.dx = (r_cut - r_min) / self.nbins
@@ -971,7 +1002,7 @@ class Pair(Force):
         self.force_init = "Table"
 
     def _table_entry(self) -> dict:
-        """Set the correct entry to use in `hoomd.md.pair.Table`"""
+        """Set the correct entry to use in ``hoomd.md.pair.Table``"""
         table_entry = {
             "r_min": self.x_min,
             "U": self.potential,
@@ -986,9 +1017,9 @@ class Pair(Force):
 
         Parameters
         ----------
-        state: msibi.state.State, required
-            State used in calculating the distribution.
-        gsd_file: str, required
+        state: msibi.state.State
+            State point used in calculating the distribution.
+        gsd_file: str
             Path to the GSD file used.
         """
         rdf, N = gsd_rdf(
@@ -1009,37 +1040,37 @@ class Pair(Force):
 
 
 class Dihedral(Force):
-    """Creates a dihedral force used in query simulations.
+    """Creates a dihedral :class:`Force` used in query simulations.
+
+    .. note::
+
+        The dihedral type is formed in the order of ``type1-type2-type3-type4`` and
+        must match the same order in the target GSD file dihedral types.
 
     Parameters
     ----------
-    type1 : str, required
+    type1 : str
         Name of the first particle type in the dihedral.
         This must match the types found in the state's target GSD file.
-    type2 : str, required
+    type2 : str
         Name of the second particle type in the dihedral.
         This must match the types found in the state's target GSD file.
-    type3 : str, required
+    type3 : str
         Name of the third particle type in the dihedral.
         This must match the types found in the state's target GSD file.
-    type4 : str, required
+    type4 : str
         Name of the fourth particle type in the dihedral.
         This must match the types found in the state's target GSD file.
-    optimize : bool, required
-        Set to True if this force is to be mutable and optimized.
-        Set to False if this force is to be held constant while
+    optimize : bool
+        Set to `True` if this force is to be mutable and optimized.
+        Set to `False` if this force is to be held constant while
         other forces are optimized.
     nbins : int, optional
         This must be a positive integer if this force is being optimized.
-        nbins is used to setting the potenials independent varible (x) range
+        nbins is used for setting the potenials independent varible (x) range
         and step size (dx).
         It is also used in determining the bin size of the target and query
         distributions.
-
-    Notes
-    -----
-    The dihedral type is formed in the order of type1-type2-type3-type4 and
-    must match the same order in the target GSD file angle types.
     """
 
     def __init__(
@@ -1049,7 +1080,7 @@ class Dihedral(Force):
         type3: str,
         type4: str,
         optimize: bool,
-        nbins: int = None,
+        nbins: Optional[int] = None,
         correction_form: str = "linear",
     ):
         self.type1 = type1
@@ -1065,40 +1096,49 @@ class Dihedral(Force):
             correction_form=correction_form,
         )
 
-    def set_harmonic(
+    def set_periodic(
         self,
         phi0: Union[float, int],
         k: Union[float, int],
         d: int,
         n: int,
     ) -> None:
-        """Set a fixed harmonic dihedral potential.
+        """Set a fixed periodic dihedral potential.
+
+        .. warning::
+
+            Using this method is not compatible with :class:`Force`
+            objects that are set to be optimized during MSIBI.
+
+        .. note::
+
+            For more information on periodic dihedral potentials, refer to the
+            `HOOMD-blue dihedral periodic documentation <https://hoomd-blue.readthedocs.io/en/latest/hoomd/md/dihedral/periodic.html>`_.
 
         Parameters
         ----------
-        phi0 : float, required
-            Equilibrium bond length
-        k : float, required
-            Spring constant
-        d : int, required
+        phi0 : float
+            Phase shift [radians]
+        k : float
+            Spring constant [energy]
+        d : int
             Sign factor
-        n : int, required
-            Angle scaling factor
-
+        n : int
+            Angle multiplicity
         """
         if self.optimize:
             raise RuntimeError(
                 f"Force {self} is set to be optimized during MSIBI."
                 "This potential setter cannot be used "
                 "for a force designated for optimization. "
-                "Instead, use set_from_file() or set_polynomial()."
+                "Instead, use `set_from_file` or `set_polynomial`."
             )
         self.format = "static"
         self.force_init = "Periodic"
         self.force_entry = dict(phi0=phi0, k=k, d=d, n=n)
 
     def _table_entry(self) -> dict:
-        """Set the correct entry to use in `hoomd.md.dihedral.Table`"""
+        """Set the correct entry to use in ``hoomd.md.dihedral.Table``"""
         table_entry = {"U": self.potential, "tau": self.force}
         return table_entry
 
@@ -1109,9 +1149,9 @@ class Dihedral(Force):
 
         Parameters
         ----------
-        state: msibi.state.State, required
+        state: msibi.state.State
             State used in calculating the distribution.
-        gsd_file: str, required
+        gsd_file: str
             Path to the GSD file used.
         """
         return dihedral_distribution(
