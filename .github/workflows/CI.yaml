@@ -40,7 +40,7 @@ jobs:
         run: python -m build && pip install dist/*.whl
 
       - name: Test (OS -> ${{ matrix.os }} / Python -> ${{ matrix.python-version }})
-        run: python -m pytest -v --cov=msibi --cov-report=xml --cov-append --cov-config=setup.cfg --color yes --pyargs msibi 
+        run: python -m pytest -v --cov=msibi --cov-report=xml --cov-append --cov-config=setup.cfg --color yes --pyargs msibi
 
       - name: Upload Coverage Report
         uses: codecov/codecov-action@v5
@@ -77,4 +77,4 @@ jobs:
         run: python -m build && pip install dist/*.whl
 
       - name: Test (OS -> ${{ matrix.os }} / Python -> ${{ matrix.python-version }})
-        run: python -m pytest -v --color yes --pyargs msibi 
+        run: python -m pytest -v --color yes --pyargs msibi

@@ -31,7 +31,7 @@ Install from source
 
 .. note::
 
-    ``msibi`` utilizes HOOMD-Blue under-the-hood to run query simulations. This means that you are able to leverage HOOMD-Blue's GPU capability 
+    ``msibi`` utilizes HOOMD-Blue under-the-hood to run query simulations. This means that you are able to leverage HOOMD-Blue's GPU capability
     in your optimiation runs if your HOOMD-Blue installation is compatible with GPUs.
     To install a GPU compatible version of HOOMD-Blue in your msibi environment, you need to manually set the CUDA version **before installing msibi**.
     This is to ensure that the HOOMD build pulled from conda-forge is compatible with your CUDA version.

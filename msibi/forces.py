@@ -1,6 +1,6 @@
 import os
 import warnings
-from typing import Union, Optional
+from typing import Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,7 +13,6 @@ from cmeutils.structure import (
 )
 
 import msibi
-from msibi import State
 from msibi.potentials import (
     bond_correction,
     lennard_jones,
@@ -296,7 +295,7 @@ class Force:
 
         Note
         -----
-        This saves the state points target distribution, current distribution 
+        This saves the state points target distribution, current distribution
         distribution history and f_fit scores for the corresponding potential
         to the `.npz` file.
         """
@@ -322,7 +321,7 @@ class Force:
         return self._states[state]["target_distribution"]
 
     def plot_target_distribution(
-            self, state: msibi.state.State, file_path: str = None
+        self, state: msibi.state.State, file_path: str = None
     ) -> None:
         """Quick plotting function that shows the target structural
         distribution corresponding to the `Force` and a `State`.
@@ -362,7 +361,9 @@ class Force:
         if file_path:
             plt.savefig(file_path)
 
-    def plot_fit_scores(self, state: msibi.state.State, file_path: str = None) -> None:
+    def plot_fit_scores(
+        self, state: msibi.state.State, file_path: str = None
+    ) -> None:
         """Plots the evolution of the distribution matching evolution.
 
         Parameters
@@ -444,9 +445,9 @@ class Force:
             plt.savefig(file_path, bbox_inches="tight")
 
     def plot_distribution_comparison(
-            self,
-            state: msibi.state.State,
-            file_path: Optional[str] = None,
+        self,
+        state: msibi.state.State,
+        file_path: Optional[str] = None,
     ) -> None:
         """Plots the target distribution and most recent query distribution.
 
@@ -480,7 +481,9 @@ class Force:
         """
         return self._states[state]["distribution_history"]
 
-    def set_target_distribution(self, state: msibi.state.State, array: np.ndarray) -> None:
+    def set_target_distribution(
+        self, state: msibi.state.State, array: np.ndarray
+    ) -> None:
         """Store the target distribution for a given state.
 
         Parameters
@@ -1010,7 +1013,7 @@ class Pair(Force):
 
         Note:
         -----
-        This creates a table potential from the LJ 12-6 function with the 
+        This creates a table potential from the LJ 12-6 function with the
         given parameters. Use this to create an initial guess when optimizing
         a :class:`Pair` force. It can still be used to set a static potential.
         """
