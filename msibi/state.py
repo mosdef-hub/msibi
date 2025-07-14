@@ -22,18 +22,18 @@ class State(object):
         The target gsd trajectory associated with this state.
         This trajectory calcualtes the target distributions used
         during optimization.
-    n_frames : int, required
+    n_frames : int
         The number of frames to use when calculating distributions.
         When calculating distributions, the last `n_frames` of the
         trajectory will be used.
-    alpha0 : (Union[float, int]), default 1.0
+    alpha0 : (Union[float, int]), default=1.0
         The base alpha value used to scale the weight of this state.
     alpha_form: str, optional, default 'constant'
         Alpha can be a constant number that is applied to the potential at all
         independent values (x), or it can be a linear function that approaches
         zero as x approaches x_cut.
-    exclude_bonded: bool, optional, default `False`
-        If `True` then any beads that belong to the same molecle
+    exclude_bonded: bool, optional, default=False
+        If ``True`` then any beads that belong to the same molecle
         are not included in radial distribution funciton calculations.
     """
 
@@ -135,7 +135,8 @@ class State(object):
         gsd_period: int,
         backup_trajectories: bool = False,
     ) -> None:
-        """The HOOMD-Blue script used to run each query simulation.
+        """Runs HOOMD-Blue query simulations.
+
         This method is called in :meth:msibi.optimize.run_optimization.
         """
         device = hoomd.device.auto_select()
