@@ -1011,11 +1011,12 @@ class Pair(Force):
         r_cut : (Union[float, int]), required
             Maximum distance used to calculate neighbor pair potentials.
 
-        Note:
+        Note
         -----
         This creates a table potential from the LJ 12-6 function with the
         given parameters. Use this to create an initial guess when optimizing
         a :class:`Pair` force. It can still be used to set a static potential.
+
         """
         self.format = "table"
         self.dx = (r_cut - r_min) / self.nbins

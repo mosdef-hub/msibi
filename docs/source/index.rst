@@ -1,15 +1,19 @@
 MSIBI: Multi-state Iterative Boltzmann Inversion
 =============================================================================================
 
-This is a python package that implements the MSIBI coarse-graining method for molecular dynamics.
+**MSIBI** is a Python package that implements the Multi-state Iterative Boltzmann Inversion (MS-IBI) method for coarse-graining in molecular dynamics.
 
-This implementation provies an intuitive python API for running iterative Boltzmann inversion (IBI) for multiple states (MSIBI) or a single state.
-It is designed to easily enable stringing together multiple optimization runs where after one coarse-grained interaction is learned (i.e., bond stretching) it can be included and held constant during the the next interaction optimization (e.g., bond bending and non-bonded pairs).
-Iterative coarse-grain simulations use the HOOMD-Blue simulation engine under-the-hood; however it is not required that the target (i.e., atomistic) simulations are performed with HOOMD-Blue, and the learned coarse-grained potentials are in a table potential format, which are usable with other molecular dynamics engines (e.g., LAMMPS, GROMACS).
+This implementation provides an intuitive Python API for running iterative Boltzmann inversion (IBI) across multiple states (MS-IBI) or a single state. It is designed to make it easy to chain together multiple optimization runs—for example, you can first optimize a coarse-grained bond-stretching interaction, then hold it fixed while optimizing other interactions like bond bending or non-bonded pair potentials.
+
+MSIBI uses the HOOMD-blue simulation engine under the hood for coarse-grained simulations; however, it does not require that the target (atomistic) simulations are also performed with HOOMD-blue. The resulting coarse-grained potentials are exported in a tabulated format compatible with other simulation engines such as LAMMPS and GROMACS.
+
 
 Quick start
 ===========
 .. toctree::
+    :maxdepth: 1
+
+    examples
     installation
 
 

@@ -8,37 +8,49 @@ import msibi
 class MSIBI(object):
     """Management class for orchestrating an MSIBI optimization.
 
-    Note
-    -----
-    This package is very object oriented. This class should be
-    created first, followed by at least one :class:`msibi.state.State`
-    instance and at least one :class:`msibi.forces.Force` instance.
+    .. note::
 
-    Then, use the methods :meth:`MSIBI.add_state` and :meth:`MSIBI.add_force`
-    before beginning the optimization runs using :meth:`MSIBI.run_optimization`.
+        This package is very object oriented. This class should be
+        created first, followed by at least one :class:`msibi.state.State`
+        instance and at least one :class:`msibi.forces.Force` instance.
+
+        Then, use the methods :meth:`MSIBI.add_state` and :meth:`MSIBI.add_force`
+        before beginning the optimization runs using :meth:`MSIBI.run_optimization`.
+
+        For detailed examples, see the :ref:`examples` section in the documentation.
+
+    .. note::
+
+        While using MSIBI does not require thorough knowledge of HOOMD-blue's API,
+        some familiarity is needed to set simulation parameters such as the
+        neighbor list, integrator method, thermostat, etc.
+
+        See the HOOMD-blue documentation:
+        https://hoomd-blue.readthedocs.io/en/latest/
+
 
     Parameters
     ----------
-    nlist : hoomd.md.nlist.NeighborList, required
+    nlist : hoomd.md.nlist.NeighborList
         The type of Hoomd neighbor list to use.
-    integrator_method : hoomd.md.methods.Method, required
+    integrator_method : hoomd.md.methods.Method
         The integrator method to use in the query simulation.
         The only supported options are ConstantVolume or ConstantPressure.
-    integrator_kwargs : dict, required
+    integrator_kwargs : dict
         The arguments and their values required by the integrator chosen
-    thermostat : hoomd.md.methods.thermostat.Thermostat, required
+    thermostat : hoomd.md.methods.thermostat.Thermostat
         The thermostat to be paired with the integrator method.
-    thermostat_kwargs : dict, required
+    thermostat_kwargs : dict
         The arguments and their values required by the thermostat chosen.
     dt : float, required
         The time step delta
-    gsd_period : int, required
+    gsd_period : int
         The number of frames between snapshots written to query.gsd
-    n_steps : int, required
+    n_steps : int
         How many steps to run the query simulations
-    nlist_exclusions : list of str, optional, default ["1-2", "1-3"]
+    nlist_exclusions : list of str, default = ["1-2", "1-3"]
         Sets the pair exclusions used during the optimization simulations
-    seed : int, optional, default 42
+    seed : int, default=42
         Random seed to use during the simulation
     """
 
@@ -82,12 +94,11 @@ class MSIBI(object):
 
         Parameters
         ----------
-        state : :class:msibi.state.State, required
+        state : msibi.state.State
             A state point to be included in query simulations
 
-        Note
-        ----
-        At least one state point must be added before optimization can occur.
+        .. note::
+            At least one state point must be added before optimization can occur.
         """
         # TODO: Do we still need the ._opt attr?
         state._opt = self
@@ -96,15 +107,14 @@ class MSIBI(object):
     def add_force(self, force: msibi.forces.Force) -> None:
         """Add a force to be included in the query simulations.
 
-        Parameters
-        ----------
-        force : :class:msibi.forces.Force, required
-            A force to be included in query simulations
+            Parameters
+            ----------
+            force : msibi.forces.Force
+                A force to be included in query simulations
 
-        Note
-        ----
-        Only one type of force can be optimized at a time.
-        Forces not set to be optimized are held fixed during query simulations.
+        .. note::
+            Only one type of force can be optimized at a time.
+            Forces not set to be optimized are held fixed during query simulations.
         """
         self.forces.append(force)
         if force.optimize:
@@ -114,7 +124,7 @@ class MSIBI(object):
 
     @property
     def bonds(self) -> list:
-        """All instances of :class:msibi.forces.Bond included in query simulations."""
+        """All instances of :class:`msibi.forces.Bond` included in query simulations."""
         return [f for f in self.forces if isinstance(f, msibi.forces.Bond)]
 
     @property
@@ -124,12 +134,12 @@ class MSIBI(object):
 
     @property
     def pairs(self) -> list:
-        """All instances of :class:msibi.forces.Pair included in query simulations."""
+        """All instances of :class:`msibi.forces.Pair` included in query simulations."""
         return [f for f in self.forces if isinstance(f, msibi.forces.Pair)]
 
     @property
     def dihedrals(self) -> list:
-        """All instances of :class:msibi.forces.Dihedral included in query simulations."""
+        """All instances of :class:`msibi.forces.Dihedral` included in query simulations."""
         return [f for f in self.forces if isinstance(f, msibi.forces.Dihedral)]
 
     def _add_optimize_force(self, force: msibi.forces.Force) -> None:
@@ -138,7 +148,7 @@ class MSIBI(object):
             [isinstance(force, f.__class__) for f in self._optimize_forces]
         ):
             raise RuntimeError(
-                "Only one type of force (i.e. Bonds, Angles, Pairs, etc) "
+                "Only one type of force (i.e., Bonds, Angles, Pairs, etc) "
                 "can be set to optimize at a time."
             )
         self._optimize_forces.append(force)
@@ -151,17 +161,23 @@ class MSIBI(object):
         _dir=None,
     ) -> None:
         """Runs query simulations and performs MSIBI
-        on the forces set to be optimized.
+            on the forces set to be optimized.
 
-        Parameters
-        ----------
-        n_steps : int, required
-            Number of simulation steps during each iteration.
-        n_iterations : int, required
-            Number of MSIBI update iterations.
-        backup_trajectories : bool, optional default False
-            If ``True``, copies of the query simulation trajectories
-            are saved in their respective :class:msibi.state.State directory.
+            Parameters
+            ----------
+            n_steps : int
+                Number of simulation steps during each iteration.
+            n_iterations : int
+                Number of MSIBI update iterations.
+            backup_trajectories : bool, default=False
+                If ``True``, copies of the query simulation trajectories
+                are saved in their respective :class:`msibi.state.State` directory.
+
+        .. tip::
+
+            This method can be called multiple times, and the optimization will continue
+            from the last iteration. This may be useful for inspecting the f-fit score
+            before running more iterations, or smoothing the potential between iterations.
         """
         for n in range(n_iterations):
             print(f"---Optimization: {n+1} of {n_iterations}---")
@@ -186,15 +202,14 @@ class MSIBI(object):
     def pickle_forces(self, file_path: str) -> None:
         """Save the HOOMD-Blue force objects for all forces to a single pickle file.
 
-        Parameters
-        ----------
-        file_path : str, required
-            The path and file name for the pickle file.
+            Parameters
+            ----------
+            file_path : str
+                The path and file name for the pickle file.
 
-        Note
-        ----
-        Use this method as a convienent way to save and use the final
-        set of forces to be used in your own HOOMD-Blue script.
+        .. tip::
+            Use this method as a convienent way to save and use the final
+            set of forces to be used in your own HOOMD-Blue script.
         """
         forces = self._build_force_objects()
         if len(forces) == 0:
