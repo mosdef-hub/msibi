@@ -2,7 +2,7 @@
 
 # MultiState Iterative Boltzmann Inversion (MS-IBI)
 ----------------------------------------
-[![pytest](https://github.com/mosdef-hub/msibi/actions/workflows/CI.yml/badge.svg)](https://github.com/mosdef-hub/msibi/actions/workflows/CI.yml)
+[![pytest](https://github.com/mosdef-hub/msibi/actions/workflows/CI.yml/badge.svg)](https://github.com/mosdef-hub/msibi/actions/workflows/CI.yaml)
 [![codecov](https://codecov.io/gh/mosdef-hub/msibi/branch/main/graph/badge.svg?token=7NFPBMBN0I)](https://codecov.io/gh/mosdef-hub/msibi)
 [![Citing MSIBI](https://img.shields.io/badge/DOI-10.1063%2F1.4880555-blue.svg)](http://dx.doi.org/10.1063/1.4880555)
 
@@ -29,7 +29,7 @@ For a full description of the API with examples see the [documentation](https://
 
 The MSIBI package is designed to be very object oriented. Any force optimization runs requires at least one `msibi.state.State` instance, `msibi.force.Force` instance and `msibi.optimize.MSIBI` instance. More state and forces can be added as needed. Multiple forces can be added with some held fixed while others are being optimized after each iteation. MSIBI is designed to allow for optimization of both intra-molecular and inter-molecular potentials.
 
-MSIBI uses [Hoomd-Blue](https://hoomd-blue.readthedocs.io/en/latest/) to run optimization simulations. It is not required that you be familiar with Hoomd to use MSIBI as the simulation script is automatically generated and ran. However, it is required that you pass in the choice of [Hoomd method](https://hoomd-blue.readthedocs.io/en/latest/module-md-methods.html), [Hoomd neighbor list](https://hoomd-blue.readthedocs.io/en/latest/module-md-nlist.html), and [Hoomd thermostat](https://hoomd-blue.readthedocs.io/en/latest/module-md-methods-thermostats.html) to the `msibi.optimize.MSIBI` class. Since MSIBI utilizes Hoomd-Blue, this means that MSIBI can run on GPUs, see [Hoomd's installation guide](https://hoomd-blue.readthedocs.io/en/latest/installation.html) for instructions on ensuring your environment includes a GPU build of hoomd.
+MSIBI uses [HOOMD-Blue](https://hoomd-blue.readthedocs.io/en/latest/) to run optimization simulations. It is not required that the target (i.e., atomistic) simulations use HOOMD-Blue. Also, it is not required that you be familiar with HOOMD to use MSIBI as the simulation script is automatically generated and ran. However, it is required that you pass in the choice of [method](https://hoomd-blue.readthedocs.io/en/latest/module-md-methods.html), [neighbor list](https://hoomd-blue.readthedocs.io/en/latest/module-md-nlist.html), and [thermostat](https://hoomd-blue.readthedocs.io/en/latest/module-md-methods-thermostats.html) to the `msibi.optimize.MSIBI` class. Since MSIBI utilizes Hoomd-Blue, this means that MSIBI can run on GPUs, see [Hoomd's installation guide](https://hoomd-blue.readthedocs.io/en/latest/installation.html) for instructions on ensuring your environment includes a GPU build of hoomd. The resulting coarse-grained potentials are exported in a tabulated format compatible with other simulation engines such as LAMMPS and GROMACS.
 
 ### Quick Example: Optimizing bond-stretching
 Here is a simple example using MSIBI to learn a bond-stretching force from a single state point:
