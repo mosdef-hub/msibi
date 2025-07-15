@@ -264,9 +264,7 @@ class Force:
         state_data = {
             "target_distribution": state_dict["target_distribution"],
             "current_distribution": state_dict["current_distribution"],
-            "distribution_history": np.asarray(
-                state_dict["distribution_history"]
-            ),
+            "distribution_history": np.asarray(state_dict["distribution_history"]),
             "f_fit": np.asarray(state_dict["f_fit"]),
         }
         np.savez(file_path, **state_data)
@@ -321,9 +319,7 @@ class Force:
         if file_path:
             plt.savefig(file_path)
 
-    def plot_fit_scores(
-        self, state: msibi.state.State, file_path: str = None
-    ) -> None:
+    def plot_fit_scores(self, state: msibi.state.State, file_path: str = None) -> None:
         """Plot the evolution of the distribution matching fit scores.
 
         Parameters
@@ -563,9 +559,7 @@ class Force:
             Instance of a State object previously created.
         """
         if self.optimize:
-            target_distribution = self._get_state_distribution(
-                state=state, query=False
-            )
+            target_distribution = self._get_state_distribution(state=state, query=False)
             if self.smoothing_window and self.smoothing_order:
                 target_distribution[:, 1] = savitzky_golay(
                     y=target_distribution[:, 1],
@@ -669,9 +663,7 @@ class Force:
             self.x_range, self.potential, self.correction_form
         )
         self.potential_history.append(np.copy(self.potential))
-        self._head_correction_history.append(
-            np.copy(self.potential[0:head_cut])
-        )
+        self._head_correction_history.append(np.copy(self.potential[0:head_cut]))
         self._tail_correction_history.append(np.copy(self.potential[tail_cut:]))
         self._learned_potential_history.append(np.copy(self.potential[real]))
 
@@ -767,9 +759,7 @@ class Bond(Force):
         }
         return table_entry
 
-    def _get_distribution(
-        self, state: msibi.state.State, gsd_file: str
-    ) -> np.ndarray:
+    def _get_distribution(self, state: msibi.state.State, gsd_file: str) -> np.ndarray:
         """Calculate a bond length distribution.
 
         Parameters
@@ -881,9 +871,7 @@ class Angle(Force):
         table_entry = {"U": self.potential, "tau": self.force}
         return table_entry
 
-    def _get_distribution(
-        self, state: msibi.state.State, gsd_file: str
-    ) -> np.ndarray:
+    def _get_distribution(self, state: msibi.state.State, gsd_file: str) -> np.ndarray:
         """Calculate a bond angle distribution.
 
         Parameters
@@ -996,9 +984,7 @@ class Pair(Force):
         self.x_range = np.arange(r_min, r_cut + self.dx, self.dx)
         self.x_min = self.x_range[0]
         self.r_cut = self.x_range[-1]
-        self.potential = lennard_jones(
-            r=self.x_range, epsilon=epsilon, sigma=sigma
-        )
+        self.potential = lennard_jones(r=self.x_range, epsilon=epsilon, sigma=sigma)
         self.force_init = "Table"
 
     def _table_entry(self) -> dict:
@@ -1010,9 +996,7 @@ class Pair(Force):
         }
         return table_entry
 
-    def _get_distribution(
-        self, state: msibi.state.State, gsd_file: str
-    ) -> np.ndarray:
+    def _get_distribution(self, state: msibi.state.State, gsd_file: str) -> np.ndarray:
         """Calculate a pair distribution (RDF).
 
         Parameters
@@ -1142,9 +1126,7 @@ class Dihedral(Force):
         table_entry = {"U": self.potential, "tau": self.force}
         return table_entry
 
-    def _get_distribution(
-        self, state: msibi.state.State, gsd_file: str
-    ) -> np.ndarray:
+    def _get_distribution(self, state: msibi.state.State, gsd_file: str) -> np.ndarray:
         """Calculate a dihedral angle distribution.
 
         Parameters

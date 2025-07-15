@@ -43,9 +43,7 @@ class TestForce(BaseTest):
             x_min=1,
             x_max=3,
         )
-        bond.potential = bond.potential + np.random.normal(
-            0, 0.5, bond.potential.shape
-        )
+        bond.potential = bond.potential + np.random.normal(0, 0.5, bond.potential.shape)
         noisy_pot = np.copy(bond.potential)
         bond.smoothing_window = 5
         bond.smooth_potential()
@@ -241,18 +239,14 @@ class TestDihedral(BaseTest):
         assert dihedral.force_entry["n"] == 1
 
     def test_set_dihedral_polynomail(self, dihedral):
-        dihedral.set_polynomial(
-            x0=0, k4=0, k3=0, k2=100, x_min=-np.pi, x_max=np.pi
-        )
+        dihedral.set_polynomial(x0=0, k4=0, k3=0, k2=100, x_min=-np.pi, x_max=np.pi)
         assert dihedral.format == "table"
         assert len(dihedral.x_range) == dihedral.nbins + 1
         assert np.allclose(dihedral.x_range[0], -np.pi, atol=1e-3)
         assert np.allclose(dihedral.x_range[-1], np.pi, atol=1e-3)
 
     def test_save_angle_potential(self, tmp_path, dihedral):
-        dihedral.set_polynomial(
-            x0=0, k4=0, k3=0, k2=100, x_min=-np.pi, x_max=np.pi
-        )
+        dihedral.set_polynomial(x0=0, k4=0, k3=0, k2=100, x_min=-np.pi, x_max=np.pi)
         path = os.path.join(tmp_path, "ABAA_dihedral.csv")
         dihedral.save_potential(path)
         assert os.path.isfile(path)
