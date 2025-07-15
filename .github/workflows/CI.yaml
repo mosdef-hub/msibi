@@ -47,6 +47,7 @@ jobs:
         with:
           name: MSIBI-Coverage
           verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   arch-test:
     if: github.event.pull_request.draft == false
