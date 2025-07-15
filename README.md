@@ -2,7 +2,7 @@
 
 # MultiState Iterative Boltzmann Inversion (MS-IBI)
 ----------------------------------------
-[![pytest](https://github.com/mosdef-hub/msibi/actions/workflows/CI.yml/badge.svg)](https://github.com/mosdef-hub/msibi/actions/workflows/CI.yaml)
+[![pytest](https://github.com/mosdef-hub/msibi/actions/workflows/CI.yaml/badge.svg)](https://github.com/mosdef-hub/msibi/actions/workflows/CI.yaml)
 [![codecov](https://codecov.io/gh/mosdef-hub/msibi/branch/main/graph/badge.svg?token=7NFPBMBN0I)](https://codecov.io/gh/mosdef-hub/msibi)
 [![Citing MSIBI](https://img.shields.io/badge/DOI-10.1063%2F1.4880555-blue.svg)](http://dx.doi.org/10.1063/1.4880555)
 
