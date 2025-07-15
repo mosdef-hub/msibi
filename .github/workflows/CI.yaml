@@ -43,11 +43,11 @@ jobs:
         run: python -m pytest -v --cov=msibi --cov-report=xml --cov-append --cov-config=setup.cfg --color yes --pyargs msibi
 
       - name: Upload Coverage Report
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           name: MSIBI-Coverage
           verbose: true
-          token: ${{ secrets.CODECOV_TOKEN }}
 
   arch-test:
     if: github.event.pull_request.draft == false
