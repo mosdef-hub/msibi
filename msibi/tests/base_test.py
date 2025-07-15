@@ -105,9 +105,7 @@ class BaseTest:
 
     @pytest.fixture
     def angle(self):
-        angle = Angle(
-            type1="A", type2="B", type3="A", optimize=False, nbins=100
-        )
+        angle = Angle(type1="A", type2="B", type3="A", optimize=False, nbins=100)
         return angle
 
     @pytest.fixture

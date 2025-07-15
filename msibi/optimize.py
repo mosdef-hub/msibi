@@ -146,9 +146,7 @@ class MSIBI(object):
 
     def _add_optimize_force(self, force: msibi.forces.Force) -> None:
         """Check that all forces to be optimized are the same type."""
-        if not all(
-            [isinstance(force, f.__class__) for f in self._optimize_forces]
-        ):
+        if not all([isinstance(force, f.__class__) for f in self._optimize_forces]):
             raise RuntimeError(
                 "Only one type of force (i.e., Bonds, Angles, Pairs, etc) "
                 "can be set to optimize at a time."
@@ -182,7 +180,7 @@ class MSIBI(object):
             are saved in their respective :class:`msibi.state.State` directory.
         """
         for n in range(n_iterations):
-            print(f"---Optimization: {n+1} of {n_iterations}---")
+            print(f"---Optimization: {n + 1} of {n_iterations}---")
             forces = self._build_force_objects()
             for state in self.states:
                 state._run_simulation(
@@ -216,9 +214,7 @@ class MSIBI(object):
         """
         forces = self._build_force_objects()
         if len(forces) == 0:
-            raise RuntimeError(
-                "No forces have been created yet. See MSIBI.add_force()"
-            )
+            raise RuntimeError("No forces have been created yet. See MSIBI.add_force()")
         f = open(file_path, "wb")
         pickle.dump(forces, f)
 
@@ -269,9 +265,7 @@ class MSIBI(object):
         dihedral_force = None
         for dih in self.dihedrals:
             if not dihedral_force:
-                hoomd_dihedral_force = getattr(
-                    hoomd.md.dihedral, dih.force_init
-                )
+                hoomd_dihedral_force = getattr(hoomd.md.dihedral, dih.force_init)
                 if dih.force_init == "Table":
                     dihedral_force = hoomd_dihedral_force(width=dih.nbins + 1)
                 else:

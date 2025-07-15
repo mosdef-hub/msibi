@@ -81,9 +81,7 @@ class TestMSIBI(BaseTest):
         ff = msibi._build_force_objects()
         assert len(ff) == 2
 
-    def test_optimize_pairs_linear_alpha(
-        self, msibi, stateX_linear_alpha, stateY
-    ):
+    def test_optimize_pairs_linear_alpha(self, msibi, stateX_linear_alpha, stateY):
         msibi.gsd_period = 10
         msibi.add_state(stateX_linear_alpha)
         msibi.add_state(stateY)
@@ -185,9 +183,7 @@ class TestMSIBI(BaseTest):
         pair3.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
         msibi.add_force(pair3)
 
-        dihedral = Dihedral(
-            type1="B", type2="A", type3="B", type4="A", optimize=False
-        )
+        dihedral = Dihedral(type1="B", type2="A", type3="B", type4="A", optimize=False)
         dihedral.set_periodic(k=100, phi0=0, d=-1, n=1)
         msibi.add_force(dihedral)
 

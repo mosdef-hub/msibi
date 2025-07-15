@@ -59,9 +59,7 @@ def pair_correction(r, V, form, r_switch=2.5):
                     pass
         # Trim off edge cases
         _real_idx = np.where(np.isfinite(V))[0]
-        real_idx = max(
-            [list(g) for g in mit.consecutive_groups(_real_idx)], key=len
-        )
+        real_idx = max([list(g) for g in mit.consecutive_groups(_real_idx)], key=len)
 
     head_cutoff = real_idx[0] - 1
     tail_cutoff = real_idx[-1] + 1
@@ -104,9 +102,7 @@ def bond_correction(r, V, form):
                     pass
         # Trim off edge cases
         _real_idx = np.where(np.isfinite(V))[0]
-        real_idx = max(
-            [list(g) for g in mit.consecutive_groups(_real_idx)], key=len
-        )
+        real_idx = max([list(g) for g in mit.consecutive_groups(_real_idx)], key=len)
 
     head_cutoff = real_idx[0] - 1
     tail_cutoff = real_idx[-1] + 1
