@@ -37,7 +37,7 @@ def savitzky_golay(
 
     order_range = range(order + 1)
     half_window = (window_size - 1) // 2
-    b = np.mat(
+    b = np.asmatrix(
         [[k**i for i in order_range] for k in range(-half_window, half_window + 1)]
     )
     m = np.linalg.pinv(b).A[deriv] * 1**deriv * factorial(deriv)
