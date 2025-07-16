@@ -6,7 +6,7 @@ import gsd.hoomd
 import hoomd
 import numpy as np
 
-from msibi.potentials import alpha_array
+from msibi.utils.potentials import alpha_array
 
 
 class State(object):

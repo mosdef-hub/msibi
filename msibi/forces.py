@@ -13,13 +13,9 @@ from cmeutils.structure import (
 )
 
 import msibi
-from msibi.potentials import (
-    bond_correction,
-    lennard_jones,
-    pair_correction,
-    polynomial_potential,
-)
+from msibi.utils.corrections import bond_correction, pair_correction
 from msibi.utils.error_calculation import calc_similarity
+from msibi.utils.potentials import lennard_jones, polynomial_potential
 from msibi.utils.smoothing import savitzky_golay
 from msibi.utils.sorting import natural_sort
 
