@@ -11,12 +11,12 @@ from cmeutils.structure import (
     dihedral_distribution,
     gsd_rdf,
 )
+from scipy.signal import savgol_filter
 
 import msibi
 from msibi.utils.corrections import bond_correction, pair_correction
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.potentials import lennard_jones, polynomial_potential
-from msibi.utils.smoothing import savitzky_golay
 from msibi.utils.sorting import natural_sort
 
 
@@ -188,10 +188,10 @@ class Force:
                 "This force is not a table potential and is not mutable."
             )
         potential = np.copy(self.potential)
-        self.potential = savitzky_golay(
-            y=potential,
-            window_size=self.smoothing_window,
-            order=self.smoothing_order,
+        self.potential = savgol_filter(
+            x=potential,
+            window_length=self.smoothing_window,
+            polyorder=self.smoothing_order,
         )
 
     def save_potential(self, file_path: str) -> None:
@@ -305,10 +305,10 @@ class Force:
         plt.xlabel("x")
         plt.plot(target[:, 0], target[:, 1], marker="^", label="Target")
         if self.smoothing_window:
-            y_smoothed = savitzky_golay(
-                target[:, 1],
-                window_size=self.smoothing_window,
-                order=self.smoothing_order,
+            y_smoothed = savgol_filter(
+                x=target[:, 1],
+                window_length=self.smoothing_window,
+                polyorder=self.smoothing_order,
             )
             plt.plot(target[:, 0], y_smoothed, marker="o", label="Smoothed")
             plt.legend()
@@ -557,13 +557,11 @@ class Force:
         if self.optimize:
             target_distribution = self._get_state_distribution(state=state, query=False)
             if self.smoothing_window and self.smoothing_order:
-                target_distribution[:, 1] = savitzky_golay(
-                    y=target_distribution[:, 1],
-                    window_size=self.smoothing_window,
-                    order=self.smoothing_order,
-                    deriv=0,
+                target_distribution[:, 1] = savgol_filter(
+                    x=target_distribution[:, 1],
+                    window_length=self.smoothing_window,
+                    polyorder=self.smoothing_order,
                 )
-
         else:
             target_distribution = None
         self._states[state] = {
@@ -585,10 +583,10 @@ class Force:
         """
         distribution = self._get_state_distribution(state, query=True)
         if self.smoothing_window and self.smoothing_order:
-            distribution[:, 1] = savitzky_golay(
-                y=distribution[:, 1],
-                window_size=self.smoothing_window,
-                order=self.smoothing_order,
+            distribution[:, 1] = savgol_filter(
+                x=distribution[:, 1],
+                window_length=self.smoothing_window,
+                polyorder=self.smoothing_order,
                 deriv=0,
             )
             negative_idx = np.where(distribution[:, 1] < 0)[0]
