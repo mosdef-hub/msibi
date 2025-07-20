@@ -1,6 +1,6 @@
 import os
 import warnings
-from typing import Optional, Union
+from typing import Callable, Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,7 +14,12 @@ from cmeutils.structure import (
 from scipy.signal import savgol_filter
 
 import msibi
-from msibi.utils.corrections import bond_correction, pair_correction
+from msibi.utils.corrections import (
+    harmonic,
+    exponential,
+    bonded_corrections,
+    pair_corrections
+)
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.potentials import lennard_jones, polynomial_potential
 from msibi.utils.sorting import natural_sort
@@ -69,7 +74,10 @@ class Force:
         name: str,
         optimize: bool,
         nbins: Optional[int] = None,
-        correction_form: str = "linear",
+        smoothing_window: Optional[int] = None,
+        smoothing_order: Optional[int] = None,
+        correction_fit_window: Optional[int] = None,
+        correction_form: Optional[Callable] = None
     ):
         if optimize and nbins is None or nbins and nbins <= 0:
             raise ValueError(
@@ -78,7 +86,11 @@ class Force:
             )
         self.name = name
         self.optimize = optimize
+        self._nbins = nbins
+        self.correction_fit_window = correction_fit_window if optimize else None
         self.correction_form = correction_form
+        self._smoothing_window = smoothing_window if optimize else None 
+        self._smoothing_order = smoothing_order if optimize else None 
         self.format = None
         self.xmin = None
         self.xmax = None
@@ -86,9 +98,6 @@ class Force:
         self.x_range = None
         self.potential_history = []
         self._potential = None
-        self._smoothing_window = 3
-        self._smoothing_order = 1
-        self._nbins = nbins
         self._states = dict()
         self._head_correction_history = []
         self._tail_correction_history = []
@@ -635,31 +644,47 @@ class Force:
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, distribution)
 
-    def _update_potential(self) -> None:
+    def _update_potential(self, iteration) -> None:
         """Compare distributions of current iteration against target,
         and update the potential via Boltzmann inversion.
         """
+        # TODO: TAKE THIS APPEND OUT?
         self.potential_history.append(np.copy(self.potential))
         for state in self._states:
-            kT = state.kT
             current_dist = self._states[state]["current_distribution"]
             target_dist = self._states[state]["target_distribution"]
             self._states[state]["distribution_history"].append(current_dist)
             N = len(self._states)
-            # TODO: Use potential setter here? Does it work with +=?
             alpha_array = state.alpha(pot_x_range=self.x_range, dx=self.dx)
             self._potential += alpha_array * (
-                kT * np.log(current_dist[:, 1] / target_dist[:, 1]) / N
+                state.kT * np.log(current_dist[:, 1] / target_dist[:, 1]) / N
             )
-        # TODO: Add correction funcs to Force classes
-        # TODO: Smoothing potential before doing head and tail corrections?
-        self._potential, real, head_cut, tail_cut = self._correction_function(
-            self.x_range, self.potential, self.correction_form
-        )
+        # Apply corrections to regions without distribution overlap
+        if isinstance(self, msibi.forces.Pair):
+            self._potential, head_cut, tail_cut, real_indices = pair_corrections(
+                x=self.x_range,
+                V=self.potential,
+                r_switch=self.r_switch,
+                smoothing_window=self.smoothing_window,
+                smoothing_order=self.smoothing_order,
+                fit_window_size=self.correction_fit_window,
+                head_correction_func=self.correction_form
+            ) 
+        else: # Bonded force, use correction form on both head and tail of potential
+            self._potential, head_cut, tail_cut, real_indices = bonded_corrections(
+                x=self.x_range,
+                V=self.potential,
+                smoothing_window=self.smoothing_window,
+                smoothing_order=self.smoothing_order,
+                fit_window_size=self.correction_fit_window,
+                head_correction_func=self.correction_form,
+                tail_correction_func=self.correction_form
+            ) 
+        # Store all versions of final potential (actually learned, and extrapolated)
         self.potential_history.append(np.copy(self.potential))
         self._head_correction_history.append(np.copy(self.potential[0:head_cut]))
         self._tail_correction_history.append(np.copy(self.potential[tail_cut:]))
-        self._learned_potential_history.append(np.copy(self.potential[real]))
+        self._learned_potential_history.append(np.copy(self.potential[real_indices]))
 
 
 class Bond(Force):
@@ -699,17 +724,29 @@ class Bond(Force):
         type2: str,
         optimize: bool,
         nbins: Optional[int] = None,
-        correction_form: str = "linear",
+        smoothing_window: Optional[int] = None,
+        smoothing_order: Optional[int] = None,
+        correction_fit_window: Optional[int] = None,
+        correction_form: Callable = harmonic 
     ):
         self.type1, self.type2 = sorted([type1, type2], key=natural_sort)
-        self._correction_function = bond_correction
         name = f"{self.type1}-{self.type2}"
         super(Bond, self).__init__(
             name=name,
             optimize=optimize,
             nbins=nbins,
-            correction_form=correction_form,
+            smoothing_window=smoothing_window,
+            smoothing_order=smoothing_order,
+            correction_fit_window=correction_fit_window,
+            correction_form=correction_form
         )
+        if self.optimize:
+            if self.smoothing_window is None:
+                self.smoothing_window = 15
+            if self.smoothing_order is None:
+                self.smoothing_order = 2
+            if self.correction_fit_window is None:
+                self.correction_fit_window=10
 
     def set_harmonic(self, r0: Union[float, int], k: Union[float, int]) -> None:
         """Set a fixed harmonic bond potential.
@@ -814,19 +851,31 @@ class Angle(Force):
         type3: str,
         optimize: bool,
         nbins: Optional[int] = None,
-        correction_form: str = "linear",
+        smoothing_window: Optional[int] = None,
+        smoothing_order: Optional[int] = None,
+        correction_fit_window: Optional[int] = None,
+        correction_form: Callable = harmonic 
     ):
         self.type1 = type1
         self.type2 = type2
         self.type3 = type3
         name = f"{self.type1}-{self.type2}-{self.type3}"
-        self._correction_function = bond_correction
         super(Angle, self).__init__(
             name=name,
             optimize=optimize,
             nbins=nbins,
-            correction_form=correction_form,
+            smoothing_window=smoothing_window,
+            smoothing_order=smoothing_order,
+            correction_fit_window=correction_fit_window,
+            correction_form=correction_form
         )
+        if self.optimize:
+            if self.smoothing_window is None:
+                self.smoothing_window = 15
+            if self.smoothing_order is None:
+                self.smoothing_order = 3 
+            if self.correction_fit_window is None:
+                self.correciton_fit_window=10
 
     def set_harmonic(self, t0: Union[float, int], k: Union[float, int]) -> None:
         """Set a fixed harmonic angle potential.
@@ -931,23 +980,34 @@ class Pair(Force):
         type1: str,
         type2: str,
         optimize: bool,
-        r_cut: Union[float, int],
         nbins: Optional[int] = None,
+        r_cut: Optional[Union[float, int]] = None,
+        r_switch: Optional[Union[float, int]] = None,
+        correction_fit_window: Optional[int] = None,
         exclude_bonded: bool = False,
-        correction_form: str = "linear",
+        head_correction_form: Callable = exponential
     ):
-        self._correction_function = pair_correction
         self.type1, self.type2 = sorted([type1, type2], key=natural_sort)
         self.r_cut = r_cut
+        self.r_switch = r_switch
         name = f"{self.type1}-{self.type2}"
         # Pair types in hoomd have a different tuple naming structure.
+        # Using different attr here to keep consistent msibi.force.Force.name format.
         self._pair_name = (type1, type2)
         super(Pair, self).__init__(
             name=name,
             optimize=optimize,
             nbins=nbins,
-            correction_form=correction_form,
+            correction_fit_window=correction_fit_window,
+            correction_form=head_correction_form
         )
+        if self.optimize:
+            if self.smoothing_window is None:
+                self.smoothing_window = 15
+            if self.smoothing_order is None:
+                self.smoothing_order = 4 
+            if self.correction_fit_window is None:
+                self.correction_fit_window = 8
 
     def set_lj(
         self,
@@ -1059,20 +1119,32 @@ class Dihedral(Force):
         type4: str,
         optimize: bool,
         nbins: Optional[int] = None,
-        correction_form: str = "linear",
+        smoothing_window: Optional[int] = None,
+        smoothing_order: Optional[int] = None,
+        correction_fit_window: Optional[int] = None,
+        correction_form: Callable = harmonic 
     ):
         self.type1 = type1
         self.type2 = type2
         self.type3 = type3
         self.type4 = type4
         name = f"{self.type1}-{self.type2}-{self.type3}-{self.type4}"
-        self._correction_function = bond_correction
         super(Dihedral, self).__init__(
             name=name,
             optimize=optimize,
             nbins=nbins,
-            correction_form=correction_form,
+            smoothing_window=smoothing_window,
+            smoothing_order=smoothing_order,
+            correction_fit_window=correction_fit_window,
+            correction_form=correction_form
         )
+        if self.optimize:
+            if self.smoothing_window is None:
+                self.smoothing_window = 15
+            if self.smoothing_order is None:
+                self.smoothing_order = 2 
+            if self.correction_fit_window is None:
+                self.correciton_fit_window = 10 
 
     def set_periodic(
         self,

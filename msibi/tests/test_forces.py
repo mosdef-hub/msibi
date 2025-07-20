@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from msibi import Angle, Bond
+from msibi.utils.corrections import linear
 
 from .base_test import BaseTest
 
@@ -34,7 +35,26 @@ class TestForce(BaseTest):
         assert np.allclose(bond.potential, initial_pot * 2)
         assert bond.format == "table"
 
-    def test_smooth_potential(self, bond):
+    def test_default_fit_smoothing(self):
+        bond = Bond(
+            type1="A",
+            type2="B",
+            optimize=True,
+            nbins=60,
+        )
+        assert bond.smoothing_window == 15
+        assert bond.smoothing_order == 2
+        assert bond.correction_fit_window == 10
+
+    def test_smooth_potential(self):
+        bond = Bond(
+            type1="A",
+            type2="B",
+            optimize=True,
+            nbins=60,
+            smoothing_window=10,
+            smoothing_order=2
+        )
         bond.set_polynomial(
             x0=2,
             k4=0,
@@ -45,9 +65,8 @@ class TestForce(BaseTest):
         )
         bond.potential = bond.potential + np.random.normal(0, 0.5, bond.potential.shape)
         noisy_pot = np.copy(bond.potential)
-        bond.smoothing_window = 5
         bond.smooth_potential()
-        assert bond.smoothing_window == 5
+        assert bond.smoothing_window == 10 
         for i, j in zip(bond.potential, noisy_pot):
             assert i != j
 
@@ -63,7 +82,7 @@ class TestForce(BaseTest):
 
     def test_fit_scores(self, msibi, stateX, stateY):
         msibi.gsd_period = 10
-        bond = Bond(type1="A", type2="B", optimize=True, nbins=60)
+        bond = Bond(type1="A", type2="B", optimize=True, nbins=60, correction_form=linear)
         bond.set_polynomial(x_min=0.0, x_max=3.0, x0=1, k2=200, k3=0, k4=0)
         angle = Angle(type1="A", type2="B", type3="A", optimize=False)
         angle.set_harmonic(k=500, t0=2)
@@ -74,7 +93,7 @@ class TestForce(BaseTest):
         msibi.add_force(bond)
         msibi.add_force(angle)
         msibi.add_force(angle2)
-        msibi.run_optimization(n_steps=500, n_iterations=1)
+        msibi.run_optimization(n_steps=2000, n_iterations=1)
         assert len(bond._states[stateY]["f_fit"]) == 1
         assert len(bond._states[stateX]["f_fit"]) == 1
         bond.plot_fit_scores(state=stateY)
@@ -82,17 +101,20 @@ class TestForce(BaseTest):
         with pytest.raises(RuntimeError):
             angle.plot_fit_scores(state=stateY)
 
-    def test_smoothing_window(self, bond):
+    def test_smoothing_window(self):
+        bond = Bond(type1="A", type2="B", optimize=True, nbins=60)
         bond.smoothing_window = 5
         assert bond.smoothing_window == 5
 
-    def test_smoothing_order(self, bond):
+    def test_smoothing_order(self):
+        bond = Bond(type1="A", type2="B", optimize=True, nbins=60)
         bond.smoothing_order = 3
         assert bond.smoothing_order == 3
 
-    def test_nbins(self, bond):
-        bond.nbins = 60
-        assert bond.nbins == 60
+    def test_nbins(self):
+        bond = Bond(type1="A", type2="B", optimize=True, nbins=60)
+        bond.nbins = 70 
+        assert bond.nbins == 70 
 
     def test_set_potential_error(self):
         bond = Bond(type1="A", type2="B", optimize=False)

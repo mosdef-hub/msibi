@@ -196,7 +196,7 @@ class MSIBI(object):
                     gsd_period=self.gsd_period,
                     backup_trajectories=backup_trajectories,
                 )
-            self._update_potentials()
+            self._update_potentials(iteration=self.n_iterations)
             self.n_iterations += 1
 
     def pickle_forces(self, file_path: str) -> None:
@@ -277,11 +277,11 @@ class MSIBI(object):
         forces = [pair_force, bond_force, angle_force, dihedral_force]
         return [f for f in forces if f]  # Filter out any None values
 
-    def _update_potentials(self) -> None:
+    def _update_potentials(self, iteration) -> None:
         """Update the potentials for the potentials to be optimized."""
         for force in self._optimize_forces:
             self._recompute_distribution(force)
-            force._update_potential()
+            force._update_potential(iteration=iteration)
 
     def _recompute_distribution(self, force: msibi.forces.Force) -> None:
         """Recompute the current distribution."""
