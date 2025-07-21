@@ -30,6 +30,7 @@ class BaseTest:
             kT=1.0,
             traj_file=os.path.join(test_assets, "AB-1.0kT.gsd"),
             n_frames=20,
+            sampling_stride=1,
             _dir=tmp_path,
         )
         return state
@@ -42,6 +43,7 @@ class BaseTest:
             kT=1.0,
             traj_file=os.path.join(test_assets, "AB-1.0kT.gsd"),
             n_frames=20,
+            sampling_stride=1,
             alpha_form="linear",
             _dir=tmp_path,
         )
@@ -55,6 +57,7 @@ class BaseTest:
             kT=4.0,
             traj_file=os.path.join(test_assets, "AB-4.0kT.gsd"),
             n_frames=100,
+            sampling_stride=1,
             _dir=tmp_path,
         )
         return state

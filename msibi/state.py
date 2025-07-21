@@ -26,6 +26,9 @@ class State(object):
         The number of frames to use when calculating distributions.
         When calculating distributions, the last `n_frames` of the
         trajectory will be used.
+    sampling_stride : int, default=1
+        The stride step-size used when iterating through the last n_frames
+        of the query simulation trajectory.
     alpha0 : (Union[float, int]), default=1.0
         The base alpha value used to scale the weight of this state.
     alpha_form: str, optional, default 'constant'
@@ -43,6 +46,7 @@ class State(object):
         kT: float,
         traj_file: str,
         n_frames: int,
+        sampling_stride: int = 1,
         alpha0: float = 1.0,
         alpha_form: str = "constant",
         exclude_bonded: bool = False,  # TODO: Do we use this here or in Force?
@@ -56,6 +60,7 @@ class State(object):
         self.kT = kT
         self.traj_file = os.path.abspath(traj_file)
         self._n_frames = n_frames
+        self._sampling_stride = sampling_stride
         self._opt = None
         self._alpha0 = float(alpha0)
         self.alpha_form = alpha_form
@@ -79,7 +84,21 @@ class State(object):
     @n_frames.setter
     def n_frames(self, value: int):
         """Set the number of frames to use for calculating distributions."""
+        if not isinstance(value, int) or value < 1:
+            raise ValueError("n_frames must be an integer >= 1")
         self._n_frames = value
+
+    @property
+    def sampling_stride(self) -> int:
+        """The stride step size used to calcualte distributions when iterating through n_frames."""
+        return self._sampling_stride
+
+    @sampling_stride.setter
+    def sampling_stride(self, value: int):
+        """Set the stride step size used to calcualte distributions when iterating through n_frames."""
+        if not isinstance(value, int) or value < 1:
+            raise ValueError("sampling_stride must be an integer >= 1")
+        self._sampling_stride = value
 
     @property
     def alpha0(self) -> Union[int, float]:
@@ -189,6 +208,9 @@ class State(object):
             assert not os.path.isdir(dir_name)
             os.mkdir(dir_name)
         except AssertionError:
-            print(f"{dir_name} already exists")
+            print(
+                f"A {dir_name} directory already exists, possibly from a previous MSIBI run. ",
+                "Rename or remove this directory and re-initialize this optimization.",
+            )
             raise
         return os.path.abspath(dir_name)

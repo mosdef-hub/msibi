@@ -67,10 +67,17 @@ class Force:
         It is also used in determining the bin size of the target and query
         distributions.
         If this force is not being optimied, leave this as `None`.
-    correction_form: str, default = `linear`
-        The type of correciton to apply to the head
-        and tail of the force (only the head for msibi.forc.Pair).
-        Right now, only "linear" is supported.
+    correction_fit_window: int, optional
+        The window size (number of data points) to use when fitting
+        the iterative potential to head and tail correction forms.
+        This is only used when the Force is set to be optimized.
+    correction_form: Callable, optional
+        The type of correciton form to apply to the potential.
+        This is only used when the Force is set to be optimized.
+        Bonded forces (`Bond`, `Angle`, `Dihedral`) apply this correction
+        to both the head and tail of the potential.
+        Non-bonded forces (`Pair`) only apply this correction to the head of
+        the potential.
     """
 
     def __init__(
@@ -646,10 +653,8 @@ class Force:
         fpath = os.path.join(state.dir, fname)
         np.savetxt(fpath, distribution)
 
-    def _update_potential(self, iteration) -> None:
-        """Compare distributions of current iteration against target,
-        and update the potential via Boltzmann inversion.
-        """
+    def _update_potential(self) -> None:
+        """Compare distributions and update potential via Boltzmann Inversion."""
         # TODO: TAKE THIS APPEND OUT?
         self.potential_history.append(np.copy(self.potential))
         for state in self._states:
@@ -718,6 +723,14 @@ class Bond(Force):
         and step size (dx).
         It is also used in determining the bin size of the target and query
         distributions.
+    correction_fit_window: int, optional
+        The window size (number of data points) to use when fitting
+        the iterative potential to head and tail correction forms.
+        This is only used when the Force is set to be optimized.
+    correction_form: Callable, default=msibi.utils.corrections.harmonic
+        The type of correciton form to apply to the potential.
+        This is only used when the Force is set to be optimized.
+        This correction is applied to both the head and tail of the potential.
     """
 
     def __init__(
@@ -807,8 +820,11 @@ class Bond(Force):
             A_name=self.type1,
             B_name=self.type2,
             start=-state.n_frames,
+            stop=-1,
+            stride=state.sampling_stride,
             histogram=True,
             normalize=True,
+            as_probability=True,
             l_min=self.x_min,
             l_max=self.x_max,
             bins=self.nbins + 1,
@@ -844,6 +860,14 @@ class Angle(Force):
         and step size (dx).
         It is also used in determining the bin size of the target and query
         distributions.
+    correction_fit_window: int, optional
+        The window size (number of data points) to use when fitting
+        the iterative potential to head and tail correction forms.
+        This is only used when the Force is set to be optimized.
+    correction_form: Callable, default=msibi.utils.corrections.harmonic
+        The type of correciton form to apply to the potential.
+        This is only used when the Force is set to be optimized.
+        This correction is applied to both the head and tail of the potential.
     """
 
     def __init__(
@@ -932,8 +956,11 @@ class Angle(Force):
             B_name=self.type2,
             C_name=self.type3,
             start=-state.n_frames,
+            stop=-1,
+            stride=state.sampling_stride,
             histogram=True,
             normalize=True,
+            as_probability=True,
             theta_min=self.x_min,
             theta_max=self.x_max,
             bins=self.nbins + 1,
@@ -965,6 +992,10 @@ class Pair(Force):
         other forces are optimized.
     r_cut : (Union[float, int])
         Sets the cutoff distance used in Hoomd's neighborlist.
+        This is also the maximum radius value used in the pair table potential.
+    r_switch : (Union[float, int])
+        Sets the radius value where the potential is corrected to
+        begin approach zero smoothly.
     nbins : int, optional
         This must be a positive integer if this force is being optimized.
         nbins is used for setting the potenials independent varible (x) range
@@ -975,6 +1006,14 @@ class Pair(Force):
         If ``True``, then particles from the same molecule are not
         included in the RDF calculation.
         If ``False``, all particles are included.
+    correction_fit_window: int, optional
+        The window size (number of data points) to use when fitting
+        the iterative potential to head and tail correction forms.
+        This is only used when the Force is set to be optimized.
+    correction_form: Callable, default=msibi.utils.corrections.harmonic
+        The type of correciton form to apply to the potential.
+        This is only used when the Force is set to be optimized.
+        This correction is only applied to both the head of the potential.
     """
 
     def __init__(
@@ -994,7 +1033,7 @@ class Pair(Force):
         self.r_switch = r_switch
         name = f"{self.type1}-{self.type2}"
         # Pair types in hoomd have a different tuple naming structure.
-        # Using different attr here to keep consistent msibi.force.Force.name format.
+        # Using different attr above to keep consistent msibi.force.Force.name format.
         self._pair_name = (type1, type2)
         super(Pair, self).__init__(
             name=name,
@@ -1070,6 +1109,7 @@ class Pair(Force):
             r_max=self.r_cut,
             exclude_bonded=state.exclude_bonded,
             start=-state.n_frames,
+            stride=state.sampling_stride,
             stop=-1,
             bins=self.nbins + 1,
         )
@@ -1111,6 +1151,14 @@ class Dihedral(Force):
         and step size (dx).
         It is also used in determining the bin size of the target and query
         distributions.
+    correction_fit_window: int, optional
+        The window size (number of data points) to use when fitting
+        the iterative potential to head and tail correction forms.
+        This is only used when the Force is set to be optimized.
+    correction_form: Callable, default=msibi.utils.corrections.harmonic
+        The type of correciton form to apply to the potential.
+        This is only used when the Force is set to be optimized.
+        This correction is applied to both the head and tail of the potential.
     """
 
     def __init__(
@@ -1211,7 +1259,10 @@ class Dihedral(Force):
             C_name=self.type3,
             D_name=self.type4,
             start=-state.n_frames,
+            stop=-1,
+            stride=state.sampling_stride,
             histogram=True,
             normalize=True,
+            as_probability=True,
             bins=self.nbins + 1,
         )
