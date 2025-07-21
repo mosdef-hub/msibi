@@ -282,7 +282,7 @@ class TestBond(BaseTest):
         for i in range(2):
             bond.potential_history.append(np.copy(bond.potential))
         path = os.path.join(tmp_path, "AB_history.npy")
-        bond.save_potential(path)
+        bond.save_potential_history(path)
         assert os.path.isfile(path)
 
 
