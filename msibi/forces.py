@@ -20,13 +20,12 @@ from msibi.utils.corrections import (
     harmonic,
     pair_corrections,
 )
-from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.exceptions import (
     PotentialImmutableError,
     PotentialNotOptimizedError,
 )
+from msibi.utils.general import calc_similarity, natural_sort
 from msibi.utils.potentials import lennard_jones, polynomial_potential
-from msibi.utils.sorting import natural_sort
 
 
 class Force:
@@ -1034,7 +1033,7 @@ class Pair(Force):
         name = f"{self.type1}-{self.type2}"
         # Pair types in hoomd have a different tuple naming structure.
         # Using different attr above to keep consistent msibi.force.Force.name format.
-        self._pair_name = (type1, type2)
+        self._pair_name = (self.type1, self.type2)
         super(Pair, self).__init__(
             name=name,
             optimize=optimize,

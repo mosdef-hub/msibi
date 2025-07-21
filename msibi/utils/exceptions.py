@@ -16,5 +16,7 @@ class PotentialImmutableError(PotentialError):
     """Exception raised when attempting an operation that requires a muttable (table) potential."""
 
     def __init__(self, operation: str):
-        self.message = f"This Force isn't muttable (table); you can't {operation}."
+        self.message = (
+            f"This Force isn't muttable (i.e., table potential); you can't {operation}."
+        )
         super().__init__(self.message)

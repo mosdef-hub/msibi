@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pytest
 
-from msibi import Angle, Bond
+from msibi import Angle, Bond, Pair
 from msibi.utils.corrections import linear
 from msibi.utils.exceptions import (
     PotentialImmutableError,
@@ -14,6 +14,18 @@ from .base_test import BaseTest
 
 
 class TestForce(BaseTest):
+    def test_name_sorting(self):
+        bond = Bond(type1="B", type2="A", optimize=False)
+        assert bond.name == "A-B"
+        assert bond.type1 == "A"
+        assert bond.type2 == "B"
+
+        pair = Pair(type1="B", type2="A", optimize=False)
+        assert pair.name == "A-B"
+        assert pair.type1 == "A"
+        assert pair.type2 == "B"
+        assert pair._pair_name == ("A", "B")
+
     def test_dx(self, bond):
         bond.set_polynomial(
             x0=2,
