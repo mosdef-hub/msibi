@@ -23,6 +23,7 @@ from msibi.utils.corrections import (
 from msibi.utils.error_calculation import calc_similarity
 from msibi.utils.potentials import lennard_jones, polynomial_potential
 from msibi.utils.sorting import natural_sort
+from msibi.utils.exceptions import PotentialNotOptimizedError, PotentialImmutableError
 
 
 class Force:
@@ -120,13 +121,7 @@ class Force:
     @potential.setter
     def potential(self, array):
         if self.format != "table":
-            # TODO: Make custom error for this
-            raise ValueError(
-                "Setting potential arrays can only be done "
-                "for Forces that utilize tables. "
-                "See :meth:`msibi.forces.Force.set_polynomial` or "
-                ":meth:`msibi.forces.Force.set_from_file`"
-            )
+            raise PotentialImmutableError("set a table potential")
         self._potential = array
 
     @property
@@ -145,8 +140,10 @@ class Force:
     @smoothing_window.setter
     def smoothing_window(self, value: int):
         """Window size used in smoothing the distributions and potentials."""
+        if not self.optimize:
+            raise PotentialNotOptimizedError("apply a smoothing window")
         if not isinstance(value, int) or value <= 0:
-            raise ValueError("The smoothing window must be an integer.")
+            raise ValueError("The smoothing window must be an integer > 0.")
         self._smoothing_window = value
         for state in self._states:
             self._add_state(state)
@@ -159,6 +156,8 @@ class Force:
     @smoothing_order.setter
     def smoothing_order(self, value: int):
         """The order used in Savitzky Golay filter."""
+        if not self.optimize:
+            raise PotentialNotOptimizedError("apply a smoothing order")
         if not isinstance(value, int) or value <= 0:
             raise ValueError("The smoothing order must be an integer.")
         self._smoothing_order = value
@@ -193,9 +192,7 @@ class Force:
 
         """
         if self.format != "table":
-            raise RuntimeError(
-                "This force is not a table potential and is not mutable."
-            )
+            raise PotentialNotOptimizedError("smooth the potential")
         potential = np.copy(self.potential)
         self.potential = savgol_filter(
             x=potential,
@@ -221,10 +218,7 @@ class Force:
             File path and name to save table potential to.
         """
         if self.format != "table":
-            raise RuntimeError(
-                "This force is not a table potential and "
-                "cannot be saved to a pandas DataFrame csv."
-            )
+            raise PotentialImmutableError("save the potential to a .csv")
         df = pd.DataFrame(
             {
                 "x": self.x_range,
@@ -242,11 +236,8 @@ class Force:
         file_path : str
             File path and name to save table potential history to.
         """
-        if self.format != "table":
-            raise RuntimeError(
-                "This force is not a table potential and "
-                "cannot be saved to a .npy file."
-            )
+        if not self.optimize:
+            raise PotentialNotOptimizedError("save a potential history")
         np.save(file_path, np.asarray(self.potential_history))
 
     def save_state_data(self, state: msibi.state.State, file_path: str) -> None:
@@ -265,6 +256,8 @@ class Force:
         file_path : str, required
             File path and name to save the `.npz` file.
         """
+        if not self.optimize:
+            raise PotentialNotOptimizedError("save a potential history")
         state_dict = self._states[state]
         state_data = {
             "target_distribution": state_dict["target_distribution"],
@@ -302,12 +295,8 @@ class Force:
         file_path : str, optional
             If given, the plot will be saved to this location.
         """
-        # TODO: Make custom error
         if not self.optimize:
-            raise RuntimeError(
-                "This force object is not set to be optimized. "
-                "The target distribution is not calculated."
-            )
+            raise PotentialNotOptimizedError("plot a distribution history")
         target = self.target_distribution(state)
         plt.title(f"State {state.name}: {self.name} Target")
         plt.ylabel("P(x)")
@@ -335,7 +324,7 @@ class Force:
             If given, the plot will be saved to this location.
         """
         if not self.optimize:
-            raise RuntimeError("This force object is not set to be optimized.")
+            raise PotentialNotOptimizedError("plot fit scores")
         plt.plot(self._states[state]["f_fit"], "o-")
         plt.xlabel("Iteration")
         plt.ylabel("Fit Score")
@@ -362,6 +351,8 @@ class Force:
             If given, sets the limits for the y-range of the plot.
             If not given, uses the entire y-range of the learned potential.
         """
+        if self.format != "table":
+            raise PotentialImmutableError("plot the potential.")
         plt.plot(self.x_range, self.potential, "o-")
         if xlim:
             plt.xlim(xlim)
@@ -392,6 +383,8 @@ class Force:
             If given, sets the limits for the y-range of the plot.
             If not given, uses the entire y-range of the learned potential.
         """
+        if not self.optimize:
+            raise PotentialNotOptimizedError("plot the potential history")
         for i, pot in enumerate(self.potential_history):
             plt.plot(self.x_range, pot, "o-", label=i)
         if xlim:
@@ -419,6 +412,8 @@ class Force:
         file_path : str, optional
             If given, the plot will be saved to this location.
         """
+        if not self.optimize:
+            raise PotentialNotOptimizedError("plot the distribution comparison")
         final_dist = self.distribution_history(state=state)[-1]
         target_dist = self.target_distribution(state=state)
 
@@ -454,6 +449,8 @@ class Force:
         array : np.ndarray
             The 2D array representing the target distribution for this state point.
         """
+        if not self.optimize:
+            raise PotentialNotOptimizedError("set a target distribution")
         self._states[state]["target_distribution"] = array
 
     def current_distribution(self, state: msibi.state.State) -> np.ndarray:
@@ -474,6 +471,8 @@ class Force:
         state : msibi.state.State
             The state point used for calculating the distribution.
         """
+        if not self.optimize:
+            raise PotentialNotOptimizedError("calculate an f-fit score")
         return self._calc_fit(state)
 
     def set_polynomial(
