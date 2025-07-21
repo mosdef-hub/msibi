@@ -1,3 +1,5 @@
+from typing import Callable, Union
+
 import more_itertools as mit
 import numpy as np
 from scipy.optimize import curve_fit
@@ -6,30 +8,69 @@ from scipy.signal import savgol_filter
 from msibi.utils.general import find_nearest
 
 
-def harmonic(x, x0, k):
-    "V(x) = 0.5(x - x0)^2"
+def harmonic(x: np.ndarray, x0: Union[float, int], k: Union[float, int]):
+    """Used as the default correction form for bonded forces.
+
+        :math:`V(x) = 0.5*k(x - x0)^2`
+
+    .. note::
+
+        This is used by default for msibi.force.Bond, msibi.force.Angle
+        and msibi.force.Dihedral.
+
+    """
     return 0.5 * k * (x - x0) ** 2
 
 
-def exponential(x, A, B):
-    "V(x) = A*exp(-Bx)"
+def exponential(x: np.ndarray, A: Union[float, int], B: Union[float, int]):
+    """Used as the default head correction for non-bonded pair potentials.
+
+    :math:`V(x) = A*exp(-Bx)`
+
+    """
     return A * np.exp(-B * x)
 
 
-def linear(x, m, b):
-    "V(x) = mx + b"
+def linear(x: np.ndarray, m: Union[float, int], b: Union[float, int]):
+    """Functional form that can be used for head or tail corrections.
+
+    :math:`V(x) = mx + b`
+
+
+    """
     return x * m + b
 
 
 def bonded_corrections(
-    x,
-    V,
-    smoothing_window,
-    smoothing_order,
-    fit_window_size,
-    head_correction_func,
-    tail_correction_func,
+    x: np.ndarray,
+    V: np.ndarray,
+    smoothing_window: int,
+    smoothing_order: int,
+    fit_window_size: int,
+    head_correction_func: Callable,
+    tail_correction_func: Callable,
 ):
+    """The default correction method for bonded forces.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        The x values of the force.
+    V : np.ndarray
+        The y values of the force.
+    smoothing_window : int
+        Window size to use in scipy.signal.savgol_fiter
+        to smooth V before fitting.
+    smoothing_order : int
+        Polynomial order to use in scipy.signal.savgol_fiter
+        to smooth V before fitting.
+    head_correction_func : Callable
+        Functional form to use in fitting the head (left) side
+        of the potential.
+    tail_correction_func : Callable
+        Functional form to use in fitting the tail (right) side
+        of the potential.
+    """
     V = np.copy(V)
     real_indices = _get_real_indices(V)
     v_real = np.copy(V[real_indices])
@@ -81,14 +122,41 @@ def bonded_corrections(
 
 
 def pair_corrections(
-    x,
-    V,
-    r_switch,
-    smoothing_window,
-    smoothing_order,
-    fit_window_size,
-    head_correction_func,
+    x: np.ndarray,
+    V: np.ndarray,
+    r_switch: Union[float, int],
+    smoothing_window: int,
+    smoothing_order: int,
+    fit_window_size: int,
+    head_correction_func: Callable,
 ):
+    """The default correction method for bonded forces.
+
+    .. note::
+
+        No functional form is used to fit the tail of the potential
+        as it is for the head. The tail of the potential is corrected
+        so that it approaches zero smoothly between r_switch
+        and r_cut.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        The x values of the force.
+    V : np.ndarray
+        The y values of the force.
+    r_switch : Union[int, float]
+        The x-value to begin smooth approach towards zero.
+    smoothing_window : int
+        Window size to use in scipy.signal.savgol_fiter
+        to smooth V before fitting.
+    smoothing_order : int
+        Polynomial order to use in scipy.signal.savgol_fiter
+        to smooth V before fitting.
+    head_correction_func : Callable
+        Functional form to use in fitting the head (left) side
+        of the potential.
+    """
     V = np.copy(V)
     real_indices = _get_real_indices(V)
     v_real = np.copy(V[real_indices])
@@ -138,7 +206,8 @@ def pair_corrections(
     return V, head_start, idx_r_switch, real_indices
 
 
-def _get_real_indices(V):
+def _get_real_indices(V: np.ndarray):
+    """Find where infinity or NaN values exist in the potential."""
     real_idx = np.where(np.isfinite(V))[0]
     # Check for continuity of real_indices:
     if not np.all(np.ediff1d(real_idx) == 1):
@@ -158,5 +227,9 @@ def _get_real_indices(V):
     return real_idx
 
 
-def _shift_x(x, origin):
+def _shift_x(x: np.ndarray, origin: Union[float, int]):
+    """Shift x-values in order to generate increasing f(x) as x decreases.
+
+    This is used for bonded_corrections().
+    """
     return x - origin
