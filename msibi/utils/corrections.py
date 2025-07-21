@@ -1,30 +1,26 @@
-from abc import abstractmethod
-from typing import Optional
 import more_itertools as mit
-
-
 import numpy as np
-from scipy.signal import savgol_filter
 from scipy.optimize import curve_fit
+from scipy.signal import savgol_filter
 
 from msibi.utils.general import find_nearest
 
 
 def harmonic(x, x0, k):
     "V(x) = 0.5(x - x0)^2"
-    return 0.5 * k * (x - x0)**2
-    
+    return 0.5 * k * (x - x0) ** 2
+
 
 def exponential(x, A, B):
     "V(x) = A*exp(-Bx)"
-    return A * np.exp(-B*x)
+    return A * np.exp(-B * x)
 
 
 def linear(x, m, b):
     "V(x) = mx + b"
     return x * m + b
 
-    
+
 def bonded_corrections(
     x,
     V,
@@ -32,7 +28,7 @@ def bonded_corrections(
     smoothing_order,
     fit_window_size,
     head_correction_func,
-    tail_correction_func
+    tail_correction_func,
 ):
     V = np.copy(V)
     real_indices = _get_real_indices(V)
@@ -73,13 +69,13 @@ def bonded_corrections(
     popt_tail, pcov_tail = curve_fit(
         f=tail_correction_func,
         xdata=x_real[-fit_window_size:],
-        ydata=v_real[-fit_window_size:]
+        ydata=v_real[-fit_window_size:],
     )
-    tail_pot_correction = tail_correction_func(x[tail_start + 1:], *popt_tail)
+    tail_pot_correction = tail_correction_func(x[tail_start + 1 :], *popt_tail)
 
     # Apply correction regions to original potential
     V[:head_start] = head_pot_correction
-    V[tail_start + 1:] = tail_pot_correction
+    V[tail_start + 1 :] = tail_pot_correction
 
     return V, head_start, tail_start + 1, real_indices
 
@@ -98,7 +94,6 @@ def pair_corrections(
     v_real = np.copy(V[real_indices])
     x_real = np.copy(x[real_indices])
     head_start = real_indices[0]
-    tail_start = real_indices[-1]
     if all([smoothing_window, smoothing_order]):
         if len(v_real) < 2 * smoothing_window:
             mode = "nearest"
@@ -108,16 +103,16 @@ def pair_corrections(
             x=v_real,
             window_length=smoothing_window,
             polyorder=smoothing_order,
-            mode=mode
+            mode=mode,
         )
     # head correction (short range repulsion)
     # Get fit parameters for where we actually have data
     popt_head, pcov_head = curve_fit(
         f=head_correction_func,
-        xdata=x_real[:fit_window_size + 1],
-        ydata=v_real[:fit_window_size + 1],
+        xdata=x_real[: fit_window_size + 1],
+        ydata=v_real[: fit_window_size + 1],
     )
-    head_pot_correction = head_correction_func(x[:head_start], *popt_head)        
+    head_pot_correction = head_correction_func(x[:head_start], *popt_head)
 
     # Tail correction, long range approach to zero
     V_multiplier = np.ones_like(x)
@@ -139,7 +134,7 @@ def pair_corrections(
         idx_r_switch = -1
 
     V *= V_multiplier
-    
+
     return V, head_start, idx_r_switch, real_indices
 
 

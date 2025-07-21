@@ -15,15 +15,18 @@ from scipy.signal import savgol_filter
 
 import msibi
 from msibi.utils.corrections import (
-    harmonic,
-    exponential,
     bonded_corrections,
-    pair_corrections
+    exponential,
+    harmonic,
+    pair_corrections,
 )
 from msibi.utils.error_calculation import calc_similarity
+from msibi.utils.exceptions import (
+    PotentialImmutableError,
+    PotentialNotOptimizedError,
+)
 from msibi.utils.potentials import lennard_jones, polynomial_potential
 from msibi.utils.sorting import natural_sort
-from msibi.utils.exceptions import PotentialNotOptimizedError, PotentialImmutableError
 
 
 class Force:
@@ -78,7 +81,7 @@ class Force:
         smoothing_window: Optional[int] = None,
         smoothing_order: Optional[int] = None,
         correction_fit_window: Optional[int] = None,
-        correction_form: Optional[Callable] = None
+        correction_form: Optional[Callable] = None,
     ):
         if optimize and nbins is None or nbins and nbins <= 0:
             raise ValueError(
@@ -90,8 +93,8 @@ class Force:
         self._nbins = nbins
         self.correction_fit_window = correction_fit_window if optimize else None
         self.correction_form = correction_form
-        self._smoothing_window = smoothing_window if optimize else None 
-        self._smoothing_order = smoothing_order if optimize else None 
+        self._smoothing_window = smoothing_window if optimize else None
+        self._smoothing_order = smoothing_order if optimize else None
         self.format = None
         self.xmin = None
         self.xmax = None
@@ -667,9 +670,9 @@ class Force:
                 smoothing_window=self.smoothing_window,
                 smoothing_order=self.smoothing_order,
                 fit_window_size=self.correction_fit_window,
-                head_correction_func=self.correction_form
-            ) 
-        else: # Bonded force, use correction form on both head and tail of potential
+                head_correction_func=self.correction_form,
+            )
+        else:  # Bonded force, use correction form on both head and tail of potential
             self._potential, head_cut, tail_cut, real_indices = bonded_corrections(
                 x=self.x_range,
                 V=self.potential,
@@ -677,8 +680,8 @@ class Force:
                 smoothing_order=self.smoothing_order,
                 fit_window_size=self.correction_fit_window,
                 head_correction_func=self.correction_form,
-                tail_correction_func=self.correction_form
-            ) 
+                tail_correction_func=self.correction_form,
+            )
         # Store all versions of final potential (actually learned, and extrapolated)
         self.potential_history.append(np.copy(self.potential))
         self._head_correction_history.append(np.copy(self.potential[0:head_cut]))
@@ -726,7 +729,7 @@ class Bond(Force):
         smoothing_window: Optional[int] = None,
         smoothing_order: Optional[int] = None,
         correction_fit_window: Optional[int] = None,
-        correction_form: Callable = harmonic 
+        correction_form: Callable = harmonic,
     ):
         self.type1, self.type2 = sorted([type1, type2], key=natural_sort)
         name = f"{self.type1}-{self.type2}"
@@ -737,7 +740,7 @@ class Bond(Force):
             smoothing_window=smoothing_window,
             smoothing_order=smoothing_order,
             correction_fit_window=correction_fit_window,
-            correction_form=correction_form
+            correction_form=correction_form,
         )
         if self.optimize:
             if self.smoothing_window is None:
@@ -745,7 +748,7 @@ class Bond(Force):
             if self.smoothing_order is None:
                 self.smoothing_order = 2
             if self.correction_fit_window is None:
-                self.correction_fit_window=10
+                self.correction_fit_window = 10
 
     def set_harmonic(self, r0: Union[float, int], k: Union[float, int]) -> None:
         """Set a fixed harmonic bond potential.
@@ -853,7 +856,7 @@ class Angle(Force):
         smoothing_window: Optional[int] = None,
         smoothing_order: Optional[int] = None,
         correction_fit_window: Optional[int] = None,
-        correction_form: Callable = harmonic 
+        correction_form: Callable = harmonic,
     ):
         self.type1 = type1
         self.type2 = type2
@@ -866,15 +869,15 @@ class Angle(Force):
             smoothing_window=smoothing_window,
             smoothing_order=smoothing_order,
             correction_fit_window=correction_fit_window,
-            correction_form=correction_form
+            correction_form=correction_form,
         )
         if self.optimize:
             if self.smoothing_window is None:
                 self.smoothing_window = 15
             if self.smoothing_order is None:
-                self.smoothing_order = 3 
+                self.smoothing_order = 3
             if self.correction_fit_window is None:
-                self.correciton_fit_window=10
+                self.correciton_fit_window = 10
 
     def set_harmonic(self, t0: Union[float, int], k: Union[float, int]) -> None:
         """Set a fixed harmonic angle potential.
@@ -984,7 +987,7 @@ class Pair(Force):
         r_switch: Optional[Union[float, int]] = None,
         correction_fit_window: Optional[int] = None,
         exclude_bonded: bool = False,
-        head_correction_form: Callable = exponential
+        head_correction_form: Callable = exponential,
     ):
         self.type1, self.type2 = sorted([type1, type2], key=natural_sort)
         self.r_cut = r_cut
@@ -998,13 +1001,13 @@ class Pair(Force):
             optimize=optimize,
             nbins=nbins,
             correction_fit_window=correction_fit_window,
-            correction_form=head_correction_form
+            correction_form=head_correction_form,
         )
         if self.optimize:
             if self.smoothing_window is None:
                 self.smoothing_window = 15
             if self.smoothing_order is None:
-                self.smoothing_order = 4 
+                self.smoothing_order = 4
             if self.correction_fit_window is None:
                 self.correction_fit_window = 8
 
@@ -1121,7 +1124,7 @@ class Dihedral(Force):
         smoothing_window: Optional[int] = None,
         smoothing_order: Optional[int] = None,
         correction_fit_window: Optional[int] = None,
-        correction_form: Callable = harmonic 
+        correction_form: Callable = harmonic,
     ):
         self.type1 = type1
         self.type2 = type2
@@ -1135,15 +1138,15 @@ class Dihedral(Force):
             smoothing_window=smoothing_window,
             smoothing_order=smoothing_order,
             correction_fit_window=correction_fit_window,
-            correction_form=correction_form
+            correction_form=correction_form,
         )
         if self.optimize:
             if self.smoothing_window is None:
                 self.smoothing_window = 15
             if self.smoothing_order is None:
-                self.smoothing_order = 2 
+                self.smoothing_order = 2
             if self.correction_fit_window is None:
-                self.correciton_fit_window = 10 
+                self.correciton_fit_window = 10
 
     def set_periodic(
         self,

@@ -1,9 +1,8 @@
 import numpy as np
 
-from msibi.utils.potentials import alpha_array, mie
+from msibi.utils.potentials import alpha_array
 
-
-#def test_tail_correction():
+# def test_tail_correction():
 #    dr = 0.05
 #    r = np.arange(0, 2.5, dr)
 #    V = mie(r, 1, 1, m=12, n=6)

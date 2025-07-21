@@ -5,7 +5,10 @@ import pytest
 
 from msibi import Angle, Bond
 from msibi.utils.corrections import linear
-from msibi.utils.exceptions import PotentialNotOptimizedError, PotentialImmutableError
+from msibi.utils.exceptions import (
+    PotentialImmutableError,
+    PotentialNotOptimizedError,
+)
 
 from .base_test import BaseTest
 
@@ -54,7 +57,7 @@ class TestForce(BaseTest):
             optimize=True,
             nbins=60,
             smoothing_window=10,
-            smoothing_order=2
+            smoothing_order=2,
         )
         bond.set_polynomial(
             x0=2,
@@ -67,7 +70,7 @@ class TestForce(BaseTest):
         bond.potential = bond.potential + np.random.normal(0, 0.5, bond.potential.shape)
         noisy_pot = np.copy(bond.potential)
         bond.smooth_potential()
-        assert bond.smoothing_window == 10 
+        assert bond.smoothing_window == 10
         for i, j in zip(bond.potential, noisy_pot):
             assert i != j
 
@@ -83,7 +86,9 @@ class TestForce(BaseTest):
 
     def test_fit_scores(self, msibi, stateX, stateY):
         msibi.gsd_period = 10
-        bond = Bond(type1="A", type2="B", optimize=True, nbins=60, correction_form=linear)
+        bond = Bond(
+            type1="A", type2="B", optimize=True, nbins=60, correction_form=linear
+        )
         bond.set_polynomial(x_min=0.0, x_max=3.0, x0=1, k2=200, k3=0, k4=0)
         angle = Angle(type1="A", type2="B", type3="A", optimize=False)
         angle.set_harmonic(k=500, t0=2)
@@ -112,8 +117,8 @@ class TestForce(BaseTest):
 
     def test_nbins(self):
         bond = Bond(type1="A", type2="B", optimize=True, nbins=60)
-        bond.nbins = 70 
-        assert bond.nbins == 70 
+        bond.nbins = 70
+        assert bond.nbins == 70
 
     def test_set_potential_error(self):
         bond = Bond(type1="A", type2="B", optimize=False)
@@ -173,19 +178,19 @@ class TestForce(BaseTest):
             angle.smoothing_window = 10
 
         with pytest.raises(PotentialNotOptimizedError):
-            angle.smoothing_order = 2 
+            angle.smoothing_order = 2
 
         with pytest.raises(PotentialNotOptimizedError):
-            angle.smooth_potential() 
+            angle.smooth_potential()
 
         with pytest.raises(PotentialNotOptimizedError):
-            angle.save_potential_history(file_path="pot.csv") 
+            angle.save_potential_history(file_path="pot.csv")
 
         with pytest.raises(PotentialNotOptimizedError):
-            angle.save_state_data(state=stateY, file_path="statey.npz") 
+            angle.save_state_data(state=stateY, file_path="statey.npz")
 
         with pytest.raises(PotentialNotOptimizedError):
-            angle.set_target_distribution(array=np.array([1, 2, 3]), state=stateY) 
+            angle.set_target_distribution(array=np.array([1, 2, 3]), state=stateY)
 
     def test_not_muttable_errors(self, angle, stateY):
         with pytest.raises(PotentialImmutableError):
