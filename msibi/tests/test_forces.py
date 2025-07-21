@@ -132,6 +132,16 @@ class TestForce(BaseTest):
         bond.nbins = 70
         assert bond.nbins == 70
 
+    def test_nbins_error(self):
+        with pytest.raises(ValueError):
+            Bond(type1="A", type2="B", optimize=True, nbins=None)
+
+        with pytest.raises(ValueError):
+            Bond(type1="A", type2="B", optimize=True, nbins=0)
+
+        with pytest.raises(ValueError):
+            Bond(type1="A", type2="B", optimize=True, nbins=-3)
+
     def test_set_potential_error(self):
         bond = Bond(type1="A", type2="B", optimize=False)
         bond.set_harmonic(k=500, r0=2)
@@ -196,7 +206,13 @@ class TestForce(BaseTest):
             angle.smooth_potential()
 
         with pytest.raises(PotentialNotOptimizedError):
+            angle.distribution_fit(state=stateY)
+
+        with pytest.raises(PotentialNotOptimizedError):
             angle.save_potential_history(file_path="pot.csv")
+
+        with pytest.raises(PotentialNotOptimizedError):
+            angle.plot_potential_history()
 
         with pytest.raises(PotentialNotOptimizedError):
             angle.save_state_data(state=stateY, file_path="statey.npz")
@@ -245,6 +261,27 @@ class TestBond(BaseTest):
             x_max=3,
         )
         path = os.path.join(tmp_path, "AB_bond.csv")
+        bond.save_potential(path)
+        assert os.path.isfile(path)
+
+    def test_save_potential_history(self, tmp_path, bond):
+        bond = Bond(
+            type1="A",
+            type2="B",
+            optimize=True,
+            nbins=60,
+        )
+        bond.set_polynomial(
+            x0=2,
+            k4=1,
+            k3=1,
+            k2=1,
+            x_min=1,
+            x_max=3,
+        )
+        for i in range(2):
+            bond.potential_history.append(np.copy(bond.potential))
+        path = os.path.join(tmp_path, "AB_history.npy")
         bond.save_potential(path)
         assert os.path.isfile(path)
 

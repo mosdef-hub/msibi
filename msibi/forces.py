@@ -89,7 +89,7 @@ class Force:
         correction_fit_window: Optional[int] = None,
         correction_form: Optional[Callable] = None,
     ):
-        if optimize and nbins is None or nbins and nbins <= 0:
+        if optimize and not nbins or optimize and nbins <= 0:
             raise ValueError(
                 "If a force is set to be optimized, nbins must be "
                 "a positive, non-zero integer."
