@@ -6,7 +6,7 @@ import msibi
 
 
 class MSIBI(object):
-    """Management class for orchestrating an MSIBI optimization.
+    """Management class for orchestrating an MSIBI optimization run.
 
     .. note::
 
@@ -32,26 +32,27 @@ class MSIBI(object):
     Parameters
     ----------
     nlist : hoomd.md.nlist.NeighborList
-        The type of Hoomd neighbor list to use.
+        The type of HOOMD neighbor list to use.
     integrator_method : hoomd.md.methods.Method
         The integrator method to use in the query simulation.
-        The only supported options are ConstantVolume or ConstantPressure.
+        The only supported options are ``hoomd.md.methods.ConstantVolume``
+        or ``hoomd.md.methods.ConstantPressure``.
     integrator_kwargs : dict
-        The arguments and their values required by the integrator chosen
+        The arguments and their values required by the integrator method chosen.
     thermostat : hoomd.md.methods.thermostat.Thermostat
         The thermostat to be paired with the integrator method.
     thermostat_kwargs : dict
         The arguments and their values required by the thermostat chosen.
     dt : float, required
-        The time step delta
+        The time step delta.
     gsd_period : int
-        The number of frames between snapshots written to query.gsd
+        The number of frames between snapshots written to query.gsd.
     n_steps : int
-        How many steps to run the query simulations
+        How many steps to run the query simulations.
     nlist_exclusions : list of str, default = ["1-2", "1-3"]
-        Sets the pair exclusions used during the optimization simulations
+        Sets the pair exclusions used during the optimization simulations.
     seed : int, default=42
-        Random seed to use during the simulation
+        Random seed to use during the simulations.
     """
 
     def __init__(
@@ -73,7 +74,7 @@ class MSIBI(object):
             raise ValueError(
                 "MSIBI is only compatible with NVT "
                 "(hoomd.md.methods.ConstantVolume), or NPT "
-                "(hoomd.md.methods.ConstantPressure)"
+                "(hoomd.md.methods.ConstantPressure)."
             )
         self.nlist = nlist
         self.integrator_method = integrator_method
