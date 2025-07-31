@@ -35,6 +35,7 @@ class State(object):
         Alpha can be a constant number that is applied to the potential at all
         independent values (x), or it can be a linear function that approaches
         zero as x approaches x_cut.
+        Available options are 'constant' and 'linear'.
     exclude_bonded: bool, optional, default=False
         If ``True`` then any beads that belong to the same molecle
         are not included in radial distribution funciton calculations.
@@ -62,7 +63,7 @@ class State(object):
         self._n_frames = n_frames
         self._sampling_stride = sampling_stride
         self._alpha0 = float(alpha0)
-        self.alpha_form = alpha_form
+        self.alpha_form = alpha_form.lower()
         self.dir = self._setup_dir(name, kT, dir_name=_dir)
         self.query_traj = os.path.join(self.dir, "query.gsd")
         self.exclude_bonded = exclude_bonded
@@ -114,14 +115,22 @@ class State(object):
     def alpha(
         self, pot_x_range: np.ndarray = None, dx: float = None
     ) -> Union[float, np.ndarray]:
-        """State point weighting value.
+        """State point weighting value, also known as alpha.
 
-        Parameters
-        ----------
-        pot_x_range : np.ndarray, optional, default = None
-            The x value range for the potential being optimized.
-            This is used to generate an array of alpha values, so
-            must be defined when msibi.State.alpha_form is "linear".
+        .. note::
+
+            This method is called in :class:`msibi.forces.Force`
+            when performing the potential update between iterations.
+            To change the alpha value for a state point use the
+            ``alpha0`` setter.
+
+            Parameters
+            ----------
+            pot_x_range : np.ndarray, optional, default = None
+                The x value range for the potential being optimized.
+                This is used to generate an array of alpha values, so
+                must be defined when msibi.State.alpha_form is "linear".
+
         """
         if self.alpha_form == "constant":
             return self.alpha0
