@@ -1,8 +1,11 @@
+import os
+
 import hoomd
 import numpy as np
 import pytest
 
 from msibi import MSIBI, Angle, Bond, Dihedral, Pair
+from msibi.utils.corrections import linear
 
 from .base_test import BaseTest
 
@@ -42,9 +45,11 @@ class TestMSIBI(BaseTest):
         assert len(msibi.angles) == 1
         assert len(msibi.dihedrals) == 1
 
-    def test_run(self, msibi, stateX, stateY):
+    def test_run(self, msibi, stateX, stateY, tmp_path):
         msibi.gsd_period = 10
-        bond = Bond(type1="A", type2="B", optimize=True, nbins=60)
+        bond = Bond(
+            type1="A", type2="B", optimize=True, nbins=60, correction_form=linear
+        )
         bond.set_polynomial(x_min=0.0, x_max=3.0, x0=1, k2=200, k3=0, k4=0)
         msibi.add_state(stateX)
         msibi.add_state(stateY)
@@ -60,10 +65,15 @@ class TestMSIBI(BaseTest):
         assert len(bond._head_correction_history) == 1
         assert len(bond._tail_correction_history) == 1
         assert len(bond._learned_potential_history) == 1
+        path = os.path.join(tmp_path, "state_data.npz")
+        bond.save_state_data(file_path=path, state=stateX)
+        assert os.path.isfile(path)
 
     def test_run_with_static_force(self, msibi, stateX, stateY):
         msibi.gsd_period = 10
-        bond = Bond(type1="A", type2="B", optimize=True, nbins=60)
+        bond = Bond(
+            type1="A", type2="B", optimize=True, nbins=60, correction_form=linear
+        )
         bond.set_polynomial(x_min=0.0, x_max=3.0, x0=1, k2=200, k3=0, k4=0)
         angle = Angle(type1="A", type2="B", type3="A", optimize=False)
         angle.set_harmonic(t0=1.9, k=100)

@@ -12,12 +12,29 @@ class TestState(BaseTest):
     def test_state_init(self, tmp_path, stateX):
         assert stateX.name == "X"
         assert stateX.alpha0 == 1.0
+        assert stateX.sampling_stride == 1
         assert stateX.kT == 1.0
         assert os.path.exists(os.path.join(tmp_path, "states/X_1.0/"))
 
     def test_n_frames(self, stateX):
-        stateX.nframes = 50
-        assert stateX.nframes == 50
+        stateX.n_frames = 50
+        assert stateX.n_frames == 50
+
+    def test_sampling_stride(self, stateX):
+        stateX.sampling_stride = 5
+        assert stateX.sampling_stride == 5
+
+    def test_n_frames_bad(self, stateX):
+        with pytest.raises(ValueError):
+            stateX.n_frames = -20
+        with pytest.raises(ValueError):
+            stateX.n_frames = 10.5
+
+    def test_sampling_stride_bad(self, stateX):
+        with pytest.raises(ValueError):
+            stateX.sampling_stride = -2
+        with pytest.raises(ValueError):
+            stateX.sampling_stride = 10.5
 
     def test_alpha0_setter(self, stateX):
         assert stateX.alpha0 == 1.0

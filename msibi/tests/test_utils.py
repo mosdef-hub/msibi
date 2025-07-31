@@ -1,7 +1,6 @@
 import numpy as np
 
-from msibi.utils.error_calculation import calc_similarity
-from msibi.utils.general import find_nearest
+from msibi.utils.general import calc_similarity, find_nearest
 
 
 def test_calc_similarity():

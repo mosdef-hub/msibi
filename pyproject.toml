@@ -13,7 +13,6 @@ authors = [
 ]
 maintainers = [
   {name = "Chris Jones", email = "c.jones_1@hw.ac.uk"},
-  {name = "Nicholas Craven", email = "nicholas.c.craven@vanderbilt.edu"},
 ]
 license= {text = "MIT"}
 classifiers=[

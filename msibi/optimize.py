@@ -150,7 +150,7 @@ class MSIBI(object):
         if not all([isinstance(force, f.__class__) for f in self._optimize_forces]):
             raise RuntimeError(
                 "Only one type of force (i.e., Bonds, Angles, Pairs, etc) "
-                "can be set to optimize at a time."
+                "can be set to optimize at one time."
             )
         self._optimize_forces.append(force)
 
