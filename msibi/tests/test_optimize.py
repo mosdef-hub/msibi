@@ -45,6 +45,10 @@ class TestMSIBI(BaseTest):
         assert len(msibi.angles) == 1
         assert len(msibi.dihedrals) == 1
 
+    def test_no_states_added(self, msibi):
+        with pytest.raises(RuntimeError):
+            msibi.run_optimization(n_steps=500, n_iterations=1)
+
     def test_run(self, msibi, stateX, stateY, tmp_path):
         msibi.gsd_period = 10
         bond = Bond(

@@ -50,14 +50,17 @@ class Force:
         optimize a ``Pair`` and an ``Angle`` potential in the same
         optimization run.
 
+        Several of the methods in this class are only applicable
+        in the case a force is being optimized.
+
     Parameters
     ----------
     name : str
         The name of the type in the Force.
-        Must match the names found in the State's .gsd trajectory file.
+        Must match the names found in the State's trajectory file.
     optimize : bool
-        Set to `True` if this force is to be mutable and optimized.
-        Set to `False` if this force is to be held constant while
+        Set to ``True`` if this force is to be mutable and optimized.
+        Set to ``False`` if this force is to be held constant while
         other forces are optimized.
     nbins : int, optional
         This must be a positive integer if this force is being optimized.
@@ -65,7 +68,7 @@ class Force:
         and step size (dx).
         It is also used in determining the bin size of the target and query
         distributions.
-        If this force is not being optimied, leave this as `None`.
+        If this force is not being optimied, leave this as ``None``.
     correction_fit_window: int, optional
         The window size (number of data points) to use when fitting
         the iterative potential to head and tail correction forms.
@@ -73,9 +76,9 @@ class Force:
     correction_form: Callable, optional
         The type of correciton form to apply to the potential.
         This is only used when the Force is set to be optimized.
-        Bonded forces (`Bond`, `Angle`, `Dihedral`) apply this correction
+        Bonded forces (``Bond``, ``Angle``, ``Dihedral``) apply this correction
         to both the head and tail of the potential.
-        Non-bonded forces (`Pair`) only apply this correction to the head of
+        Non-bonded forces (``Pair``) only apply this correction to the head of
         the potential.
     """
 
@@ -125,6 +128,7 @@ class Force:
         """The potential energy values V(x)."""
         if self.format != "table":
             warnings.warn(f"{self} is not using a table potential.")
+            return None
         return self._potential
 
     @potential.setter
@@ -260,7 +264,7 @@ class Force:
 
         Parameters
         ----------
-        state : :class:`msibi.state.State`, required
+        state : msibi.state.State, required
             The state to use in finding the target distribution.
         file_path : str, required
             File path and name to save the `.npz` file.
@@ -368,7 +372,7 @@ class Force:
         if ylim:
             plt.ylim(ylim)
         plt.xlabel("x")
-        plt.ylabel("Potential")
+        plt.ylabel("V(x)")
         plt.title(f"{self.name} Potential")
         if file_path:
             plt.savefig(file_path)
@@ -402,7 +406,7 @@ class Force:
             plt.ylim(ylim)
         plt.legend(bbox_to_anchor=(1.05, 1))
         plt.xlabel("x")
-        plt.ylabel("Potential")
+        plt.ylabel("V(x)")
         plt.title(f"{self.name} Potential History")
         if file_path:
             plt.savefig(file_path, bbox_inches="tight")
@@ -427,7 +431,7 @@ class Force:
         target_dist = self.target_distribution(state=state)
 
         plt.plot(final_dist[:, 0], final_dist[:, 1], "o-", label="MSIBI")
-        plt.plot(target_dist[:, 0], target_dist[:, 1], "o-", label="Target")
+        plt.plot(target_dist[:, 0], target_dist[:, 1], "^-", label="Target")
 
         plt.legend()
         plt.xlabel("x")
@@ -511,11 +515,11 @@ class Force:
         Parameters
         ----------
         x0, k2, k3, k4 : float
-            The paraters used in the V(x) function described above
+            The paraters used in the V(x) function described above.
         x_min : float
-            The lower bound of the potential range
+            The lower bound of the potential range.
         x_max : float
-            The upper bound of the potential range
+            The upper bound of the potential range.
         """
         self.format = "table"
         self.x_min = x_min
@@ -1113,7 +1117,7 @@ class Pair(Force):
             bins=self.nbins + 1,
         )
         x = rdf.bin_centers
-        y = rdf.rdf * N
+        y = rdf.rdf
         dist = np.vstack([x, y])
         return dist.T
 

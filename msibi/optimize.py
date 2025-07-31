@@ -178,6 +178,11 @@ class MSIBI(object):
             If ``True``, copies of the query simulation trajectories
             are saved in their respective :class:`msibi.state.State` directory.
         """
+        if len(self.states) < 1:
+            raise RuntimeError(
+                "You must add at least 1 statepoint before running optimizaiton. "
+                "See msibi.MSIBI.add_state() to append a state point."
+            )
         for n in range(n_iterations):
             print(f"---Optimization: {n + 1} of {n_iterations}---")
             forces = self._build_force_objects()
