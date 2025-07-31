@@ -102,8 +102,6 @@ class MSIBI(object):
         state : msibi.state.State
             A state point to be included in query simulations
         """
-        # TODO: Do we still need the ._opt attr?
-        state._opt = self
         self.states.append(state)
 
     def add_force(self, force: msibi.forces.Force) -> None:

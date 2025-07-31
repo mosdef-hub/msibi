@@ -61,7 +61,6 @@ class State(object):
         self.traj_file = os.path.abspath(traj_file)
         self._n_frames = n_frames
         self._sampling_stride = sampling_stride
-        self._opt = None
         self._alpha0 = float(alpha0)
         self.alpha_form = alpha_form
         self.dir = self._setup_dir(name, kT, dir_name=_dir)
