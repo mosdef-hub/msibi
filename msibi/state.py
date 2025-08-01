@@ -6,7 +6,7 @@ import gsd.hoomd
 import hoomd
 import numpy as np
 
-from msibi.potentials import alpha_array
+from msibi.utils.potentials import alpha_array
 
 
 class State(object):
@@ -26,12 +26,16 @@ class State(object):
         The number of frames to use when calculating distributions.
         When calculating distributions, the last `n_frames` of the
         trajectory will be used.
+    sampling_stride : int, default=1
+        The stride step-size used when iterating through the last n_frames
+        of the query simulation trajectory.
     alpha0 : (Union[float, int]), default=1.0
         The base alpha value used to scale the weight of this state.
     alpha_form: str, optional, default 'constant'
         Alpha can be a constant number that is applied to the potential at all
         independent values (x), or it can be a linear function that approaches
         zero as x approaches x_cut.
+        Available options are 'constant' and 'linear'.
     exclude_bonded: bool, optional, default=False
         If ``True`` then any beads that belong to the same molecle
         are not included in radial distribution funciton calculations.
@@ -43,6 +47,7 @@ class State(object):
         kT: float,
         traj_file: str,
         n_frames: int,
+        sampling_stride: int = 1,
         alpha0: float = 1.0,
         alpha_form: str = "constant",
         exclude_bonded: bool = False,  # TODO: Do we use this here or in Force?
@@ -56,9 +61,9 @@ class State(object):
         self.kT = kT
         self.traj_file = os.path.abspath(traj_file)
         self._n_frames = n_frames
-        self._opt = None
+        self._sampling_stride = sampling_stride
         self._alpha0 = float(alpha0)
-        self.alpha_form = alpha_form
+        self.alpha_form = alpha_form.lower()
         self.dir = self._setup_dir(name, kT, dir_name=_dir)
         self.query_traj = os.path.join(self.dir, "query.gsd")
         self.exclude_bonded = exclude_bonded
@@ -79,7 +84,21 @@ class State(object):
     @n_frames.setter
     def n_frames(self, value: int):
         """Set the number of frames to use for calculating distributions."""
+        if not isinstance(value, int) or value < 1:
+            raise ValueError("n_frames must be an integer >= 1")
         self._n_frames = value
+
+    @property
+    def sampling_stride(self) -> int:
+        """The stride step size used to calcualte distributions when iterating through n_frames."""
+        return self._sampling_stride
+
+    @sampling_stride.setter
+    def sampling_stride(self, value: int):
+        """Set the stride step size used to calcualte distributions when iterating through n_frames."""
+        if not isinstance(value, int) or value < 1:
+            raise ValueError("sampling_stride must be an integer >= 1")
+        self._sampling_stride = value
 
     @property
     def alpha0(self) -> Union[int, float]:
@@ -96,14 +115,22 @@ class State(object):
     def alpha(
         self, pot_x_range: np.ndarray = None, dx: float = None
     ) -> Union[float, np.ndarray]:
-        """State point weighting value.
+        """State point weighting value, also known as alpha.
 
-        Parameters
-        ----------
-        pot_x_range : np.ndarray, optional, default = None
-            The x value range for the potential being optimized.
-            This is used to generate an array of alpha values, so
-            must be defined when msibi.State.alpha_form is "linear".
+        .. note::
+
+            This method is called in :class:`msibi.forces.Force`
+            when performing the potential update between iterations.
+            To change the alpha value for a state point use the
+            ``alpha0`` setter.
+
+            Parameters
+            ----------
+            pot_x_range : np.ndarray, optional, default = None
+                The x value range for the potential being optimized.
+                This is used to generate an array of alpha values, so
+                must be defined when msibi.State.alpha_form is "linear".
+
         """
         if self.alpha_form == "constant":
             return self.alpha0
@@ -189,6 +216,9 @@ class State(object):
             assert not os.path.isdir(dir_name)
             os.mkdir(dir_name)
         except AssertionError:
-            print(f"{dir_name} already exists")
+            print(
+                f"A {dir_name} directory already exists, possibly from a previous MSIBI run. ",
+                "Rename or remove this directory and re-initialize this optimization.",
+            )
             raise
         return os.path.abspath(dir_name)

@@ -3,12 +3,29 @@ import os
 import numpy as np
 import pytest
 
-from msibi import Angle, Bond
+from msibi import Angle, Bond, Pair
+from msibi.utils.corrections import linear
+from msibi.utils.exceptions import (
+    PotentialImmutableError,
+    PotentialNotOptimizedError,
+)
 
 from .base_test import BaseTest
 
 
 class TestForce(BaseTest):
+    def test_name_sorting(self):
+        bond = Bond(type1="B", type2="A", optimize=False)
+        assert bond.name == "A-B"
+        assert bond.type1 == "A"
+        assert bond.type2 == "B"
+
+        pair = Pair(type1="B", type2="A", optimize=False)
+        assert pair.name == "A-B"
+        assert pair.type1 == "A"
+        assert pair.type2 == "B"
+        assert pair._pair_name == ("A", "B")
+
     def test_dx(self, bond):
         bond.set_polynomial(
             x0=2,
@@ -34,7 +51,26 @@ class TestForce(BaseTest):
         assert np.allclose(bond.potential, initial_pot * 2)
         assert bond.format == "table"
 
-    def test_smooth_potential(self, bond):
+    def test_default_fit_smoothing(self):
+        bond = Bond(
+            type1="A",
+            type2="B",
+            optimize=True,
+            nbins=60,
+        )
+        assert bond.smoothing_window == 15
+        assert bond.smoothing_order == 2
+        assert bond.correction_fit_window == 10
+
+    def test_smooth_potential(self):
+        bond = Bond(
+            type1="A",
+            type2="B",
+            optimize=True,
+            nbins=60,
+            smoothing_window=10,
+            smoothing_order=2,
+        )
         bond.set_polynomial(
             x0=2,
             k4=0,
@@ -45,9 +81,8 @@ class TestForce(BaseTest):
         )
         bond.potential = bond.potential + np.random.normal(0, 0.5, bond.potential.shape)
         noisy_pot = np.copy(bond.potential)
-        bond.smoothing_window = 5
         bond.smooth_potential()
-        assert bond.smoothing_window == 5
+        assert bond.smoothing_window == 10
         for i, j in zip(bond.potential, noisy_pot):
             assert i != j
 
@@ -63,7 +98,9 @@ class TestForce(BaseTest):
 
     def test_fit_scores(self, msibi, stateX, stateY):
         msibi.gsd_period = 10
-        bond = Bond(type1="A", type2="B", optimize=True, nbins=60)
+        bond = Bond(
+            type1="A", type2="B", optimize=True, nbins=60, correction_form=linear
+        )
         bond.set_polynomial(x_min=0.0, x_max=3.0, x0=1, k2=200, k3=0, k4=0)
         angle = Angle(type1="A", type2="B", type3="A", optimize=False)
         angle.set_harmonic(k=500, t0=2)
@@ -74,30 +111,41 @@ class TestForce(BaseTest):
         msibi.add_force(bond)
         msibi.add_force(angle)
         msibi.add_force(angle2)
-        msibi.run_optimization(n_steps=500, n_iterations=1)
+        msibi.run_optimization(n_steps=2000, n_iterations=1)
         assert len(bond._states[stateY]["f_fit"]) == 1
         assert len(bond._states[stateX]["f_fit"]) == 1
         bond.plot_fit_scores(state=stateY)
         bond.plot_fit_scores(state=stateX)
-        with pytest.raises(RuntimeError):
-            angle.plot_fit_scores(state=stateY)
 
-    def test_smoothing_window(self, bond):
+    def test_smoothing_window(self):
+        bond = Bond(type1="A", type2="B", optimize=True, nbins=60)
         bond.smoothing_window = 5
         assert bond.smoothing_window == 5
 
-    def test_smoothing_order(self, bond):
+    def test_smoothing_order(self):
+        bond = Bond(type1="A", type2="B", optimize=True, nbins=60)
         bond.smoothing_order = 3
         assert bond.smoothing_order == 3
 
-    def test_nbins(self, bond):
-        bond.nbins = 60
-        assert bond.nbins == 60
+    def test_nbins(self):
+        bond = Bond(type1="A", type2="B", optimize=True, nbins=60)
+        bond.nbins = 70
+        assert bond.nbins == 70
+
+    def test_nbins_error(self):
+        with pytest.raises(ValueError):
+            Bond(type1="A", type2="B", optimize=True, nbins=None)
+
+        with pytest.raises(ValueError):
+            Bond(type1="A", type2="B", optimize=True, nbins=0)
+
+        with pytest.raises(ValueError):
+            Bond(type1="A", type2="B", optimize=True, nbins=-3)
 
     def test_set_potential_error(self):
         bond = Bond(type1="A", type2="B", optimize=False)
         bond.set_harmonic(k=500, r0=2)
-        with pytest.raises(ValueError):
+        with pytest.raises(PotentialImmutableError):
             bond.potential = np.array([1, 2, 3])
 
     def test_plot_target_dist(self, stateX):
@@ -114,6 +162,7 @@ class TestForce(BaseTest):
             bond.force
 
     def test_bad_smoothing_args(self, bond):
+        bond.optimize = True
         with pytest.raises(ValueError):
             bond.smoothing_window = 0
         with pytest.raises(ValueError):
@@ -130,14 +179,52 @@ class TestForce(BaseTest):
             bond.nbins = -50
         angle = Angle(type1="A", type2="B", type3="A", optimize=False)
         angle.set_harmonic(k=500, t0=2)
-        with pytest.raises(RuntimeError):
-            angle.smooth_potential()
 
     def test_save_static_force(self):
         angle = Angle(type1="A", type2="B", type3="A", optimize=False)
         angle.set_harmonic(k=500, t0=2)
-        with pytest.raises(RuntimeError):
+        with pytest.raises(PotentialImmutableError):
             angle.save_potential("test.csv")
+
+    def test_not_optimized_errors(self, angle, stateY):
+        with pytest.raises(PotentialNotOptimizedError):
+            angle.plot_distribution_comparison(state=stateY)
+
+        with pytest.raises(PotentialNotOptimizedError):
+            angle.plot_target_distribution(state=stateY)
+
+        with pytest.raises(PotentialNotOptimizedError):
+            angle.plot_fit_scores(state=stateY)
+
+        with pytest.raises(PotentialNotOptimizedError):
+            angle.smoothing_window = 10
+
+        with pytest.raises(PotentialNotOptimizedError):
+            angle.smoothing_order = 2
+
+        with pytest.raises(PotentialNotOptimizedError):
+            angle.smooth_potential()
+
+        with pytest.raises(PotentialNotOptimizedError):
+            angle.distribution_fit(state=stateY)
+
+        with pytest.raises(PotentialNotOptimizedError):
+            angle.save_potential_history(file_path="pot.csv")
+
+        with pytest.raises(PotentialNotOptimizedError):
+            angle.plot_potential_history()
+
+        with pytest.raises(PotentialNotOptimizedError):
+            angle.save_state_data(state=stateY, file_path="statey.npz")
+
+        with pytest.raises(PotentialNotOptimizedError):
+            angle.set_target_distribution(array=np.array([1, 2, 3]), state=stateY)
+
+    def test_not_muttable_errors(self, angle, stateY):
+        with pytest.raises(PotentialImmutableError):
+            angle.save_potential("pot.csv")
+        with pytest.raises(PotentialImmutableError):
+            angle.plot_potential()
 
 
 class TestBond(BaseTest):
@@ -175,6 +262,27 @@ class TestBond(BaseTest):
         )
         path = os.path.join(tmp_path, "AB_bond.csv")
         bond.save_potential(path)
+        assert os.path.isfile(path)
+
+    def test_save_potential_history(self, tmp_path, bond):
+        bond = Bond(
+            type1="A",
+            type2="B",
+            optimize=True,
+            nbins=60,
+        )
+        bond.set_polynomial(
+            x0=2,
+            k4=1,
+            k3=1,
+            k2=1,
+            x_min=1,
+            x_max=3,
+        )
+        for i in range(2):
+            bond.potential_history.append(np.copy(bond.potential))
+        path = os.path.join(tmp_path, "AB_history.npy")
+        bond.save_potential_history(path)
         assert os.path.isfile(path)
 
 
@@ -244,9 +352,3 @@ class TestDihedral(BaseTest):
         assert len(dihedral.x_range) == dihedral.nbins + 1
         assert np.allclose(dihedral.x_range[0], -np.pi, atol=1e-3)
         assert np.allclose(dihedral.x_range[-1], np.pi, atol=1e-3)
-
-    def test_save_angle_potential(self, tmp_path, dihedral):
-        dihedral.set_polynomial(x0=0, k4=0, k3=0, k2=100, x_min=-np.pi, x_max=np.pi)
-        path = os.path.join(tmp_path, "ABAA_dihedral.csv")
-        dihedral.save_potential(path)
-        assert os.path.isfile(path)
