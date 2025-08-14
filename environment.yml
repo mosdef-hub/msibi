@@ -3,7 +3,7 @@ channels:
 - conda-forge
 dependencies:
 - freud >=3.4
-- cmeutils>=1.4
+- cmeutils >=1.4
 - gsd >=3.0
 - hoomd >=5.0
 - matplotlob
