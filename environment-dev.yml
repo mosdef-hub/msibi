@@ -2,13 +2,12 @@ name: msibi-dev
 channels:
 - conda-forge
 dependencies:
-- boltons
-- freud >=3.0,<3.2
+- cmeutils >=1.4
+- freud >=3.4
 - gsd >=3.0
 - hoomd >=5.0
-- python >=3.10
+- python >=3.10,<=3.13
 - pandas
-- networkx
 - numpy >=2.0,<2.3
 - matplotlib
 - more-itertools
@@ -17,4 +16,3 @@ dependencies:
 - pre-commit
 - pip:
     - build
-    - git+https://github.com/cmelab/cmeutils.git@main
