@@ -45,9 +45,9 @@ class Force:
         optimized (i.e., mutable).
 
         Only one type of force can be optimized at a time.
-        For example, you can optimize multiple ``Angle`` potentials
+        For example, you can optimize multiple angle potentials
         during one optimization run, but you cannot
-        optimize a ``Pair`` and an ``Angle`` potential in the same
+        optimize a Pair and an Angle potential in the same
         optimization run.
 
         Several of the methods in this class are only applicable
@@ -525,6 +525,12 @@ class Force:
         self.x_min = x_min
         self.x_max = x_max
         self.dx = x_max / self.nbins
+        if isinstance(self, msibi.forces.Angle):
+            if x_min != 0 or np.round(x_max, 4) != np.round(np.pi, 4):
+                raise ValueError(
+                    "Angle table potentials must be defined over the range of theta = [0, pi]. "
+                    "Set x_min=0 and x_max=np.pi"
+                )
         if isinstance(self, msibi.forces.Dihedral):
             self.dx *= 2
             self.x_range = np.arange(x_min, x_max + self.dx / 2, self.dx)
@@ -658,8 +664,6 @@ class Force:
 
     def _update_potential(self) -> None:
         """Compare distributions and update potential via Boltzmann Inversion."""
-        # TODO: TAKE THIS APPEND OUT?
-        self.potential_history.append(np.copy(self.potential))
         for state in self._states:
             current_dist = self._states[state]["current_distribution"]
             target_dist = self._states[state]["target_distribution"]
@@ -1027,6 +1031,8 @@ class Pair(Force):
         nbins: Optional[int] = None,
         r_cut: Optional[Union[float, int]] = None,
         r_switch: Optional[Union[float, int]] = None,
+        smoothing_window: Optional[int] = None,
+        smoothing_order: Optional[int] = None,
         correction_fit_window: Optional[int] = None,
         exclude_bonded: bool = False,
         head_correction_form: Callable = exponential,
@@ -1042,6 +1048,8 @@ class Pair(Force):
             name=name,
             optimize=optimize,
             nbins=nbins,
+            smoothing_window=smoothing_window,
+            smoothing_order=smoothing_order,
             correction_fit_window=correction_fit_window,
             correction_form=head_correction_form,
         )
