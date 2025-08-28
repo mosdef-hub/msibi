@@ -1,14 +1,15 @@
 import MDAnalysis as mda
 import gsd.hoomd
 import numpy as np
-
+from MDAnalysis.exceptions import NoDataError 
+import warnings
 def _mda_check(topology, trajectory):
     """
     MDAnalysis input check:
       - Topology must load.
       - Bonds required if any residue has >=2 atoms.
       - Angles required if any residue has >=3 atoms.
-      - If trajectory given, it must load with the topology and atom counts must match.
+      - Trajectory must load with the topology and atom counts must match.
     """
     out = {
         "valid_topology": False,
@@ -17,17 +18,27 @@ def _mda_check(topology, trajectory):
         "has_bonds": False,
         "has_angles": False,
         "valid_trajectory": False,
-        "match": False,
+        "match":False
     }
 
     if not topology:
+        print('Please provide a Topology File')
         return out
 
     # Load topology only
     try:
-        u_top = mda.Universe(topology)
+
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message=r"No coordinate reader found for .*\.tpr",
+                category=UserWarning
+            )
+            u_top = mda.Universe(topology)
         out["valid_topology"] = True
-    except:
+    except FileNotFoundError as e:
+        print('Topology not found')
+        print(e)
         return out
 
     # --- Decide requirements based on residue sizes
@@ -36,46 +47,58 @@ def _mda_check(topology, trajectory):
     out["need_angles"] = max_atoms_in_residue >= 3
 
     # --- Check what's present
-    out["has_bonds"] = len(u_top.bonds) > 0
-    out["has_angles"] = len(u_top.angles) > 0
-
+    if out["need_bonds"]:
+        try:
+            out["has_bonds"] = len(u_top.bonds) > 0
+        except NoDataError as e:
+            print("No Bonds detected in Topology with Residues with multiple Atoms")
+            print(e)
+    if out["need_angles"]:
+        try:
+            out["has_angles"] = len(u_top.angles) > 0
+        except NoDataError as e:
+            print("No Angles detected in Topology with Residues with 3 or more Atoms")
+            print(e)
     # --- Trajectory check
     if trajectory:
         try:
-            u = mda.Universe(topology, trajectory)
+            n_top = u_top.atoms.n_atoms
+            u_top.load_new(trajectory)  # reuse same Universe
             out["valid_trajectory"] = True
-            out["match"] = (u.atoms.n_atoms == u_top.atoms.n_atoms)
-        except:
-            pass
-
+            out["match"] = (u_top.atoms.n_atoms == n_top)
+        except (OSError, ValueError):
+            print('The Trajectory does not match the Topology') 
+            print(e)
+            
+    else:
+        print('Please provide a Trajectory File')
     return out
 
 
-def _requirements_met(out, require_traj=False):
+def _requirements_met(out):
     ok = out["valid_topology"]
     if out["need_bonds"]:
         ok = ok and out["has_bonds"]
     if out["need_angles"]:
-        ok = ok and out["has_angles"]
-    if require_traj:
-        ok = ok and out["valid_trajectory"] and out["match"]
+        ok = ok and out["has_angles"]        
+    ok = ok and out["valid_trajectory"] and out['match']
     return ok
 
 
 def gsd_from_files(topology_file, traj_file, output='output.gsd'):
     """
-    Converts an MDAnalysis.Universe if checks pass; otherwise prints unmet
+    Creates and Converts an MDAnalysis.Universe into gsd if checks pass; otherwise prints unmet
     requirements.
     """
     out = _mda_check(topology_file, traj_file)
-    require_traj = traj_file is not None
-    ok = _requirements_met(out, require_traj=require_traj)
+    ok = _requirements_met(out)
 
     if ok:
-        gsd_from_universe(mda.Universe(topology_file, traj_file, output))
+        return gsd_from_universe(mda.Universe(topology_file, traj_file), output)
 
-    if not ok:
-        print("Result:", out)
+    print('Check failed!')
+    print("Result:", out)
+    return None
 
     
 def gsd_from_universe(universe, output='output.gsd'):
@@ -204,4 +227,4 @@ def gsd_from_universe(universe, output='output.gsd'):
                 snap.impropers.types = improper_types
 
             gsd_file.append(snap)
-
+    return output
