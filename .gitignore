@@ -2,6 +2,8 @@
 *.ipynb
 *.pyc
 *.dcd
+*.csv
+*.gsd
 .DS_Store
 *.egg-info
 *.idea/
