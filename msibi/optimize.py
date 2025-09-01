@@ -293,7 +293,7 @@ class MSIBI(object):
             force._compute_current_distribution(state)
             force._save_current_distribution(state, iteration=self.n_iterations)
             print(
-                "Force: {0}, State: {1}, Iteration: {2}: {3:f}".format(
+                "Force: {0}, State: {1}, Iteration: {2}, Fit score:{3:f}".format(
                     force.name,
                     state.name,
                     self.n_iterations,

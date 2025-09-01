@@ -310,18 +310,25 @@ class Force:
         """
         if not self.optimize:
             raise PotentialNotOptimizedError("plot a distribution history")
-        target = self.target_distribution(state)
+        target_distribution = self._get_state_distribution(state=state, query=False)
         plt.title(f"State {state.name}: {self.name} Target")
         plt.ylabel("P(x)")
         plt.xlabel("x")
-        plt.plot(target[:, 0], target[:, 1], marker="^", label="Target")
+        plt.plot(
+            target_distribution[:, 0],
+            target_distribution[:, 1],
+            marker="^",
+            label="Target",
+        )
         if self.smoothing_window:
             y_smoothed = savgol_filter(
-                x=target[:, 1],
+                x=target_distribution[:, 1],
                 window_length=self.smoothing_window,
                 polyorder=self.smoothing_order,
             )
-            plt.plot(target[:, 0], y_smoothed, marker="o", label="Smoothed")
+            plt.plot(
+                target_distribution[:, 0], y_smoothed, marker="o", label="Smoothed"
+            )
             plt.legend()
         if file_path:
             plt.savefig(file_path)
@@ -589,6 +596,8 @@ class Force:
                     window_length=self.smoothing_window,
                     polyorder=self.smoothing_order,
                 )
+                neg_indices = np.where(target_distribution[:, 1] < 0)[0]
+                target_distribution[:, 1][neg_indices] = 0
         else:
             target_distribution = None
         self._states[state] = {

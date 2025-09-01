@@ -13,8 +13,9 @@ Quick start
 .. toctree::
     :maxdepth: 1
 
-    examples
     installation
+    examples
+    tutorials/01-Introduction
 
 
 Resources
