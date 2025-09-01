@@ -5,11 +5,41 @@ from MDAnalysis.exceptions import NoDataError
 import warnings
 def _mda_check(topology, trajectory):
     """
-    MDAnalysis input check:
-      - Topology must load.
-      - Bonds required if any residue has >=2 atoms.
-      - Angles required if any residue has >=3 atoms.
-      - Trajectory must load with the topology and atom counts must match.
+    Validate an MDAnalysis topology/trajectory pair for conversion.
+
+    This function attempts to load the provided topology and trajectory files
+    using MDAnalysis and checks whether all structural requirements
+    (bonds, angles, etc.) are satisfied, depending on residue sizes.
+
+    Parameters
+    ----------
+    topology : str
+        Path to a topology file (e.g., PSF, TPR, LAMMPSDATA).
+    trajectory : str or None
+        Path to a trajectory file (e.g., DCD, XTC, TRR) 
+    Returns
+    -------
+    dict
+        Dictionary with validation results containing the following keys:
+
+        - ``valid_topology`` : bool  
+          Topology could be loaded.
+        - ``need_bonds`` : bool  
+          True if bonds are required (residue size >= 2).
+        - ``need_angles`` : bool  
+          True if angles are required (residue size >= 3).
+        - ``has_bonds`` : bool  
+          True if bonds are present in the topology.
+        - ``has_angles`` : bool  
+          True if angles are present in the topology.
+        - ``valid_trajectory`` : bool  
+          Trajectory could be loaded.
+        - ``match`` : bool  
+          Number of atoms in trajectory matches topology.
+
+    Notes
+    -----
+    Prints warnings and error messages if requirements are not met.
     """
     out = {
         "valid_topology": False,
@@ -34,7 +64,7 @@ def _mda_check(topology, trajectory):
                 message=r"No coordinate reader found for .*\.tpr",
                 category=UserWarning
             )
-            u_top = mda.Universe(topology)
+            u_top = mda.Universe(topology=topology)
         out["valid_topology"] = True
     except FileNotFoundError as e:
         print('Topology not found')
@@ -66,7 +96,7 @@ def _mda_check(topology, trajectory):
             u_top.load_new(trajectory)  # reuse same Universe
             out["valid_trajectory"] = True
             out["match"] = (u_top.atoms.n_atoms == n_top)
-        except (OSError, ValueError):
+        except (OSError, ValueError) as e:
             print('The Trajectory does not match the Topology') 
             print(e)
             
@@ -87,21 +117,64 @@ def _requirements_met(out):
 
 def gsd_from_files(topology_file, traj_file, output='output.gsd'):
     """
-    Creates and Converts an MDAnalysis.Universe into gsd if checks pass; otherwise prints unmet
-    requirements.
+    Convert a topology and trajectory pair to a GSD file after validation.
+
+    This function first validates the inputs using `_mda_check`. If all
+    requirements are satisfied, the data is converted into HOOMD's
+    GSD format using `gsd_from_universe`.
+
+    Parameters
+    ----------
+    topology_file : str
+        Path to topology file (PSF, GRO, LAMMPSDATA, etc.).
+    traj_file : str
+        Path to trajectory file (DCD, XTC, TRR, etc.).
+    output : str, optional
+        Name of the output GSD file (default is 'output.gsd').
+
+    Notes
+    -----
+    If requirements are not met, prints diagnostic information instead of writing a file.
     """
     out = _mda_check(topology_file, traj_file)
     ok = _requirements_met(out)
 
     if ok:
-        return gsd_from_universe(mda.Universe(topology_file, traj_file), output)
+        gsd_from_universe(mda.Universe(topology_file, traj_file), output)
+    else:
+        print('Checks failed!')
+        print("Result:", out)
 
-    print('Check failed!')
-    print("Result:", out)
-    return None
 
     
 def gsd_from_universe(universe, output='output.gsd'):
+    """
+    Convert an MDAnalysis Universe into a GSD trajectory.
+
+    Extracts particle, bonding, angular, dihedral, and improper information
+    from the given Universe and writes each frame to a GSD file compatible
+    with HOOMD-blue.
+
+    Parameters
+    ----------
+    universe : MDAnalysis.Universe
+        Universe containing the system's topology and trajectory.
+    output : str, optional
+        Name of the output GSD file (default is 'output.gsd').
+
+    Notes
+    -----
+    - Particle types are inferred from `atom.type`.
+    - Bond, angle, dihedral, and improper types are deduplicated and stored
+      as HOOMD-style type lists with associated type IDs.
+    - Each frame of the Universe trajectory is written to the GSD file.
+
+    Examples
+    --------
+    import MDAnalysis as mda
+    u = mda.Universe("topology.tpr", "trajectory.xtc")
+    gsd_from_universe(u, output="simulation.gsd")
+    """
     # Load structure and trajectory
     u = universe
 
@@ -227,4 +300,4 @@ def gsd_from_universe(universe, output='output.gsd'):
                 snap.impropers.types = improper_types
 
             gsd_file.append(snap)
-    return output
+
