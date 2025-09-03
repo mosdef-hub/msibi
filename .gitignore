@@ -28,7 +28,8 @@ lib64/
 parts/
 sdist/
 var/
-docs/tutorials/*.txt
+docs/source/tutorials/*.txt
+docs/source/tutorials/states/
 wheels/
 *.egg-info/
 .installed.cfg
