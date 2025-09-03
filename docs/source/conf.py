@@ -27,7 +27,7 @@ autodoc_member_order = "bysource"
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
-nbsphinx_execute = "always"
+nbsphinx_execute = "never"
 nbsphinx_timeout = 60
 nbsphinx_allow_errors = True
 source_suffix = [".rst"]
