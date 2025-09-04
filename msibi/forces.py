@@ -544,6 +544,9 @@ class Force:
         else:
             self.x_range = np.arange(x_min, x_max + self.dx, self.dx)
         self.potential = polynomial_potential(self.x_range, x0, k4, k3, k2)
+        if self.optimize:
+            # Store the initial guess as the first entry in potential_history
+            self.potential_history.append(np.copy(self.potential))
         self.force_init = "Table"
         self.force_entry = self._table_entry()
 
@@ -579,6 +582,9 @@ class Force:
         self.x_max = self.x_range[-1] + self.dx
         self.force_init = "Table"
         self.nbins = len(self.x_range) - 1
+        if self.optimize:
+            # Store the initial guess as the first entry in potential_history
+            self.potential_history.append(np.copy(self.potential))
 
     def _add_state(self, state: msibi.state.State) -> None:
         """Add a state to be used in optimizing this Force.
