@@ -19,6 +19,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.mathjax",
+    "nbsphinx",
 ]
 autodoc_mock_imports = []
 # Order class methods and properties as they appear in code
@@ -27,6 +28,7 @@ autodoc_member_order = "bysource"
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 nbsphinx_execute = "never"
+nbsphinx_timeout = 60
 nbsphinx_allow_errors = True
 source_suffix = [".rst"]
 

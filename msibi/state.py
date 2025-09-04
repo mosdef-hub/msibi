@@ -31,7 +31,7 @@ class State(object):
         of the query simulation trajectory.
     alpha0 : (Union[float, int]), default=1.0
         The base alpha value used to scale the weight of this state.
-    alpha_form: str, optional, default 'constant'
+    alpha_form: str, optional, default='constant'
         Alpha can be a constant number that is applied to the potential at all
         independent values (x), or it can be a linear function that approaches
         zero as x approaches x_cut.
@@ -124,12 +124,12 @@ class State(object):
             To change the alpha value for a state point use the
             ``alpha0`` setter.
 
-            Parameters
-            ----------
-            pot_x_range : np.ndarray, optional, default = None
-                The x value range for the potential being optimized.
-                This is used to generate an array of alpha values, so
-                must be defined when msibi.State.alpha_form is "linear".
+        Parameters
+        ----------
+        pot_x_range : np.ndarray, optional, default=None
+            The x value range for the potential being optimized.
+            This is used to generate an array of alpha values, so
+            must be defined when msibi.State.alpha_form is "linear".
 
         """
         if self.alpha_form == "constant":

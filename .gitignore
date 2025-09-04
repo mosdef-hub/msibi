@@ -2,6 +2,8 @@
 *.ipynb
 *.pyc
 *.dcd
+*.csv
+*.gsd
 .DS_Store
 *.egg-info
 *.idea/
@@ -26,6 +28,8 @@ lib64/
 parts/
 sdist/
 var/
+docs/source/tutorials/*.txt
+docs/source/tutorials/states/
 wheels/
 *.egg-info/
 .installed.cfg

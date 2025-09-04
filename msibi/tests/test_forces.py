@@ -297,6 +297,12 @@ class TestAngle(BaseTest):
         assert angle.force_entry["t0"] == 2
         assert angle.force_entry["k"] == 500
 
+    def test_bad_mins_maxs(self, angle):
+        with pytest.raises(ValueError):
+            angle.set_polynomial(x_min=0.5, x_max=np.pi, k2=400, x0=2, k3=0, k4=0)
+        with pytest.raises(ValueError):
+            angle.set_polynomial(x_min=0, x_max=3.0, k2=400, x0=2, k3=0, k4=0)
+
     def test_set_polynomial(self, angle):
         angle.set_polynomial(x0=2, k4=0, k3=0, k2=100, x_min=0, x_max=np.pi)
         assert angle.format == "table"

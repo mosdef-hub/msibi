@@ -13,8 +13,17 @@ Quick start
 .. toctree::
     :maxdepth: 1
 
-    examples
     installation
+    examples
+    tutorials
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Python API
+
+   optimize
+   forces
+   state
 
 
 Resources
@@ -25,15 +34,6 @@ Resources
 - `MSIBI paper <https://doi.org/10.1063/1.4880555>`_: Explanation of the MSIBI method.
 
 - `HOOMD-Blue <https://hoomd-blue.readthedocs.io/en/latest/>`_: Python package used to perform molecular dynamics simulations on CPUs and GPUs.
-
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Python API
-
-   optimize
-   forces
-   state
 
 
 Citation
