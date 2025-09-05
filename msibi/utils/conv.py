@@ -93,7 +93,10 @@ def _mda_check(topology, trajectory):
     if trajectory:
         try:
             n_top = u_top.atoms.n_atoms
-            u_top.load_new(trajectory)  # reuse same Universe
+            try:
+                u_top.load_new(trajectory)  # reuse same Universe
+            except TypeError:
+                u_top = mda.Universe(topology, trajectory,format='LAMMPSDUMP')
             out["valid_trajectory"] = True
             out["match"] = (u_top.atoms.n_atoms == n_top)
         except (OSError, ValueError) as e:
@@ -128,10 +131,9 @@ def gsd_from_files(topology_file, traj_file, output='output.gsd'):
     topology_file : str
         Path to topology file (PSF, GRO, LAMMPSDATA, etc.).
     traj_file : str
-        Path to trajectory file (DCD, XTC, TRR, etc.).
+        Path to trajectory file (DCD, XTC, TRR, LAMMPSDUMP etc.).
     output : str, optional
         Name of the output GSD file (default is 'output.gsd').
-
     Notes
     -----
     If requirements are not met, prints diagnostic information instead of writing a file.
@@ -140,7 +142,10 @@ def gsd_from_files(topology_file, traj_file, output='output.gsd'):
     ok = _requirements_met(out)
 
     if ok:
-        gsd_from_universe(mda.Universe(topology_file, traj_file), output)
+        try:
+            gsd_from_universe(mda.Universe(topology_file, traj_file), output)
+        except TypeError:
+            gsd_from_universe(mda.Universe(topology_file, traj_file,format='LAMMPSDUMP'), output)
     else:
         print('Checks failed!')
         print("Result:", out)
