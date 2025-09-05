@@ -61,7 +61,7 @@ def _mda_check(topology, trajectory):
         with warnings.catch_warnings():
             warnings.filterwarnings(
                 "ignore",
-                message=r"No coordinate reader found for .*\.tpr",
+                message=r"No coordinate reader found for .*",
                 category=UserWarning
             )
             u_top = mda.Universe(topology=topology)
