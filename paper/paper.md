@@ -27,44 +27,39 @@ bibliography: paper.bib
 
 # Summary
 
-Iterative Boltzmann inversion (IBI) is a well-established, and widely used, method for deriving coarse-grained force fields
-that recreate the structrual distributions of an underlying atomistic model.
-Multiple state IBI (MSIBI) as introduced by Moore et al. [@moore2014], addressse state-point transerability limitations of IBI by including distributions from multiple
-state points to inform the derived coarse-grained force field.
-`msibi` is a pure python package that implements the multi-state iterative Boltzmann inversion (MSIBI) method for deriving coarse-grain molecular dynamics
-potentials for both intramolecular and intermolecular interactions.
-The package offers a user-friendly, Python-native API, eliminating the need for bash scripting and manual editing of input files.
-The intuitive API enables streamlined workflows for creating a set of potentials--such as bond stretching, bending, torsions, and non-bonded pairs--
-that together make a complete coarse-grained forcefield.
-`msibi` is ultimately simulation engine agnostic, but uses the HOOMD-Blue simulation engine[@anderson2020hoomd] under-the-hood to perform
-iterative coarse-grained simulations. This means that `msibi` can utilize graphical processing units (GPUs) acceleration without
-requiring users to manually compile GPU compatible code.
+Iterative Boltzmann inversion (IBI) is a well-established, and widely used, method for deriving coarse-grained force fields that recreate the structrual distributions of an underlying atomistic model.
+Multiple state IBI (MSIBI) as introduced by Moore et al. [@Moore2014], addressse state-point transerability limitations of IBI by including distributions from multiple state points to inform the derived coarse-grained force field.
+Here, we introduce `msibi`, a pure python package that implements the MSIBI method for deriving coarse-grain molecular dynamics potentials for both intramolecular and intermolecular interactions.
+The package offers a user-friendly, Python-native API, eliminating the need for bash scripting and manual editing of multiple input files.
+The intuitive API enables streamlined workflows for creating a set of forces in series--such as bond stretching, bending, torsions, and non-bonded pairs--that together make a complete coarse-grained force field.
+`msibi` is ultimately simulation engine agnostic, but uses the HOOMD-Blue simulation engine [@Anderson2020hoomd] under-the-hood to perform
+iterative coarse-grained simulations.
+This means that `msibi` can utilize graphical processing unit (GPU) acceleration without requiring users to manually compile GPU compatible code.
 
 # Statement of need
 
-Molecular dynamics (MD) simulations are computationally expensive and scale with the number of particles $(N)$ at best $O(N log N)$
-which limits accessible time and length scales.
-As a result, atomistic MD simulations of complex systems such as polymers and biomolecules become prohibitively expensive,
-especially as their relevant length and time scales often surpass micrometers and microseconds, respectively.
-Coarse-graining (CG) is a commonly adopted solution to this challenge as it reduces computational cost by grouping--or mapping--atoms into
-single, larger beads.
-However, this approach introduces two challenges: First, the potential energy surface for a given CG mapping is not known a priori, and
-second, as the mapping used is arbitrary, with multiple valid options, development of a single CG forcefield that is transferable across mapping choices is not possible.
-Therefore, developing a CG force field is required each time a new under-lying chemistry and mapping is used.
-CG force fields can be derived through top-down methods, where parameters are tuned to match material properties, or bottom-up methods, where parameters
-are derived to reproduce properties of a fine-grained (i.e., target) simulation.
-Iterative Boltzmann inversion, and therefore MSIBI, are bottom-up methods that reproduce structural distributions of a target simulation.
+Molecular dynamics (MD) simulations are computationally expensive and scale poorly with the number of particles of the system, which limits accessible time and length scales.
+As a result, atomistic MD simulations of complex systems such as polymers and biomolecules become prohibitively expensive, especially as their relevant length and time scales often surpass micrometers and microseconds, respectively.
+Coarse-graining (CG) is a commonly adopted solution to this challenge as it reduces computational cost by grouping—or mapping—atoms into a single, larger bead.
+However, this approach introduces two challenges: first, the potential energy surface for a given chemistry and CG mapping is not known a priori, and
+second, as the mapping applied is arbitrary, with multiple valid options, development of a single CG force field that is transferable across mapping choices is not possible.
+Consequently, developing a CG force field is required each time a new under-lying chemistry or mapping is used.
+IBI and MSIBI are popular choices for deriving coarse-grained (CG) forces for polymers and biomolecules [@Carbone2008,@Moore2016,@Jones2025,@Tang2023,@Fritz2009].
+While these methods are widely used, open-source software tools that provide an accessible, end-to-end workflow for IBI and MSIBI remain limited, especially for arbitrary mappings and multi-state systems.
 
+The MARTINI force field is a widely adopted CG model focusing on biomolecular and soft matter systems [@Martini2007].
+However, it utilizes standardized mapping and bead definitions, which ensure transferability but also constrain users to predefined choices of chemistry and resolution.
+Similarly, VOTCA offers a robust implementation of IBI—among several other features—and is widely used in the community [@Baumeier2024].
+However, its workflow relies on manual management of multiple input files and bash operations, which can introduce operational complexity that reduces reproducibility and usability [@Cummings_2020,@Jankowski2019].
+Additionally, VOTCA's implementation of IBI does not natively support inclusion and weighting of multiple state points.
 
-
-Despite the wide-spread use of coarse-grianing in molecular modeling, and development of multiple methods to derive CG force fields, open-source software tools
-that make this task approachable and efficient are not widely available.
-
-Talk about Martini. Successful model, but limits mapping choices and underlying chemistry. Great tool for the targeted applicaiton, but limits on transerability.
-
-Talk about VOTCA (?) IBI tool. Doesn't hangle multiple states, and requires bash scripting and maybe some input files?
-
-
+Here, `msibi` is designed to seamlessly executute successive CG force optimizations in series, where the learned force from the previous optimization (e.g., angles) is included and held fixed while the next force (e.g, non-bonded pairs) is optimized.
+This follows best practices for deriving CG forcefields via IBI and MSIBI [@Reith2003].
+The pure-Python interface, and built-in utilization of HOOMD-Blue enables the design of high-throughput screening workflows on high-performance compute clusters.
+For example, users can explore and optimize in the relevant hyper parameters for IBI and MSIBI, such as mapping, state-point weighting factors, interaction cutoff distances, smoothing and fitting parameters, and more.
+Finally, we urge that `msibi` is ultimatley engine agnostic, in the sense that any simulation engine can be used to genreate the fine-grained target structural distributions, and the CG force field produced by `msibi` is usable in any simulation engine that supports table potentials which includes LAMMPS [@Thompson2022], Gromacs [@Van2005], and HOOMD-Blue [@Anderson2020hoomd].
+It is required that the target trajectories are converted to the [gsd](https://gsd.readthedocs.io/en/v4.0.0/) file format, which is the native file format for HOOMD-Blue.
+`msibi` includes a utility function that convert trajectory files from LAMMPS, Gromacs, and CHARM into the gsd file format.
 
 # Using MSIBI
 
@@ -75,11 +70,9 @@ but also makes it possible to mix CG models. For example, learning the CG forces
 non-bonded pair potentials for any number of solutes.
 
 # Availability
-`msibi` is open-source and freely available under the MIT License
-on [GitHub](https://github.com/mosdef-hub/msibi). For installation instructions, and Python API documentation
-please visit the [documentation](https://msibi.readthedocs.io/en/latest/).
-For examples of how to use `msibi`,
-please visit the [tutorials](https://msibi.readthedocs.io/en/latest/tutorials.html).
+`msibi` is open-source and freely available under the MIT License on [GitHub](https://github.com/mosdef-hub/msibi).
+For installation instructions, and Python API documentation visit the [documentation](https://msibi.readthedocs.io/en/latest/).
+For examples of how to use `msibi`, visit the [tutorials](https://msibi.readthedocs.io/en/latest/tutorials.html).
 
 # Acknowledgements
 
