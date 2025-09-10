@@ -305,4 +305,11 @@ def gsd_from_universe(universe, output='output.gsd'):
                 snap.impropers.types = improper_types
 
             gsd_file.append(snap)
-
+    with gsd.hoomd.open(output) as traj:
+        snap = traj[0]
+        print(f'#Particles:  {snap.particles.N}')
+        print(f'#Bonds:      {snap.bonds.N}')
+        print(f'#Angles:     {snap.angles.N}')
+        print(f'#Dihedrals:  {snap.dihedrals.N}')
+        print("\nDouble-check the number of Bonds/Angles/Dihedrals.\n"
+            "Especially when using *.tpr topologies and SETTLE constraints.\n") 
