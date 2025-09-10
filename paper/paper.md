@@ -19,8 +19,10 @@ authors:
     corresponding: true
     affiliation: 1
 affiliations:
- - name: School of Engineering and Physical Sciences, Heriot-Watt University, Scotland, United Kingdom
+ - name: School of Engineering and Physical Sciences, Heriot-Watt University, Edinburgh, Scotland, United Kingdom
    index: 1
+ - name: Micron School of Material Science and Engineering, Boise State University, Boise, Idaho, United States
+   index: 2
 date: 10 September 2025
 bibliography: paper.bib
 ---
@@ -32,38 +34,62 @@ Multiple state IBI (MSIBI) as introduced by Moore et al. [@Moore2014], addressse
 Here, we introduce `msibi`, a pure python package that implements the MSIBI method for deriving coarse-grain molecular dynamics potentials for both intramolecular and intermolecular interactions.
 The package offers a user-friendly, Python-native API, eliminating the need for bash scripting and manual editing of multiple input files.
 The intuitive API enables streamlined workflows for creating a set of forces in series--such as bond stretching, bending, torsions, and non-bonded pairs--that together make a complete coarse-grained force field.
-`msibi` is ultimately simulation engine agnostic, but uses the HOOMD-Blue simulation engine [@Anderson2020hoomd] under-the-hood to perform
-iterative coarse-grained simulations.
+`msibi` is ultimately simulation engine agnostic, but uses the HOOMD-Blue simulation engine [@Anderson2020hoomd] under-the-hood to perform iterative coarse-grained simulations.
 This means that `msibi` can utilize graphical processing unit (GPU) acceleration without requiring users to manually compile GPU compatible code.
 
 # Statement of need
 
-Molecular dynamics (MD) simulations are computationally expensive and scale poorly with the number of particles of the system, which limits accessible time and length scales.
+Molecular dynamics (MD) simulations are computationally expensive and scale poorly with the number of particles in the system, which limits accessible time and length scales.
 As a result, atomistic MD simulations of complex systems such as polymers and biomolecules become prohibitively expensive, especially as their relevant length and time scales often surpass micrometers and microseconds, respectively.
 Coarse-graining (CG) is a commonly adopted solution to this challenge as it reduces computational cost by grouping—or mapping—atoms into a single, larger bead.
 However, this approach introduces two challenges: first, the potential energy surface for a given chemistry and CG mapping is not known a priori, and
-second, as the mapping applied is arbitrary, with multiple valid options, development of a single CG force field that is transferable across mapping choices is not possible.
-Consequently, developing a CG force field is required each time a new under-lying chemistry or mapping is used.
-IBI and MSIBI are popular choices for deriving coarse-grained (CG) forces for polymers and biomolecules [@Carbone2008,@Moore2016,@Jones2025,@Tang2023,@Fritz2009].
-While these methods are widely used, open-source software tools that provide an accessible, end-to-end workflow for IBI and MSIBI remain limited, especially for arbitrary mappings and multi-state systems.
+second, as the mapping used is arbitrary, with multiple valid options, development of a single CG force field that is transferable across various mapping choices is not possible.
+Consequently, developing a CG force field is required each time a new under-lying chemistry or mapping is chosen.
+IBI and MSIBI are popular choices for deriving coarse-grained (CG) forces for polymers and biomolecules [@Carbone2008, @Moore2016, @Jones2025, @Tang2023, @Fritz2009].
+While these methods are widely used, open-source software tools that provide an accessible and reproducible, end-to-end workflow for IBI and MSIBI remain limited, especially for arbitrary mappings and multi-state systems.
 
 The MARTINI force field is a widely adopted CG model focusing on biomolecular and soft matter systems [@Martini2007].
 However, it utilizes standardized mapping and bead definitions, which ensure transferability but also constrain users to predefined choices of chemistry and resolution.
 Similarly, VOTCA offers a robust implementation of IBI—among several other features—and is widely used in the community [@Baumeier2024].
-However, its workflow relies on manual management of multiple input files and bash operations, which can introduce operational complexity that reduces reproducibility and usability [@Cummings_2020,@Jankowski2019].
+However, its workflow relies on manual management of multiple input files and bash operations, which can introduce operational complexity that reduces reproducibility and usability [@Cummings_2020, @Jankowski2019].
 Additionally, VOTCA's implementation of IBI does not natively support inclusion and weighting of multiple state points.
 
 Here, `msibi` is designed to seamlessly executute successive CG force optimizations in series, where the learned force from the previous optimization (e.g., angles) is included and held fixed while the next force (e.g, non-bonded pairs) is optimized.
 This follows best practices for deriving CG forcefields via IBI and MSIBI [@Reith2003].
-The pure-Python interface, and built-in utilization of HOOMD-Blue enables the design of high-throughput screening workflows on high-performance compute clusters.
+The pure-Python interface, and built-in utilization of HOOMD-Blue, enables the design of high-throughput screening workflows on high-performance compute clusters.
 For example, users can explore and optimize in the relevant hyper parameters for IBI and MSIBI, such as mapping, state-point weighting factors, interaction cutoff distances, smoothing and fitting parameters, and more.
-Finally, we urge that `msibi` is ultimatley engine agnostic, in the sense that any simulation engine can be used to genreate the fine-grained target structural distributions, and the CG force field produced by `msibi` is usable in any simulation engine that supports table potentials which includes LAMMPS [@Thompson2022], Gromacs [@Van2005], and HOOMD-Blue [@Anderson2020hoomd].
+Finally, we emphasize that `msibi` is ultimatley engine agnostic: any simulation engine can be used to genreate the fine-grained target structural distributions, and the CG force field produced by `msibi` is compatible with any simulation engine that supports tablulated potentials.
+This includes LAMMPS [@Thompson2022], Gromacs [@Van2005], and HOOMD-Blue [@Anderson2020hoomd], among others.
 It is required that the target trajectories are converted to the [gsd](https://gsd.readthedocs.io/en/v4.0.0/) file format, which is the native file format for HOOMD-Blue.
-`msibi` includes a utility function that convert trajectory files from LAMMPS, Gromacs, and CHARM into the gsd file format.
+`msibi` includes a utility function that converts trajectory files from LAMMPS, Gromacs, and CHARMM into the gsd file format.
 
 # Using MSIBI
 
-Basic data classes
+`msibi` contains three primary classes:
+
+1) **msibi.state.State:**
+Encapsulates state-point information such as target trajectories, temperature, weighting factor and sampling parameters.
+Multiple instances of this class can be created, and each is used in deriving the final CG force field.
+All instances of this class automatically calls HOOMD-Blue to run its own query simulation.
+
+2) **msibi.force.Force:**
+The base class from which all force types in `msibi` inherit from:
+    - **msibi.force.Bond**
+    - **msibi.force.Angle**
+    - **msibi.force.Pair**
+    - **msibi.force.Dihedral**
+
+Any number and combination of forces can be created and used in optimizaiton simulations, although only one type (i.e., `Bond`, `Angle`, etc..) can be optimized at once.
+Forces can be set to be optimied, or set to be held static.
+In either case, multiple methods to set their force parameters are available.
+For example, `Force.set_from_file` and `Force.set_polynomial` create table potentials that are mutable if needed.
+On the other hand, `Force.set_harmonic` creates a static, immutable force, which can be used for fitting a simple CG force to a harmonic function, a common practice in IBI and MSIBI
+
+3) **msibi.optimize.MSIBI:**
+Acts as the context management class that orechestrates optimizaiton iterations and ensures the correct interactions are updated.
+A single instance of this class is needed, and all instances of **msibi.state.State** and **msibi.force.Force** are attached to this instance before optimizaitons are ran.
+This class also stores general simulation parameters such as time step, neighbor list, exclusions, thermostat and trajectory write-out frequency.
+
 
 Forces can be set and held fixed, or set and updated. This is key for building up towards a complete CG forcefeidl (intermolecular and intramolecular)
 but also makes it possible to mix CG models. For example, learning the CG forces for a solvent molecule once, then using that to derive solvent-solute
