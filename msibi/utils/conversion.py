@@ -1,10 +1,9 @@
-from typing import Union
 import warnings
 
 import gsd.hoomd
+import MDAnalysis
 import MDAnalysis as mda
 import numpy as np
-import MDAnalysis
 from MDAnalysis.exceptions import NoDataError
 
 
@@ -50,7 +49,7 @@ def gsd_from_files(topology_file: str, traj_file: str, output: str = "output.gsd
         raise RuntimeError(msg)
 
 
-def gsd_from_universe(universe: MDAnalysis.Universe, output:str="output.gsd"):
+def gsd_from_universe(universe: MDAnalysis.Universe, output: str = "output.gsd"):
     """Convert an MDAnalysis Universe into a GSD trajectory.
 
     Extracts particle, bonding, angular, dihedral, and improper information

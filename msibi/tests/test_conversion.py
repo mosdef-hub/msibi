@@ -1,8 +1,10 @@
 import os
-import pytest
 
 import gsd
-from msibi.utils import conversion 
+import pytest
+
+from msibi.utils import conversion
+
 from .base_test import BaseTest
 
 test_assets = os.path.join(os.path.dirname(__file__), "assets")
