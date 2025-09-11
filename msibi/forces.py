@@ -45,9 +45,9 @@ class Force:
         optimized (i.e., mutable).
 
         Only one type of force can be optimized at a time.
-        For example, you can optimize multiple ``Angle`` potentials
+        For example, you can optimize multiple angle potentials
         during one optimization run, but you cannot
-        optimize a ``Pair`` and an ``Angle`` potential in the same
+        optimize a Pair and an Angle potential in the same
         optimization run.
 
         Several of the methods in this class are only applicable
@@ -310,18 +310,25 @@ class Force:
         """
         if not self.optimize:
             raise PotentialNotOptimizedError("plot a distribution history")
-        target = self.target_distribution(state)
+        target_distribution = self._get_state_distribution(state=state, query=False)
         plt.title(f"State {state.name}: {self.name} Target")
         plt.ylabel("P(x)")
         plt.xlabel("x")
-        plt.plot(target[:, 0], target[:, 1], marker="^", label="Target")
+        plt.plot(
+            target_distribution[:, 0],
+            target_distribution[:, 1],
+            marker="^",
+            label="Target",
+        )
         if self.smoothing_window:
             y_smoothed = savgol_filter(
-                x=target[:, 1],
+                x=target_distribution[:, 1],
                 window_length=self.smoothing_window,
                 polyorder=self.smoothing_order,
             )
-            plt.plot(target[:, 0], y_smoothed, marker="o", label="Smoothed")
+            plt.plot(
+                target_distribution[:, 0], y_smoothed, marker="o", label="Smoothed"
+            )
             plt.legend()
         if file_path:
             plt.savefig(file_path)
@@ -525,12 +532,21 @@ class Force:
         self.x_min = x_min
         self.x_max = x_max
         self.dx = x_max / self.nbins
+        if isinstance(self, msibi.forces.Angle):
+            if x_min != 0 or np.round(x_max, 4) != np.round(np.pi, 4):
+                raise ValueError(
+                    "Angle table potentials must be defined over the range of theta = [0, pi]. "
+                    "Set x_min=0 and x_max=np.pi"
+                )
         if isinstance(self, msibi.forces.Dihedral):
             self.dx *= 2
             self.x_range = np.arange(x_min, x_max + self.dx / 2, self.dx)
         else:
             self.x_range = np.arange(x_min, x_max + self.dx, self.dx)
         self.potential = polynomial_potential(self.x_range, x0, k4, k3, k2)
+        if self.optimize:
+            # Store the initial guess as the first entry in potential_history
+            self.potential_history.append(np.copy(self.potential))
         self.force_init = "Table"
         self.force_entry = self._table_entry()
 
@@ -566,6 +582,9 @@ class Force:
         self.x_max = self.x_range[-1] + self.dx
         self.force_init = "Table"
         self.nbins = len(self.x_range) - 1
+        if self.optimize:
+            # Store the initial guess as the first entry in potential_history
+            self.potential_history.append(np.copy(self.potential))
 
     def _add_state(self, state: msibi.state.State) -> None:
         """Add a state to be used in optimizing this Force.
@@ -583,6 +602,8 @@ class Force:
                     window_length=self.smoothing_window,
                     polyorder=self.smoothing_order,
                 )
+                neg_indices = np.where(target_distribution[:, 1] < 0)[0]
+                target_distribution[:, 1][neg_indices] = 0
         else:
             target_distribution = None
         self._states[state] = {
@@ -658,8 +679,6 @@ class Force:
 
     def _update_potential(self) -> None:
         """Compare distributions and update potential via Boltzmann Inversion."""
-        # TODO: TAKE THIS APPEND OUT?
-        self.potential_history.append(np.copy(self.potential))
         for state in self._states:
             current_dist = self._states[state]["current_distribution"]
             target_dist = self._states[state]["target_distribution"]
@@ -1027,6 +1046,8 @@ class Pair(Force):
         nbins: Optional[int] = None,
         r_cut: Optional[Union[float, int]] = None,
         r_switch: Optional[Union[float, int]] = None,
+        smoothing_window: Optional[int] = None,
+        smoothing_order: Optional[int] = None,
         correction_fit_window: Optional[int] = None,
         exclude_bonded: bool = False,
         head_correction_form: Callable = exponential,
@@ -1042,6 +1063,8 @@ class Pair(Force):
             name=name,
             optimize=optimize,
             nbins=nbins,
+            smoothing_window=smoothing_window,
+            smoothing_order=smoothing_order,
             correction_fit_window=correction_fit_window,
             correction_form=head_correction_form,
         )

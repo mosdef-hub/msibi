@@ -163,15 +163,11 @@ def pair_corrections(
     x_real = np.copy(x[real_indices])
     head_start = real_indices[0]
     if all([smoothing_window, smoothing_order]):
-        if len(v_real) < 2 * smoothing_window:
-            mode = "nearest"
-        else:
-            mode = "interp"
         v_real = savgol_filter(
             x=v_real,
             window_length=smoothing_window,
             polyorder=smoothing_order,
-            mode=mode,
+            mode="mirror",
         )
     # head correction (short range repulsion)
     # Get fit parameters for where we actually have data
