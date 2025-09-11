@@ -21,6 +21,7 @@ class TestConversion(BaseTest):
         assert os.path.isfile(output)
         with gsd.hoomd.open(output) as traj:
             snap = traj[-1]
+            assert len(traj) == 7
             assert snap.particles.N == 9254
             assert snap.bonds.N == 6189
             assert snap.angles.N == 3184
@@ -37,6 +38,7 @@ class TestConversion(BaseTest):
         assert os.path.isfile(output)
         with gsd.hoomd.open(output) as traj:
             snap = traj[-1]
+            assert len(traj) == 7
             assert snap.particles.N == 9254
             assert snap.bonds.N == 6189
             assert snap.angles.N == 3184
@@ -53,6 +55,7 @@ class TestConversion(BaseTest):
         assert os.path.isfile(output)
         with gsd.hoomd.open(output) as traj:
             snap = traj[-1]
+            assert len(traj) == 12
             assert snap.particles.N == 9254
             assert (
                 snap.bonds.N == 9253
@@ -71,6 +74,7 @@ class TestConversion(BaseTest):
         assert os.path.isfile(output)
         with gsd.hoomd.open(output) as traj:
             snap = traj[-1]
+            assert len(traj) == 11
             assert snap.particles.N == 9254
             assert snap.bonds.N == 6189
             assert snap.angles.N == 3184
