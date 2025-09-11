@@ -67,6 +67,7 @@ Finally, we emphasize that `msibi` is ultimatley engine agnostic: any simulation
 This includes LAMMPS [@Thompson2022], Gromacs [@Van2005], and HOOMD-Blue [@Anderson2020hoomd], among others.
 It is required that the target trajectories are converted to the [gsd](https://gsd.readthedocs.io/en/v4.0.0/) file format, which is the native file format for HOOMD-Blue.
 `msibi` includes a utility function that converts trajectory files from LAMMPS, Gromacs, and CHARMM into the gsd file format.
+This converter utility relies on the MDAnalysis package [@Naughton2022] as a back-end to help handle file conversions.
 
 
 # Using MSIBI
@@ -76,30 +77,34 @@ It is required that the target trajectories are converted to the [gsd](https://g
 1) **msibi.state.State:**
 This class encapsulates state-point information such as target trajectories, temperature, weighting factor and sampling parameters.
 Multiple instances of this class can be created, and each is used in deriving the final CG force field.
-All instances of this class automatically calls HOOMD-Blue to run its own query simulation using the state specific parameters.
+All instances of this class automatically call HOOMD-Blue to run its own query simulation using the state specific parameters.
 
 2) **msibi.force.Force:**
 The base class from which all force types in `msibi` inherit from:
-    - **msibi.force.Bond**
-    - **msibi.force.Angle**
-    - **msibi.force.Pair**
-    - **msibi.force.Dihedral**
 
-Any number and combination of forces can be created and used in optimizaiton simulations, although only one type (i.e., `Bond`, `Angle`, etc.) can be optimized at once.
-Forces can be set to be optimied, or set to be held static.
-In either case, multiple methods to set their force parameters are available.
-For example, `Force.set_from_file` and `Force.set_polynomial` create table potentials that are mutable if needed.
-On the other hand, `Force.set_harmonic` creates a static, immutable force, which can be used for fitting a simple CG force to a harmonic function, a common practice in IBI and MSIBI
+    • **msibi.force.Bond**
+    • **msibi.force.Angle**
+    • **msibi.force.Pair**
+    • **msibi.force.Dihedral**
+
+Users can create any number and combination of forces for optimization simulations, though only one force type (e.g., Bond, Angle) can be optimized at a time.
+There are multiple options for setting the parameters for a **Force** instance:
+
+    • **Force.set_from_file:** Creates a tabulated force from a `.csv` file. This is useful for setting a previously optimized CG force while learning another.
+    • **Force.set_polynomial:** Creates a tabulated force from a polynomial function. This is helpful to setting initial guess forces, especially for distributions with multiple peaks.
+    • **Force.set_harmonic:** Creates a static, immutable harmonic force (not tabulated). This is useful for setting force parameters for distributions that are easily described by a harmonic function.
 
 3) **msibi.optimize.MSIBI:**
 This class acts as the context manager that orechestrates optimizaiton iterations and ensures the correct interactions are updated.
 A single instance of this class is needed, and all instances of **msibi.state.State** and **msibi.force.Force** are attached to it before optimizaitons are ran.
 This class also stores global simulation parameters such as timestep, neighbor list, exclusions, thermostat and trajectory write-out frequency.
 
+The [repository](https://github.com/mosdef-hub/msibi) and [documentation](https://msibi.readthedocs.io/en/latest/) contain quick examples of how these classes can be instantiated and collected by the management class before running optimization.
 
 # Availability
 
 `msibi` is open-source and freely available under the MIT License on [GitHub](https://github.com/mosdef-hub/msibi).
+We encourage users to file issues and make contributions as applicable on the repository.
 For installation instructions, and Python API documentation visit the [documentation](https://msibi.readthedocs.io/en/latest/).
 For examples of how to use `msibi`, visit the [tutorials](https://msibi.readthedocs.io/en/latest/tutorials.html).
 
