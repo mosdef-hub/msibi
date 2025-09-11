@@ -10,7 +10,7 @@ dependencies:
 - pandas
 - numpy >=2.0,<2.3
 - matplotlib
-- mdanalysis
+- mdanalysis <3.0
 - more-itertools
 - pytest
 - pytest-cov
