@@ -1,18 +1,30 @@
+from typing import Union
 import warnings
 
 import gsd.hoomd
 import MDAnalysis as mda
 import numpy as np
+import MDAnalysis
 from MDAnalysis.exceptions import NoDataError
 
 
-def gsd_from_files(topology_file, traj_file, output="output.gsd"):
-    """
-    Convert a topology and trajectory pair to a GSD file after validation.
+def gsd_from_files(topology_file: str, traj_file: str, output: str = "output.gsd"):
+    """Convert a topology and trajectory pair to a GSD file after validation.
 
     This function first validates the inputs using `_mda_check`. If all
     requirements are satisfied, the data is converted into HOOMD's
     GSD format using `gsd_from_universe`.
+
+    .. note::
+
+        If requirements for loading files into MDAnalysis are not met,
+        diagnostic information is printed instead of writing a file.
+
+    Examples::
+
+        from msibi.utils.conversion import gsd_from_files
+
+        gsd_from_files(topology_file="lammps.data", traj_file="lammps.dump", output="output.gsd")
 
     Parameters
     ----------
@@ -20,11 +32,8 @@ def gsd_from_files(topology_file, traj_file, output="output.gsd"):
         Path to topology file (PSF, GRO, LAMMPSDATA, etc.).
     traj_file : str
         Path to trajectory file (DCD, XTC, TRR, LAMMPSDUMP etc.).
-    output : str, optional
-        Name of the output GSD file (default is 'output.gsd').
-    Notes
-    -----
-    If requirements are not met, prints diagnostic information instead of writing a file.
+    output : str, optional, default = output.gsd
+        Name of the output GSD file.
     """
     out = _mda_check(topology_file, traj_file)
     ok = _requirements_met(out)
@@ -37,17 +46,30 @@ def gsd_from_files(topology_file, traj_file, output="output.gsd"):
                 mda.Universe(topology_file, traj_file, format="LAMMPSDUMP"), output
             )
     else:
-        print("Checks failed!")
-        print("Result:", out)
+        msg = f"Checks failed! See the summary of the results: {out}"
+        raise RuntimeError(msg)
 
 
-def gsd_from_universe(universe, output="output.gsd"):
-    """
-    Convert an MDAnalysis Universe into a GSD trajectory.
+def gsd_from_universe(universe: MDAnalysis.Universe, output:str="output.gsd"):
+    """Convert an MDAnalysis Universe into a GSD trajectory.
 
     Extracts particle, bonding, angular, dihedral, and improper information
     from the given Universe and writes each frame to a GSD file compatible
     with HOOMD-blue.
+
+    .. note::
+
+        Particle types are inferred from `atom.type`. Bond, angle, dihedral and improper types
+        are deduplicated and stored as HOOMD-Blue style type lists with associated type IDs.
+        Each frame of the Universe trajectory is written to the GSD file.
+
+    Examples::
+
+        import MDAnalysis as mda
+        from msibi.utils.conversion import gsd_from_universe
+
+        u = mda.Universe("topology.tpr", "trajectory.xtc")
+        gsd_from_universe(u, output="output.gsd")
 
     Parameters
     ----------
@@ -56,18 +78,6 @@ def gsd_from_universe(universe, output="output.gsd"):
     output : str, optional
         Name of the output GSD file (default is 'output.gsd').
 
-    Notes
-    -----
-    - Particle types are inferred from `atom.type`.
-    - Bond, angle, dihedral, and improper types are deduplicated and stored
-      as HOOMD-style type lists with associated type IDs.
-    - Each frame of the Universe trajectory is written to the GSD file.
-
-    Examples
-    --------
-    import MDAnalysis as mda
-    u = mda.Universe("topology.tpr", "trajectory.xtc")
-    gsd_from_universe(u, output="simulation.gsd")
     """
     # Load structure and trajectory
     u = universe
@@ -191,6 +201,7 @@ def gsd_from_universe(universe, output="output.gsd"):
                 snap.impropers.types = improper_types
 
             gsd_file.append(snap)
+
     with gsd.hoomd.open(output) as traj:
         snap = traj[0]
         print(f"#Particles:  {snap.particles.N}")
@@ -198,14 +209,13 @@ def gsd_from_universe(universe, output="output.gsd"):
         print(f"#Angles:     {snap.angles.N}")
         print(f"#Dihedrals:  {snap.dihedrals.N}")
         print(
-            "\nDouble-check the number of Bonds/Angles/Dihedrals.\n"
+            "\nDouble-check the number of Bonds, Angles, and Dihedrals.\n"
             "Especially when using *.tpr topologies and SETTLE constraints.\n"
         )
 
 
-def _mda_check(topology, trajectory):
-    """
-    Validate an MDAnalysis topology/trajectory pair for conversion.
+def _mda_check(topology: str, trajectory):
+    """Validate an MDAnalysis topology/trajectory pair for conversion.
 
     This function attempts to load the provided topology and trajectory files
     using MDAnalysis and checks whether all structural requirements
@@ -217,6 +227,7 @@ def _mda_check(topology, trajectory):
         Path to a topology file (e.g., PSF, TPR, LAMMPSDATA).
     trajectory : str or None
         Path to a trajectory file (e.g., DCD, XTC, TRR)
+
     Returns
     -------
     dict
@@ -240,6 +251,7 @@ def _mda_check(topology, trajectory):
     Notes
     -----
     Prints warnings and error messages if requirements are not met.
+
     """
     out = {
         "valid_topology": False,

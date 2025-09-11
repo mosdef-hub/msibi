@@ -34,6 +34,7 @@ Resources
    optimize
    forces
    state
+   utilities
 
 
 Citation

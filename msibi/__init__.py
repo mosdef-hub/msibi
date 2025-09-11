@@ -3,6 +3,7 @@ from .__version__ import __version__
 from .state import State
 from .forces import Angle, Bond, Dihedral, Pair
 from .optimize import MSIBI
+from .utils import conversion
 
 __all__ = [
     "__version__",

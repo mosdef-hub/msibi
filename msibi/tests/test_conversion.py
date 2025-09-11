@@ -1,15 +1,26 @@
 import os
+import pytest
 
 import gsd
-
-from msibi.utils import conv
-
+from msibi.utils import conversion 
 from .base_test import BaseTest
 
 test_assets = os.path.join(os.path.dirname(__file__), "assets")
 
 
 class TestConversion(BaseTest):
+    def test_bad_inputs(self, tmp_path):
+        topology = None
+        trajectory = os.path.join(test_assets, "lammps.dump")
+        output = os.path.join(tmp_path, "lammps.dump.gsd")
+        with pytest.raises(RuntimeError):
+            conversion.gsd_from_files(topology, trajectory, output=output)
+
+    def test_no_file(self, tmp_path):
+        with pytest.raises(RuntimeError):
+            output = os.path.join(tmp_path, "lammps.dump.gsd")
+            conversion.gsd_from_files("topology.data", "trajectory.dump", output=output)
+
     def test_lammps_dump(
         self,
         tmp_path,
@@ -17,7 +28,7 @@ class TestConversion(BaseTest):
         trajectory=os.path.join(test_assets, "lammps.dump"),
     ):
         output = os.path.join(tmp_path, "lammps.dump.gsd")
-        conv.gsd_from_files(topology, trajectory, output=output)
+        conversion.gsd_from_files(topology, trajectory, output=output)
         assert os.path.isfile(output)
         with gsd.hoomd.open(output) as traj:
             snap = traj[-1]
@@ -34,7 +45,7 @@ class TestConversion(BaseTest):
         trajectory=os.path.join(test_assets, "lammps.dcd"),
     ):
         output = os.path.join(tmp_path, "lammps.dcd.gsd")
-        conv.gsd_from_files(topology, trajectory, output=output)
+        conversion.gsd_from_files(topology, trajectory, output=output)
         assert os.path.isfile(output)
         with gsd.hoomd.open(output) as traj:
             snap = traj[-1]
@@ -51,7 +62,7 @@ class TestConversion(BaseTest):
         trajectory=os.path.join(test_assets, "amber.nc"),
     ):
         output = os.path.join(tmp_path, "amber.gsd")
-        conv.gsd_from_files(topology, trajectory, output=output)
+        conversion.gsd_from_files(topology, trajectory, output=output)
         assert os.path.isfile(output)
         with gsd.hoomd.open(output) as traj:
             snap = traj[-1]
@@ -70,7 +81,7 @@ class TestConversion(BaseTest):
         trajectory=os.path.join(test_assets, "gromacs.xtc"),
     ):
         output = os.path.join(tmp_path, "gromacs.gsd")
-        conv.gsd_from_files(topology, trajectory, output=output)
+        conversion.gsd_from_files(topology, trajectory, output=output)
         assert os.path.isfile(output)
         with gsd.hoomd.open(output) as traj:
             snap = traj[-1]
