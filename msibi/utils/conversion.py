@@ -213,7 +213,7 @@ def gsd_from_universe(universe: MDAnalysis.Universe, output: str = "output.gsd")
         )
 
 
-def _mda_check(topology: str, trajectory):
+def _mda_check(topology: str, trajectory: str):
     """Validate an MDAnalysis topology/trajectory pair for conversion.
 
     This function attempts to load the provided topology and trajectory files
