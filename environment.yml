@@ -9,6 +9,7 @@ dependencies:
 - matplotlob
 - python >=3.10,<=3.13
 - pandas
+- mdanalysis <3.0
 - numpy >=2.0,<2.3
 - more-itertools
 - pip:

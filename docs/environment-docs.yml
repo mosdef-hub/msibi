@@ -2,6 +2,7 @@ name: msibi-docs
 channels:
   - conda-forge
 dependencies:
+  - mdanalysis=2.9
   - sphinx==8.1
   - sphinx_rtd_theme>=3.0
   - freud >=3.0

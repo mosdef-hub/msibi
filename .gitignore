@@ -108,3 +108,5 @@ ENV/
 
 # mypy
 .mypy_cache/
+msibi/tests/assets/.gromacs.xtc_offsets.lock
+msibi/tests/assets/.gromacs.xtc_offsets.npz

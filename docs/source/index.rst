@@ -24,6 +24,7 @@ Quick start
    optimize
    forces
    state
+   utilities
 
 
 Resources
