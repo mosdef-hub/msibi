@@ -1,124 +1,12 @@
-import MDAnalysis as mda
-import gsd.hoomd
-import numpy as np
-from MDAnalysis.exceptions import NoDataError 
 import warnings
-def _mda_check(topology, trajectory):
-    """
-    Validate an MDAnalysis topology/trajectory pair for conversion.
 
-    This function attempts to load the provided topology and trajectory files
-    using MDAnalysis and checks whether all structural requirements
-    (bonds, angles, etc.) are satisfied, depending on residue sizes.
-
-    Parameters
-    ----------
-    topology : str
-        Path to a topology file (e.g., PSF, TPR, LAMMPSDATA).
-    trajectory : str or None
-        Path to a trajectory file (e.g., DCD, XTC, TRR) 
-    Returns
-    -------
-    dict
-        Dictionary with validation results containing the following keys:
-
-        - ``valid_topology`` : bool  
-          Topology could be loaded.
-        - ``need_bonds`` : bool  
-          True if bonds are required (residue size >= 2).
-        - ``need_angles`` : bool  
-          True if angles are required (residue size >= 3).
-        - ``has_bonds`` : bool  
-          True if bonds are present in the topology.
-        - ``has_angles`` : bool  
-          True if angles are present in the topology.
-        - ``valid_trajectory`` : bool  
-          Trajectory could be loaded.
-        - ``match`` : bool  
-          Number of atoms in trajectory matches topology.
-
-    Notes
-    -----
-    Prints warnings and error messages if requirements are not met.
-    """
-    out = {
-        "valid_topology": False,
-        "need_bonds": False,
-        "need_angles": False,
-        "has_bonds": False,
-        "has_angles": False,
-        "valid_trajectory": False,
-        "match":False
-    }
-
-    if not topology:
-        print('Please provide a Topology File')
-        return out
-
-    # Load topology only
-    try:
-
-        with warnings.catch_warnings():
-            warnings.filterwarnings(
-                "ignore",
-                message=r"No coordinate reader found for .*",
-                category=UserWarning
-            )
-            u_top = mda.Universe(topology=topology)
-        out["valid_topology"] = True
-    except FileNotFoundError as e:
-        print('Topology not found')
-        print(e)
-        return out
-
-    # --- Decide requirements based on residue sizes
-    max_atoms_in_residue = max((len(res.atoms) for res in u_top.residues), default=0)
-    out["need_bonds"] = max_atoms_in_residue >= 2
-    out["need_angles"] = max_atoms_in_residue >= 3
-
-    # --- Check what's present
-    if out["need_bonds"]:
-        try:
-            out["has_bonds"] = len(u_top.bonds) > 0
-        except NoDataError as e:
-            print("No Bonds detected in Topology with Residues with multiple Atoms")
-            print(e)
-    if out["need_angles"]:
-        try:
-            out["has_angles"] = len(u_top.angles) > 0
-        except NoDataError as e:
-            print("No Angles detected in Topology with Residues with 3 or more Atoms")
-            print(e)
-    # --- Trajectory check
-    if trajectory:
-        try:
-            n_top = u_top.atoms.n_atoms
-            try:
-                u_top.load_new(trajectory)  # reuse same Universe
-            except TypeError:
-                u_top = mda.Universe(topology, trajectory,format='LAMMPSDUMP')
-            out["valid_trajectory"] = True
-            out["match"] = (u_top.atoms.n_atoms == n_top)
-        except (OSError, ValueError) as e:
-            print('The Trajectory does not match the Topology') 
-            print(e)
-            
-    else:
-        print('Please provide a Trajectory File')
-    return out
+import gsd.hoomd
+import MDAnalysis as mda
+import numpy as np
+from MDAnalysis.exceptions import NoDataError
 
 
-def _requirements_met(out):
-    ok = out["valid_topology"]
-    if out["need_bonds"]:
-        ok = ok and out["has_bonds"]
-    if out["need_angles"]:
-        ok = ok and out["has_angles"]        
-    ok = ok and out["valid_trajectory"] and out['match']
-    return ok
-
-
-def gsd_from_files(topology_file, traj_file, output='output.gsd'):
+def gsd_from_files(topology_file, traj_file, output="output.gsd"):
     """
     Convert a topology and trajectory pair to a GSD file after validation.
 
@@ -145,14 +33,15 @@ def gsd_from_files(topology_file, traj_file, output='output.gsd'):
         try:
             gsd_from_universe(mda.Universe(topology_file, traj_file), output)
         except TypeError:
-            gsd_from_universe(mda.Universe(topology_file, traj_file,format='LAMMPSDUMP'), output)
+            gsd_from_universe(
+                mda.Universe(topology_file, traj_file, format="LAMMPSDUMP"), output
+            )
     else:
-        print('Checks failed!')
+        print("Checks failed!")
         print("Result:", out)
 
 
-    
-def gsd_from_universe(universe, output='output.gsd'):
+def gsd_from_universe(universe, output="output.gsd"):
     """
     Convert an MDAnalysis Universe into a GSD trajectory.
 
@@ -196,7 +85,7 @@ def gsd_from_universe(universe, output='output.gsd'):
 
     for a1, a2 in bonds:
         # bond_type = f"{u.atoms[a1].type}-{u.atoms[a2].type}"
-        n1, n2 = u.atoms[a1].type, u.atoms[a2].type 
+        n1, n2 = u.atoms[a1].type, u.atoms[a2].type
         bond_type = "-".join(sorted((n1, n2)))
         if bond_type not in bond_lookup:
             bond_lookup[bond_type] = len(bond_types)
@@ -244,8 +133,6 @@ def gsd_from_universe(universe, output='output.gsd'):
     improper_lookup = {}
     improper_type_ids = []
     if hasattr(u, "impropers") and len(u.impropers) > 0:
-
-
         for imp in u.impropers:
             impropers.append((imp[0].index, imp[1].index, imp[2].index, imp[3].index))
             improper_type = (
@@ -298,7 +185,6 @@ def gsd_from_universe(universe, output='output.gsd'):
                 snap.dihedrals.types = dihedral_types
             # Imropers
             if impropers:
-        
                 snap.impropers.N = len(impropers)
                 snap.impropers.group = np.array(impropers, dtype=np.int32)
                 snap.impropers.typeid = np.array(improper_type_ids, dtype=np.uint32)
@@ -307,9 +193,125 @@ def gsd_from_universe(universe, output='output.gsd'):
             gsd_file.append(snap)
     with gsd.hoomd.open(output) as traj:
         snap = traj[0]
-        print(f'#Particles:  {snap.particles.N}')
-        print(f'#Bonds:      {snap.bonds.N}')
-        print(f'#Angles:     {snap.angles.N}')
-        print(f'#Dihedrals:  {snap.dihedrals.N}')
-        print("\nDouble-check the number of Bonds/Angles/Dihedrals.\n"
-            "Especially when using *.tpr topologies and SETTLE constraints.\n") 
+        print(f"#Particles:  {snap.particles.N}")
+        print(f"#Bonds:      {snap.bonds.N}")
+        print(f"#Angles:     {snap.angles.N}")
+        print(f"#Dihedrals:  {snap.dihedrals.N}")
+        print(
+            "\nDouble-check the number of Bonds/Angles/Dihedrals.\n"
+            "Especially when using *.tpr topologies and SETTLE constraints.\n"
+        )
+
+
+def _mda_check(topology, trajectory):
+    """
+    Validate an MDAnalysis topology/trajectory pair for conversion.
+
+    This function attempts to load the provided topology and trajectory files
+    using MDAnalysis and checks whether all structural requirements
+    (bonds, angles, etc.) are satisfied, depending on residue sizes.
+
+    Parameters
+    ----------
+    topology : str
+        Path to a topology file (e.g., PSF, TPR, LAMMPSDATA).
+    trajectory : str or None
+        Path to a trajectory file (e.g., DCD, XTC, TRR)
+    Returns
+    -------
+    dict
+        Dictionary with validation results containing the following keys:
+
+        - ``valid_topology`` : bool
+          Topology could be loaded.
+        - ``need_bonds`` : bool
+          True if bonds are required (residue size >= 2).
+        - ``need_angles`` : bool
+          True if angles are required (residue size >= 3).
+        - ``has_bonds`` : bool
+          True if bonds are present in the topology.
+        - ``has_angles`` : bool
+          True if angles are present in the topology.
+        - ``valid_trajectory`` : bool
+          Trajectory could be loaded.
+        - ``match`` : bool
+          Number of atoms in trajectory matches topology.
+
+    Notes
+    -----
+    Prints warnings and error messages if requirements are not met.
+    """
+    out = {
+        "valid_topology": False,
+        "need_bonds": False,
+        "need_angles": False,
+        "has_bonds": False,
+        "has_angles": False,
+        "valid_trajectory": False,
+        "match": False,
+    }
+
+    if not topology:
+        print("Please provide a Topology File")
+        return out
+
+    # Load topology only
+    try:
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message=r"No coordinate reader found for .*",
+                category=UserWarning,
+            )
+            u_top = mda.Universe(topology=topology)
+        out["valid_topology"] = True
+    except FileNotFoundError as e:
+        print("Topology not found")
+        print(e)
+        return out
+
+    # --- Decide requirements based on residue sizes
+    max_atoms_in_residue = max((len(res.atoms) for res in u_top.residues), default=0)
+    out["need_bonds"] = max_atoms_in_residue >= 2
+    out["need_angles"] = max_atoms_in_residue >= 3
+
+    # --- Check what's present
+    if out["need_bonds"]:
+        try:
+            out["has_bonds"] = len(u_top.bonds) > 0
+        except NoDataError as e:
+            print("No Bonds detected in Topology with Residues with multiple Atoms")
+            print(e)
+    if out["need_angles"]:
+        try:
+            out["has_angles"] = len(u_top.angles) > 0
+        except NoDataError as e:
+            print("No Angles detected in Topology with Residues with 3 or more Atoms")
+            print(e)
+    # --- Trajectory check
+    if trajectory:
+        try:
+            n_top = u_top.atoms.n_atoms
+            try:
+                u_top.load_new(trajectory)  # reuse same Universe
+            except TypeError:
+                u_top = mda.Universe(topology, trajectory, format="LAMMPSDUMP")
+            out["valid_trajectory"] = True
+            out["match"] = u_top.atoms.n_atoms == n_top
+        except (OSError, ValueError) as e:
+            print("The Trajectory does not match the Topology")
+            print(e)
+
+    else:
+        print("Please provide a Trajectory File")
+    return out
+
+
+def _requirements_met(out):
+    ok = out["valid_topology"]
+    if out["need_bonds"]:
+        ok = ok and out["has_bonds"]
+    if out["need_angles"]:
+        ok = ok and out["has_angles"]
+    ok = ok and out["valid_trajectory"] and out["match"]
+    return ok
