@@ -14,6 +14,10 @@ authors:
     orcid: 0009-0008-1476-1237
     equal-contrib: false
     affiliation: 1
+  - name: Marjan Albooyeh
+    orcid: 0009-0001-9565-3076
+    equal-contrib: false
+    affiliation: 2
   - name: Clare M$^c$Cabe
     orcid: 0000-0002-3267-1410
     corresponding: true
@@ -23,7 +27,7 @@ affiliations:
    index: 1
  - name: Micron School of Material Science and Engineering, Boise State University, Boise, Idaho, United States
    index: 2
-date: 10 September 2025
+date: 11 September 2025
 bibliography: paper.bib
 ---
 
@@ -36,6 +40,7 @@ The package offers a user-friendly, Python-native API, eliminating the need for 
 The intuitive API enables streamlined workflows for creating a set of forces in series--such as bond stretching, bending, torsions, and non-bonded pairs--that together make a complete coarse-grained force field.
 `msibi` is ultimately simulation engine agnostic, but uses the HOOMD-Blue simulation engine [@Anderson2020hoomd] under-the-hood to perform iterative coarse-grained simulations.
 This means that `msibi` can utilize graphical processing unit (GPU) acceleration without requiring users to manually compile GPU compatible code.
+
 
 # Statement of need
 
@@ -63,14 +68,15 @@ This includes LAMMPS [@Thompson2022], Gromacs [@Van2005], and HOOMD-Blue [@Ander
 It is required that the target trajectories are converted to the [gsd](https://gsd.readthedocs.io/en/v4.0.0/) file format, which is the native file format for HOOMD-Blue.
 `msibi` includes a utility function that converts trajectory files from LAMMPS, Gromacs, and CHARMM into the gsd file format.
 
+
 # Using MSIBI
 
 `msibi` contains three primary classes:
 
 1) **msibi.state.State:**
-Encapsulates state-point information such as target trajectories, temperature, weighting factor and sampling parameters.
+This class encapsulates state-point information such as target trajectories, temperature, weighting factor and sampling parameters.
 Multiple instances of this class can be created, and each is used in deriving the final CG force field.
-All instances of this class automatically calls HOOMD-Blue to run its own query simulation.
+All instances of this class automatically calls HOOMD-Blue to run its own query simulation using the state specific parameters.
 
 2) **msibi.force.Force:**
 The base class from which all force types in `msibi` inherit from:
@@ -79,19 +85,20 @@ The base class from which all force types in `msibi` inherit from:
     - **msibi.force.Pair**
     - **msibi.force.Dihedral**
 
-Any number and combination of forces can be created and used in optimizaiton simulations, although only one type (i.e., `Bond`, `Angle`, etc..) can be optimized at once.
+Any number and combination of forces can be created and used in optimizaiton simulations, although only one type (i.e., `Bond`, `Angle`, etc.) can be optimized at once.
 Forces can be set to be optimied, or set to be held static.
 In either case, multiple methods to set their force parameters are available.
 For example, `Force.set_from_file` and `Force.set_polynomial` create table potentials that are mutable if needed.
 On the other hand, `Force.set_harmonic` creates a static, immutable force, which can be used for fitting a simple CG force to a harmonic function, a common practice in IBI and MSIBI
 
 3) **msibi.optimize.MSIBI:**
-Acts as the context management class that orechestrates optimizaiton iterations and ensures the correct interactions are updated.
-A single instance of this class is needed, and all instances of **msibi.state.State** and **msibi.force.Force** are attached to this instance before optimizaitons are ran.
-This class also stores general simulation parameters such as time step, neighbor list, exclusions, thermostat and trajectory write-out frequency.
+This class acts as the context manager that orechestrates optimizaiton iterations and ensures the correct interactions are updated.
+A single instance of this class is needed, and all instances of **msibi.state.State** and **msibi.force.Force** are attached to it before optimizaitons are ran.
+This class also stores global simulation parameters such as timestep, neighbor list, exclusions, thermostat and trajectory write-out frequency.
 
 
 # Availability
+
 `msibi` is open-source and freely available under the MIT License on [GitHub](https://github.com/mosdef-hub/msibi).
 For installation instructions, and Python API documentation visit the [documentation](https://msibi.readthedocs.io/en/latest/).
 For examples of how to use `msibi`, visit the [tutorials](https://msibi.readthedocs.io/en/latest/tutorials.html).
