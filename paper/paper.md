@@ -91,10 +91,6 @@ A single instance of this class is needed, and all instances of **msibi.state.St
 This class also stores general simulation parameters such as time step, neighbor list, exclusions, thermostat and trajectory write-out frequency.
 
 
-Forces can be set and held fixed, or set and updated. This is key for building up towards a complete CG forcefeidl (intermolecular and intramolecular)
-but also makes it possible to mix CG models. For example, learning the CG forces for a solvent molecule once, then using that to derive solvent-solute
-non-bonded pair potentials for any number of solutes.
-
 # Availability
 `msibi` is open-source and freely available under the MIT License on [GitHub](https://github.com/mosdef-hub/msibi).
 For installation instructions, and Python API documentation visit the [documentation](https://msibi.readthedocs.io/en/latest/).
