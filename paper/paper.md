@@ -93,11 +93,11 @@ This converter utility relies on the MDAnalysis package [@Naughton2022] as a bac
     Users can create any number and combination of forces for optimization simulations, though only one force type (e.g., Bond, Angle) can be optimized at a time.
     There are multiple options for setting the parameters for a **Force** instance:
 
-- **Force.set_from_file:** Creates a tabulated force from a `.csv` file. This is useful for setting a previously optimized CG force while learning another.
+    - **Force.set_from_file:** Creates a tabulated force from a `.csv` file. This is useful for setting a previously optimized CG force while learning another.
 
-- **Force.set_polynomial:** Creates a tabulated force from a polynomial function. This is helpful to setting initial guess forces, especially for distributions with multiple peaks.
+    - **Force.set_polynomial:** Creates a tabulated force from a polynomial function. This is helpful to setting initial guess forces, especially for distributions with multiple peaks.
 
-- **Force.set_harmonic:** Creates a static, immutable harmonic force (not tabulated). This is useful for setting force parameters for distributions that are easily described by a harmonic function.
+    - **Force.set_harmonic:** Creates a static, immutable harmonic force (not tabulated). This is useful for setting force parameters for distributions that are easily described by a harmonic function.
 
 
 3. **msibi.optimize.MSIBI:** This class acts as the context manager that orechestrates optimizaiton iterations and ensures the correct interactions are updated.
