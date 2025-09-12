@@ -4,7 +4,7 @@
 ----------------------------------------
 [![pytest](https://github.com/mosdef-hub/msibi/actions/workflows/CI.yaml/badge.svg)](https://github.com/mosdef-hub/msibi/actions/workflows/CI.yaml)
 [![codecov](https://codecov.io/gh/mosdef-hub/msibi/branch/main/graph/badge.svg?token=7NFPBMBN0I)](https://codecov.io/gh/mosdef-hub/msibi)
-[![Anaconda-Server Badge](https://anaconda.org/conda-forge/msibi/badges/version.svg)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/msibi/badges/version.svg)](https://anaconda.org/conda-forge/msibi)
 [![Citing MSIBI](https://img.shields.io/badge/DOI-10.1063%2F1.4880555-blue.svg)](http://dx.doi.org/10.1063/1.4880555)
 
 A package to help you manage and run coarse-grain potential optimizations using multistate iterative Boltzmann inversion.
