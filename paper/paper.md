@@ -46,7 +46,7 @@ Molecular dynamics (MD) simulations are computationally expensive and scale poor
 As a result, atomistic MD simulations of complex systems such as polymers and biomolecules become prohibitively expensive, especially as their relevant length and time scales often surpass micrometers and microseconds.
 Coarse-graining (CG) is a commonly adopted solution to this challenge, as it reduces computational cost by grouping—or mapping—atoms into a single, larger bead [@Joshi2021].
 However, this approach introduces two challenges: first, the potential energy surface for a given chemistry and CG mapping is not known a priori, and
-second, as the mapping used is arbitrary, with multiple valid options, development of a single CG force field that is transferable across various mapping choices is not possible.
+second, as the mapping used is arbitrary, with multiple valid options, developing a single CG force field that is transferable across various mapping choices is not possible.
 Consequently, developing a CG force field is required each time a new under-lying chemistry or mapping is chosen.
 IBI and MSIBI are popular choices for deriving CG forces for polymers and biomolecules [@Carbone2008, @Moore2016, @Jones2025, @Tang2023, @Fritz2009].
 While these methods are widely used, open-source software tools that provide an accessible and reproducible, end-to-end workflow for IBI and MSIBI remain limited, especially for arbitrary mappings and multi-state systems.
