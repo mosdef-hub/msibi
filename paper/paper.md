@@ -74,10 +74,10 @@ This converter utility relies on the MDAnalysis package [@Naughton2022] as a bac
 
 `msibi` contains three primary classes:
 
-## 1. **msibi.state.State:** This class encapsulates state-point information such as target trajectories, temperature, weighting factor and sampling parameters.
-
-    Multiple instances of this class can be created, and each is used in deriving the final CG force field.
-    All instances of this class automatically call HOOMD-Blue to run its own query simulation using the state specific parameters.
+## 1. **msibi.state.State:**
+This class encapsulates state-point information such as target trajectories, temperature, weighting factor and sampling parameters.
+Multiple instances of this class can be created, and each is used in deriving the final CG force field.
+All instances of this class automatically call HOOMD-Blue to run its own query simulation using the state specific parameters.
 
 ## 2. **msibi.force.Force:**
 The base class from which all force types in `msibi` inherit from:
