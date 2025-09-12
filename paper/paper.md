@@ -6,21 +6,22 @@ tags:
   - molecular dynamics
   - coarse-graining
 authors:
-  - name: Chris Jones
+  - name: Chris D. Jones
     orcid: 0000-0002-6196-5274
-    equal-contrib: true
     affiliation: 1
+    corresponding: true
   - name: Mazin Almarashi
     orcid: 0009-0008-1476-1237
-    equal-contrib: false
     affiliation: 1
   - name: Marjan Albooyeh
     orcid: 0009-0001-9565-3076
-    equal-contrib: false
     affiliation: 2
-  - name: Clare M$^c$Cabe
+  - name: Eric Jankowski
     orcid: 0000-0002-3267-1410
     corresponding: true
+    affiliation: 2
+  - name: Clare McCabe
+    orcid: 0000-0002-8552-9135
     affiliation: 1
 affiliations:
  - name: School of Engineering and Physical Sciences, Heriot-Watt University, Edinburgh, Scotland, United Kingdom
@@ -46,15 +47,15 @@ Molecular dynamics (MD) simulations are computationally expensive and scale poor
 As a result, atomistic MD simulations of complex systems such as polymers and biomolecules become prohibitively expensive, especially as their relevant length and time scales often surpass micrometers and microseconds.
 Coarse-graining (CG) is a commonly adopted solution to this challenge, as it reduces computational cost by grouping—or mapping—atoms into a single, larger bead [@Joshi2021].
 However, this approach introduces two challenges: first, the potential energy surface for a given chemistry and CG mapping is not known a priori, and
-second, as the mapping used is arbitrary, with multiple valid options, development of a single CG force field that is transferable across various mapping choices is not possible.
+second, as the mapping used is arbitrary, with multiple valid options, developing a single CG force field that is transferable across various mapping choices is not possible.
 Consequently, developing a CG force field is required each time a new under-lying chemistry or mapping is chosen.
-IBI and MSIBI are popular choices for deriving CG forces for polymers and biomolecules [@Carbone2008, @Moore2016, @Jones2025, @Tang2023, @Fritz2009].
+IBI and MSIBI are popular choices for deriving CG forces for polymers and biomolecules [@Carbone2008; @Moore2016; @Jones2025; @Tang2023; @Fritz2009].
 While these methods are widely used, open-source software tools that provide an accessible and reproducible, end-to-end workflow for IBI and MSIBI remain limited, especially for arbitrary mappings and multi-state systems.
 
 The MARTINI force field is a widely adopted CG model focusing on biomolecular and soft matter systems [@Martini2007].
 However, it utilizes standardized mapping and bead definitions, which ensure transferability but also constrain users to predefined choices of chemistry and resolution.
 Similarly, VOTCA offers a robust implementation of IBI—among several other features—and is widely used in the community [@Baumeier2024].
-However, its workflow relies on manual management of multiple input files and bash operations, which can introduce operational complexity that reduces reproducibility and usability [@Cummings_2020, @Jankowski2019].
+However, its workflow relies on manual management of multiple input files and bash operations, which can introduce operational complexity that reduces reproducibility and usability [@Cummings_2020; @Jankowski2019].
 Additionally, VOTCA's implementation of IBI does not natively support inclusion and weighting of multiple state points.
 
 Here, `msibi` is designed to execute successive CG force optimizations in series, where the learned force from the previous optimization is included and held fixed while the next force is optimized.
@@ -99,21 +100,21 @@ These methods enable users to combine learned and static forces and include them
 3. Set up and run a new instance where `Bond.set_harmonic()` and `Angle.set_from_file()` create static intra-molecular forces and learn a non-bonded force.
 
 ## 3. **msibi.optimize.MSIBI:**
-This class serves as the context manager for orchestrating optimization iterations and ensures the correct interactions are updated.
+This class serves as the context manager for orchestrating optimization iterations and ensures the correct forces are updated.
 A single instance of this class is needed, and all instances of **msibi.state.State** and **msibi.force.Force** are attached to it before optimizaitons begin.
 This class also stores global simulation parameters such as timestep, neighbor list, exclusions, thermostat and trajectory write-out frequency.
 
 ### Primary methods
-- `MSIBI.add_state` and `MSIBI.add_force:` Handle data management between states and forces.
-- `MSIBI.run_optimization`: Runs iterative simulations and updates for all instances of `msibi.force.Force` being optimized.
+- **MSIBI.add_state** and **MSIBI.add_force:** Handle data management between states and forces.
+- **MSIBI.run_optimization**: Runs iterative simulations and updates for all instances of `msibi.force.Force` being optimized.
 
 The `run_optimization` method is designed for flexibility.
 It can be called multiple times, resuming from the last iteration.
 This enables use in:
 
-- While loops: Run single iterations until a convergence criterion is met.
+- while loops: Run single iterations until a convergence criterion is met.
 
-- For loops: Perform operations between batches of iterations. For example:
+- for loops: Perform operations between batches of iterations. For example:
     - Smoothing the force
     - Adjusting state-point weighting
     - Modifying simulation criteria (e.g., extending optimization simulations as the force stabilizes).

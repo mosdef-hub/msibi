@@ -7,6 +7,8 @@
 .DS_Store
 *.egg-info
 *.idea/
+*.pdf
+paper/jats
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
