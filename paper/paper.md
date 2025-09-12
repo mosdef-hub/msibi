@@ -9,15 +9,19 @@ authors:
   - name: Chris D. Jones
     orcid: 0000-0002-6196-5274
     affiliation: 1
+    corresponding: true
   - name: Mazin Almarashi
     orcid: 0009-0008-1476-1237
     affiliation: 1
   - name: Marjan Albooyeh
     orcid: 0009-0001-9565-3076
     affiliation: 2
-  - name: Clare McCabe
+  - name: Eric Jankowski
     orcid: 0000-0002-3267-1410
     corresponding: true
+    affiliation: 2
+  - name: Clare McCabe
+    orcid: 0000-0002-8552-9135
     affiliation: 1
 affiliations:
  - name: School of Engineering and Physical Sciences, Heriot-Watt University, Edinburgh, Scotland, United Kingdom
@@ -96,21 +100,21 @@ These methods enable users to combine learned and static forces and include them
 3. Set up and run a new instance where `Bond.set_harmonic()` and `Angle.set_from_file()` create static intra-molecular forces and learn a non-bonded force.
 
 ## 3. **msibi.optimize.MSIBI:**
-This class serves as the context manager for orchestrating optimization iterations and ensures the correct interactions are updated.
+This class serves as the context manager for orchestrating optimization iterations and ensures the correct forces are updated.
 A single instance of this class is needed, and all instances of **msibi.state.State** and **msibi.force.Force** are attached to it before optimizaitons begin.
 This class also stores global simulation parameters such as timestep, neighbor list, exclusions, thermostat and trajectory write-out frequency.
 
 ### Primary methods
-- `MSIBI.add_state` and `MSIBI.add_force:` Handle data management between states and forces.
-- `MSIBI.run_optimization`: Runs iterative simulations and updates for all instances of `msibi.force.Force` being optimized.
+- **MSIBI.add_state** and **MSIBI.add_force:** Handle data management between states and forces.
+- **MSIBI.run_optimization**: Runs iterative simulations and updates for all instances of `msibi.force.Force` being optimized.
 
 The `run_optimization` method is designed for flexibility.
 It can be called multiple times, resuming from the last iteration.
 This enables use in:
 
-- While loops: Run single iterations until a convergence criterion is met.
+- while loops: Run single iterations until a convergence criterion is met.
 
-- For loops: Perform operations between batches of iterations. For example:
+- for loops: Perform operations between batches of iterations. For example:
     - Smoothing the force
     - Adjusting state-point weighting
     - Modifying simulation criteria (e.g., extending optimization simulations as the force stabilizes).
