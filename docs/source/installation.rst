@@ -4,7 +4,7 @@ Installation
 
 These examples use the `anaconda package manager <https://www.anaconda.com/download>`_.
 
-Install from anaconda (Coming Soon)
+Install from anaconda
 ---------------------------------------
 
 msibi is available on `conda-forge <https://anaconda.org/conda-forge/msibi>`_

@@ -47,8 +47,6 @@ class MSIBI(object):
         The time step delta.
     gsd_period : int
         The number of frames between snapshots written to query.gsd.
-    n_steps : int
-        How many steps to run the query simulations.
     nlist_exclusions : list of str, default = ["1-2", "1-3"]
         Sets the pair exclusions used during the optimization simulations.
     seed : int, default=42
@@ -265,6 +263,7 @@ class MSIBI(object):
                 angle_force.params[angle.name] = angle._table_entry()
             else:
                 angle_force.params[angle.name] = angle.force_entry
+
         # Create dihedral objects
         dihedral_force = None
         for dih in self.dihedrals:

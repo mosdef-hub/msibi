@@ -1,17 +1,18 @@
-<img src="/docs/images/msibi.png" height="300">
+<img src="/docs/images/msibi.png" height="250">
 
 # MultiState Iterative Boltzmann Inversion (MS-IBI)
 ----------------------------------------
 [![pytest](https://github.com/mosdef-hub/msibi/actions/workflows/CI.yaml/badge.svg)](https://github.com/mosdef-hub/msibi/actions/workflows/CI.yaml)
 [![codecov](https://codecov.io/gh/mosdef-hub/msibi/branch/main/graph/badge.svg?token=7NFPBMBN0I)](https://codecov.io/gh/mosdef-hub/msibi)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/msibi/badges/version.svg)
 [![Citing MSIBI](https://img.shields.io/badge/DOI-10.1063%2F1.4880555-blue.svg)](http://dx.doi.org/10.1063/1.4880555)
 
 A package to help you manage and run coarse-grain potential optimizations using multistate iterative Boltzmann inversion.
 
 ## Installing MSIBI
 
-### Install from conda-forge (Coming soon):
-```
+### Install from conda-forge:
+```bash
 mamba install -c conda-forge msibi
 ```
 
