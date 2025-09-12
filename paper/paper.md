@@ -6,19 +6,16 @@ tags:
   - molecular dynamics
   - coarse-graining
 authors:
-  - name: Chris Jones
+  - name: Chris D. Jones
     orcid: 0000-0002-6196-5274
-    equal-contrib: true
     affiliation: 1
   - name: Mazin Almarashi
     orcid: 0009-0008-1476-1237
-    equal-contrib: false
     affiliation: 1
   - name: Marjan Albooyeh
     orcid: 0009-0001-9565-3076
-    equal-contrib: false
     affiliation: 2
-  - name: Clare M$^c$Cabe
+  - name: Clare McCabe
     orcid: 0000-0002-3267-1410
     corresponding: true
     affiliation: 1
@@ -48,13 +45,13 @@ Coarse-graining (CG) is a commonly adopted solution to this challenge, as it red
 However, this approach introduces two challenges: first, the potential energy surface for a given chemistry and CG mapping is not known a priori, and
 second, as the mapping used is arbitrary, with multiple valid options, developing a single CG force field that is transferable across various mapping choices is not possible.
 Consequently, developing a CG force field is required each time a new under-lying chemistry or mapping is chosen.
-IBI and MSIBI are popular choices for deriving CG forces for polymers and biomolecules [@Carbone2008, @Moore2016, @Jones2025, @Tang2023, @Fritz2009].
+IBI and MSIBI are popular choices for deriving CG forces for polymers and biomolecules [@Carbone2008; @Moore2016; @Jones2025; @Tang2023; @Fritz2009].
 While these methods are widely used, open-source software tools that provide an accessible and reproducible, end-to-end workflow for IBI and MSIBI remain limited, especially for arbitrary mappings and multi-state systems.
 
 The MARTINI force field is a widely adopted CG model focusing on biomolecular and soft matter systems [@Martini2007].
 However, it utilizes standardized mapping and bead definitions, which ensure transferability but also constrain users to predefined choices of chemistry and resolution.
 Similarly, VOTCA offers a robust implementation of IBI—among several other features—and is widely used in the community [@Baumeier2024].
-However, its workflow relies on manual management of multiple input files and bash operations, which can introduce operational complexity that reduces reproducibility and usability [@Cummings_2020, @Jankowski2019].
+However, its workflow relies on manual management of multiple input files and bash operations, which can introduce operational complexity that reduces reproducibility and usability [@Cummings_2020; @Jankowski2019].
 Additionally, VOTCA's implementation of IBI does not natively support inclusion and weighting of multiple state points.
 
 Here, `msibi` is designed to execute successive CG force optimizations in series, where the learned force from the previous optimization is included and held fixed while the next force is optimized.
