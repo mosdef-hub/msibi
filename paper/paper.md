@@ -35,7 +35,7 @@ bibliography: paper.bib
 
 Iterative Boltzmann inversion (IBI) is a well-established, and widely used, method for deriving coarse-grained force fields that recreate the structrual distributions of an underlying atomistic model.
 Multiple state IBI (MSIBI) as introduced by Moore et al. [@Moore2014], addressse state-point transerability limitations of IBI by including distributions from multiple state points to inform the derived coarse-grained force field.
-Here, we introduce `msibi`, a pure python package that implements the MSIBI method for deriving coarse-grain molecular dynamics potentials for both intramolecular and intermolecular interactions.
+Here, we introduce `msibi`, a pure python package that implements the MSIBI method for deriving coarse-grain molecular dynamics force fields for both intramolecular and intermolecular interactions.
 The package offers a user-friendly, Python-native API, eliminating the need for bash scripting and manual editing of multiple input files.
 The intuitive API enables streamlined workflows for creating a set of forces in series--such as bond stretching, bending, torsions, and non-bonded pairs--that together make a complete coarse-grained force field.
 `msibi` is ultimately simulation engine agnostic, but uses the HOOMD-Blue simulation engine [@Anderson2020hoomd] under-the-hood to perform iterative coarse-grained simulations.
@@ -100,12 +100,12 @@ There are multiple methods for defining the parameters of a `msibi.force.Force` 
 These methods enable users to combine learned and static forces and include them in series resulting in a single CG force field. For example:
 
 1. Fit a bond-stretching force to a simple distribution and set the force using `Bond.set_harmonic()`.
-2. With the bond-stretching force included and held static (step 1), run `msibi` to learn bond-angle forces, resulting in a tabulated potential stored in a `.csv` file.
+2. With the bond-stretching force included and held static (step 1), run `msibi` to learn bond-angle forces, resulting in a tabulated force stored in a `.csv` file.
 3. Set up and run a new instance where `Bond.set_harmonic()` and `Angle.set_from_file()` create static intra-molecular forces and learn a non-bonded force.
 
 ## 3. **msibi.optimize.MSIBI:**
-This class serves as the context manager that orechestrates optimizaiton iterations and ensures the correct interactions are updated.
-A single instance of this class is needed, and all instances of **msibi.state.State** and **msibi.force.Force** are attached to it before optimizaitons are ran.
+This class serves as the context manager for orchestrating optimization iterations and ensures the correct interactions are updated.
+A single instance of this class is needed, and all instances of **msibi.state.State** and **msibi.force.Force** are attached to it before optimizaitons begin.
 This class also stores global simulation parameters such as timestep, neighbor list, exclusions, thermostat and trajectory write-out frequency.
 
 ### Primary methods
@@ -118,7 +118,7 @@ This enables use in:
 
 - While loops: Run single iterations until a convergence criterion is met.
 
-- For loops: Perform operations between iterations. For example:
+- For loops: Perform operations between batches iterations. For example:
     - Smoothing the force
     - Adjusting state-point weighting
     - Modifying simulation criteria (e.g., extending optimization simulations as the force stabilizes).
