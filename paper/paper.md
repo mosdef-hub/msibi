@@ -76,8 +76,8 @@ This converter utility relies on the MDAnalysis package [@Naughton2022] as a bac
 
 1. **msibi.state.State:** This class encapsulates state-point information such as target trajectories, temperature, weighting factor and sampling parameters.
 
-Multiple instances of this class can be created, and each is used in deriving the final CG force field.
-All instances of this class automatically call HOOMD-Blue to run its own query simulation using the state specific parameters.
+    Multiple instances of this class can be created, and each is used in deriving the final CG force field.
+    All instances of this class automatically call HOOMD-Blue to run its own query simulation using the state specific parameters.
 
 
 2. **msibi.force.Force:** The base class from which all force types in `msibi` inherit from:
@@ -90,8 +90,8 @@ All instances of this class automatically call HOOMD-Blue to run its own query s
 
 - **msibi.force.Dihedral**
 
-Users can create any number and combination of forces for optimization simulations, though only one force type (e.g., Bond, Angle) can be optimized at a time.
-There are multiple options for setting the parameters for a **Force** instance:
+    Users can create any number and combination of forces for optimization simulations, though only one force type (e.g., Bond, Angle) can be optimized at a time.
+    There are multiple options for setting the parameters for a **Force** instance:
 
 - **Force.set_from_file:** Creates a tabulated force from a `.csv` file. This is useful for setting a previously optimized CG force while learning another.
 
@@ -102,8 +102,8 @@ There are multiple options for setting the parameters for a **Force** instance:
 
 3. **msibi.optimize.MSIBI:** This class acts as the context manager that orechestrates optimizaiton iterations and ensures the correct interactions are updated.
 
-A single instance of this class is needed, and all instances of **msibi.state.State** and **msibi.force.Force** are attached to it before optimizaitons are ran.
-This class also stores global simulation parameters such as timestep, neighbor list, exclusions, thermostat and trajectory write-out frequency.
+    A single instance of this class is needed, and all instances of **msibi.state.State** and **msibi.force.Force** are attached to it before optimizaitons are ran.
+    This class also stores global simulation parameters such as timestep, neighbor list, exclusions, thermostat and trajectory write-out frequency.
 
 The [repository](https://github.com/mosdef-hub/msibi) and [documentation](https://msibi.readthedocs.io/en/latest/) contain quick examples of how these classes can be instantiated and collected by the management class before running optimization.
 
