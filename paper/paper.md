@@ -37,28 +37,28 @@ Iterative Boltzmann inversion (IBI) is a well-established, and widely used, meth
 Multiple state IBI (MSIBI) as introduced by Moore et al. [@Moore2014], addresses state-point transferability limitations of IBI by including distributions from multiple state points to inform the derived CG force field.
 Here, we introduce `msibi`, a pure python package that implements the MSIBI method for creating CG force fields for both intramolecular and intermolecular interactions.
 The package offers a user-friendly, Python-native API, eliminating the need for bash scripting and manual editing of multiple input files.
-`msibi` is ultimately simulation engine agnostic, but uses the HOOMD-Blue simulation engine [@Anderson2020hoomd] under-the-hood to perform iterative coarse-grained simulations.
-This means that `msibi` can utilize graphical processing unit (GPU) acceleration without requiring users to manually compile GPU compatible code.
+`msibi` is ultimately simulation engine agnostic, but uses the HOOMD-Blue simulation engine [@Anderson2020hoomd] under-the-hood to perform iterative CG model simulations.
+This allows `msibi` to utilize graphical processing unit (GPU) acceleration without requiring users to manually compile GPU compatible code.
 
 # Statement of need
 
-Molecular dynamics (MD) simulations are computationally intensive and scale poorly with the number of particles simulated, which limits accessible time and length scales.
+Molecular dynamics (MD) simulations are computationally intensive and scale poorly with the number of particles in the system, which limits accessible time and length scales.
 As a result, atomistic MD simulations of complex systems such as polymers and biomolecules become prohibitively expensive, especially as their relevant length and time scales often surpass micrometers and microseconds.
 Coarse-graining (CG) is a commonly adopted solution to this challenge, as it reduces computational cost by grouping—or mapping—atoms into a single, larger bead [@Joshi2021].
 However, this approach introduces two challenges: first, the potential energy surface for a given chemistry and CG mapping is not known a priori, and
 second, as the mapping used is arbitrary, with multiple valid options, developing a single CG force field that is transferable across various mapping choices is not possible.
-Consequently, developing a CG force field is required each time a new under-lying chemistry or mapping is required.
+Consequently, developing a CG force field is required each time a new under-lying chemistry or mapping is used.
 IBI and MSIBI are popular choices for deriving CG forces for polymers and biomolecules [@Carbone2008; @Moore2016; @Jones2025; @Tang2023; @Fritz2009].
-While these methods are widely used, open-source software tools that provide an accessible and reproducible, end-to-end workflow for IBI and MSIBI remain limited, especially for arbitrary mappings and multi-state systems.
+While these methods are frequently used, open-source software tools that provide an accessible and reproducible, end-to-end workflow for IBI and MSIBI remain limited, especially for arbitrary mappings and multi-state systems.
 
 The MARTINI force field is a widely adopted CG model focusing on biomolecular and soft matter systems [@Martini2007].
 However, it utilizes standardized mapping and bead definitions, which ensure transferability but also constrain users to predefined choices of chemistry and resolution.
-Similarly, VOTCA offers a robust implementation of IBI—among several other features—and is widely used in the community [@Baumeier2024].
+VOTCA offers a robust implementation of IBI—among several other features—and is also widely used in the community [@Baumeier2024].
 However, its workflow relies on manual management of multiple input files and bash operations, which can introduce operational complexity that reduces reproducibility and usability [@Cummings_2020; @Jankowski2019].
 Additionally, VOTCA's implementation of IBI does not natively support inclusion and weighting of multiple state points.
 
 Here, `msibi` adds support for multiple state points, and is designed to easily manage successive CG force optimizations in series, where the learned force from the previous optimization is included and held fixed while the next force is optimized.
-This follows best practices for deriving CG force fields via IBI and MSIBI [@Reith2003].
+This approach follows best practices for deriving CG force fields via IBI and MSIBI [@Reith2003].
 Additionally, we emphasize that `msibi` is ultimately engine agnostic: any simulation engine can be used to generate the fine-grained target structural distributions, and the CG force field produced by `msibi` is compatible with any simulation engine that supports tablulated forces.
 This includes LAMMPS [@Thompson2022], Gromacs [@Van2005], and HOOMD-Blue [@Anderson2020hoomd], among others.
 It is required that the target trajectories are converted to the [gsd](https://gsd.readthedocs.io/en/v4.0.0/) file format, which is the native file format for HOOMD-Blue.
