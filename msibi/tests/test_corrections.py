@@ -44,6 +44,7 @@ def test_harmonic_bonded_correction():
         fit_window_size=15,
         head_correction_func=harmonic,
         tail_correction_func=harmonic,
+        maxfev=1000,
         smoothing_order=None,
         smoothing_window=None,
     )
@@ -63,6 +64,7 @@ def test_linear_bonded_correction():
         x=x,
         V=V_missing,
         fit_window_size=15,
+        maxfev=1000,
         head_correction_func=linear,
         tail_correction_func=linear,
         smoothing_order=None,
@@ -90,6 +92,7 @@ def test_exponential_bonded_correction():
         x=x,
         V=V_missing,
         fit_window_size=15,
+        maxfev=1000,
         head_correction_func=exponential,
         tail_correction_func=exponential,
         smoothing_order=None,
@@ -114,6 +117,7 @@ def test_pair_tail_corrections():
         V=V,
         fit_window_size=10,
         r_switch=2,
+        maxfev=1000,
         smoothing_window=None,
         smoothing_order=None,
         head_correction_func=exponential,
@@ -132,6 +136,7 @@ def test_pair_no_tail_corrections():
         r_switch=None,
         smoothing_window=None,
         smoothing_order=None,
+        maxfev=1000,
         head_correction_func=exponential,
     )
     assert np.array_equal(V, V_corrected)

@@ -73,8 +73,10 @@ class Force:
         The window size (number of data points) to use when fitting
         the iterative potential to head and tail correction forms.
         This is only used when the Force is set to be optimized.
-    max_ev : int, optional
-
+    maxfev : int, optional
+        Sets the maximum number of attemps when using scipy.curve_fit
+        to apply head and tail corrections. Use larger values to improve
+        likelihood of successful corrections, but this may slow performance.
     correction_form: Callable, optional
         The type of correciton form to apply to the potential.
         This is only used when the Force is set to be optimized.
@@ -92,6 +94,7 @@ class Force:
         smoothing_window: Optional[int] = None,
         smoothing_order: Optional[int] = None,
         correction_fit_window: Optional[int] = None,
+        maxfev: Optional[int] = 1000,
         correction_form: Optional[Callable] = None,
     ):
         if optimize and not nbins or optimize and nbins <= 0:
@@ -103,6 +106,7 @@ class Force:
         self.optimize = optimize
         self._nbins = nbins
         self.correction_fit_window = correction_fit_window if optimize else None
+        self.maxfev = int(maxfev)
         self.correction_form = correction_form
         self._smoothing_window = smoothing_window if optimize else None
         self._smoothing_order = smoothing_order if optimize else None
@@ -699,6 +703,7 @@ class Force:
                 smoothing_window=self.smoothing_window,
                 smoothing_order=self.smoothing_order,
                 fit_window_size=self.correction_fit_window,
+                maxfev=self.maxfev,
                 head_correction_func=self.correction_form,
             )
         else:  # Bonded force, use correction form on both head and tail of potential
@@ -708,6 +713,7 @@ class Force:
                 smoothing_window=self.smoothing_window,
                 smoothing_order=self.smoothing_order,
                 fit_window_size=self.correction_fit_window,
+                maxfev=self.maxfev,
                 head_correction_func=self.correction_form,
                 tail_correction_func=self.correction_form,
             )
@@ -751,6 +757,10 @@ class Bond(Force):
         The window size (number of data points) to use when fitting
         the iterative potential to head and tail correction forms.
         This is only used when the Force is set to be optimized.
+    maxfev : int, optional
+        Sets the maximum number of attemps when using scipy.curve_fit
+        to apply head and tail corrections. Use larger values to improve
+        likelihood of successful corrections, but this may slow performance.
     correction_form: Callable, default=msibi.utils.corrections.harmonic
         The type of correciton form to apply to the potential.
         This is only used when the Force is set to be optimized.
@@ -766,6 +776,7 @@ class Bond(Force):
         smoothing_window: Optional[int] = None,
         smoothing_order: Optional[int] = None,
         correction_fit_window: Optional[int] = None,
+        maxfev: Optional[int] = 1e3,
         correction_form: Callable = harmonic,
     ):
         self.type1, self.type2 = sorted([type1, type2], key=natural_sort)
@@ -777,6 +788,7 @@ class Bond(Force):
             smoothing_window=smoothing_window,
             smoothing_order=smoothing_order,
             correction_fit_window=correction_fit_window,
+            maxfev=maxfev,
             correction_form=correction_form,
         )
         if self.optimize:
@@ -888,6 +900,10 @@ class Angle(Force):
         The window size (number of data points) to use when fitting
         the iterative potential to head and tail correction forms.
         This is only used when the Force is set to be optimized.
+    maxfev : int, optional
+        Sets the maximum number of attemps when using scipy.curve_fit
+        to apply head and tail corrections. Use larger values to improve
+        likelihood of successful corrections, but this may slow performance.
     correction_form: Callable, default=msibi.utils.corrections.harmonic
         The type of correciton form to apply to the potential.
         This is only used when the Force is set to be optimized.
@@ -904,6 +920,7 @@ class Angle(Force):
         smoothing_window: Optional[int] = None,
         smoothing_order: Optional[int] = None,
         correction_fit_window: Optional[int] = None,
+        maxfev: Optional[int] = 1e3,
         correction_form: Callable = harmonic,
     ):
         self.type1 = type1
@@ -917,6 +934,7 @@ class Angle(Force):
             smoothing_window=smoothing_window,
             smoothing_order=smoothing_order,
             correction_fit_window=correction_fit_window,
+            maxfev=maxfev,
             correction_form=correction_form,
         )
         if self.optimize:
@@ -1034,6 +1052,10 @@ class Pair(Force):
         The window size (number of data points) to use when fitting
         the iterative potential to head and tail correction forms.
         This is only used when the Force is set to be optimized.
+    maxfev : int, optional
+        Sets the maximum number of attemps when using scipy.curve_fit
+        to apply head and tail corrections. Use larger values to improve
+        likelihood of successful corrections, but this may slow performance.
     correction_form: Callable, default=msibi.utils.corrections.harmonic
         The type of correciton form to apply to the potential.
         This is only used when the Force is set to be optimized.
@@ -1051,6 +1073,7 @@ class Pair(Force):
         smoothing_window: Optional[int] = None,
         smoothing_order: Optional[int] = None,
         correction_fit_window: Optional[int] = None,
+        maxfev: Optional[int] = 1e3,
         exclude_bonded: bool = False,
         head_correction_form: Callable = exponential,
     ):
@@ -1068,6 +1091,7 @@ class Pair(Force):
             smoothing_window=smoothing_window,
             smoothing_order=smoothing_order,
             correction_fit_window=correction_fit_window,
+            maxfev=maxfev,
             correction_form=head_correction_form,
         )
         if self.optimize:
@@ -1183,6 +1207,10 @@ class Dihedral(Force):
         The window size (number of data points) to use when fitting
         the iterative potential to head and tail correction forms.
         This is only used when the Force is set to be optimized.
+    maxfev : int, optional
+        Sets the maximum number of attemps when using scipy.curve_fit
+        to apply head and tail corrections. Use larger values to improve
+        likelihood of successful corrections, but this may slow performance.
     correction_form: Callable, default=msibi.utils.corrections.harmonic
         The type of correciton form to apply to the potential.
         This is only used when the Force is set to be optimized.
@@ -1200,6 +1228,7 @@ class Dihedral(Force):
         smoothing_window: Optional[int] = None,
         smoothing_order: Optional[int] = None,
         correction_fit_window: Optional[int] = None,
+        maxfev: Optional[int] = 1e3,
         correction_form: Callable = harmonic,
     ):
         self.type1 = type1
@@ -1214,6 +1243,7 @@ class Dihedral(Force):
             smoothing_window=smoothing_window,
             smoothing_order=smoothing_order,
             correction_fit_window=correction_fit_window,
+            maxfev=maxfev,
             correction_form=correction_form,
         )
         if self.optimize:

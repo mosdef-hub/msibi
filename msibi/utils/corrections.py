@@ -47,6 +47,7 @@ def bonded_corrections(
     smoothing_window: int,
     smoothing_order: int,
     fit_window_size: int,
+    maxfev: int,
     head_correction_func: Callable,
     tail_correction_func: Callable,
 ):
@@ -104,7 +105,7 @@ def bonded_corrections(
         f=head_correction_func,
         xdata=x_head_fit,
         ydata=v_real[:fit_window_size],
-        maxfev=10000,
+        maxfev=maxfev,
     )
     x_head_missing = _shift_x(x[:head_start], origin=x_head_pivot)
     # Apply these parameters to the x-range where we are missing data
@@ -115,7 +116,7 @@ def bonded_corrections(
         f=tail_correction_func,
         xdata=x_real[-fit_window_size:],
         ydata=v_real[-fit_window_size:],
-        maxfev=10000,
+        maxfev=maxfev,
     )
     tail_pot_correction = tail_correction_func(x[tail_start + 1 :], *popt_tail)
 
@@ -133,6 +134,7 @@ def pair_corrections(
     smoothing_window: int,
     smoothing_order: int,
     fit_window_size: int,
+    maxfev: int,
     head_correction_func: Callable,
 ):
     """The default correction method for bonded forces.
@@ -180,6 +182,7 @@ def pair_corrections(
         f=head_correction_func,
         xdata=x_real[: fit_window_size + 1],
         ydata=v_real[: fit_window_size + 1],
+        maxfev=maxfev,
     )
     head_pot_correction = head_correction_func(x[:head_start], *popt_head)
 
