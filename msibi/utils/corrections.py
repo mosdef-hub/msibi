@@ -47,6 +47,7 @@ def bonded_corrections(
     smoothing_window: int,
     smoothing_order: int,
     fit_window_size: int,
+    maxfev: int,
     head_correction_func: Callable,
     tail_correction_func: Callable,
 ):
@@ -74,6 +75,9 @@ def bonded_corrections(
     V = np.copy(V)
     real_indices = _get_real_indices(V)
     v_real = np.copy(V[real_indices])
+    if len(v_real) == len(V):
+        print("No regions to account for corrections")
+        return V, None, None, None
     x_real = np.copy(x[real_indices])
     head_start = real_indices[0]
     tail_start = real_indices[-1]
@@ -85,6 +89,7 @@ def bonded_corrections(
             mode = "nearest"
         else:
             mode = "interp"
+
         v_real = savgol_filter(
             x=v_real,
             window_length=smoothing_window,
@@ -101,6 +106,7 @@ def bonded_corrections(
         f=head_correction_func,
         xdata=x_head_fit,
         ydata=v_real[:fit_window_size],
+        maxfev=maxfev,
     )
     x_head_missing = _shift_x(x[:head_start], origin=x_head_pivot)
     # Apply these parameters to the x-range where we are missing data
@@ -111,6 +117,7 @@ def bonded_corrections(
         f=tail_correction_func,
         xdata=x_real[-fit_window_size:],
         ydata=v_real[-fit_window_size:],
+        maxfev=maxfev,
     )
     tail_pot_correction = tail_correction_func(x[tail_start + 1 :], *popt_tail)
 
@@ -128,6 +135,7 @@ def pair_corrections(
     smoothing_window: int,
     smoothing_order: int,
     fit_window_size: int,
+    maxfev: int,
     head_correction_func: Callable,
 ):
     """The default correction method for bonded forces.
@@ -175,6 +183,7 @@ def pair_corrections(
         f=head_correction_func,
         xdata=x_real[: fit_window_size + 1],
         ydata=v_real[: fit_window_size + 1],
+        maxfev=maxfev,
     )
     head_pot_correction = head_correction_func(x[:head_start], *popt_head)
 
@@ -207,13 +216,21 @@ def _get_real_indices(V: np.ndarray):
     real_idx = np.where(np.isfinite(V))[0]
     # Check for continuity of real_indices:
     if not np.all(np.ediff1d(real_idx) == 1):
+        min_window = np.max(np.ediff1d(real_idx)) - 1
+        if min_window > 5:
+            raise RuntimeError(
+                "The region of undefined values within the potential is too large. "
+                "This could be the result of a sampling issue. Check the target distributions."
+            )
         start = real_idx[0]
         end = real_idx[-1]
         # Correct nans, infs that are surrounded by 2 finite numbers
         for idx, v in enumerate(V[start:end]):
             if not np.isfinite(v):
                 try:
-                    avg = (V[idx + start - 1] + V[idx + start + 1]) / 2
+                    avg = (
+                        V[idx + start - min_window] + V[idx + start + min_window]
+                    ) / 2
                     V[idx + start] = avg
                 except IndexError:
                     pass

@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from msibi.utils.corrections import (
     bonded_corrections,
@@ -44,6 +45,7 @@ def test_harmonic_bonded_correction():
         fit_window_size=15,
         head_correction_func=harmonic,
         tail_correction_func=harmonic,
+        maxfev=1000,
         smoothing_order=None,
         smoothing_window=None,
     )
@@ -51,6 +53,24 @@ def test_harmonic_bonded_correction():
     assert np.array_equal(real_indices, np.arange(15, 85))
     assert head_start == 15
     assert tail_start == 85
+
+
+def test_undefined_error():
+    """Catch error when large region of undefined values exist within defined potential range."""
+    x, V = generate_parabolic_potential(x0=2, x_range=(0, 4), noise_level=0)
+    V_missing = np.copy(V)
+    V_missing[15:25] = np.inf
+    with pytest.raises(RuntimeError):
+        bonded_corrections(
+            x=x,
+            V=V_missing,
+            fit_window_size=15,
+            head_correction_func=harmonic,
+            tail_correction_func=harmonic,
+            maxfev=1000,
+            smoothing_order=None,
+            smoothing_window=None,
+        )
 
 
 def test_linear_bonded_correction():
@@ -63,6 +83,7 @@ def test_linear_bonded_correction():
         x=x,
         V=V_missing,
         fit_window_size=15,
+        maxfev=1000,
         head_correction_func=linear,
         tail_correction_func=linear,
         smoothing_order=None,
@@ -90,6 +111,7 @@ def test_exponential_bonded_correction():
         x=x,
         V=V_missing,
         fit_window_size=15,
+        maxfev=1000,
         head_correction_func=exponential,
         tail_correction_func=exponential,
         smoothing_order=None,
@@ -114,6 +136,7 @@ def test_pair_tail_corrections():
         V=V,
         fit_window_size=10,
         r_switch=2,
+        maxfev=1000,
         smoothing_window=None,
         smoothing_order=None,
         head_correction_func=exponential,
@@ -132,6 +155,7 @@ def test_pair_no_tail_corrections():
         r_switch=None,
         smoothing_window=None,
         smoothing_order=None,
+        maxfev=1000,
         head_correction_func=exponential,
     )
     assert np.array_equal(V, V_corrected)
