@@ -216,10 +216,11 @@ def _get_real_indices(V: np.ndarray):
     # Check for continuity of real_indices:
     if not np.all(np.ediff1d(real_idx) == 1):
         min_window = np.max(np.ediff1d(real_idx)) - 1
-        print("MIN WINDOW", min_window)
         if min_window > 5:
-            # TODO: raise warning or error
-            raise RuntimeError("Too large of a region of undefined values.")
+            raise RuntimeError(
+                "The region of undefined values within the potential is too large. "
+                "This could be the result of a sampling issue. Check the target distributions."
+            )
         start = real_idx[0]
         end = real_idx[-1]
         # Correct nans, infs that are surrounded by 2 finite numbers
