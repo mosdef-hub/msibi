@@ -776,7 +776,7 @@ class Bond(Force):
         smoothing_window: Optional[int] = None,
         smoothing_order: Optional[int] = None,
         correction_fit_window: Optional[int] = None,
-        maxfev: Optional[int] = 1e3,
+        maxfev: Optional[int] = 1000,
         correction_form: Callable = harmonic,
     ):
         self.type1, self.type2 = sorted([type1, type2], key=natural_sort)
@@ -920,7 +920,7 @@ class Angle(Force):
         smoothing_window: Optional[int] = None,
         smoothing_order: Optional[int] = None,
         correction_fit_window: Optional[int] = None,
-        maxfev: Optional[int] = 1e3,
+        maxfev: Optional[int] = 1000,
         correction_form: Callable = harmonic,
     ):
         self.type1 = type1
@@ -1073,7 +1073,7 @@ class Pair(Force):
         smoothing_window: Optional[int] = None,
         smoothing_order: Optional[int] = None,
         correction_fit_window: Optional[int] = None,
-        maxfev: Optional[int] = 1e3,
+        maxfev: Optional[int] = 1000,
         exclude_bonded: bool = False,
         head_correction_form: Callable = exponential,
     ):
@@ -1228,7 +1228,7 @@ class Dihedral(Force):
         smoothing_window: Optional[int] = None,
         smoothing_order: Optional[int] = None,
         correction_fit_window: Optional[int] = None,
-        maxfev: Optional[int] = 1e3,
+        maxfev: Optional[int] = 1000,
         correction_form: Callable = harmonic,
     ):
         self.type1 = type1

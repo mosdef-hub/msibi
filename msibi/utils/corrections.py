@@ -85,11 +85,16 @@ def bonded_corrections(
     # The smoothed real portion of the potential isn't retained here
     # That is handled seaprately and performed on the potential with head & tail corrections included
     if all([smoothing_window, smoothing_order]):
+        if len(v_real) < 2 * smoothing_window:
+            mode = "nearest"
+        else:
+            mode = "interp"
+
         v_real = savgol_filter(
             x=v_real,
             window_length=smoothing_window,
             polyorder=smoothing_order,
-            mode="mirror",
+            mode=mode,
         )
 
     # head correction (i.e., left side of potential)
