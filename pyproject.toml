@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "msibi"
-version = "0.1.0"
+version = "0.2.0"
 description = "Deriving coarse-grain potentials from multiple target state points."
 readme = "README.md"
 authors = [
