@@ -73,6 +73,8 @@ class Force:
         The window size (number of data points) to use when fitting
         the iterative potential to head and tail correction forms.
         This is only used when the Force is set to be optimized.
+    max_ev : int, optional
+
     correction_form: Callable, optional
         The type of correciton form to apply to the potential.
         This is only used when the Force is set to be optimized.

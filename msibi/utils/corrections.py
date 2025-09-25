@@ -74,6 +74,9 @@ def bonded_corrections(
     V = np.copy(V)
     real_indices = _get_real_indices(V)
     v_real = np.copy(V[real_indices])
+    if len(v_real) == len(V):
+        print("No regions to account for corrections")
+        return V, None, None, None
     x_real = np.copy(x[real_indices])
     head_start = real_indices[0]
     tail_start = real_indices[-1]
@@ -101,6 +104,7 @@ def bonded_corrections(
         f=head_correction_func,
         xdata=x_head_fit,
         ydata=v_real[:fit_window_size],
+        maxfev=10000,
     )
     x_head_missing = _shift_x(x[:head_start], origin=x_head_pivot)
     # Apply these parameters to the x-range where we are missing data
@@ -111,6 +115,7 @@ def bonded_corrections(
         f=tail_correction_func,
         xdata=x_real[-fit_window_size:],
         ydata=v_real[-fit_window_size:],
+        maxfev=10000,
     )
     tail_pot_correction = tail_correction_func(x[tail_start + 1 :], *popt_tail)
 
@@ -207,13 +212,20 @@ def _get_real_indices(V: np.ndarray):
     real_idx = np.where(np.isfinite(V))[0]
     # Check for continuity of real_indices:
     if not np.all(np.ediff1d(real_idx) == 1):
+        min_window = np.max(np.ediff1d(real_idx)) - 1
+        print("MIN WINDOW", min_window)
+        if min_window > 5:
+            # TODO: raise warning or error
+            raise RuntimeError("Too large of a region of undefined values.")
         start = real_idx[0]
         end = real_idx[-1]
         # Correct nans, infs that are surrounded by 2 finite numbers
         for idx, v in enumerate(V[start:end]):
             if not np.isfinite(v):
                 try:
-                    avg = (V[idx + start - 1] + V[idx + start + 1]) / 2
+                    avg = (
+                        V[idx + start - min_window] + V[idx + start + min_window]
+                    ) / 2
                     V[idx + start] = avg
                 except IndexError:
                     pass
@@ -221,6 +233,27 @@ def _get_real_indices(V: np.ndarray):
         _real_idx = np.where(np.isfinite(V))[0]
         real_idx = max([list(g) for g in mit.consecutive_groups(_real_idx)], key=len)
     return real_idx
+
+
+# def _get_real_indices(V: np.ndarray):
+#    """Find where infinity or NaN values exist in the potential."""
+#    real_idx = np.where(np.isfinite(V))[0]
+#    # Check for continuity of real_indices:
+#    if not np.all(np.ediff1d(real_idx) == 1):
+#        start = real_idx[0]
+#        end = real_idx[-1]
+#        # Correct nans, infs that are surrounded by 2 finite numbers
+#        for idx, v in enumerate(V[start:end]):
+#            if not np.isfinite(v):
+#                try:
+#                    avg = (V[idx + start - 1] + V[idx + start + 1]) / 2
+#                    V[idx + start] = avg
+#                except IndexError:
+#                    pass
+#        # Trim off edge cases
+#        _real_idx = np.where(np.isfinite(V))[0]
+#        real_idx = max([list(g) for g in mit.consecutive_groups(_real_idx)], key=len)
+#    return real_idx
 
 
 def _shift_x(x: np.ndarray, origin: Union[float, int]):
