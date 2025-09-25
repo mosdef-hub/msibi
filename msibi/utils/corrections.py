@@ -85,15 +85,11 @@ def bonded_corrections(
     # The smoothed real portion of the potential isn't retained here
     # That is handled seaprately and performed on the potential with head & tail corrections included
     if all([smoothing_window, smoothing_order]):
-        if len(v_real) < 2 * smoothing_window:
-            mode = "nearest"
-        else:
-            mode = "interp"
         v_real = savgol_filter(
             x=v_real,
             window_length=smoothing_window,
             polyorder=smoothing_order,
-            mode=mode,
+            mode="mirror",
         )
 
     # head correction (i.e., left side of potential)
@@ -237,27 +233,6 @@ def _get_real_indices(V: np.ndarray):
         _real_idx = np.where(np.isfinite(V))[0]
         real_idx = max([list(g) for g in mit.consecutive_groups(_real_idx)], key=len)
     return real_idx
-
-
-# def _get_real_indices(V: np.ndarray):
-#    """Find where infinity or NaN values exist in the potential."""
-#    real_idx = np.where(np.isfinite(V))[0]
-#    # Check for continuity of real_indices:
-#    if not np.all(np.ediff1d(real_idx) == 1):
-#        start = real_idx[0]
-#        end = real_idx[-1]
-#        # Correct nans, infs that are surrounded by 2 finite numbers
-#        for idx, v in enumerate(V[start:end]):
-#            if not np.isfinite(v):
-#                try:
-#                    avg = (V[idx + start - 1] + V[idx + start + 1]) / 2
-#                    V[idx + start] = avg
-#                except IndexError:
-#                    pass
-#        # Trim off edge cases
-#        _real_idx = np.where(np.isfinite(V))[0]
-#        real_idx = max([list(g) for g in mit.consecutive_groups(_real_idx)], key=len)
-#    return real_idx
 
 
 def _shift_x(x: np.ndarray, origin: Union[float, int]):

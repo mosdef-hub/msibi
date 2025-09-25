@@ -61,7 +61,7 @@ def test_undefined_error():
     V_missing = np.copy(V)
     V_missing[15:25] = np.inf
     with pytest.raises(RuntimeError):
-        V_corrected, head_start, tail_start, real_indices = bonded_corrections(
+        bonded_corrections(
             x=x,
             V=V_missing,
             fit_window_size=15,
