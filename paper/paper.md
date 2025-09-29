@@ -1,5 +1,5 @@
 ---
-title: 'MSIBI: Multistate Iterative Boltzmann Inversion'
+title: 'msibi: Multistate Iterative Boltzmann Inversion'
 tags:
   - molecular simulation
   - materials science
@@ -34,8 +34,8 @@ bibliography: paper.bib
 # Summary
 
 Iterative Boltzmann inversion (IBI) is a well-established, and widely used, method for deriving coarse-grained (CG) force fields that recreate the structural distributions of an underlying atomistic model.
-Multiple state IBI (MSIBI) as introduced by Moore et al. [@Moore2014], addresses state-point transferability limitations of IBI by including distributions from multiple state points to inform the derived CG force field.
-Here, we introduce `msibi`, a pure python package that implements the MSIBI method for creating CG force fields for both intramolecular and intermolecular interactions.
+Multiple state IBI (MS-IBI) as introduced by Moore et al. [@Moore2014], addresses state-point transferability limitations of IBI by including distributions from multiple state points to inform the derived CG force field.
+Here, we introduce `msibi`, a pure python package that implements the MS-IBI method for creating CG force fields for both intramolecular and intermolecular interactions.
 The package offers a user-friendly, Python-native API, eliminating the need for bash scripting and manual editing of multiple input files.
 `msibi` is ultimately simulation engine agnostic, but uses the HOOMD-Blue simulation engine [@Anderson2020hoomd] under-the-hood to perform iterative CG model simulations.
 This allows `msibi` to utilize graphical processing unit (GPU) acceleration without requiring users to manually compile GPU compatible code.
@@ -48,24 +48,24 @@ Coarse-graining (CG) is a commonly adopted solution to this challenge, as it red
 However, this approach introduces two challenges: first, the potential energy surface for a given chemistry and CG mapping is not known a priori, and
 second, as the mapping used is arbitrary, with multiple valid options, developing a single CG force field that is transferable across various mapping choices is not possible.
 Consequently, developing a CG force field is required each time a new under-lying chemistry or mapping is used.
-IBI and MSIBI are popular choices for deriving CG forces for polymers and biomolecules [@Carbone2008; @Moore2016; @Jones2025; @Tang2023; @Fritz2009].
-While these methods are frequently used, open-source software tools that provide an accessible and reproducible, end-to-end workflow for IBI and MSIBI remain limited, especially for arbitrary mappings and multi-state systems.
+IBI and MS-IBI are popular choices for deriving CG forces for polymers and biomolecules [@Carbone2008; @Moore2016; @Jones2025; @Tang2023; @Fritz2009].
+While these methods are frequently used, open-source software tools that provide an accessible and reproducible, end-to-end workflow for IBI and MS-IBI remain limited, especially for arbitrary mappings and multi-state systems.
 
 The MARTINI force field is a widely adopted CG model focusing on biomolecular and soft matter systems [@Martini2007].
-However, it utilizes standardized mapping and bead definitions, which ensure transferability but also constrain users to predefined choices of chemistry and resolution.
-VOTCA offers a robust implementation of IBI—among several other features—and is also widely used in the community [@Baumeier2024].
+However, it utilizes pre-defined bead definitions, which ensure transferability but also constrain users to choices of chemistry and resolution.
+The Versatile Object-oriented Toolkit for Coarse-graining Applications (VOTCA) offers a robust implementation of IBI—among several other features—and is also widely used in the community [@Baumeier2024].
 However, its workflow relies on manual management of multiple input files and bash operations, which can introduce operational complexity that reduces reproducibility and usability [@Cummings_2020; @Jankowski2019].
-Additionally, VOTCA's implementation of IBI does not natively support inclusion and weighting of multiple state points.
+Additionally, VOTCA's implementation of IBI does not natively support inclusion and weighting of multiple state points, as implemented in the MS-IBI method.
 
 Here, `msibi` adds support for multiple state points, and is designed to easily manage successive CG force optimizations in series, where the learned force from the previous optimization is included and held fixed while the next force is optimized.
-This approach follows best practices for deriving CG force fields via IBI and MSIBI [@Reith2003].
-Additionally, we emphasize that `msibi` is ultimately engine agnostic: any simulation engine can be used to generate the fine-grained target structural distributions, and the CG force field produced by `msibi` is compatible with any simulation engine that supports tablulated forces.
-This includes LAMMPS [@Thompson2022], Gromacs [@Van2005], and HOOMD-Blue [@Anderson2020hoomd], among others.
+This approach follows best practices for deriving CG force fields via IBI and MS-IBI [@Reith2003].
+Additionally, we emphasize that `msibi` is ultimately engine agnostic: any simulation engine can be used to generate the fine-grained target structural distributions, and the CG force field produced by `msibi` is compatible with any simulation engine that supports tabulated forces.
+This includes LAMMPS [@Thompson2022], Gromacs [@Van2005], DL_Poly [@Smith2002], and HOOMD-Blue [@Anderson2020hoomd], among others.
 It is required that the target trajectories are converted to the [gsd](https://gsd.readthedocs.io/en/v4.0.0/) file format, which is the native file format for HOOMD-Blue.
 `msibi` includes a utility function that converts trajectory files from LAMMPS, Gromacs, and CHARMM into the gsd file format.
 This converter utility relies on the MDAnalysis package [@Naughton2022] as a back-end to streamline file conversions.
 
-# Using MSIBI
+# Using msibi
 
 `msibi` contains three primary classes:
 
@@ -81,7 +81,7 @@ The base class from which all force types in `msibi` inherit from:
 - **msibi.force.Pair:** Optimizes non-bonded pair forces.
 - **msibi.force.Dihedral:** Optimizes bond-torsion forces.
 
-Users can include any number and combination of forces for MSIBI simulations, though only one *type* of force can be optimized at a time.
+Users can include any number and combination of forces for MS-IBI simulations, though only one *type* of force can be optimized at a time.
 
 ### Setting Force Parameters
 There are multiple methods for defining the parameters of a `msibi.force.Force` instance:
@@ -91,7 +91,7 @@ There are multiple methods for defining the parameters of a `msibi.force.Force` 
 - **Force.set_harmonic & Force.set_periodic** Creates a static, immutable force (not tabulated). This is useful for setting force parameters for distributions that are easily described by harmonic or periodic functions.
 
 ### Example Workflow
-These methods enable users to combine learned and static forces and include them in series. For example:
+The force-setter methods above enable users to combine learned and static forces and include them in series. For example:
 
 1. Fit a bond-stretching force to a simple distribution and set the force using `Bond.set_harmonic()`.
 2. With the bond-stretching force included and held static (step 1), run `msibi` to learn bond-angle forces, resulting in a tabulated force stored in a `.csv` file.
@@ -99,7 +99,7 @@ These methods enable users to combine learned and static forces and include them
 
 ## 3. **msibi.optimize.MSIBI:**
 This class serves as the context manager for orchestrating optimization iterations.
-A single instance of this class is needed, and all instances of `msibi.state.State` and `msibi.force.Force` are attached to it before optimizaitons begin.
+A single instance of this class is needed, and all instances of `msibi.state.State` and `msibi.force.Force` are attached to it before optimizations begin.
 This class also stores global simulation parameters such as timestep, neighbor list, exclusions, thermostat and trajectory write-out frequency.
 
 ### Primary Methods
@@ -121,7 +121,7 @@ The [repository](https://github.com/mosdef-hub/msibi) and [documentation](https:
 # Availability
 
 `msibi` is open-source and freely available under the MIT License on [GitHub](https://github.com/mosdef-hub/msibi).
-We encourage users to file issues and make contributions as applicable on the repository.
+We encourage users to ask questions, file issues and make contributions as applicable on the repository.
 `msibi` is available on the conda-forge ecosystem.
 For installation instructions and Python API documentation, visit the [documentation](https://msibi.readthedocs.io/en/latest/).
 
