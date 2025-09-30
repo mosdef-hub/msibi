@@ -127,10 +127,9 @@ We encourage users to ask questions, file issues and make contributions as appli
 `msibi` is available on the conda-forge ecosystem.
 For installation instructions and Python API documentation, visit the [documentation](https://msibi.readthedocs.io/en/latest/).
 
-# Acknowledgements
-
 
 # Conflict of Interest Statement
+
 The authors declare the absence of any conflicts of interest: No author has any financial,
 personal, professional, or other relationship that affect our objectivity toward this work.
 
