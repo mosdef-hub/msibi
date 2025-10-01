@@ -10,7 +10,7 @@ Install from anaconda
 msibi is available on `conda-forge <https://anaconda.org/conda-forge/msibi>`_
 ::
 
-    $ mamba install -c conda-forge msibi
+    $ conda install -c conda-forge msibi
 
 
 Install from source
@@ -25,8 +25,8 @@ Install from source
 2. Install dependency packages and msibi from source:
 ::
 
-    $ mamba env create -f environment.yml
-    $ mamba activate msibi
+    $ conda env create -f environment.yml
+    $ conda activate msibi
     $ python -m pip install .
 
 .. note::

@@ -7,7 +7,7 @@ dependencies:
   - sphinx_rtd_theme>=3.0
   - freud >=3.0
   - gsd >=3.0
-  - hoomd >=5.0
+  - hoomd >=5.0,<5.4
   - python >=3.10
   - pandas
   - numpy >=2.0
