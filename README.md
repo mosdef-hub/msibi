@@ -6,6 +6,7 @@
 [![codecov](https://codecov.io/gh/mosdef-hub/msibi/branch/main/graph/badge.svg?token=7NFPBMBN0I)](https://codecov.io/gh/mosdef-hub/msibi)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/msibi/badges/version.svg)](https://anaconda.org/conda-forge/msibi)
 [![Citing MSIBI](https://img.shields.io/badge/DOI-10.1063%2F1.4880555-blue.svg)](http://dx.doi.org/10.1063/1.4880555)
+[![status](https://joss.theoj.org/papers/24d607407e78f5d8fa679e1a76684133/status.svg)](https://joss.theoj.org/papers/24d607407e78f5d8fa679e1a76684133)  
 
 A package to help you manage and run coarse-grain potential optimizations using multistate iterative Boltzmann inversion.
 
