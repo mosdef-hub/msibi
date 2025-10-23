@@ -40,3 +40,8 @@ Install from source
         $ export CONDA_OVERRIDE_CUDA="[YOUR_CUDA_VERSION]"
 
     Please see the `HOOMD-blue installation instructions <https://hoomd-blue.readthedocs.io/en/stable/installation.html>`_ for more information.
+
+
+.. note::
+  MSIBI is not installable on Windows operating systems as HOOMD-Blue is not available for Windows. You can run MSIBI using `Windows Subsystem for Linux <https://learn.microsoft.com/en-us/windows/wsl/install>`_ (WSL).
+  Once you have a shell active in WSL, follow the installation instructions above.
