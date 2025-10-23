@@ -26,6 +26,11 @@ mamba activate msibi
 pip install .
 ```
 
+### Using MSIBI on Windows
+MSIBI is not installable on Windows operating systems as HOOMD-Blue is not available for Windows. You can run MSIBI using [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install) (WSL).
+Once you have a shell active in WSL with anaconda installed, follow the installation instructions above.
+
+
 ## Using MSIBI
 For a full description of the API with examples see the [documentation](https://msibi.readthedocs.io/en/latest/).
 
