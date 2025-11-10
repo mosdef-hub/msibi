@@ -45,15 +45,16 @@ This allows `msibi` to utilize graphical processing unit (GPU) acceleration with
 Molecular dynamics (MD) simulations are computationally intensive and scale poorly with the number of particles in the system, which limits accessible time and length scales.
 As a result, atomistic MD simulations of complex systems such as polymers and biomolecules become prohibitively expensive, especially as their relevant length and time scales often surpass micrometers and microseconds.
 Coarse-graining (CG) is a commonly adopted solution to this challenge, as it reduces computational cost by grouping—or mapping—atoms into a single, larger bead [@Joshi2021].
-However, this approach introduces two challenges: first, the potential energy surface for a given chemistry and CG mapping is not known *a priori*, and
+Beyond being a technical tool to improve efficiency, coarse-graining also reflects modelling choices about which molecular features are essential to retain, and which can be simplified, which depends in large part on the materials being studied, the properties measured, and the researcher's objectives [@Noid2013].
+As a result, this approach introduces two challenges: first, the potential energy surface for a given chemistry and CG mapping is not known *a priori*, and
 second, as the mapping used is arbitrary, with multiple valid options, developing a single CG force field that is transferable across various mapping choices is not possible.
 Also, a CG force field derived using IBI is state-point dependent with limited transferability to other state-points [@Moore2014; @Carbone2008].
 Consequently, developing a CG force field is required each time a new under-lying chemistry, mapping or target state-point is used.
 IBI and MS-IBI are popular choices for deriving CG forces for polymers and biomolecules [@Carbone2008; @Moore2016; @Jones2025; @Tang2023; @Fritz2009].
 While these methods are frequently used, open-source software tools that provide an accessible and reproducible, end-to-end workflow for IBI and MS-IBI remain limited, especially for arbitrary mappings and multi-state systems.
 
-The MARTINI force field is a widely adopted CG model focusing on biomolecular and soft matter systems [@Martini2007].
-However, it utilizes pre-defined bead definitions, which ensure transferability but also constrain users to choices of chemistry and resolution.
+The MARTINI force field is a widely adopted and successful CG model that employs a top-down CG approach, where interactions are optimized to reproduce experimental properties rather than structural distributions from atomistic simulations, as done in IBI and MSIBI [@Martini2007].
+This design provides excellent transferability and robustness across diverse systems, but its predefined bead types and fixed four-to-one mapping scheme limit adaptability to other resolutions and chemistries [@Joshi2021].
 The Versatile Object-oriented Toolkit for Coarse-graining Applications (VOTCA) offers a robust implementation of IBI—among several other features—and is also widely used in the community [@Baumeier2024].
 However, its workflow relies on manual management of multiple input files and bash operations, which can introduce operational complexity that reduces reproducibility and usability [@Cummings_2020; @Jankowski2019].
 Additionally, VOTCA's implementation of IBI does not natively support inclusion and weighting of multiple state points, as implemented in the MS-IBI method.
