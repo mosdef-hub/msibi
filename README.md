@@ -37,7 +37,7 @@ Validation tests are included, and ensure `msibi` accureately recreates non-bond
 These can be run after following the install from source instructions:
 
 ```bash
-python test/validation/validation.py
+python msibi/tests/validation/validation.py
 ```
 
 
