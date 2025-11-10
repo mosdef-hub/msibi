@@ -34,14 +34,14 @@ pytest
 ```
 
 Validation tests are included, and ensure `msibi` accureately recreates non-bonded Lennard Jones and bonded harmonic potentials.
-These can be run after installation:
+These can be run after following the install from source instructions:
 
 ```bash
 python test/validation/validation.py
 ```
 
 
-### Using MSIBI on Windows
+### Installing MSIBI on Windows
 MSIBI is not installable on Windows operating systems as HOOMD-Blue is not available for Windows. You can run MSIBI using [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install) (WSL).
 Once you have a shell active in WSL with anaconda installed, follow the installation instructions above.
 
@@ -160,3 +160,7 @@ If you use this package, please cite the above paper. The BibTeX reference is
       doi = "http://dx.doi.org/10.1063/1.4880555"
 }
 ```
+
+## Contributing to msibi 
+We welcome all contributions to msibi. Please see
+[contributing guidelines](CONTRIBUTING.md) for more information.
