@@ -4,7 +4,8 @@
 Examples
 ============
 
-Below are some examples of how to use the ``msibi`` API.
+Below are some examples of how to use ``msibi``.
+These are examples of the API only, and all files shown are place holders. See the :doc:`tutorials` for instructions on accessing a minimal provided dataset needed to work through an ``msibi`` tutorial.
 
 Quick Example: Optimizing bond-stretching
 -----------------------------------------
