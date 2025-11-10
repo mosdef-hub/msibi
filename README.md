@@ -17,14 +17,29 @@ A package to help you manage and run coarse-grain potential optimizations using 
 mamba install -c conda-forge msibi
 ```
 
-### Install from source:
+### Install from source and testing:
 ```bash
 git clone https://github.com/mosdef-hub/msibi.git
 cd msibi
 mamba env create -f environment.yml
 mamba activate msibi
-pip install .
+pip install -e .
 ```
+
+You can run unit tests by installing and running `pytest`
+
+```bash
+mamba install pytest
+pytest
+```
+
+Validation tests are included, and ensure `msibi` accureately recreates non-bonded Lennard Jones and bonded harmonic potentials.
+These can be run after installation:
+
+```bash
+python test/validation/validation.py
+```
+
 
 ### Using MSIBI on Windows
 MSIBI is not installable on Windows operating systems as HOOMD-Blue is not available for Windows. You can run MSIBI using [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install) (WSL).
@@ -37,6 +52,8 @@ For a full description of the API with examples see the [documentation](https://
 The MSIBI package is designed to be very object oriented. Any force optimization runs requires at least one `msibi.state.State` instance, `msibi.force.Force` instance and `msibi.optimize.MSIBI` instance. More state and forces can be added as needed. Multiple forces can be added with some held fixed while others are being optimized after each iteation. MSIBI is designed to allow for optimization of both intra-molecular and inter-molecular potentials.
 
 MSIBI uses [HOOMD-Blue](https://hoomd-blue.readthedocs.io/en/latest/) to run optimization simulations. It is not required that the target (i.e., atomistic) simulations use HOOMD-Blue. Also, it is not required that you be familiar with HOOMD to use MSIBI as the simulation script is automatically generated and ran. However, it is required that you pass in the choice of [method](https://hoomd-blue.readthedocs.io/en/latest/module-md-methods.html), [neighbor list](https://hoomd-blue.readthedocs.io/en/latest/module-md-nlist.html), and [thermostat](https://hoomd-blue.readthedocs.io/en/latest/module-md-methods-thermostats.html) to the `msibi.optimize.MSIBI` class. Since MSIBI utilizes Hoomd-Blue, this means that MSIBI can run on GPUs, see [Hoomd's installation guide](https://hoomd-blue.readthedocs.io/en/latest/installation.html) for instructions on ensuring your environment includes a GPU build of hoomd. The resulting coarse-grained potentials are exported in a tabulated format compatible with other simulation engines such as LAMMPS and GROMACS.
+
+**Note:** The examples below serve to demonstrate the API usage, and require the user to provide the GSD files in order to run. The [Tutorials](https://msibi.readthedocs.io/en/latest/tutorials.html) contain instructions for running an MSIBI example with provided data.  
 
 ### Quick Example: Optimizing bond-stretching
 Here is a simple example using MSIBI to learn a bond-stretching force from a single state point:
