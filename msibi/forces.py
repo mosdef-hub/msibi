@@ -69,6 +69,11 @@ class Force:
         It is also used in determining the bin size of the target and query
         distributions.
         If this force is not being optimied, leave this as ``None``.
+    smoothing_window : int, optional
+        The window size used in SciPy's savgol_filter method.
+        This must be an odd integer.
+    smoothing_order : int, optional
+        The smoothing order used in SciPy's savgol_filter method.
     correction_fit_window: int, optional
         The window size (number of data points) to use when fitting
         the iterative potential to head and tail correction forms.
@@ -753,7 +758,12 @@ class Bond(Force):
         and step size (dx).
         It is also used in determining the bin size of the target and query
         distributions.
-    correction_fit_window: int, optional
+    smoothing_window : int, optional default 15
+        The window size used in SciPy's savgol_filter method.
+        This must be an odd integer.
+    smoothing_order : int, optional default 2
+        The smoothing order used in SciPy's savgol_filter method.
+    correction_fit_window: int, optional default 10
         The window size (number of data points) to use when fitting
         the iterative potential to head and tail correction forms.
         This is only used when the Force is set to be optimized.
@@ -773,9 +783,9 @@ class Bond(Force):
         type2: str,
         optimize: bool,
         nbins: Optional[int] = None,
-        smoothing_window: Optional[int] = None,
-        smoothing_order: Optional[int] = None,
-        correction_fit_window: Optional[int] = None,
+        smoothing_window: Optional[int] = 15,
+        smoothing_order: Optional[int] = 2,
+        correction_fit_window: Optional[int] = 10,
         maxfev: Optional[int] = 1000,
         correction_form: Callable = harmonic,
     ):
@@ -791,13 +801,6 @@ class Bond(Force):
             maxfev=maxfev,
             correction_form=correction_form,
         )
-        if self.optimize:
-            if self.smoothing_window is None:
-                self.smoothing_window = 15
-            if self.smoothing_order is None:
-                self.smoothing_order = 2
-            if self.correction_fit_window is None:
-                self.correction_fit_window = 10
 
     def set_harmonic(self, r0: Union[float, int], k: Union[float, int]) -> None:
         """Set a fixed harmonic bond potential.
@@ -896,7 +899,12 @@ class Angle(Force):
         and step size (dx).
         It is also used in determining the bin size of the target and query
         distributions.
-    correction_fit_window: int, optional
+    smoothing_window : int, optional default 15
+        The window size used in SciPy's savgol_filter method.
+        This must be an odd integer.
+    smoothing_order : int, optional default 2
+        The smoothing order used in SciPy's savgol_filter method.
+    correction_fit_window: int, optional default 10
         The window size (number of data points) to use when fitting
         the iterative potential to head and tail correction forms.
         This is only used when the Force is set to be optimized.
@@ -917,9 +925,9 @@ class Angle(Force):
         type3: str,
         optimize: bool,
         nbins: Optional[int] = None,
-        smoothing_window: Optional[int] = None,
-        smoothing_order: Optional[int] = None,
-        correction_fit_window: Optional[int] = None,
+        smoothing_window: Optional[int] = 15,
+        smoothing_order: Optional[int] = 2,
+        correction_fit_window: Optional[int] = 10,
         maxfev: Optional[int] = 1000,
         correction_form: Callable = harmonic,
     ):
@@ -937,13 +945,6 @@ class Angle(Force):
             maxfev=maxfev,
             correction_form=correction_form,
         )
-        if self.optimize:
-            if self.smoothing_window is None:
-                self.smoothing_window = 15
-            if self.smoothing_order is None:
-                self.smoothing_order = 3
-            if self.correction_fit_window is None:
-                self.correciton_fit_window = 10
 
     def set_harmonic(self, t0: Union[float, int], k: Union[float, int]) -> None:
         """Set a fixed harmonic angle potential.
@@ -1048,7 +1049,12 @@ class Pair(Force):
         If ``True``, then particles from the same molecule are not
         included in the RDF calculation.
         If ``False``, all particles are included.
-    correction_fit_window: int, optional
+    smoothing_window : int, optional default 11
+        The window size used in SciPy's savgol_filter method.
+        This must be an odd integer.
+    smoothing_order : int, optional default 2
+        The smoothing order used in SciPy's savgol_filter method.
+    correction_fit_window: int, optional default 8 
         The window size (number of data points) to use when fitting
         the iterative potential to head and tail correction forms.
         This is only used when the Force is set to be optimized.
@@ -1070,9 +1076,9 @@ class Pair(Force):
         nbins: Optional[int] = None,
         r_cut: Optional[Union[float, int]] = None,
         r_switch: Optional[Union[float, int]] = None,
-        smoothing_window: Optional[int] = None,
-        smoothing_order: Optional[int] = None,
-        correction_fit_window: Optional[int] = None,
+        smoothing_window: Optional[int] = 11,
+        smoothing_order: Optional[int] = 2,
+        correction_fit_window: Optional[int] = 8,
         maxfev: Optional[int] = 1000,
         exclude_bonded: bool = False,
         head_correction_form: Callable = exponential,
@@ -1094,13 +1100,6 @@ class Pair(Force):
             maxfev=maxfev,
             correction_form=head_correction_form,
         )
-        if self.optimize:
-            if self.smoothing_window is None:
-                self.smoothing_window = 15
-            if self.smoothing_order is None:
-                self.smoothing_order = 4
-            if self.correction_fit_window is None:
-                self.correction_fit_window = 8
 
     def set_lj(
         self,
@@ -1203,7 +1202,12 @@ class Dihedral(Force):
         and step size (dx).
         It is also used in determining the bin size of the target and query
         distributions.
-    correction_fit_window: int, optional
+    smoothing_window : int, optional default 11
+        The window size used in SciPy's savgol_filter method.
+        This must be an odd integer.
+    smoothing_order : int, optional default 2
+        The smoothing order used in SciPy's savgol_filter method.
+    correction_fit_window: int, optional default 10 
         The window size (number of data points) to use when fitting
         the iterative potential to head and tail correction forms.
         This is only used when the Force is set to be optimized.
@@ -1225,9 +1229,9 @@ class Dihedral(Force):
         type4: str,
         optimize: bool,
         nbins: Optional[int] = None,
-        smoothing_window: Optional[int] = None,
-        smoothing_order: Optional[int] = None,
-        correction_fit_window: Optional[int] = None,
+        smoothing_window: Optional[int] = 11,
+        smoothing_order: Optional[int] = 2,
+        correction_fit_window: Optional[int] = 10,
         maxfev: Optional[int] = 1000,
         correction_form: Callable = harmonic,
     ):
@@ -1246,13 +1250,6 @@ class Dihedral(Force):
             maxfev=maxfev,
             correction_form=correction_form,
         )
-        if self.optimize:
-            if self.smoothing_window is None:
-                self.smoothing_window = 15
-            if self.smoothing_order is None:
-                self.smoothing_order = 2
-            if self.correction_fit_window is None:
-                self.correciton_fit_window = 10
 
     def set_periodic(
         self,
