@@ -1,4 +1,4 @@
-# Contributing to msibi 
+# Contributing to msibi
 
 Thank you for considering contributing to msibi! We welcome all contributions
 in the form of bug reports, feature requests, code contributions, suggestions, etc.

@@ -6,7 +6,7 @@ import hoomd
 import numpy as np
 from scipy.optimize import curve_fit
 
-from msibi import MSIBI, Bond, Angle, Pair, State
+from msibi import MSIBI, Angle, Bond, Pair, State
 
 warnings.filterwarnings("ignore")
 _dir = os.path.dirname(os.path.abspath(__file__))

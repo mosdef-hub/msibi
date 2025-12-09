@@ -1054,7 +1054,7 @@ class Pair(Force):
         This must be an odd integer.
     smoothing_order : int, optional default 2
         The smoothing order used in SciPy's savgol_filter method.
-    correction_fit_window: int, optional default 8 
+    correction_fit_window: int, optional default 8
         The window size (number of data points) to use when fitting
         the iterative potential to head and tail correction forms.
         This is only used when the Force is set to be optimized.
@@ -1207,7 +1207,7 @@ class Dihedral(Force):
         This must be an odd integer.
     smoothing_order : int, optional default 2
         The smoothing order used in SciPy's savgol_filter method.
-    correction_fit_window: int, optional default 10 
+    correction_fit_window: int, optional default 10
         The window size (number of data points) to use when fitting
         the iterative potential to head and tail correction forms.
         This is only used when the Force is set to be optimized.

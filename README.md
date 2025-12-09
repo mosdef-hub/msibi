@@ -6,7 +6,7 @@
 [![codecov](https://codecov.io/gh/mosdef-hub/msibi/branch/main/graph/badge.svg?token=7NFPBMBN0I)](https://codecov.io/gh/mosdef-hub/msibi)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/msibi/badges/version.svg)](https://anaconda.org/conda-forge/msibi)
 [![Citing MSIBI](https://img.shields.io/badge/DOI-10.1063%2F1.4880555-blue.svg)](http://dx.doi.org/10.1063/1.4880555)
-[![status](https://joss.theoj.org/papers/24d607407e78f5d8fa679e1a76684133/status.svg)](https://joss.theoj.org/papers/24d607407e78f5d8fa679e1a76684133)  
+[![status](https://joss.theoj.org/papers/24d607407e78f5d8fa679e1a76684133/status.svg)](https://joss.theoj.org/papers/24d607407e78f5d8fa679e1a76684133)
 
 A package to help you manage and run coarse-grain potential optimizations using multistate iterative Boltzmann inversion.
 
@@ -53,7 +53,7 @@ The MSIBI package is designed to be very object oriented. Any force optimization
 
 MSIBI uses [HOOMD-Blue](https://hoomd-blue.readthedocs.io/en/latest/) to run optimization simulations. It is not required that the target (i.e., atomistic) simulations use HOOMD-Blue. Also, it is not required that you be familiar with HOOMD to use MSIBI as the simulation script is automatically generated and ran. However, it is required that you pass in the choice of [method](https://hoomd-blue.readthedocs.io/en/latest/module-md-methods.html), [neighbor list](https://hoomd-blue.readthedocs.io/en/latest/module-md-nlist.html), and [thermostat](https://hoomd-blue.readthedocs.io/en/latest/module-md-methods-thermostats.html) to the `msibi.optimize.MSIBI` class. Since MSIBI utilizes Hoomd-Blue, this means that MSIBI can run on GPUs, see [Hoomd's installation guide](https://hoomd-blue.readthedocs.io/en/latest/installation.html) for instructions on ensuring your environment includes a GPU build of hoomd. The resulting coarse-grained potentials are exported in a tabulated format compatible with other simulation engines such as LAMMPS and GROMACS.
 
-**Note:** The examples below serve to demonstrate the API usage, and require the user to provide the GSD files in order to run. The [Tutorials](https://msibi.readthedocs.io/en/latest/tutorials.html) contain instructions for running an MSIBI example with provided data.  
+**Note:** The examples below serve to demonstrate the API usage, and require the user to provide the GSD files in order to run. The [Tutorials](https://msibi.readthedocs.io/en/latest/tutorials.html) contain instructions for running an MSIBI example with provided data.
 
 ### Quick Example: Optimizing bond-stretching
 Here is a simple example using MSIBI to learn a bond-stretching force from a single state point:
@@ -161,6 +161,6 @@ If you use this package, please cite the above paper. The BibTeX reference is
 }
 ```
 
-## Contributing to msibi 
+## Contributing to msibi
 We welcome all contributions to msibi. Please see
 [contributing guidelines](CONTRIBUTING.md) for more information.
