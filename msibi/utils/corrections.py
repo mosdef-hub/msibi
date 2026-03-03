@@ -7,6 +7,16 @@ from scipy.signal import savgol_filter
 
 from msibi.utils.general import find_nearest
 
+bad_fit_error_msg = """\
+There was an error fitting the existing potential against the head/tail correction function.
+This could indicate poor sampling, or a poor choice of fitting parameters.
+
+Try adjusting parameters that impact sampling such as gsd_period in msibi.MSIBI,
+sampling_stride and n_frames in msibi.State, and n_steps in MSIBI.run_optimization.
+You might adjust the fitting and smoothing related parameters.
+See smoothing_window, correction_fit_window, smoothing_order, maxfev in msibi.Force.
+""" 
+
 
 def harmonic(x: np.ndarray, x0: Union[float, int], k: Union[float, int]):
     """Used as the default correction form for bonded forces.
@@ -102,24 +112,32 @@ def bonded_corrections(
     # Need to shift x-values. Function must increase as x becomes smaller
     x_head_pivot = x_real[fit_window_size - 1]
     x_head_fit = _shift_x(x_real[:fit_window_size], origin=x_head_pivot)
-    popt_head, pcov_head = curve_fit(
-        f=head_correction_func,
-        xdata=x_head_fit,
-        ydata=v_real[:fit_window_size],
-        maxfev=maxfev,
-    )
+    try:
+        popt_head, pcov_head = curve_fit(
+            f=head_correction_func,
+            xdata=x_head_fit,
+            ydata=v_real[:fit_window_size],
+            maxfev=maxfev,
+        )
+    except RuntimeError:
+        print(bad_fit_error_msg)
+        raise RuntimeError("Curve fitting failed for the bond head correction.") from None
     x_head_missing = _shift_x(x[:head_start], origin=x_head_pivot)
     # Apply these parameters to the x-range where we are missing data
     head_pot_correction = head_correction_func(x_head_missing, *popt_head)
 
     # tail correction (i.e., right side of potential)
-    popt_tail, pcov_tail = curve_fit(
-        f=tail_correction_func,
-        xdata=x_real[-fit_window_size:],
-        ydata=v_real[-fit_window_size:],
-        maxfev=maxfev,
-    )
-    tail_pot_correction = tail_correction_func(x[tail_start + 1 :], *popt_tail)
+    try:
+        popt_tail, pcov_tail = curve_fit(
+            f=tail_correction_func,
+            xdata=x_real[-fit_window_size:],
+            ydata=v_real[-fit_window_size:],
+            maxfev=maxfev,
+        )
+        tail_pot_correction = tail_correction_func(x[tail_start + 1 :], *popt_tail)
+    except RuntimeError:
+        print(bad_fit_error_msg)
+        raise RuntimeError("Curve fitting failed for the bond tail correction.") from None
 
     # Apply correction regions to original potential
     V[:head_start] = head_pot_correction
@@ -179,13 +197,17 @@ def pair_corrections(
         )
     # head correction (short range repulsion)
     # Get fit parameters for where we actually have data
-    popt_head, pcov_head = curve_fit(
-        f=head_correction_func,
-        xdata=x_real[: fit_window_size + 1],
-        ydata=v_real[: fit_window_size + 1],
-        maxfev=maxfev,
-    )
-    head_pot_correction = head_correction_func(x[:head_start], *popt_head)
+    try:
+        popt_head, pcov_head = curve_fit(
+            f=head_correction_func,
+            xdata=x_real[: fit_window_size + 1],
+            ydata=v_real[: fit_window_size + 1],
+            maxfev=maxfev,
+        )
+        head_pot_correction = head_correction_func(x[:head_start], *popt_head)
+    except RuntimeError:
+        print(bad_fit_error_msg)
+        raise RuntimeError("Curve fitting failed for the pair head correction.") from None
 
     # Tail correction, long range approach to zero
     V_multiplier = np.ones_like(x)

@@ -99,7 +99,7 @@ class Force:
         smoothing_window: Optional[int] = None,
         smoothing_order: Optional[int] = None,
         correction_fit_window: Optional[int] = None,
-        maxfev: Optional[int] = 1000,
+        maxfev: Optional[int] = 3000,
         correction_form: Optional[Callable] = None,
     ):
         if optimize and not nbins or optimize and nbins <= 0:
@@ -767,7 +767,7 @@ class Bond(Force):
         The window size (number of data points) to use when fitting
         the iterative potential to head and tail correction forms.
         This is only used when the Force is set to be optimized.
-    maxfev : int, optional
+    maxfev : int, optional default 3000
         Sets the maximum number of attemps when using scipy.curve_fit
         to apply head and tail corrections. Use larger values to improve
         likelihood of successful corrections, but this may slow performance.
