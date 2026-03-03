@@ -39,6 +39,7 @@ These can be run after following the install from source instructions:
 ```bash
 python msibi/tests/validation/validate.py
 ```
+NOTE: Running `validate.py` will create a directory called `states` in your current working directory. If you intend to re-run `validate.py` this directory must be removed.
 
 
 ### Installing MSIBI on Windows
