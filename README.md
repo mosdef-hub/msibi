@@ -14,22 +14,22 @@ A package to help you manage and run coarse-grain potential optimizations using 
 
 ### Install from conda-forge:
 ```bash
-mamba install -c conda-forge msibi
+conda install -c conda-forge msibi
 ```
 
 ### Install from source and testing:
 ```bash
 git clone https://github.com/mosdef-hub/msibi.git
 cd msibi
-mamba env create -f environment.yml
-mamba activate msibi
+conda env create -f environment.yml
+conda activate msibi
 pip install -e .
 ```
 
 You can run unit tests by installing and running `pytest`
 
 ```bash
-mamba install pytest
+conda install pytest
 pytest
 ```
 
