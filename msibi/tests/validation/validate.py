@@ -29,7 +29,7 @@ def validate_bonds():
         thermostat_kwargs={"tau": 0.1},
         method_kwargs={},
         dt=0.0001,
-        gsd_period=500,
+        gsd_period=5000,
     )
 
     state = State(
@@ -54,7 +54,7 @@ def validate_bonds():
     optimizer.add_state(state)
     optimizer.add_force(bond)
 
-    optimizer.run_optimization(n_iterations=12, n_steps=5e5, backup_trajectories=False)
+    optimizer.run_optimization(n_iterations=7, n_steps=1e6, backup_trajectories=False)
     bond.smooth_potential()
 
     scores = bond._states[state]["f_fit"]
