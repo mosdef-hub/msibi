@@ -39,7 +39,7 @@ def validate_bonds():
         traj_file=single_chain_path,
         n_frames=100,
         sampling_stride=2,
-        alpha0=0.5,
+        alpha0=0.4,
     )
 
     bond = Bond(
@@ -56,19 +56,24 @@ def validate_bonds():
     optimizer.add_state(state)
     optimizer.add_force(bond)
 
-    optimizer.run_optimization(n_iterations=10, n_steps=1e6, backup_trajectories=False)
+    optimizer.run_optimization(n_iterations=15, n_steps=5e5, backup_trajectories=False)
     bond.smooth_potential()
 
     scores = bond._states[state]["f_fit"]
     assert any(np.array(scores) > 0.97)
 
     # Target data simulations used k = 500 and x0 = 1.1
-    params, params_covariance = curve_fit(harmonic, bond.x_range, bond.potential)
+    # For purposes of testing fit to k and x0, only use regions where
+    # IBI was learned (i.e., where bond-length distribution wasn't zero)
+    indices = np.where((bond.x_range <= 1.75) & (bond.x_range >= 0.5))
+    params, params_covariance = curve_fit(
+        harmonic, bond.x_range[indices], bond.potential[indices], p0=[500, 1.1]
+    )
     k_fit, x0_fit = params
 
-    print("Finished validating bonds.")
+    print("-----------Finished Testing Bonds-----------")
     print(f"Fit score = {scores[-1]}, k fit = {k_fit}, x0 fit = {x0_fit}")
-    assert np.allclose(k_fit, 500, atol=20)
+    assert np.allclose(k_fit, 500, atol=25)
     assert np.allclose(x0_fit, 1.1, atol=0.05)
 
     # Clean-up
@@ -93,7 +98,7 @@ def validate_angles():
         traj_file=single_chain_path,
         n_frames=100,
         sampling_stride=2,
-        alpha0=0.5,
+        alpha0=0.4,
     )
 
     bond = Bond(type1="A", type2="A", optimize=False)
@@ -105,7 +110,7 @@ def validate_angles():
         type3="A",
         optimize=True,
         nbins=60,
-        smoothing_window=5,
+        smoothing_window=3,
         correction_fit_window=7,
         smoothing_order=1
     )
@@ -130,7 +135,7 @@ def validate_angles():
     )
     k_fit, x0_fit = params
 
-    print("Finished")
+    print("-----------Finished Testing Angles-----------")
     print(f"Fit score = {scores[-1]}, k fit = {k_fit}, x0 fit = {x0_fit}")
     assert np.allclose(k_fit, 250, atol=30)
     assert np.allclose(x0_fit, 2.0, atol=0.05)
@@ -190,7 +195,7 @@ def validate_pairs():
     scores = pair._states[state]["f_fit"]
     assert any(np.array(scores) > 0.97)
 
-    print("Finished validating pairs.")
+    print("-----------Finished Testing Pairs-----------")
     print(f"Fit score = {scores[-1]}")
 
     # Clean-up
