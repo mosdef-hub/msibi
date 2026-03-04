@@ -4,6 +4,7 @@
 *.dcd
 *.csv
 *.gsd
+*states*
 .DS_Store
 *.egg-info
 *.idea/

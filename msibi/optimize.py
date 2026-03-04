@@ -63,7 +63,7 @@ class MSIBI(object):
         dt: float,
         gsd_period: int,
         nlist_exclusions: list[str] = ["bond", "angle"],
-        seed: int = 42,
+        seed: int = 24,
     ):
         if integrator_method not in [
             hoomd.md.methods.ConstantVolume,

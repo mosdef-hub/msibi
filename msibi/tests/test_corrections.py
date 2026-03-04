@@ -131,31 +131,37 @@ def test_exponential_bonded_correction():
 
 def test_pair_tail_corrections():
     x, V = generate_lj_potential(noise_level=0)
+    V_missing = np.copy(V)
+    V_missing[0:15] = np.inf
     V_corrected, head_start, idx_switch, real_indices = pair_corrections(
         x=x,
-        V=V,
+        V=V_missing,
         fit_window_size=10,
         r_switch=2,
-        maxfev=1000,
+        maxfev=3000,
         smoothing_window=None,
         smoothing_order=None,
         head_correction_func=exponential,
     )
     assert V_corrected[-1] == 0
+    assert head_start == 15
     for v1, v2 in zip(V[idx_switch + 1 :], V_corrected[idx_switch + 1 :]):
         assert np.abs(v1) > np.abs(v2)
 
 
 def test_pair_no_tail_corrections():
     x, V = generate_lj_potential(noise_level=0)
+    V_missing = np.copy(V)
+    V_missing[0:15] = np.inf
     V_corrected, head_start, idx_switch, real_indices = pair_corrections(
         x=x,
-        V=V,
+        V=V_missing,
         fit_window_size=10,
         r_switch=None,
         smoothing_window=None,
         smoothing_order=None,
-        maxfev=1000,
+        maxfev=3000,
         head_correction_func=exponential,
     )
-    assert np.array_equal(V, V_corrected)
+    assert not np.allclose(V, V_corrected, atol=1e-3)
+    assert head_start == 15

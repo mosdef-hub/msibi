@@ -12,8 +12,9 @@ This uses the `anaconda package manager <https://www.anaconda.com/download>`_.
 
    git clone https://github.com/mosdef-hub/msibi
    cd msibi
-   conda env create -f environment.yml python=3.13 jupyter
+   conda env create -f environment.yml
    conda activate msibi
+   conda install jupyter
    pip install -e .
 
 .. toctree::

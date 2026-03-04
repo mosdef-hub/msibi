@@ -167,7 +167,7 @@ class State(object):
         This method is called in :meth:msibi.optimize.run_optimization.
         """
         device = hoomd.device.auto_select()
-        sim = hoomd.simulation.Simulation(device=device)
+        sim = hoomd.simulation.Simulation(device=device, seed=seed)
         print(f"Starting simulation {iteration} for state {self}")
         print(f"Running on device {device}")
 
