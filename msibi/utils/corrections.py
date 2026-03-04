@@ -209,6 +209,9 @@ def pair_corrections(
         print(bad_fit_error_msg)
         raise RuntimeError("Curve fitting failed for the pair head correction.") from None
 
+    # Apply correction regions to original potential
+    V[:head_start] = head_pot_correction
+
     # Tail correction, long range approach to zero
     V_multiplier = np.ones_like(x)
     # If r_switch is not given, don't apply tail corrections
@@ -223,8 +226,6 @@ def pair_corrections(
             * (r_cut**2 + 2 * r_correct**2 - 3 * r_switch**2)
             / (r_cut**2 - r_switch**2) ** 3
         )
-        # Apply correction regions to original potential
-        V[:head_start] = head_pot_correction
     else:
         idx_r_switch = -1
 
