@@ -37,10 +37,9 @@ Validation tests are included, and ensure `msibi` accureately recreates non-bond
 These can be run after following the install from source instructions:
 
 ```bash
-python msibi/tests/validation/validate.py
+cd msibi/tests/validation
+python validate.py
 ```
-NOTE: Running `validate.py` will create a directory called `states` in your current working directory. If you intend to re-run `validate.py` this directory must be removed.
-
 
 ### Installing MSIBI on Windows
 MSIBI is not installable on Windows operating systems as HOOMD-Blue is not available for Windows. You can run MSIBI using [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install) (WSL).
