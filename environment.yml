@@ -5,7 +5,7 @@ dependencies:
 - freud >=3.4
 - cmeutils >=1.4
 - gsd >=3.0
-- hoomd >=5.0,<5.4
+- hoomd >=5.4
 - matplotlib
 - python >=3.10,<=3.13
 - pandas
