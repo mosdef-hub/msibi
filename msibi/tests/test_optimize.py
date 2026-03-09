@@ -73,6 +73,49 @@ class TestMSIBI(BaseTest):
         bond.save_state_data(file_path=path, state=stateX)
         assert os.path.isfile(path)
 
+    def test_run_ignore_states(self, msibi, stateX, stateY):
+        msibi.gsd_period = 10
+        msibi.add_state(stateX)
+        msibi.add_state(stateY)
+
+        pair_AB = Pair(
+            type1="A",
+            type2="B",
+            r_cut=2.0,
+            nbins=100,
+            optimize=True,
+            exclude_bonded=True,
+            ignore_states=[stateX]
+        )
+        pair_AB.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
+        msibi.add_force(pair_AB)
+
+        pair_AA = Pair(
+            type1="A",
+            type2="A",
+            r_cut=2.0,
+            nbins=100,
+            optimize=True,
+            exclude_bonded=True,
+        )
+        pair_AA.set_lj(sigma=2, epsilon=2, r_cut=2.0, r_min=0.1)
+        msibi.add_force(pair_AA)
+
+        pair_BB = Pair(
+            type1="B",
+            type2="B",
+            r_cut=2.0,
+            nbins=100,
+            optimize=True,
+            exclude_bonded=True,
+        )
+        pair_BB.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
+        msibi.add_force(pair_BB)
+
+        pair_AB._states[stateX]["target_distribution"][:,0] *= 0
+        pair_AB._states[stateX]["target_distribution"][:,1] *= 0
+        msibi.run_optimization(n_steps=500, n_iterations=1)
+
     def test_run_with_static_force(self, msibi, stateX, stateY):
         msibi.gsd_period = 10
         bond = Bond(
