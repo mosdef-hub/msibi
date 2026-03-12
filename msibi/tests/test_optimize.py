@@ -84,7 +84,7 @@ class TestMSIBI(BaseTest):
             r_cut=2.0,
             nbins=100,
             optimize=True,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
             ignore_states=[stateX]
         )
         pair_AB.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
@@ -96,7 +96,7 @@ class TestMSIBI(BaseTest):
             r_cut=2.0,
             nbins=100,
             optimize=True,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
         )
         pair_AA.set_lj(sigma=2, epsilon=2, r_cut=2.0, r_min=0.1)
         msibi.add_force(pair_AA)
@@ -107,7 +107,7 @@ class TestMSIBI(BaseTest):
             r_cut=2.0,
             nbins=100,
             optimize=True,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
         )
         pair_BB.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
         msibi.add_force(pair_BB)
@@ -161,7 +161,7 @@ class TestMSIBI(BaseTest):
             r_cut=2.0,
             nbins=100,
             optimize=True,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
         )
         pair.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
         msibi.add_force(pair)
@@ -172,7 +172,7 @@ class TestMSIBI(BaseTest):
             r_cut=2.0,
             nbins=100,
             optimize=True,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
         )
         pair2.set_lj(sigma=2, epsilon=2, r_cut=2.0, r_min=0.1)
         msibi.add_force(pair2)
@@ -183,7 +183,7 @@ class TestMSIBI(BaseTest):
             r_cut=2.0,
             nbins=100,
             optimize=True,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
         )
         pair3.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
         msibi.add_force(pair3)
@@ -213,7 +213,7 @@ class TestMSIBI(BaseTest):
             r_cut=2.0,
             nbins=100,
             optimize=True,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
         )
         pair.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
         msibi.add_force(pair)
@@ -224,7 +224,7 @@ class TestMSIBI(BaseTest):
             r_cut=2.0,
             nbins=100,
             optimize=True,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
         )
         pair2.set_lj(sigma=2, epsilon=2, r_cut=2.0, r_min=0.1)
         msibi.add_force(pair2)
@@ -235,7 +235,7 @@ class TestMSIBI(BaseTest):
             r_cut=2.0,
             nbins=100,
             optimize=True,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
         )
         pair3.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
         msibi.add_force(pair3)

@@ -36,9 +36,6 @@ class State(object):
         independent values (x), or it can be a linear function that approaches
         zero as x approaches x_cut.
         Available options are 'constant' and 'linear'.
-    exclude_bonded: bool, optional, default=False
-        If ``True`` then any beads that belong to the same molecle
-        are not included in radial distribution funciton calculations.
     """
 
     def __init__(
@@ -50,7 +47,6 @@ class State(object):
         sampling_stride: int = 1,
         alpha0: float = 1.0,
         alpha_form: str = "constant",
-        exclude_bonded: bool = False,  # TODO: Do we use this here or in Force?
         _dir=None,
     ):
         if alpha_form.lower() not in ["constant", "linear"]:
@@ -66,7 +62,6 @@ class State(object):
         self.alpha_form = alpha_form.lower()
         self.dir = self._setup_dir(name, kT, dir_name=_dir)
         self.query_traj = os.path.join(self.dir, "query.gsd")
-        self.exclude_bonded = exclude_bonded
 
     def __repr__(self):
         return (

@@ -331,6 +331,34 @@ class TestPair(BaseTest):
         assert pairAB._pair_name == ("A", "B")
         assert pairAB.optimize is False
 
+    def test_default_state_params(self, stateX):
+        pair = Pair(
+            type1="A",
+            type2="A",
+            r_cut=3.0,
+            nbins=100,
+            optimize=True,
+            exclude_bond_depth=2,
+        )
+        pair._add_state(stateX)
+        assert pair._states[stateX]["exclude_bond_depth"] == 2
+        assert pair._states[stateX]["optimize_against"] == True 
+
+    def test_set_state_params(self, stateX):
+        pair = Pair(
+            type1="A",
+            type2="A",
+            r_cut=3.0,
+            nbins=100,
+            optimize=True,
+            exclude_bond_depth=2,
+        )
+        pair.set_state_params(stateX, exclude_bond_depth=3, optimize=False)
+        pair._add_state(stateX)
+        assert pair._states[stateX]["exclude_bond_depth"] == 3 
+        assert pair._states[stateX]["optimize_against"] == False 
+
+
     def test_set_lj(self, pairAB):
         pairAB.set_lj(r_min=0.1, r_cut=3.0, epsilon=1.0, sigma=1.0)
         assert pairAB.format == "table"

@@ -70,7 +70,7 @@ class BaseTest:
             r_cut=3.0,
             nbins=100,
             optimize=False,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
         )
         pair.set_lj(sigma=2, epsilon=2, r_cut=3.0, r_min=0.1)
         return pair
@@ -83,7 +83,7 @@ class BaseTest:
             r_cut=3.0,
             nbins=100,
             optimize=False,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
         )
         pair.set_lj(sigma=1.5, epsilon=1, r_cut=3.0, r_min=0.1)
         return pair
@@ -96,7 +96,7 @@ class BaseTest:
             r_cut=3.0,
             nbins=100,
             optimize=False,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
         )
         pair.set_lj(sigma=1.5, epsilon=1, r_cut=3.0, r_min=0.1)
         return pair
