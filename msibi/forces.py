@@ -1,6 +1,6 @@
 import os
 import warnings
-from typing import Callable, Optional, Union
+from typing import Callable, Optional, Union, List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -89,6 +89,12 @@ class Force:
         to both the head and tail of the potential.
         Non-bonded forces (``Pair``) only apply this correction to the head of
         the potential.
+    ignore_states : List, optional
+        This lets you exclude certain state points to be used in updating
+        this potential. This may be helpful where a state point has a 
+        configuration such that the RDF of a pair is zero at all values. 
+        For example, a bilayer system where the head and tail beads 
+        are outside the cutoff distance for the entire trajectory.
     """
 
     def __init__(
@@ -101,6 +107,7 @@ class Force:
         correction_fit_window: Optional[int] = None,
         maxfev: Optional[int] = 3000,
         correction_form: Optional[Callable] = None,
+        ignore_states: List = None 
     ):
         if optimize and not nbins or optimize and nbins <= 0:
             raise ValueError(
@@ -113,6 +120,10 @@ class Force:
         self.correction_fit_window = correction_fit_window if optimize else None
         self.maxfev = int(maxfev)
         self.correction_form = correction_form
+        if ignore_states is None:
+            self.ignore_states = []
+        else:
+            self.ignore_states = ignore_states
         self._smoothing_window = smoothing_window if optimize else None
         self._smoothing_order = smoothing_order if optimize else None
         self.format = None
@@ -690,15 +701,19 @@ class Force:
 
     def _update_potential(self) -> None:
         """Compare distributions and update potential via Boltzmann Inversion."""
+        state_count = 0 
         for state in self._states:
+            if state in self.ignore_states:
+                continue
             current_dist = self._states[state]["current_distribution"]
             target_dist = self._states[state]["target_distribution"]
             self._states[state]["distribution_history"].append(current_dist)
-            N = len(self._states)
             alpha_array = state.alpha(pot_x_range=self.x_range, dx=self.dx)
             self._potential += alpha_array * (
-                state.kT * np.log(current_dist[:, 1] / target_dist[:, 1]) / N
+                state.kT * np.log(current_dist[:, 1] / target_dist[:, 1])
             )
+            state_count += 1
+        self._potential /= state_count
         # Apply corrections to regions without distribution overlap
         if isinstance(self, msibi.forces.Pair):
             self._potential, head_cut, tail_cut, real_indices = pair_corrections(
@@ -775,6 +790,12 @@ class Bond(Force):
         The type of correciton form to apply to the potential.
         This is only used when the Force is set to be optimized.
         This correction is applied to both the head and tail of the potential.
+    ignore_states : List, optional
+        This lets you exclude certain state points to be used in updating
+        this potential. This may be helpful where a state point has a 
+        configuration such that the RDF of a pair is zero at all values. 
+        For example, a bilayer system where the head and tail beads 
+        are outside the cutoff distance for the entire trajectory.
     """
 
     def __init__(
@@ -788,6 +809,7 @@ class Bond(Force):
         correction_fit_window: Optional[int] = 10,
         maxfev: Optional[int] = 1000,
         correction_form: Callable = harmonic,
+        ignore_states: List = None 
     ):
         self.type1, self.type2 = sorted([type1, type2], key=natural_sort)
         name = f"{self.type1}-{self.type2}"
@@ -800,6 +822,7 @@ class Bond(Force):
             correction_fit_window=correction_fit_window,
             maxfev=maxfev,
             correction_form=correction_form,
+            ignore_states=ignore_states
         )
 
     def set_harmonic(self, r0: Union[float, int], k: Union[float, int]) -> None:
@@ -916,6 +939,12 @@ class Angle(Force):
         The type of correciton form to apply to the potential.
         This is only used when the Force is set to be optimized.
         This correction is applied to both the head and tail of the potential.
+    ignore_states : List, optional
+        This lets you exclude certain state points to be used in updating
+        this potential. This may be helpful where a state point has a 
+        configuration such that the RDF of a pair is zero at all values. 
+        For example, a bilayer system where the head and tail beads 
+        are outside the cutoff distance for the entire trajectory.
     """
 
     def __init__(
@@ -930,6 +959,7 @@ class Angle(Force):
         correction_fit_window: Optional[int] = 10,
         maxfev: Optional[int] = 1000,
         correction_form: Callable = harmonic,
+        ignore_states: List = None 
     ):
         self.type1 = type1
         self.type2 = type2
@@ -944,6 +974,7 @@ class Angle(Force):
             correction_fit_window=correction_fit_window,
             maxfev=maxfev,
             correction_form=correction_form,
+            ignore_states=ignore_states
         )
 
     def set_harmonic(self, t0: Union[float, int], k: Union[float, int]) -> None:
@@ -1066,6 +1097,12 @@ class Pair(Force):
         The type of correciton form to apply to the potential.
         This is only used when the Force is set to be optimized.
         This correction is only applied to both the head of the potential.
+    ignore_states : List, optional
+        This lets you exclude certain state points to be used in updating
+        this potential. This may be helpful where a state point has a 
+        configuration such that the RDF of a pair is zero at all values. 
+        For example, a bilayer system where the head and tail beads 
+        are outside the cutoff distance for the entire trajectory.
     """
 
     def __init__(
@@ -1082,6 +1119,7 @@ class Pair(Force):
         maxfev: Optional[int] = 1000,
         exclude_bonded: bool = False,
         head_correction_form: Callable = exponential,
+        ignore_states: List = None 
     ):
         self.type1, self.type2 = sorted([type1, type2], key=natural_sort)
         self.r_cut = r_cut
@@ -1099,6 +1137,7 @@ class Pair(Force):
             correction_fit_window=correction_fit_window,
             maxfev=maxfev,
             correction_form=head_correction_form,
+            ignore_states=ignore_states
         )
 
     def set_lj(
@@ -1219,6 +1258,12 @@ class Dihedral(Force):
         The type of correciton form to apply to the potential.
         This is only used when the Force is set to be optimized.
         This correction is applied to both the head and tail of the potential.
+    ignore_states : List, optional
+        This lets you exclude certain state points to be used in updating
+        this potential. This may be helpful where a state point has a 
+        configuration such that the RDF of a pair is zero at all values. 
+        For example, a bilayer system where the head and tail beads 
+        are outside the cutoff distance for the entire trajectory.
     """
 
     def __init__(
@@ -1234,6 +1279,7 @@ class Dihedral(Force):
         correction_fit_window: Optional[int] = 10,
         maxfev: Optional[int] = 1000,
         correction_form: Callable = harmonic,
+        ignore_states: List = None 
     ):
         self.type1 = type1
         self.type2 = type2
@@ -1249,6 +1295,7 @@ class Dihedral(Force):
             correction_fit_window=correction_fit_window,
             maxfev=maxfev,
             correction_form=correction_form,
+            ignore_states=ignore_states
         )
 
     def set_periodic(
