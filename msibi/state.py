@@ -199,7 +199,7 @@ class State(object):
             shutil.copy(
                 self.query_traj, os.path.join(self.dir, f"query{iteration}.gsd")
             )
-        print(f"Finished simulation {iteration} for state {self}")
+        print(f"Finished simulation {iteration} for state {self}. TPS = {sim.tps}")
         print()
 
     def _setup_dir(self, name: str, kT: float, dir_name: str = None) -> str:
