@@ -1,6 +1,6 @@
 import os
 import warnings
-from typing import Callable, Optional, Union, List
+from typing import Callable, Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
