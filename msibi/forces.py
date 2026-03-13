@@ -127,13 +127,14 @@ class Force:
         self._smoothing_window = smoothing_window if optimize else None
         self._smoothing_order = smoothing_order if optimize else None
         self.format = None
-        self.xmin = None
-        self.xmax = None
+        self.x_min = None
+        self.x_max = None
         self.dx = None
         self.x_range = None
         self.potential_history = []
         self._potential = None
         self._states = dict()
+        self._pending_state_params = dict()
         self._head_correction_history = []
         self._tail_correction_history = []
         self._learned_potential_history = []
@@ -618,6 +619,19 @@ class Force:
         state : msibi.state.State
             Instance of a State object previously created.
         """
+        self._states[state] = {
+            "current_distribution": None,
+            "alpha0": state.alpha0,
+            "f_fit": [],
+            "distribution_history": [],
+            "path": state.dir,
+        }
+
+        self._states[state].update(self._state_defaults())
+        # Apply user-set params overriding defaults
+        if state in self._pending_state_params:
+            self._states[state].update(self._pending_state_params[state])
+
         if self.optimize and state not in self.ignore_states:
             target_distribution = self._get_state_distribution(state=state, query=False)
             if self.smoothing_window and self.smoothing_order:
@@ -630,22 +644,11 @@ class Force:
                 target_distribution[:, 1][neg_indices] = 0
         else:
             target_distribution = None
-        self._states[state] = {
-            "target_distribution": target_distribution,
-            "current_distribution": None,
-            "alpha0": state.alpha0,
-            "f_fit": [],
-            "distribution_history": [],
-            "path": state.dir,
-        }
-        self._states[state].update(self._state_defaults())
-        # Apply user-set params overriding defaults
-        if state in self._pending_state_params:
-            self._states[state].update(self._pending_state_params[state])
+        self._states[state]["target_distribution"] = target_distribution
 
     def _state_defaults(self):
         """Needed place holder, this method is only used in Pair."""
-        return {}
+        return {"optimize_against": self.optimize}
 
     def _update_target_distribution(self, state: msibi.state.State) -> None:
             target_distribution = self._get_state_distribution(state=state, query=False)
@@ -1268,7 +1271,7 @@ class Pair(Force):
             bins=self.nbins + 1,
         )
         x = rdf.bin_centers
-        y = rdf.rdf
+        y = rdf.rdf * N
         dist = np.vstack([x, y])
         return dist.T
 

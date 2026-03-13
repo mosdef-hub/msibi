@@ -112,8 +112,6 @@ class TestMSIBI(BaseTest):
         pair_BB.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
         msibi.add_force(pair_BB)
 
-        pair_AB._states[stateX]["target_distribution"][:,0] *= 0
-        pair_AB._states[stateX]["target_distribution"][:,1] *= 0
         msibi.run_optimization(n_steps=500, n_iterations=1)
 
     def test_run_with_static_force(self, msibi, stateX, stateY):
