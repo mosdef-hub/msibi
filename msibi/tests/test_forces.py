@@ -154,6 +154,40 @@ class TestForce(BaseTest):
         angle._add_state(stateX)
         angle.plot_target_distribution(state=stateX)
 
+    def test_update_target_dist(self, stateX):
+        angle = Angle(type1="A", type2="B", type3="A", optimize=True, nbins=60)
+        angle.set_polynomial(x0=2, k4=0, k3=0, k2=100, x_min=0, x_max=np.pi)
+        angle._add_state(stateX)
+        target_dist = angle._states[stateX]["target_distribution"] 
+        dist = np.copy(target_dist[:, 1])
+
+        angle.smoothing_window = 8
+        target_dist = angle._states[stateX]["target_distribution"] 
+        new_dist = np.copy(target_dist[:, 1])
+        assert not np.array_equal(dist, new_dist)
+
+        angle = Angle(type1="A", type2="B", type3="A", optimize=True, nbins=60)
+        angle.set_polynomial(x0=2, k4=0, k3=0, k2=100, x_min=0, x_max=np.pi)
+        angle._add_state(stateX)
+        target_dist = angle._states[stateX]["target_distribution"] 
+        dist = np.copy(target_dist[:, 1])
+
+        angle.nbins = 80 
+        target_dist = angle._states[stateX]["target_distribution"] 
+        new_dist = np.copy(target_dist[:, 1])
+        assert not np.array_equal(dist, new_dist)
+
+        angle = Angle(type1="A", type2="B", type3="A", optimize=True, nbins=60)
+        angle.set_polynomial(x0=2, k4=0, k3=0, k2=100, x_min=0, x_max=np.pi)
+        angle._add_state(stateX)
+        target_dist = angle._states[stateX]["target_distribution"] 
+        dist = np.copy(target_dist[:, 1])
+
+        angle.smoothing_order = 3 
+        target_dist = angle._states[stateX]["target_distribution"] 
+        new_dist = np.copy(target_dist[:, 1])
+        assert not np.array_equal(dist, new_dist)
+
     def test_static_warnings(self):
         bond = Bond(type1="A", type2="B", optimize=False)
         bond.set_harmonic(k=500, r0=2)
