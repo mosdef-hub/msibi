@@ -96,14 +96,6 @@ class TestForce(BaseTest):
         assert bond2.nbins == bond.nbins == 60
         os.remove("test.csv")
 
-    def test_ignore_states(self, msibi, stateX, stateY):
-        pair = Pair(type1="A", type2="B", optimize=True, nbins=60)
-        assert pair.ignore_states == []
-
-        pair = Pair(type1="A", type2="B", optimize=True, nbins=60, ignore_states=[stateY])
-        assert len(pair.ignore_states) == 1
-        assert pair.ignore_states[0] == stateY
-
     def test_fit_scores(self, msibi, stateX, stateY):
         msibi.gsd_period = 10
         bond = Bond(
@@ -359,7 +351,6 @@ class TestPair(BaseTest):
         pair._add_state(stateX)
         assert pair._states[stateX]["exclude_bond_depth"] == 3 
         assert pair._states[stateX]["optimize_against"] == False 
-
 
     def test_set_lj(self, pairAB):
         pairAB.set_lj(r_min=0.1, r_cut=3.0, epsilon=1.0, sigma=1.0)

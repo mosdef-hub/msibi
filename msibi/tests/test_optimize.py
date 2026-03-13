@@ -85,9 +85,9 @@ class TestMSIBI(BaseTest):
             nbins=100,
             optimize=True,
             exclude_bond_depth=2,
-            ignore_states=[stateX]
         )
         pair_AB.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
+        pair_AB.set_state_params(state=stateX, optimize_against=False)
         msibi.add_force(pair_AB)
 
         pair_AA = Pair(
