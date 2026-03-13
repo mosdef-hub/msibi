@@ -1152,7 +1152,31 @@ class Pair(Force):
         optimize_against: bool,
         exclude_bond_depth: int = None,
         exclude_all_bonded: bool = False,
-    ):
+    ) -> None:
+        """Set Pair-State specific parameters.
+
+        .. note::
+
+            Use this method to override default values
+            for this force, which are used for all states included
+            the MSIBI optimization.
+
+            One use case is ignore a certain State for a Force that 
+            is being optimized.
+
+        Parameters
+        ----------
+        state : msibi.state.State
+            The state point being used to define Force-state specific parameters.
+        optimize_against : bool
+            Turns this state off (False) or on (True), for this Force.
+            This overrides Force.optimize only for this state point.
+        exclude_bond_depth : int
+            Sets a bond-depth pair exclusion rule that applies only to 
+            calculating RDFs for this state.
+        exclude_all_bonded : bool
+            Excludes all intra-molecular pairs in the RDF calculation
+        """
         # Store for later self._add_state() may not have run yet
         self._pending_state_params[state] = {
             "exclude_bond_depth": exclude_bond_depth,
