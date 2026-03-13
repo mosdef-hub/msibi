@@ -154,6 +154,40 @@ class TestForce(BaseTest):
         angle._add_state(stateX)
         angle.plot_target_distribution(state=stateX)
 
+    def test_update_target_dist(self, stateX):
+        angle = Angle(type1="A", type2="B", type3="A", optimize=True, nbins=60)
+        angle.set_polynomial(x0=2, k4=0, k3=0, k2=100, x_min=0, x_max=np.pi)
+        angle._add_state(stateX)
+        target_dist = angle._states[stateX]["target_distribution"] 
+        dist = np.copy(target_dist[:, 1])
+
+        angle.smoothing_window = 8
+        target_dist = angle._states[stateX]["target_distribution"] 
+        new_dist = np.copy(target_dist[:, 1])
+        assert not np.array_equal(dist, new_dist)
+
+        angle = Angle(type1="A", type2="B", type3="A", optimize=True, nbins=60)
+        angle.set_polynomial(x0=2, k4=0, k3=0, k2=100, x_min=0, x_max=np.pi)
+        angle._add_state(stateX)
+        target_dist = angle._states[stateX]["target_distribution"] 
+        dist = np.copy(target_dist[:, 1])
+
+        angle.nbins = 80 
+        target_dist = angle._states[stateX]["target_distribution"] 
+        new_dist = np.copy(target_dist[:, 1])
+        assert not np.array_equal(dist, new_dist)
+
+        angle = Angle(type1="A", type2="B", type3="A", optimize=True, nbins=60)
+        angle.set_polynomial(x0=2, k4=0, k3=0, k2=100, x_min=0, x_max=np.pi)
+        angle._add_state(stateX)
+        target_dist = angle._states[stateX]["target_distribution"] 
+        dist = np.copy(target_dist[:, 1])
+
+        angle.smoothing_order = 3 
+        target_dist = angle._states[stateX]["target_distribution"] 
+        new_dist = np.copy(target_dist[:, 1])
+        assert not np.array_equal(dist, new_dist)
+
     def test_static_warnings(self):
         bond = Bond(type1="A", type2="B", optimize=False)
         bond.set_harmonic(k=500, r0=2)
@@ -322,6 +356,35 @@ class TestPair(BaseTest):
         assert pairAB.name == "A-B"
         assert pairAB._pair_name == ("A", "B")
         assert pairAB.optimize is False
+
+    def test_default_state_params(self, stateX):
+        pair = Pair(
+            type1="A",
+            type2="A",
+            r_cut=3.0,
+            nbins=100,
+            optimize=True,
+            exclude_bond_depth=2,
+        )
+        pair.set_lj(sigma=1, epsilon=1, r_cut=3, r_min=0.1)
+        pair._add_state(stateX)
+        assert pair._states[stateX]["exclude_bond_depth"] == 2
+        assert pair._states[stateX]["optimize_against"] == True 
+
+    def test_set_state_params(self, stateX):
+        pair = Pair(
+            type1="A",
+            type2="A",
+            r_cut=3.0,
+            nbins=100,
+            optimize=True,
+            exclude_bond_depth=2,
+        )
+        pair.set_lj(sigma=1, epsilon=1, r_cut=3, r_min=0.1)
+        pair.set_state_params(stateX, exclude_bond_depth=3, optimize_against=False)
+        pair._add_state(stateX)
+        assert pair._states[stateX]["exclude_bond_depth"] == 3 
+        assert pair._states[stateX]["optimize_against"] == False 
 
     def test_set_lj(self, pairAB):
         pairAB.set_lj(r_min=0.1, r_cut=3.0, epsilon=1.0, sigma=1.0)

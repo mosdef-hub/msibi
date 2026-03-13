@@ -116,13 +116,14 @@ class Force:
         self._smoothing_window = smoothing_window if optimize else None
         self._smoothing_order = smoothing_order if optimize else None
         self.format = None
-        self.xmin = None
-        self.xmax = None
+        self.x_min = None
+        self.x_max = None
         self.dx = None
         self.x_range = None
         self.potential_history = []
         self._potential = None
         self._states = dict()
+        self._pending_state_params = dict()
         self._head_correction_history = []
         self._tail_correction_history = []
         self._learned_potential_history = []
@@ -168,9 +169,10 @@ class Force:
             raise PotentialNotOptimizedError("apply a smoothing window")
         if not isinstance(value, int) or value <= 0:
             raise ValueError("The smoothing window must be an integer > 0.")
+        # Update the stored target distribution
         self._smoothing_window = value
         for state in self._states:
-            self._add_state(state)
+            self._update_target_distribution(state)
 
     @property
     def smoothing_order(self) -> int:
@@ -184,9 +186,10 @@ class Force:
             raise PotentialNotOptimizedError("apply a smoothing order")
         if not isinstance(value, int) or value <= 0:
             raise ValueError("The smoothing order must be an integer.")
+        # Update the stored target distribution
         self._smoothing_order = value
         for state in self._states:
-            self._add_state(state)
+            self._update_target_distribution(state)
 
     @property
     def nbins(self) -> int:
@@ -200,7 +203,7 @@ class Force:
             raise ValueError("nbins must be an integer.")
         self._nbins = value
         for state in self._states:
-            self._add_state(state)
+            self._update_target_distribution(state)
 
     def smooth_potential(self) -> None:
         """Smooth and overwrite the current potential.
@@ -471,7 +474,7 @@ class Force:
     def set_target_distribution(
         self, state: msibi.state.State, array: np.ndarray
     ) -> None:
-        """Store the target distribution for a given state.
+        """Manually set the target distribution for a given state.
 
         Parameters
         ----------
@@ -605,7 +608,20 @@ class Force:
         state : msibi.state.State
             Instance of a State object previously created.
         """
-        if self.optimize:
+        self._states[state] = {
+            "current_distribution": None,
+            "alpha0": state.alpha0,
+            "f_fit": [],
+            "distribution_history": [],
+            "path": state.dir,
+        }
+
+        self._states[state].update(self._state_defaults())
+        # Apply user-set params overriding defaults
+        if state in self._pending_state_params:
+            self._states[state].update(self._pending_state_params[state])
+
+        if self.optimize and self._states[state]["optimize_against"]:
             target_distribution = self._get_state_distribution(state=state, query=False)
             if self.smoothing_window and self.smoothing_order:
                 target_distribution[:, 1] = savgol_filter(
@@ -617,14 +633,24 @@ class Force:
                 target_distribution[:, 1][neg_indices] = 0
         else:
             target_distribution = None
-        self._states[state] = {
-            "target_distribution": target_distribution,
-            "current_distribution": None,
-            "alpha0": state.alpha0,
-            "f_fit": [],
-            "distribution_history": [],
-            "path": state.dir,
-        }
+        self._states[state]["target_distribution"] = target_distribution
+
+    def _state_defaults(self):
+        """Needed place holder, this method is only used in Pair."""
+        return {"optimize_against": self.optimize}
+
+    def _update_target_distribution(self, state: msibi.state.State) -> None:
+            target_distribution = self._get_state_distribution(state=state, query=False)
+            if self.smoothing_window and self.smoothing_order:
+                target_distribution[:, 1] = savgol_filter(
+                    x=target_distribution[:, 1],
+                    window_length=self.smoothing_window,
+                    polyorder=self.smoothing_order,
+                )
+                neg_indices = np.where(target_distribution[:, 1] < 0)[0]
+                target_distribution[:, 1][neg_indices] = 0
+            self._states[state]["target_distribution"] = target_distribution
+
 
     def _compute_current_distribution(self, state: msibi.state.State) -> None:
         """Find the current distribution of the query trajectory.
@@ -690,15 +716,19 @@ class Force:
 
     def _update_potential(self) -> None:
         """Compare distributions and update potential via Boltzmann Inversion."""
+        state_count = 0 
         for state in self._states:
+            if not self._states[state]["optimize_against"]:
+                continue
             current_dist = self._states[state]["current_distribution"]
             target_dist = self._states[state]["target_distribution"]
             self._states[state]["distribution_history"].append(current_dist)
-            N = len(self._states)
             alpha_array = state.alpha(pot_x_range=self.x_range, dx=self.dx)
             self._potential += alpha_array * (
-                state.kT * np.log(current_dist[:, 1] / target_dist[:, 1]) / N
+                state.kT * np.log(current_dist[:, 1] / target_dist[:, 1])
             )
+            state_count += 1
+        self._potential /= state_count
         # Apply corrections to regions without distribution overlap
         if isinstance(self, msibi.forces.Pair):
             self._potential, head_cut, tail_cut, real_indices = pair_corrections(
@@ -844,6 +874,10 @@ class Bond(Force):
         }
         return table_entry
 
+    def _state_defaults(self):
+        """Needed for Force._add_state()."""
+        return {"optimize_against": self.optimize}
+
     def _get_distribution(self, state: msibi.state.State, gsd_file: str) -> np.ndarray:
         """Calculate a bond length distribution.
 
@@ -983,6 +1017,10 @@ class Angle(Force):
         table_entry = {"U": self.potential, "tau": self.force}
         return table_entry
 
+    def _state_defaults(self):
+        """Needed for Force._add_state()."""
+        return {"optimize_against": self.optimize}
+
     def _get_distribution(self, state: msibi.state.State, gsd_file: str) -> np.ndarray:
         """Calculate a bond angle distribution.
 
@@ -1045,10 +1083,13 @@ class Pair(Force):
         and step size (dx).
         It is also used in determining the bin size of the target and query
         distributions.
-    exclude_bonded : bool
-        If ``True``, then particles from the same molecule are not
-        included in the RDF calculation.
-        If ``False``, all particles are included.
+    exclude_bond_depth : int, optional (default 0)
+        Excludes all pairs within a depth (distance on a bond graph)
+        from the RDF calculation.
+    exclude_all_bonded : bool, optional (default False)
+        Excludes all pairs belonging to the same molecule from the
+        RDF calculation.
+        If this is used, then exclude_bond_depth should not be used.
     smoothing_window : int, optional default 11
         The window size used in SciPy's savgol_filter method.
         This must be an odd integer.
@@ -1076,6 +1117,8 @@ class Pair(Force):
         nbins: Optional[int] = None,
         r_cut: Optional[Union[float, int]] = None,
         r_switch: Optional[Union[float, int]] = None,
+        exclude_bond_depth: int = 0,
+        exclude_all_bonded: bool = False,
         smoothing_window: Optional[int] = 11,
         smoothing_order: Optional[int] = 2,
         correction_fit_window: Optional[int] = 8,
@@ -1086,6 +1129,8 @@ class Pair(Force):
         self.type1, self.type2 = sorted([type1, type2], key=natural_sort)
         self.r_cut = r_cut
         self.r_switch = r_switch
+        self.exclude_bond_depth = exclude_bond_depth
+        self.exclude_all_bonded = exclude_all_bonded
         name = f"{self.type1}-{self.type2}"
         # Pair types in hoomd have a different tuple naming structure.
         # Using different attr above to keep consistent msibi.force.Force.name format.
@@ -1100,6 +1145,47 @@ class Pair(Force):
             maxfev=maxfev,
             correction_form=head_correction_form,
         )
+
+    def set_state_params(
+        self,
+        state: msibi.state.State,
+        optimize_against: bool,
+        exclude_bond_depth: int = None,
+        exclude_all_bonded: bool = False,
+    ) -> None:
+        """Set Pair-State specific parameters.
+
+        .. note::
+
+            Use this method to override default values
+            for this force, which are used for all states included
+            the MSIBI optimization.
+
+            One use case is ignore a certain State for a Force that 
+            is being optimized.
+
+        Parameters
+        ----------
+        state : msibi.state.State
+            The state point being used to define Force-state specific parameters.
+        optimize_against : bool
+            Turns this state off (False) or on (True), for this Force.
+            This overrides Force.optimize only for this state point.
+        exclude_bond_depth : int
+            Sets a bond-depth pair exclusion rule that applies only to 
+            calculating RDFs for this state.
+        exclude_all_bonded : bool
+            Excludes all intra-molecular pairs in the RDF calculation
+        """
+        # Store for later self._add_state() may not have run yet
+        self._pending_state_params[state] = {
+            "exclude_bond_depth": exclude_bond_depth,
+            "exclude_all_bonded": exclude_all_bonded,
+            "optimize_against": optimize_against,
+        }
+        # If self._add_state() has already run, apply these immediately
+        if state in self._states:
+            self._states[state].update(self._pending_state_params[state])
 
     def set_lj(
         self,
@@ -1142,6 +1228,14 @@ class Pair(Force):
         }
         return table_entry
 
+    def _state_defaults(self):
+        """Needed for Force._add_state()"""
+        return {
+            "optimize_against": self.optimize,
+            "exclude_bond_depth": self.exclude_bond_depth,
+            "exclude_all_bonded": self.exclude_all_bonded,
+        }
+
     def _get_distribution(self, state: msibi.state.State, gsd_file: str) -> np.ndarray:
         """Calculate a pair distribution (RDF).
 
@@ -1158,14 +1252,15 @@ class Pair(Force):
             B_name=self.type2,
             r_min=self.x_min,
             r_max=self.r_cut,
-            exclude_bonded=state.exclude_bonded,
+            exclude_bond_depth=self._states[state]["exclude_bond_depth"],
+            exclude_all_bonded=self._states[state]["exclude_all_bonded"],
             start=-state.n_frames,
             stride=state.sampling_stride,
             stop=-1,
             bins=self.nbins + 1,
         )
         x = rdf.bin_centers
-        y = rdf.rdf
+        y = rdf.rdf * N
         dist = np.vstack([x, y])
         return dist.T
 
@@ -1296,6 +1391,10 @@ class Dihedral(Force):
         """Set the correct entry to use in ``hoomd.md.dihedral.Table``"""
         table_entry = {"U": self.potential, "tau": self.force}
         return table_entry
+
+    def _state_defaults(self):
+        """Needed for Force._add_state()."""
+        return {"optimize_against": self.optimize}
 
     def _get_distribution(self, state: msibi.state.State, gsd_file: str) -> np.ndarray:
         """Calculate a dihedral angle distribution.

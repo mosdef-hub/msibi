@@ -166,7 +166,7 @@ def validate_pairs():
         n_frames=100,
         sampling_stride=2,
         alpha0=0.7,
-        exclude_bonded=True,
+        exclude_bond_depth=3,
     )
 
     bond = Bond(type1="A", type2="A", optimize=False)

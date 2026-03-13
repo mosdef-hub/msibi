@@ -289,14 +289,15 @@ class MSIBI(object):
     def _recompute_distribution(self, force: msibi.forces.Force) -> None:
         """Recompute the current distribution."""
         for state in self.states:
-            force._compute_current_distribution(state)
-            force._save_current_distribution(state, iteration=self.n_iterations)
-            print(
-                "Force: {0}, State: {1}, Iteration: {2}, Fit score:{3:f}".format(
-                    force.name,
-                    state.name,
-                    self.n_iterations,
-                    force._states[state]["f_fit"][self.n_iterations],
+            if force._states[state]["optimize_against"]:
+                force._compute_current_distribution(state)
+                force._save_current_distribution(state, iteration=self.n_iterations)
+                print(
+                    "Force: {0}, State: {1}, Iteration: {2}, Fit score:{3:f}".format(
+                        force.name,
+                        state.name,
+                        self.n_iterations,
+                        force._states[state]["f_fit"][self.n_iterations],
+                    )
                 )
-            )
-            print()
+                print()
