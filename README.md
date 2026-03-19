@@ -148,7 +148,10 @@ pairAA.save_potential("pairAA.csv")
 ## Citing MSIBI
 Details of the underlying method and its validation can be found [here](http://dx.doi.org/10.1063/1.4880555).
 
-If you use this package, please cite the above paper. The BibTeX reference is
+If you use this package, please cite the following papers. The BibTeX references are:
+
+This paper discusses the design and implementation of MSIBI
+
 ```
 @article{Moore2014,
       author = "Moore, Timothy C. and Iacovella, Christopher R. and McCabe, Clare",
@@ -159,6 +162,22 @@ If you use this package, please cite the above paper. The BibTeX reference is
       number = "22",
       doi = "http://dx.doi.org/10.1063/1.4880555"
 }
+```
+
+This paper discusses the python package that runs MSIBI optimizations
+
+```
+@article{Jones2026,
+    doi={10.21105/joss.09244},
+    url={https://doi.org/10.21105/joss.09244},
+    year={2026},
+    publisher={The Open Journal},
+    volume={11},
+    number={119},
+    pages={9244},
+    author={Jones, Chris D. and Almarashi, Mazin and Albooyeh, Marjan and Jankowski, Eric and McCabe, Clare},
+    title={msibi: Multistate Iterative Boltzmann Inversion}, journal = {Journal of Open Source Software} 
+} 
 ```
 
 ## Contributing to msibi
