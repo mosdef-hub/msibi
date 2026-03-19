@@ -635,7 +635,7 @@ class Force:
             target_distribution = None
         self._states[state]["target_distribution"] = target_distribution
 
-    def _state_defaults(self):
+    def _state_defaults(self) -> dict:
         """Needed place holder, this method is only used in Pair."""
         return {"optimize_against": self.optimize}
 
@@ -874,7 +874,7 @@ class Bond(Force):
         }
         return table_entry
 
-    def _state_defaults(self):
+    def _state_defaults(self) -> dict:
         """Needed for Force._add_state()."""
         return {"optimize_against": self.optimize}
 
@@ -1017,7 +1017,7 @@ class Angle(Force):
         table_entry = {"U": self.potential, "tau": self.force}
         return table_entry
 
-    def _state_defaults(self):
+    def _state_defaults(self) -> dict:
         """Needed for Force._add_state()."""
         return {"optimize_against": self.optimize}
 
@@ -1228,7 +1228,7 @@ class Pair(Force):
         }
         return table_entry
 
-    def _state_defaults(self):
+    def _state_defaults(self) -> dict:
         """Needed for Force._add_state()"""
         return {
             "optimize_against": self.optimize,
@@ -1392,7 +1392,7 @@ class Dihedral(Force):
         table_entry = {"U": self.potential, "tau": self.force}
         return table_entry
 
-    def _state_defaults(self):
+    def _state_defaults(self) -> dict:
         """Needed for Force._add_state()."""
         return {"optimize_against": self.optimize}
 

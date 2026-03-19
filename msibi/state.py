@@ -153,6 +153,7 @@ class State(object):
         thermostat_kwargs: dict,
         dt: float,
         seed: int,
+        device: hoomd.device.Device,
         iteration: int,
         gsd_period: int,
         backup_trajectories: bool = False,
@@ -161,7 +162,6 @@ class State(object):
 
         This method is called in :meth:msibi.optimize.run_optimization.
         """
-        device = hoomd.device.auto_select()
         sim = hoomd.simulation.Simulation(device=device, seed=seed)
         print(f"Starting simulation {iteration} for state {self}")
         print(f"Running on device {device}")

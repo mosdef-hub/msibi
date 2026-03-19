@@ -51,6 +51,9 @@ class MSIBI(object):
         Sets the pair exclusions used during the optimization simulations.
     seed : int, default=42
         Random seed to use during the simulations.
+    device : hoomd.device.Device, default hoomd.device.auto_select.
+        Set whether HOOMD to use the CPU or GPU. hoomd.device.auto_select
+        will default ot the GPU if one is available.
     """
 
     def __init__(
@@ -64,6 +67,7 @@ class MSIBI(object):
         gsd_period: int,
         nlist_exclusions: list[str] = ["bond", "angle"],
         seed: int = 24,
+        device: hoomd.device.Device = hoomd.device.auto_select(),
     ):
         if integrator_method not in [
             hoomd.md.methods.ConstantVolume,
@@ -82,6 +86,7 @@ class MSIBI(object):
         self.dt = dt
         self.gsd_period = gsd_period
         self.seed = seed
+        self.device = device
         self.nlist_exclusions = nlist_exclusions
         self.n_iterations = 0
         self.states = []
@@ -194,6 +199,7 @@ class MSIBI(object):
                     thermostat_kwargs=self.thermostat_kwargs,
                     dt=self.dt,
                     seed=self.seed,
+                    device=self.device,
                     iteration=self.n_iterations,
                     gsd_period=self.gsd_period,
                     backup_trajectories=backup_trajectories,
