@@ -33,9 +33,9 @@ bibliography: paper.bib
 
 # Summary
 
-Iterative Boltzmann inversion (IBI) is a well-established, and widely used, method for deriving coarse-grained (CG) force fields that recreate the structural distributions of an underlying atomistic model.
-Multiple state IBI (MS-IBI) as introduced by Moore et al. [@Moore2014], addresses state-point transferability limitations of IBI by including distributions from multiple state points to inform the derived CG force field.
-Here, we introduce `msibi`, a pure python package that implements the MS-IBI method for creating CG force fields for both intramolecular and intermolecular interactions.
+Iterative Boltzmann inversion (IBI) is a well-established and widely used method for deriving coarse-grained (CG) force fields that recreate the structural distributions of an underlying atomistic model.
+Multiple state IBI (MS-IBI), as introduced by @Moore2014, addresses state-point transferability limitations of IBI by including distributions from multiple state points to inform the derived CG force field.
+Here, we introduce `msibi`, a pure Python package that implements the MS-IBI method for creating CG force fields for both intramolecular and intermolecular interactions.
 The package offers a user-friendly, Python-native API, eliminating the need for bash scripting and manual editing of input files.
 `msibi` is ultimately simulation engine agnostic, but uses the HOOMD-Blue simulation engine [@Anderson2020hoomd] under-the-hood to perform iterative CG model simulations.
 This allows `msibi` to utilize graphical processing unit (GPU) acceleration without requiring users to manually compile GPU compatible code.
@@ -49,7 +49,7 @@ Beyond being a technical tool to improve efficiency, coarse-graining also reflec
 As a result, this approach introduces two challenges: first, the potential energy surface for a given chemistry and CG mapping is not known *a priori*, and
 second, as the mapping used is arbitrary, with multiple valid options, developing a single CG force field that is transferable across various mapping choices is not possible.
 Also, a CG force field derived using IBI is state-point dependent with limited transferability to other state-points [@Moore2014; @Carbone2008].
-Consequently, developing a CG force field is required each time a new under-lying chemistry, mapping or target state-point is used.
+Consequently, developing a CG force field is required each time a new underlying chemistry, mapping, or target state-point is used.
 IBI and MS-IBI are popular choices for deriving CG forces for polymers and biomolecules [@Carbone2008; @Moore2016; @Jones2025; @Tang2023; @Fritz2009].
 While these methods are frequently used, open-source software tools that provide an accessible and reproducible, end-to-end workflow for IBI and MS-IBI remain limited, especially for arbitrary mappings and multi-state systems.
 
@@ -77,7 +77,7 @@ This class encapsulates state-point information such as target trajectories, tem
 Multiple instances of this class can be created, and each is used in deriving the final CG force field.
 
 ## 2. **msibi.force.Force:**
-The base class from which all force types in `msibi` inherit from:
+The base class from which all force types in `msibi` inherit:
 
 - **msibi.force.Bond:** Optimizes bond-stretching forces.
 - **msibi.force.Angle:** Optimizes bond-bending forces.
@@ -123,8 +123,8 @@ The [repository](https://github.com/mosdef-hub/msibi) and [documentation](https:
 
 # Availability
 
-`msibi` is open-source and freely available under the MIT License on [GitHub](https://github.com/mosdef-hub/msibi).
-We encourage users to ask questions, file issues and make contributions as applicable on the repository.
+`msibi` is open source and freely available under the MIT License on [GitHub](https://github.com/mosdef-hub/msibi).
+We encourage users to ask questions, file issues, and make contributions as applicable on the repository.
 `msibi` is available on the conda-forge ecosystem.
 For installation instructions and Python API documentation, visit the [documentation](https://msibi.readthedocs.io/en/latest/).
 
