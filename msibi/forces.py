@@ -643,16 +643,16 @@ class Force:
         return {"optimize_against": self.optimize}
 
     def _update_target_distribution(self, state: msibi.state.State) -> None:
-            target_distribution = self._get_state_distribution(state=state, query=False)
-            if self.smoothing_window and self.smoothing_order:
-                target_distribution[:, 1] = savgol_filter(
-                    x=target_distribution[:, 1],
-                    window_length=self.smoothing_window,
-                    polyorder=self.smoothing_order,
-                )
-                neg_indices = np.where(target_distribution[:, 1] < 0)[0]
-                target_distribution[:, 1][neg_indices] = 0
-            self._states[state]["target_distribution"] = target_distribution
+        target_distribution = self._get_state_distribution(state=state, query=False)
+        if self.smoothing_window and self.smoothing_order:
+            target_distribution[:, 1] = savgol_filter(
+                x=target_distribution[:, 1],
+                window_length=self.smoothing_window,
+                polyorder=self.smoothing_order,
+            )
+            neg_indices = np.where(target_distribution[:, 1] < 0)[0]
+            target_distribution[:, 1][neg_indices] = 0
+        self._states[state]["target_distribution"] = target_distribution
 
 
     def _compute_current_distribution(self, state: msibi.state.State) -> None:
@@ -722,7 +722,7 @@ class Force:
         N = sum([1 for s in self._states if self._states[s]["optimize_against"]])
         if N == 0:
             raise RuntimeError(
-                "No states for this pair are configured with optimize_against=True"
+                f"No states for force {self.name} are configured with optimize_against=True"
             )
 
         for state in self._states:
@@ -864,6 +864,8 @@ class Bond(Force):
         """
         # Store for later self._add_state() may not have run yet
         self._pending_state_params[state] = {"optimize_against": optimize_against}
+        if optimize_against:
+            self._update_target_distribution(state)
         # If self._add_state() has already run, apply these immediately
         if state in self._states:
             self._states[state].update(self._pending_state_params[state])
@@ -1042,6 +1044,8 @@ class Angle(Force):
         """
         # Store for later self._add_state() may not have run yet
         self._pending_state_params[state] = {"optimize_against": optimize_against}
+        if optimize_against:
+            self._update_target_distribution(state)
         # If self._add_state() has already run, apply these immediately
         if state in self._states:
             self._states[state].update(self._pending_state_params[state])
@@ -1189,7 +1193,6 @@ class Pair(Force):
         smoothing_order: Optional[int] = 2,
         correction_fit_window: Optional[int] = 8,
         maxfev: Optional[int] = 1000,
-        exclude_bonded: bool = False,
         head_correction_form: Callable = exponential,
     ):
         if exclude_all_bonded and exclude_bond_depth not in (0, None):
@@ -1255,8 +1258,8 @@ class Pair(Force):
             "exclude_all_bonded": exclude_all_bonded,
             "optimize_against": optimize_against,
         }
-        if exclude_bond_depth is not None:
-            self._pending_state_params["exclude_bond_depth"] = exclude_bond_depth
+        if optimize_against:
+            self._update_target_distribution(state)
         # If self._add_state() has already run, apply these immediately
         if state in self._states:
             self._states[state].update(self._pending_state_params[state])
@@ -1446,6 +1449,8 @@ class Dihedral(Force):
         """
         # Store for later self._add_state() may not have run yet
         self._pending_state_params[state] = {"optimize_against": optimize_against}
+        if optimize_against:
+            self._update_target_distribution(state)
         # If self._add_state() has already run, apply these immediately
         if state in self._states:
             self._states[state].update(self._pending_state_params[state])
