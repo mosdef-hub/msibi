@@ -172,7 +172,8 @@ class Force:
         # Update the stored target distribution
         self._smoothing_window = value
         for state in self._states:
-            self._update_target_distribution(state)
+            if self._states[state]["optimize_against"]:
+                self._update_target_distribution(state)
 
     @property
     def smoothing_order(self) -> int:
@@ -189,7 +190,8 @@ class Force:
         # Update the stored target distribution
         self._smoothing_order = value
         for state in self._states:
-            self._update_target_distribution(state)
+            if self._states[state]["optimize_against"]:
+                self._update_target_distribution(state)
 
     @property
     def nbins(self) -> int:
@@ -203,7 +205,8 @@ class Force:
             raise ValueError("nbins must be an integer.")
         self._nbins = value
         for state in self._states:
-            self._update_target_distribution(state)
+            if self._states[state]["optimize_against"]:
+                self._update_target_distribution(state)
 
     def smooth_potential(self) -> None:
         """Smooth and overwrite the current potential.
@@ -716,7 +719,12 @@ class Force:
 
     def _update_potential(self) -> None:
         """Compare distributions and update potential via Boltzmann Inversion."""
-        state_count = 0 
+        N = sum([1 for s in self._states if self._states[s]["optimize_against"]])
+        if N == 0:
+            raise RuntimeError(
+                "No states for this pair are configured with optimize_against=True"
+            )
+
         for state in self._states:
             if not self._states[state]["optimize_against"]:
                 continue
@@ -726,9 +734,7 @@ class Force:
             alpha_array = state.alpha(pot_x_range=self.x_range, dx=self.dx)
             self._potential += alpha_array * (
                 state.kT * np.log(current_dist[:, 1] / target_dist[:, 1])
-            )
-            state_count += 1
-        self._potential /= state_count
+            ) / N
         # Apply corrections to regions without distribution overlap
         if isinstance(self, msibi.forces.Pair):
             self._potential, head_cut, tail_cut, real_indices = pair_corrections(
@@ -831,6 +837,36 @@ class Bond(Force):
             maxfev=maxfev,
             correction_form=correction_form,
         )
+
+    def set_state_params(
+        self,
+        state: msibi.state.State,
+        optimize_against: bool,
+    ) -> None:
+        """Set Bond-State specific parameters.
+
+        .. note::
+
+            Use this method to override default values
+            for this force, which are used for all states included
+            the MSIBI optimization.
+
+            One use case is ignore a certain State for a Force that 
+            is being optimized.
+
+        Parameters
+        ----------
+        state : msibi.state.State
+            The state point being used to define Force-state specific parameters.
+        optimize_against : bool
+            Turns this state off (False) or on (True), for this Force.
+            This overrides Force.optimize only for this state point.
+        """
+        # Store for later self._add_state() may not have run yet
+        self._pending_state_params[state] = {"optimize_against": optimize_against}
+        # If self._add_state() has already run, apply these immediately
+        if state in self._states:
+            self._states[state].update(self._pending_state_params[state])
 
     def set_harmonic(self, r0: Union[float, int], k: Union[float, int]) -> None:
         """Set a fixed harmonic bond potential.
@@ -980,6 +1016,36 @@ class Angle(Force):
             correction_form=correction_form,
         )
 
+    def set_state_params(
+        self,
+        state: msibi.state.State,
+        optimize_against: bool,
+    ) -> None:
+        """Set Angle-State specific parameters.
+
+        .. note::
+
+            Use this method to override default values
+            for this force, which are used for all states included
+            the MSIBI optimization.
+
+            One use case is ignore a certain State for a Force that 
+            is being optimized.
+
+        Parameters
+        ----------
+        state : msibi.state.State
+            The state point being used to define Force-state specific parameters.
+        optimize_against : bool
+            Turns this state off (False) or on (True), for this Force.
+            This overrides Force.optimize only for this state point.
+        """
+        # Store for later self._add_state() may not have run yet
+        self._pending_state_params[state] = {"optimize_against": optimize_against}
+        # If self._add_state() has already run, apply these immediately
+        if state in self._states:
+            self._states[state].update(self._pending_state_params[state])
+
     def set_harmonic(self, t0: Union[float, int], k: Union[float, int]) -> None:
         """Set a fixed harmonic angle potential.
 
@@ -1126,6 +1192,12 @@ class Pair(Force):
         exclude_bonded: bool = False,
         head_correction_form: Callable = exponential,
     ):
+        if exclude_all_bonded and exclude_bond_depth not in (0, None):
+            raise ValueError(
+                "exclude_bond_depth and exclude_all_bonded are mutually exclusive; "
+                "please specify only one of these options."
+            )
+
         self.type1, self.type2 = sorted([type1, type2], key=natural_sort)
         self.r_cut = r_cut
         self.r_switch = r_switch
@@ -1150,8 +1222,8 @@ class Pair(Force):
         self,
         state: msibi.state.State,
         optimize_against: bool,
-        exclude_bond_depth: int = None,
-        exclude_all_bonded: bool = False,
+        exclude_bond_depth: int,
+        exclude_all_bonded: bool,
     ) -> None:
         """Set Pair-State specific parameters.
 
@@ -1183,6 +1255,8 @@ class Pair(Force):
             "exclude_all_bonded": exclude_all_bonded,
             "optimize_against": optimize_against,
         }
+        if exclude_bond_depth is not None:
+            self._pending_state_params["exclude_bond_depth"] = exclude_bond_depth
         # If self._add_state() has already run, apply these immediately
         if state in self._states:
             self._states[state].update(self._pending_state_params[state])
@@ -1345,6 +1419,36 @@ class Dihedral(Force):
             maxfev=maxfev,
             correction_form=correction_form,
         )
+
+    def set_state_params(
+        self,
+        state: msibi.state.State,
+        optimize_against: bool,
+    ) -> None:
+        """Set Dihedral-State specific parameters.
+
+        .. note::
+
+            Use this method to override default values
+            for this force, which are used for all states included
+            the MSIBI optimization.
+
+            One use case is ignore a certain State for a Force that 
+            is being optimized.
+
+        Parameters
+        ----------
+        state : msibi.state.State
+            The state point being used to define Force-state specific parameters.
+        optimize_against : bool
+            Turns this state off (False) or on (True), for this Force.
+            This overrides Force.optimize only for this state point.
+        """
+        # Store for later self._add_state() may not have run yet
+        self._pending_state_params[state] = {"optimize_against": optimize_against}
+        # If self._add_state() has already run, apply these immediately
+        if state in self._states:
+            self._states[state].update(self._pending_state_params[state])
 
     def set_periodic(
         self,

@@ -52,8 +52,10 @@ class MSIBI(object):
     seed : int, default=42
         Random seed to use during the simulations.
     device : hoomd.device.Device, default hoomd.device.auto_select.
-        Set whether HOOMD to use the CPU or GPU. hoomd.device.auto_select
-        will default ot the GPU if one is available.
+        Set whether HOOMD will use the CPU or GPU. 
+        If left as ``None`` then hoomd.device.auto_select is used and 
+        will default to the GPU if one is available or fall back to the CPU
+        if a GPU is not available.
     """
 
     def __init__(
@@ -67,7 +69,7 @@ class MSIBI(object):
         gsd_period: int,
         nlist_exclusions: list[str] = ["bond", "angle"],
         seed: int = 24,
-        device: hoomd.device.Device = hoomd.device.auto_select(),
+        device: hoomd.device.Device = None,
     ):
         if integrator_method not in [
             hoomd.md.methods.ConstantVolume,
@@ -86,7 +88,10 @@ class MSIBI(object):
         self.dt = dt
         self.gsd_period = gsd_period
         self.seed = seed
-        self.device = device
+        if device:
+            self.device = device
+        else:
+            self.device = hoomd.device.auto_select()
         self.nlist_exclusions = nlist_exclusions
         self.n_iterations = 0
         self.states = []

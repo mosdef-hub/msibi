@@ -381,7 +381,12 @@ class TestPair(BaseTest):
             exclude_bond_depth=2,
         )
         pair.set_lj(sigma=1, epsilon=1, r_cut=3, r_min=0.1)
-        pair.set_state_params(stateX, exclude_bond_depth=3, optimize_against=False)
+        pair.set_state_params(
+            stateX,
+            exclude_bond_depth=3,
+            optimize_against=False,
+            exclude_all_bonded=False
+        )
         pair._add_state(stateX)
         assert pair._states[stateX]["exclude_bond_depth"] == 3 
         assert pair._states[stateX]["optimize_against"] == False 
