@@ -638,7 +638,12 @@ class Force:
         self._states[state]["target_distribution"] = target_distribution
 
     def _state_defaults(self) -> dict:
-        """Needed place holder, this method is only used in Pair."""
+        """Return default per-state parameters for this force.
+
+        This method is called by Force._add_state() for all Force types;
+        subclasses may override it to provide additional or different
+        defaults.
+        """
         return {"optimize_against": self.optimize}
 
     def _update_target_distribution(self, state: msibi.state.State) -> None:
@@ -862,11 +867,11 @@ class Bond(Force):
         """
         # Store for later self._add_state() may not have run yet
         self._pending_state_params[state] = {"optimize_against": optimize_against}
-        if optimize_against:
-            self._update_target_distribution(state)
         # If self._add_state() has already run, apply these immediately
         if state in self._states:
             self._states[state].update(self._pending_state_params[state])
+        if optimize_against and state in self._states:
+            self._update_target_distribution(state)
 
     def set_harmonic(self, r0: Union[float, int], k: Union[float, int]) -> None:
         """Set a fixed harmonic bond potential.
@@ -911,7 +916,12 @@ class Bond(Force):
         return table_entry
 
     def _state_defaults(self) -> dict:
-        """Needed for Force._add_state()."""
+        """Return default per-state parameters for this force.
+
+        This method is called by Force._add_state() for all Force types;
+        subclasses may override it to provide additional or different
+        defaults.
+        """
         return {"optimize_against": self.optimize}
 
     def _get_distribution(self, state: msibi.state.State, gsd_file: str) -> np.ndarray:
@@ -1041,11 +1051,11 @@ class Angle(Force):
         """
         # Store for later self._add_state() may not have run yet
         self._pending_state_params[state] = {"optimize_against": optimize_against}
-        if optimize_against:
-            self._update_target_distribution(state)
         # If self._add_state() has already run, apply these immediately
         if state in self._states:
             self._states[state].update(self._pending_state_params[state])
+        if optimize_against and state in self._states:
+            self._update_target_distribution(state)
 
     def set_harmonic(self, t0: Union[float, int], k: Union[float, int]) -> None:
         """Set a fixed harmonic angle potential.
@@ -1085,7 +1095,12 @@ class Angle(Force):
         return table_entry
 
     def _state_defaults(self) -> dict:
-        """Needed for Force._add_state()."""
+        """Return default per-state parameters for this force.
+
+        This method is called by Force._add_state() for all Force types;
+        subclasses may override it to provide additional or different
+        defaults.
+        """
         return {"optimize_against": self.optimize}
 
     def _get_distribution(self, state: msibi.state.State, gsd_file: str) -> np.ndarray:
@@ -1248,17 +1263,22 @@ class Pair(Force):
         exclude_all_bonded : bool
             Excludes all intra-molecular pairs in the RDF calculation
         """
+        if exclude_all_bonded and exclude_bond_depth not in (0, None):
+            raise ValueError(
+                "exclude_bond_depth and exclude_all_bonded are mutually exclusive; "
+                "please specify only one of these options."
+            )
         # Store for later self._add_state() may not have run yet
         self._pending_state_params[state] = {
             "exclude_bond_depth": exclude_bond_depth,
             "exclude_all_bonded": exclude_all_bonded,
             "optimize_against": optimize_against,
         }
-        if optimize_against:
-            self._update_target_distribution(state)
         # If self._add_state() has already run, apply these immediately
         if state in self._states:
             self._states[state].update(self._pending_state_params[state])
+        if optimize_against and state in self._states:
+            self._update_target_distribution(state)
 
     def set_lj(
         self,
@@ -1302,7 +1322,12 @@ class Pair(Force):
         return table_entry
 
     def _state_defaults(self) -> dict:
-        """Needed for Force._add_state()"""
+        """Return default per-state parameters for this force.
+
+        This method is called by Force._add_state() for all Force types;
+        subclasses may override it to provide additional or different
+        defaults.
+        """
         return {
             "optimize_against": self.optimize,
             "exclude_bond_depth": self.exclude_bond_depth,
@@ -1444,11 +1469,11 @@ class Dihedral(Force):
         """
         # Store for later self._add_state() may not have run yet
         self._pending_state_params[state] = {"optimize_against": optimize_against}
-        if optimize_against:
-            self._update_target_distribution(state)
         # If self._add_state() has already run, apply these immediately
         if state in self._states:
             self._states[state].update(self._pending_state_params[state])
+        if optimize_against and state in self._states:
+            self._update_target_distribution(state)
 
     def set_periodic(
         self,
@@ -1497,7 +1522,12 @@ class Dihedral(Force):
         return table_entry
 
     def _state_defaults(self) -> dict:
-        """Needed for Force._add_state()."""
+        """Return default per-state parameters for this force.
+
+        This method is called by Force._add_state() for all Force types;
+        subclasses may override it to provide additional or different
+        defaults.
+        """
         return {"optimize_against": self.optimize}
 
     def _get_distribution(self, state: msibi.state.State, gsd_file: str) -> np.ndarray:

@@ -88,7 +88,7 @@ class MSIBI(object):
         self.dt = dt
         self.gsd_period = gsd_period
         self.seed = seed
-        if device:
+        if device is not None:
             self.device = device
         else:
             self.device = hoomd.device.auto_select()
