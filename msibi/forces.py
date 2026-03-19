@@ -71,7 +71,6 @@ class Force:
         If this force is not being optimied, leave this as ``None``.
     smoothing_window : int, optional
         The window size used in SciPy's savgol_filter method.
-        This must be an odd integer.
     smoothing_order : int, optional
         The smoothing order used in SciPy's savgol_filter method.
     correction_fit_window: int, optional
@@ -796,7 +795,6 @@ class Bond(Force):
         distributions.
     smoothing_window : int, optional default 15
         The window size used in SciPy's savgol_filter method.
-        This must be an odd integer.
     smoothing_order : int, optional default 2
         The smoothing order used in SciPy's savgol_filter method.
     correction_fit_window: int, optional default 10
@@ -973,7 +971,6 @@ class Angle(Force):
         distributions.
     smoothing_window : int, optional default 15
         The window size used in SciPy's savgol_filter method.
-        This must be an odd integer.
     smoothing_order : int, optional default 2
         The smoothing order used in SciPy's savgol_filter method.
     correction_fit_window: int, optional default 10
@@ -1162,7 +1159,6 @@ class Pair(Force):
         If this is used, then exclude_bond_depth should not be used.
     smoothing_window : int, optional default 11
         The window size used in SciPy's savgol_filter method.
-        This must be an odd integer.
     smoothing_order : int, optional default 2
         The smoothing order used in SciPy's savgol_filter method.
     correction_fit_window: int, optional default 8
@@ -1376,7 +1372,6 @@ class Dihedral(Force):
         distributions.
     smoothing_window : int, optional default 11
         The window size used in SciPy's savgol_filter method.
-        This must be an odd integer.
     smoothing_order : int, optional default 2
         The smoothing order used in SciPy's savgol_filter method.
     correction_fit_window: int, optional default 10
