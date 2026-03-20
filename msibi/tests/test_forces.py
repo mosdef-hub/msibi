@@ -93,6 +93,24 @@ class TestForce(BaseTest):
         angle_ABA.set_state_params(stateX, optimize_against=True)
         assert angle_ABA._states[stateX]["target_distribution"] is not None
 
+    def test_change_ignore_states_dihedrals(self, msibi, stateX):
+        msibi.add_state(stateX)
+        dih_ABAB = Dihedral(
+            type1="A",
+            type2="B",
+            type3="A",
+            type4="B",
+            nbins=70,
+            optimize=True,
+        )
+        dih_ABAB.set_polynomial(x0=2.0, x_min=0.0, x_max=np.pi, k2=100, k3=0, k4=0)
+        dih_ABAB.set_state_params(stateX, optimize_against=False)
+        msibi.add_force(dih_ABAB)
+        assert dih_ABAB._states[stateX]["target_distribution"] is None
+
+        dih_ABAB.set_state_params(stateX, optimize_against=True)
+        assert dih_ABAB._states[stateX]["target_distribution"] is not None
+
     def test_name_sorting(self):
         bond = Bond(type1="B", type2="A", optimize=False)
         assert bond.name == "A-B"
