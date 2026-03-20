@@ -119,6 +119,37 @@ class TestMSIBI(BaseTest):
 
         msibi.run_optimization(n_steps=500, n_iterations=1)
 
+    def test_run_change_ignore_states(self, msibi, stateX, stateY):
+        msibi.gsd_period = 10
+        msibi.add_state(stateX)
+        msibi.add_state(stateY)
+
+        pair_AB = Pair(
+            type1="A",
+            type2="B",
+            r_cut=2.0,
+            nbins=100,
+            optimize=True,
+            exclude_bond_depth=2,
+        )
+        pair_AB.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
+        pair_AB.set_state_params(
+            stateX,
+            exclude_bond_depth=0,
+            optimize_against=False,
+            exclude_all_bonded=False
+        )
+        msibi.add_force(pair_AB)
+        assert pair_AB._states[stateX]["target_distribution"] is None
+
+        pair_AB.set_state_params(
+            stateX,
+            exclude_bond_depth=1,
+            optimize_against=True,
+            exclude_all_bonded=False
+        )
+        assert pair_AB._states[stateX]["target_distribution"] is not None
+
     def test_run_ignore_states_error(self, msibi, stateX, stateY):
         with pytest.raises(RuntimeError):
             msibi.gsd_period = 10
