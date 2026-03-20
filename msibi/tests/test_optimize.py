@@ -23,6 +23,8 @@ class TestMSIBI(BaseTest):
             hoomd.md.methods.thermostats.MTTK,
         )
 
+        assert isinstance(msibi.device, hoomd.device.CPU)
+
     def test_add_state(self, msibi, stateX, stateY):
         msibi.add_state(stateX)
         msibi.add_state(stateY)
