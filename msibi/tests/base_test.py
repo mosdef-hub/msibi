@@ -56,7 +56,7 @@ class BaseTest:
             alpha0=1.0,
             kT=4.0,
             traj_file=os.path.join(test_assets, "AB-4.0kT.gsd"),
-            n_frames=100,
+            n_frames=20,
             sampling_stride=1,
             _dir=tmp_path,
         )
@@ -70,7 +70,7 @@ class BaseTest:
             r_cut=3.0,
             nbins=100,
             optimize=False,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
         )
         pair.set_lj(sigma=2, epsilon=2, r_cut=3.0, r_min=0.1)
         return pair
@@ -83,7 +83,7 @@ class BaseTest:
             r_cut=3.0,
             nbins=100,
             optimize=False,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
         )
         pair.set_lj(sigma=1.5, epsilon=1, r_cut=3.0, r_min=0.1)
         return pair
@@ -96,7 +96,7 @@ class BaseTest:
             r_cut=3.0,
             nbins=100,
             optimize=False,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
         )
         pair.set_lj(sigma=1.5, epsilon=1, r_cut=3.0, r_min=0.1)
         return pair

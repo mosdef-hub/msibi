@@ -166,7 +166,6 @@ def validate_pairs():
         n_frames=100,
         sampling_stride=2,
         alpha0=0.7,
-        exclude_bonded=True,
     )
 
     bond = Bond(type1="A", type2="A", optimize=False)
@@ -183,6 +182,7 @@ def validate_pairs():
         smoothing_window=11,
         r_switch=1.5,
         correction_fit_window=7,
+        exclude_bond_depth=3,
     )
     pair.set_lj(r_min=0.1, r_cut=2.5, epsilon=0.8, sigma=1.2)
 

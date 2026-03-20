@@ -23,6 +23,8 @@ class TestMSIBI(BaseTest):
             hoomd.md.methods.thermostats.MTTK,
         )
 
+        assert isinstance(msibi.device, hoomd.device.CPU)
+
     def test_add_state(self, msibi, stateX, stateY):
         msibi.add_state(stateX)
         msibi.add_state(stateY)
@@ -73,6 +75,106 @@ class TestMSIBI(BaseTest):
         bond.save_state_data(file_path=path, state=stateX)
         assert os.path.isfile(path)
 
+    def test_run_ignore_states(self, msibi, stateX, stateY):
+        msibi.gsd_period = 10
+        msibi.add_state(stateX)
+        msibi.add_state(stateY)
+
+        pair_AB = Pair(
+            type1="A",
+            type2="B",
+            r_cut=2.0,
+            nbins=100,
+            optimize=True,
+            exclude_bond_depth=2,
+        )
+        pair_AB.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
+        pair_AB.set_state_params(
+            stateX,
+            exclude_bond_depth=0,
+            optimize_against=False,
+            exclude_all_bonded=False
+        )
+        msibi.add_force(pair_AB)
+
+        pair_AA = Pair(
+            type1="A",
+            type2="A",
+            r_cut=2.0,
+            nbins=100,
+            optimize=True,
+            exclude_bond_depth=2,
+        )
+        pair_AA.set_lj(sigma=2, epsilon=2, r_cut=2.0, r_min=0.1)
+        msibi.add_force(pair_AA)
+
+        pair_BB = Pair(
+            type1="B",
+            type2="B",
+            r_cut=2.0,
+            nbins=100,
+            optimize=True,
+            exclude_bond_depth=2,
+        )
+        pair_BB.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
+        msibi.add_force(pair_BB)
+
+        msibi.run_optimization(n_steps=500, n_iterations=1)
+
+
+    def test_run_ignore_states_error(self, msibi, stateX, stateY):
+        with pytest.raises(RuntimeError):
+            msibi.gsd_period = 10
+            msibi.add_state(stateX)
+            msibi.add_state(stateY)
+
+            pair_AB = Pair(
+                type1="A",
+                type2="B",
+                r_cut=2.0,
+                nbins=100,
+                optimize=True,
+                exclude_bond_depth=2,
+            )
+            pair_AB.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
+            pair_AB.set_state_params(
+                state=stateX,
+                exclude_bond_depth=0,
+                exclude_all_bonded=False,
+                optimize_against=False
+            )
+            pair_AB.set_state_params(
+                state=stateY,
+                exclude_bond_depth=0,
+                exclude_all_bonded=False,
+                optimize_against=False
+            )
+            msibi.add_force(pair_AB)
+
+            pair_AA = Pair(
+                type1="A",
+                type2="A",
+                r_cut=2.0,
+                nbins=100,
+                optimize=True,
+                exclude_bond_depth=2,
+            )
+            pair_AA.set_lj(sigma=2, epsilon=2, r_cut=2.0, r_min=0.1)
+            msibi.add_force(pair_AA)
+
+            pair_BB = Pair(
+                type1="B",
+                type2="B",
+                r_cut=2.0,
+                nbins=100,
+                optimize=True,
+                exclude_bond_depth=2,
+            )
+            pair_BB.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
+            msibi.add_force(pair_BB)
+
+            msibi.run_optimization(n_steps=500, n_iterations=1)
+
     def test_run_with_static_force(self, msibi, stateX, stateY):
         msibi.gsd_period = 10
         bond = Bond(
@@ -118,7 +220,7 @@ class TestMSIBI(BaseTest):
             r_cut=2.0,
             nbins=100,
             optimize=True,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
         )
         pair.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
         msibi.add_force(pair)
@@ -129,7 +231,7 @@ class TestMSIBI(BaseTest):
             r_cut=2.0,
             nbins=100,
             optimize=True,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
         )
         pair2.set_lj(sigma=2, epsilon=2, r_cut=2.0, r_min=0.1)
         msibi.add_force(pair2)
@@ -140,7 +242,7 @@ class TestMSIBI(BaseTest):
             r_cut=2.0,
             nbins=100,
             optimize=True,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
         )
         pair3.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
         msibi.add_force(pair3)
@@ -170,7 +272,7 @@ class TestMSIBI(BaseTest):
             r_cut=2.0,
             nbins=100,
             optimize=True,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
         )
         pair.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
         msibi.add_force(pair)
@@ -181,7 +283,7 @@ class TestMSIBI(BaseTest):
             r_cut=2.0,
             nbins=100,
             optimize=True,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
         )
         pair2.set_lj(sigma=2, epsilon=2, r_cut=2.0, r_min=0.1)
         msibi.add_force(pair2)
@@ -192,7 +294,7 @@ class TestMSIBI(BaseTest):
             r_cut=2.0,
             nbins=100,
             optimize=True,
-            exclude_bonded=True,
+            exclude_bond_depth=2,
         )
         pair3.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
         msibi.add_force(pair3)

@@ -51,6 +51,11 @@ class MSIBI(object):
         Sets the pair exclusions used during the optimization simulations.
     seed : int, default=42
         Random seed to use during the simulations.
+    device : hoomd.device.Device, default hoomd.device.auto_select.
+        Set whether HOOMD will use the CPU or GPU. 
+        If left as ``None`` then hoomd.device.auto_select is used and 
+        will default to the GPU if one is available or fall back to the CPU
+        if a GPU is not available.
     """
 
     def __init__(
@@ -64,6 +69,7 @@ class MSIBI(object):
         gsd_period: int,
         nlist_exclusions: list[str] = ["bond", "angle"],
         seed: int = 24,
+        device: hoomd.device.Device = None,
     ):
         if integrator_method not in [
             hoomd.md.methods.ConstantVolume,
@@ -82,6 +88,10 @@ class MSIBI(object):
         self.dt = dt
         self.gsd_period = gsd_period
         self.seed = seed
+        if device is not None:
+            self.device = device
+        else:
+            self.device = hoomd.device.auto_select()
         self.nlist_exclusions = nlist_exclusions
         self.n_iterations = 0
         self.states = []
@@ -194,6 +204,7 @@ class MSIBI(object):
                     thermostat_kwargs=self.thermostat_kwargs,
                     dt=self.dt,
                     seed=self.seed,
+                    device=self.device,
                     iteration=self.n_iterations,
                     gsd_period=self.gsd_period,
                     backup_trajectories=backup_trajectories,
@@ -289,14 +300,15 @@ class MSIBI(object):
     def _recompute_distribution(self, force: msibi.forces.Force) -> None:
         """Recompute the current distribution."""
         for state in self.states:
-            force._compute_current_distribution(state)
-            force._save_current_distribution(state, iteration=self.n_iterations)
-            print(
-                "Force: {0}, State: {1}, Iteration: {2}, Fit score:{3:f}".format(
-                    force.name,
-                    state.name,
-                    self.n_iterations,
-                    force._states[state]["f_fit"][self.n_iterations],
+            if force._states[state]["optimize_against"]:
+                force._compute_current_distribution(state)
+                force._save_current_distribution(state, iteration=self.n_iterations)
+                print(
+                    "Force: {0}, State: {1}, Iteration: {2}, Fit score:{3:f}".format(
+                        force.name,
+                        state.name,
+                        self.n_iterations,
+                        force._states[state]["f_fit"][self.n_iterations],
+                    )
                 )
-            )
-            print()
+                print()

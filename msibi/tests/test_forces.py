@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pytest
 
-from msibi import Angle, Bond, Pair
+from msibi import Angle, Bond, Pair, Dihedral
 from msibi.utils.corrections import linear
 from msibi.utils.exceptions import (
     PotentialImmutableError,
@@ -14,6 +14,103 @@ from .base_test import BaseTest
 
 
 class TestForce(BaseTest):
+    def test_default_state_params(self):
+        bond = Bond(type1="B", type2="A", optimize=True, nbins=100)
+        assert bond._state_defaults()["optimize_against"]
+        bond = Bond(type1="B", type2="A", optimize=False)
+        assert not bond._state_defaults()["optimize_against"]
+
+        angle = Angle(type1="B", type2="A", type3="B", optimize=True, nbins=100)
+        assert angle._state_defaults()["optimize_against"]
+        angle = Angle(type1="B", type2="A", type3="B", optimize=False)
+        assert not angle._state_defaults()["optimize_against"]
+
+        dihedral = Dihedral(type1="B", type2="A", type3="B", type4="A", optimize=True, nbins=100)
+        assert dihedral._state_defaults()["optimize_against"]
+        dihedral = Dihedral(type1="B", type2="A", type3="B", type4="A", optimize=False)
+        assert not dihedral._state_defaults()["optimize_against"]
+
+    def test_change_ignore_states_pairs(self, msibi, stateX):
+        msibi.gsd_period = 10
+        msibi.add_state(stateX)
+
+        pair_AB = Pair(
+            type1="A",
+            type2="B",
+            r_cut=2.0,
+            nbins=100,
+            optimize=True,
+            exclude_bond_depth=2,
+        )
+        pair_AB.set_lj(sigma=1.5, epsilon=1, r_cut=2.0, r_min=0.1)
+        pair_AB.set_state_params(
+            stateX,
+            exclude_bond_depth=0,
+            optimize_against=False,
+            exclude_all_bonded=False
+        )
+        msibi.add_force(pair_AB)
+        assert pair_AB._states[stateX]["target_distribution"] is None
+
+        pair_AB.set_state_params(
+            stateX,
+            exclude_bond_depth=1,
+            optimize_against=True,
+            exclude_all_bonded=False
+        )
+        assert pair_AB._states[stateX]["target_distribution"] is not None
+
+    def test_change_ignore_states_bonds(self, msibi, stateX):
+        msibi.add_state(stateX)
+        bond_AB = Bond(
+            type1="A",
+            type2="B",
+            nbins=70,
+            optimize=True,
+        )
+        bond_AB.set_polynomial(x0=1.0, x_min=0.5, x_max=1.5, k2=100, k3=0, k4=0)
+        bond_AB.set_state_params(stateX, optimize_against=False)
+        msibi.add_force(bond_AB)
+        assert bond_AB._states[stateX]["target_distribution"] is None
+
+        bond_AB.set_state_params(stateX, optimize_against=True)
+        assert bond_AB._states[stateX]["target_distribution"] is not None
+
+    def test_change_ignore_states_angles(self, msibi, stateX):
+        msibi.add_state(stateX)
+        angle_ABA = Angle(
+            type1="A",
+            type2="B",
+            type3="A",
+            nbins=70,
+            optimize=True,
+        )
+        angle_ABA.set_polynomial(x0=2.0, x_min=0.0, x_max=np.pi, k2=100, k3=0, k4=0)
+        angle_ABA.set_state_params(stateX, optimize_against=False)
+        msibi.add_force(angle_ABA)
+        assert angle_ABA._states[stateX]["target_distribution"] is None
+
+        angle_ABA.set_state_params(stateX, optimize_against=True)
+        assert angle_ABA._states[stateX]["target_distribution"] is not None
+
+    def test_change_ignore_states_dihedrals(self, msibi, stateX):
+        msibi.add_state(stateX)
+        dih_ABAB = Dihedral(
+            type1="A",
+            type2="B",
+            type3="A",
+            type4="B",
+            nbins=70,
+            optimize=True,
+        )
+        dih_ABAB.set_polynomial(x0=2.0, x_min=0.0, x_max=np.pi, k2=100, k3=0, k4=0)
+        dih_ABAB.set_state_params(stateX, optimize_against=False)
+        msibi.add_force(dih_ABAB)
+        assert dih_ABAB._states[stateX]["target_distribution"] is None
+
+        dih_ABAB.set_state_params(stateX, optimize_against=True)
+        assert dih_ABAB._states[stateX]["target_distribution"] is not None
+
     def test_name_sorting(self):
         bond = Bond(type1="B", type2="A", optimize=False)
         assert bond.name == "A-B"
@@ -153,6 +250,40 @@ class TestForce(BaseTest):
         angle.set_polynomial(x0=2, k4=0, k3=0, k2=100, x_min=0, x_max=np.pi)
         angle._add_state(stateX)
         angle.plot_target_distribution(state=stateX)
+
+    def test_update_target_dist(self, stateX):
+        angle = Angle(type1="A", type2="B", type3="A", optimize=True, nbins=60)
+        angle.set_polynomial(x0=2, k4=0, k3=0, k2=100, x_min=0, x_max=np.pi)
+        angle._add_state(stateX)
+        target_dist = angle._states[stateX]["target_distribution"] 
+        dist = np.copy(target_dist[:, 1])
+
+        angle.smoothing_window = 8
+        target_dist = angle._states[stateX]["target_distribution"] 
+        new_dist = np.copy(target_dist[:, 1])
+        assert not np.array_equal(dist, new_dist)
+
+        angle = Angle(type1="A", type2="B", type3="A", optimize=True, nbins=60)
+        angle.set_polynomial(x0=2, k4=0, k3=0, k2=100, x_min=0, x_max=np.pi)
+        angle._add_state(stateX)
+        target_dist = angle._states[stateX]["target_distribution"] 
+        dist = np.copy(target_dist[:, 1])
+
+        angle.nbins = 80 
+        target_dist = angle._states[stateX]["target_distribution"] 
+        new_dist = np.copy(target_dist[:, 1])
+        assert not np.array_equal(dist, new_dist)
+
+        angle = Angle(type1="A", type2="B", type3="A", optimize=True, nbins=60)
+        angle.set_polynomial(x0=2, k4=0, k3=0, k2=100, x_min=0, x_max=np.pi)
+        angle._add_state(stateX)
+        target_dist = angle._states[stateX]["target_distribution"] 
+        dist = np.copy(target_dist[:, 1])
+
+        angle.smoothing_order = 3 
+        target_dist = angle._states[stateX]["target_distribution"] 
+        new_dist = np.copy(target_dist[:, 1])
+        assert not np.array_equal(dist, new_dist)
 
     def test_static_warnings(self):
         bond = Bond(type1="A", type2="B", optimize=False)
@@ -322,6 +453,62 @@ class TestPair(BaseTest):
         assert pairAB.name == "A-B"
         assert pairAB._pair_name == ("A", "B")
         assert pairAB.optimize is False
+
+    def test_default_state_params(self, stateX):
+        pair = Pair(
+            type1="A",
+            type2="A",
+            r_cut=3.0,
+            nbins=100,
+            optimize=True,
+            exclude_bond_depth=2,
+        )
+        pair.set_lj(sigma=1, epsilon=1, r_cut=3, r_min=0.1)
+        pair._add_state(stateX)
+        assert pair._states[stateX]["exclude_bond_depth"] == 2
+        assert pair._states[stateX]["optimize_against"] == True 
+
+    def test_set_state_params(self, stateX):
+        pair = Pair(
+            type1="A",
+            type2="A",
+            r_cut=3.0,
+            nbins=100,
+            optimize=True,
+            exclude_bond_depth=2,
+        )
+        pair.set_lj(sigma=1, epsilon=1, r_cut=3, r_min=0.1)
+        pair.set_state_params(
+            stateX,
+            exclude_bond_depth=3,
+            optimize_against=False,
+            exclude_all_bonded=False
+        )
+        pair._add_state(stateX)
+        assert pair._states[stateX]["exclude_bond_depth"] == 3 
+        assert pair._states[stateX]["optimize_against"] == False 
+
+    def test_state_params_errors(self, stateX):
+        with pytest.raises(ValueError):
+            Pair(
+                type1="A",
+                type2="A",
+                r_cut=3.0,
+                nbins=100,
+                optimize=True,
+                exclude_bond_depth=2,
+                exclude_all_bonded=True
+            )
+
+        with pytest.raises(ValueError):
+            Pair(
+                type1="A",
+                type2="A",
+                r_cut=3.0,
+                nbins=100,
+                optimize=True,
+                exclude_bond_depth=-2,
+            )
 
     def test_set_lj(self, pairAB):
         pairAB.set_lj(r_min=0.1, r_cut=3.0, epsilon=1.0, sigma=1.0)
