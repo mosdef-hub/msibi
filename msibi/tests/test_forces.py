@@ -482,6 +482,16 @@ class TestPair(BaseTest):
                 exclude_all_bonded=True
             )
 
+        with pytest.raises(ValueError):
+            Pair(
+                type1="A",
+                type2="A",
+                r_cut=3.0,
+                nbins=100,
+                optimize=True,
+                exclude_bond_depth=-2,
+            )
+
     def test_set_lj(self, pairAB):
         pairAB.set_lj(r_min=0.1, r_cut=3.0, epsilon=1.0, sigma=1.0)
         assert pairAB.format == "table"

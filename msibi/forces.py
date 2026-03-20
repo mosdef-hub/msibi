@@ -1167,7 +1167,7 @@ class Pair(Force):
         distributions.
     exclude_bond_depth : int, optional (default 0)
         Excludes all pairs within a depth (distance on a bond graph)
-        from the RDF calculation.
+        from the RDF calculation. This must be a positive integer.
     exclude_all_bonded : bool, optional (default False)
         Excludes all pairs belonging to the same molecule from the
         RDF calculation.
@@ -1211,6 +1211,9 @@ class Pair(Force):
                 "exclude_bond_depth and exclude_all_bonded are mutually exclusive; "
                 "please specify only one of these options."
             )
+
+        if exclude_bond_depth < 0:
+            raise ValueError("exclude_bond_depth must be an integer >= 0.")
 
         self.type1, self.type2 = sorted([type1, type2], key=natural_sort)
         self.r_cut = r_cut
