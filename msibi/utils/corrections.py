@@ -15,7 +15,7 @@ Try adjusting parameters that impact sampling such as gsd_period in msibi.MSIBI,
 sampling_stride and n_frames in msibi.State, and n_steps in MSIBI.run_optimization.
 You might adjust the fitting and smoothing related parameters.
 See smoothing_window, correction_fit_window, smoothing_order, maxfev in msibi.Force.
-""" 
+"""
 
 
 def harmonic(x: np.ndarray, x0: Union[float, int], k: Union[float, int]):
@@ -121,7 +121,9 @@ def bonded_corrections(
         )
     except RuntimeError:
         print(bad_fit_error_msg)
-        raise RuntimeError("Curve fitting failed for the bond head correction.") from None
+        raise RuntimeError(
+            "Curve fitting failed for the bond head correction."
+        ) from None
     x_head_missing = _shift_x(x[:head_start], origin=x_head_pivot)
     # Apply these parameters to the x-range where we are missing data
     head_pot_correction = head_correction_func(x_head_missing, *popt_head)
@@ -137,7 +139,9 @@ def bonded_corrections(
         tail_pot_correction = tail_correction_func(x[tail_start + 1 :], *popt_tail)
     except RuntimeError:
         print(bad_fit_error_msg)
-        raise RuntimeError("Curve fitting failed for the bond tail correction.") from None
+        raise RuntimeError(
+            "Curve fitting failed for the bond tail correction."
+        ) from None
 
     # Apply correction regions to original potential
     V[:head_start] = head_pot_correction
@@ -207,7 +211,9 @@ def pair_corrections(
         head_pot_correction = head_correction_func(x[:head_start], *popt_head)
     except RuntimeError:
         print(bad_fit_error_msg)
-        raise RuntimeError("Curve fitting failed for the pair head correction.") from None
+        raise RuntimeError(
+            "Curve fitting failed for the pair head correction."
+        ) from None
 
     # Apply correction regions to original potential
     V[:head_start] = head_pot_correction

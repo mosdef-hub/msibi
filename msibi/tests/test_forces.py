@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pytest
 
-from msibi import Angle, Bond, Pair, Dihedral
+from msibi import Angle, Bond, Dihedral, Pair
 from msibi.utils.corrections import linear
 from msibi.utils.exceptions import (
     PotentialImmutableError,
@@ -25,7 +25,9 @@ class TestForce(BaseTest):
         angle = Angle(type1="B", type2="A", type3="B", optimize=False)
         assert not angle._state_defaults()["optimize_against"]
 
-        dihedral = Dihedral(type1="B", type2="A", type3="B", type4="A", optimize=True, nbins=100)
+        dihedral = Dihedral(
+            type1="B", type2="A", type3="B", type4="A", optimize=True, nbins=100
+        )
         assert dihedral._state_defaults()["optimize_against"]
         dihedral = Dihedral(type1="B", type2="A", type3="B", type4="A", optimize=False)
         assert not dihedral._state_defaults()["optimize_against"]
@@ -47,7 +49,7 @@ class TestForce(BaseTest):
             stateX,
             exclude_bond_depth=0,
             optimize_against=False,
-            exclude_all_bonded=False
+            exclude_all_bonded=False,
         )
         msibi.add_force(pair_AB)
         assert pair_AB._states[stateX]["target_distribution"] is None
@@ -56,7 +58,7 @@ class TestForce(BaseTest):
             stateX,
             exclude_bond_depth=1,
             optimize_against=True,
-            exclude_all_bonded=False
+            exclude_all_bonded=False,
         )
         assert pair_AB._states[stateX]["target_distribution"] is not None
 
@@ -255,33 +257,33 @@ class TestForce(BaseTest):
         angle = Angle(type1="A", type2="B", type3="A", optimize=True, nbins=60)
         angle.set_polynomial(x0=2, k4=0, k3=0, k2=100, x_min=0, x_max=np.pi)
         angle._add_state(stateX)
-        target_dist = angle._states[stateX]["target_distribution"] 
+        target_dist = angle._states[stateX]["target_distribution"]
         dist = np.copy(target_dist[:, 1])
 
         angle.smoothing_window = 8
-        target_dist = angle._states[stateX]["target_distribution"] 
+        target_dist = angle._states[stateX]["target_distribution"]
         new_dist = np.copy(target_dist[:, 1])
         assert not np.array_equal(dist, new_dist)
 
         angle = Angle(type1="A", type2="B", type3="A", optimize=True, nbins=60)
         angle.set_polynomial(x0=2, k4=0, k3=0, k2=100, x_min=0, x_max=np.pi)
         angle._add_state(stateX)
-        target_dist = angle._states[stateX]["target_distribution"] 
+        target_dist = angle._states[stateX]["target_distribution"]
         dist = np.copy(target_dist[:, 1])
 
-        angle.nbins = 80 
-        target_dist = angle._states[stateX]["target_distribution"] 
+        angle.nbins = 80
+        target_dist = angle._states[stateX]["target_distribution"]
         new_dist = np.copy(target_dist[:, 1])
         assert not np.array_equal(dist, new_dist)
 
         angle = Angle(type1="A", type2="B", type3="A", optimize=True, nbins=60)
         angle.set_polynomial(x0=2, k4=0, k3=0, k2=100, x_min=0, x_max=np.pi)
         angle._add_state(stateX)
-        target_dist = angle._states[stateX]["target_distribution"] 
+        target_dist = angle._states[stateX]["target_distribution"]
         dist = np.copy(target_dist[:, 1])
 
-        angle.smoothing_order = 3 
-        target_dist = angle._states[stateX]["target_distribution"] 
+        angle.smoothing_order = 3
+        target_dist = angle._states[stateX]["target_distribution"]
         new_dist = np.copy(target_dist[:, 1])
         assert not np.array_equal(dist, new_dist)
 
@@ -466,7 +468,7 @@ class TestPair(BaseTest):
         pair.set_lj(sigma=1, epsilon=1, r_cut=3, r_min=0.1)
         pair._add_state(stateX)
         assert pair._states[stateX]["exclude_bond_depth"] == 2
-        assert pair._states[stateX]["optimize_against"] == True 
+        assert pair._states[stateX]["optimize_against"] is True
 
     def test_set_state_params(self, stateX):
         pair = Pair(
@@ -482,11 +484,11 @@ class TestPair(BaseTest):
             stateX,
             exclude_bond_depth=3,
             optimize_against=False,
-            exclude_all_bonded=False
+            exclude_all_bonded=False,
         )
         pair._add_state(stateX)
-        assert pair._states[stateX]["exclude_bond_depth"] == 3 
-        assert pair._states[stateX]["optimize_against"] == False 
+        assert pair._states[stateX]["exclude_bond_depth"] == 3
+        assert pair._states[stateX]["optimize_against"] is False
 
     def test_state_params_errors(self, stateX):
         with pytest.raises(ValueError):
@@ -497,7 +499,7 @@ class TestPair(BaseTest):
                 nbins=100,
                 optimize=True,
                 exclude_bond_depth=2,
-                exclude_all_bonded=True
+                exclude_all_bonded=True,
             )
 
         with pytest.raises(ValueError):

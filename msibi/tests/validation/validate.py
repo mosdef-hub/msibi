@@ -60,7 +60,7 @@ def validate_bonds():
     bond.smooth_potential()
 
     scores = bond._states[state]["f_fit"]
-    best_fit = scores.index(np.max(scores)) 
+    best_fit = scores.index(np.max(scores))
     assert any(np.array(scores) > 0.97)
 
     # Target data simulations used k = 500 and x0 = 1.1
@@ -113,7 +113,7 @@ def validate_angles():
         nbins=60,
         smoothing_window=3,
         correction_fit_window=7,
-        smoothing_order=1
+        smoothing_order=1,
     )
     angle.set_polynomial(x_min=0.0, x_max=np.pi, x0=2.3, k2=80, k3=0, k4=0)
 
@@ -126,7 +126,7 @@ def validate_angles():
     angle.save_potential("AAA_angle_potential.csv")
 
     scores = angle._states[state]["f_fit"]
-    best_fit = scores.index(np.max(scores)) 
+    best_fit = scores.index(np.max(scores))
     assert any(np.array(scores) > 0.97)
 
     # Target data simulations used k = 250 and x0 = 2.0
