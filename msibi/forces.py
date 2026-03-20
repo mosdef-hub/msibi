@@ -658,7 +658,6 @@ class Force:
             target_distribution[:, 1][neg_indices] = 0
         self._states[state]["target_distribution"] = target_distribution
 
-
     def _compute_current_distribution(self, state: msibi.state.State) -> None:
         """Find the current distribution of the query trajectory.
 
@@ -736,9 +735,11 @@ class Force:
             target_dist = self._states[state]["target_distribution"]
             self._states[state]["distribution_history"].append(current_dist)
             alpha_array = state.alpha(pot_x_range=self.x_range, dx=self.dx)
-            self._potential += alpha_array * (
-                state.kT * np.log(current_dist[:, 1] / target_dist[:, 1])
-            ) / N
+            self._potential += (
+                alpha_array
+                * (state.kT * np.log(current_dist[:, 1] / target_dist[:, 1]))
+                / N
+            )
         # Apply corrections to regions without distribution overlap
         if isinstance(self, msibi.forces.Pair):
             self._potential, head_cut, tail_cut, real_indices = pair_corrections(
@@ -854,7 +855,7 @@ class Bond(Force):
             for this force, which are used for all states included
             the MSIBI optimization.
 
-            One use case is ignore a certain State for a Force that 
+            One use case is ignore a certain State for a Force that
             is being optimized.
 
         Parameters
@@ -1038,7 +1039,7 @@ class Angle(Force):
             for this force, which are used for all states included
             the MSIBI optimization.
 
-            One use case is ignore a certain State for a Force that 
+            One use case is ignore a certain State for a Force that
             is being optimized.
 
         Parameters
@@ -1250,7 +1251,7 @@ class Pair(Force):
             for this force, which are used for all states included
             the MSIBI optimization.
 
-            One use case is ignore a certain State for a Force that 
+            One use case is ignore a certain State for a Force that
             is being optimized.
 
         Parameters
@@ -1261,7 +1262,7 @@ class Pair(Force):
             Turns this state off (False) or on (True), for this Force.
             This overrides Force.optimize only for this state point.
         exclude_bond_depth : int
-            Sets a bond-depth pair exclusion rule that applies only to 
+            Sets a bond-depth pair exclusion rule that applies only to
             calculating RDFs for this state.
         exclude_all_bonded : bool
             Excludes all intra-molecular pairs in the RDF calculation
@@ -1459,7 +1460,7 @@ class Dihedral(Force):
             for this force, which are used for all states included
             the MSIBI optimization.
 
-            One use case is ignore a certain State for a Force that 
+            One use case is ignore a certain State for a Force that
             is being optimized.
 
         Parameters

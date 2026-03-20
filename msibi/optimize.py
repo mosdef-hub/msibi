@@ -52,8 +52,8 @@ class MSIBI(object):
     seed : int, default=42
         Random seed to use during the simulations.
     device : hoomd.device.Device, default hoomd.device.auto_select.
-        Set whether HOOMD will use the CPU or GPU. 
-        If left as ``None`` then hoomd.device.auto_select is used and 
+        Set whether HOOMD will use the CPU or GPU.
+        If left as ``None`` then hoomd.device.auto_select is used and
         will default to the GPU if one is available or fall back to the CPU
         if a GPU is not available.
     """

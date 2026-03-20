@@ -93,7 +93,7 @@ class TestMSIBI(BaseTest):
             stateX,
             exclude_bond_depth=0,
             optimize_against=False,
-            exclude_all_bonded=False
+            exclude_all_bonded=False,
         )
         msibi.add_force(pair_AB)
 
@@ -121,7 +121,6 @@ class TestMSIBI(BaseTest):
 
         msibi.run_optimization(n_steps=500, n_iterations=1)
 
-
     def test_run_ignore_states_error(self, msibi, stateX, stateY):
         with pytest.raises(RuntimeError):
             msibi.gsd_period = 10
@@ -141,13 +140,13 @@ class TestMSIBI(BaseTest):
                 state=stateX,
                 exclude_bond_depth=0,
                 exclude_all_bonded=False,
-                optimize_against=False
+                optimize_against=False,
             )
             pair_AB.set_state_params(
                 state=stateY,
                 exclude_bond_depth=0,
                 exclude_all_bonded=False,
-                optimize_against=False
+                optimize_against=False,
             )
             msibi.add_force(pair_AB)
 
