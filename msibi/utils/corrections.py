@@ -336,33 +336,26 @@ def _anchored_predict(
     w: int,
     slope_degree: int = 2,
 ):
-    """Extrapolate into the gap with a boundary-anchored, C1-continuous curve.
+    """Extrapolate into the gap, anchored to the boundary data point.
 
-    This is the single correction construction used everywhere: the sweep uses
-    it to score windows, and the correction functions use it to fill the gap.
-    The extrapolation is written as an offset from the real data point that
-    borders the gap,
+    The extrapolation is an offset from the real data point bordering the gap,
 
         V(u) = v_b + s_b * u + g(u),   u = x - x_b,
 
-    where (x_b, v_b) is the boundary data point and s_b is the boundary slope
-    from _boundary_slope. The curvature term g is the chosen functional form fit
-    to the window, with its own value and slope at the boundary subtracted off,
+    where (x_b, v_b) is the boundary point and s_b its slope from
+    _boundary_slope. The curvature term g is `func` fit to the window with its
+    own value and slope at the boundary subtracted,
 
         g(u) = func(u) - func(0) - func'(0) * u,
 
-    so that g(0) = 0 and g'(0) = 0 for any form. The value and first derivative
-    at the seam are therefore pinned to the real data by construction, giving C1
-    continuity across the real/gap join every time, no matter the form or the
-    window. The form no longer sets the whole extrapolation, only how it bends
-    deeper into the gap. A linear form contributes no curvature and reduces to a
-    straight tangent continuation.
+    so g(0) = 0 and g'(0) = 0 for any form. Value and slope at the seam
+    therefore match the real data for any form and window, leaving `func` to set
+    only the curvature. A linear form gives g = 0 and a tangent continuation.
 
-    side='head' anchors on the first real point (extrapolate to smaller x);
-    side='tail' anchors on the last real point (extrapolate to larger x). The
-    form is fit in the raw x coordinate (where it stays well conditioned); the
-    anchoring subtracts the form's own value and slope at the boundary, so g is
-    the same regardless of any coordinate shift.
+    side='head' anchors on the first real point (extrapolating to smaller x),
+    side='tail' on the last. The form is fit in raw x, where it stays well
+    conditioned; g is unaffected by the coordinate choice since the form's own
+    tangent is subtracted.
     """
     if side == "head":
         x_b, v_b = x_region[0], v_region[0]
@@ -395,18 +388,15 @@ def _walk_forward_score(
 ):
     """Score a candidate fit window by held-out extrapolation error.
 
-    The correction has to extrapolate past the edge of the real data into the
-    region of missing (NaN/inf) values. We can't score that directly since
-    there is no ground truth in the gap, so we simulate it: reserve a small
-    holdout block of real points nearest the gap, build the anchored correction
-    (see _anchored_predict) from the w points just inside that block, then
-    extrapolate back onto the holdout and measure the RMSE against the real
-    values. A window that predicts the held-out edge points well is the window
-    whose correction extrapolates most trustworthily into the true gap, with no
-    peak or well finding required. The score uses the same construction the gap
-    is actually filled with, so selection and application stay consistent.
+    The gap itself has no ground truth to score against, so the extrapolation is
+    rehearsed on real data: the `holdout` points nearest the gap are set aside,
+    _anchored_predict builds the correction from the w points just inside them,
+    and the RMSE against the held-out values is returned. Lower is better.
 
-    side='head' treats the start of the arrays as the gap edge (extrapolate to
+    Scoring uses the same construction that fills the gap, so a window that
+    scores well behaves the same way when applied.
+
+    side='head' treats the start of the arrays as the gap edge (extrapolating to
     smaller x); side='tail' treats the end as the gap edge.
     """
     if side == "head":
@@ -422,11 +412,10 @@ def _walk_forward_score(
 def _extrapolation_instability(pred: np.ndarray, neighbors: list):
     """Mean relative L2 distance between a gap extrapolation and its neighbors.
 
-    A window whose gap extrapolation barely moves when the window size is
-    nudged up or down sits on a stable plateau and is trustworthy. A window
-    whose extrapolation swings wildly against its neighbors is fragile, even if
-    its own held-out RMSE happens to be low. Returns 0.0 when there are no
-    neighbors to compare against.
+    Measures how much the extrapolation changes when the window size is nudged.
+    A low value means the result is insensitive to the exact window; a high one
+    means it is not, regardless of that window's held-out RMSE. Returns 0.0 when
+    there are no neighbors to compare against.
     """
     if not neighbors:
         return 0.0
@@ -452,19 +441,16 @@ def _select_window(
 ):
     """Sweep candidate fit windows and return the best window size.
 
-    Replaces the single user-supplied fit_window_size with a scan over window
-    sizes from window_min to window_max. Selection happens in two stages.
-    First each window is scored by _walk_forward_score (held-out extrapolation
-    RMSE). Rather than taking the raw minimum, which can be a noise-driven spike,
-    every window whose RMSE is within rmse_tol of the best is treated as a
-    statistical tie. The tie is then broken on stability: among those windows we
-    keep the one whose actual gap extrapolation is least sensitive to a change in
-    window size, as measured by _extrapolation_instability. This favours windows
-    sitting on a smooth plateau over lucky spikes. Candidate windows that fail to
-    fit are skipped rather than aborting the sweep.
+    Every window from window_min to window_max is scored by _walk_forward_score.
+    Selection is then two-stage: windows whose RMSE is within rmse_tol of the
+    best are treated as tied, and the tie is settled by _extrapolation_instability,
+    keeping the window whose gap extrapolation is least sensitive to window size.
+    The raw RMSE minimum can be a noise spike, so it is not taken directly.
 
-    Set return_scores=True to also get a {window_size: {rmse, instability}} dict,
-    which is handy for diagnostics and plotting.
+    Windows that fail to fit are skipped rather than aborting the sweep.
+
+    Set return_scores=True to also return a {window_size: {rmse, instability}}
+    dict for diagnostics.
     """
     n = len(v_region)
     w_hi = min(window_max, n - holdout)
@@ -486,7 +472,7 @@ def _select_window(
                 x_region, v_region, x_missing, func, maxfev, side, w
             )
         except (RuntimeError, TypeError, ValueError):
-            # A window this func can't fit is simply not a candidate.
+            # A window this func can't fit is not a candidate.
             continue
         rmse[w] = score
         preds[w] = pred

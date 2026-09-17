@@ -182,15 +182,14 @@ def test_pair_no_tail_corrections():
 def test_anchored_prediction_is_c1_continuous(side, form):
     """The extrapolation must join the real data with matching value and slope.
 
-    This is the invariant the refactor guarantees: for any correction form,
-    window, and (noisy) data, the filled region leaves the real data with the
-    same value and first derivative at the seam, so there is no force
-    discontinuity. We check it directly on _anchored_predict rather than through
-    the noise, since the pin is exact by construction.
+    For any correction form, window and noise level, the filled region leaves the
+    seam at the value and first derivative of the real data, so the force is
+    continuous there. Checked directly on _anchored_predict, where the match is
+    exact rather than approximate.
     """
     rng = np.random.default_rng(0)
     x = np.linspace(0.5, 4.0, 200)
-    # A deliberately non-harmonic (anharmonic) well so the form is mis-specified.
+    # An anharmonic well, so the harmonic and exponential forms are misspecified.
     v = 8.0 * (x - 2.0) ** 4 + 4.0 * (x - 2.0) ** 2 + rng.normal(0, 0.02, x.size)
 
     x_b = x[0] if side == "head" else x[-1]
@@ -271,7 +270,7 @@ def test_stability_tie_break_overrides_rmse_argmin():
     tol = rmse[argmin] * 1.25 + 1e-12 * np.max(np.abs(v_real))
     tied = [k for k, r in rmse.items() if r <= tol]
 
-    # The chosen window is not the argmin, but is steadier and still tied on RMSE.
+    # The chosen window is steadier than the argmin and still tied on RMSE.
     assert w != argmin
     assert instability[w] < instability[argmin]
     assert rmse[w] <= tol
