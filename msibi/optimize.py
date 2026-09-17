@@ -5,7 +5,7 @@ import hoomd
 import msibi
 
 
-class MSIBI(object):
+class MSIBI:
     """Management class for orchestrating an MSIBI optimization run.
 
     .. note::
@@ -67,10 +67,12 @@ class MSIBI(object):
         thermostat_kwargs: dict,
         dt: float,
         gsd_period: int,
-        nlist_exclusions: list[str] = ["bond", "angle"],
+        nlist_exclusions: list[str] | None = None,
         seed: int = 24,
         device: hoomd.device.Device = None,
     ):
+        if nlist_exclusions is None:
+            nlist_exclusions = ["bond", "angle"]
         if integrator_method not in [
             hoomd.md.methods.ConstantVolume,
             hoomd.md.methods.ConstantPressure,
@@ -153,7 +155,7 @@ class MSIBI(object):
 
     def _add_optimize_force(self, force: msibi.forces.Force) -> None:
         """Check that all forces to be optimized are the same type."""
-        if not all([isinstance(force, f.__class__) for f in self._optimize_forces]):
+        if not all(isinstance(force, f.__class__) for f in self._optimize_forces):
             raise RuntimeError(
                 "Only one type of force (i.e., Bonds, Angles, Pairs, etc) "
                 "can be set to optimize at one time."
@@ -228,8 +230,8 @@ class MSIBI(object):
         forces = self._build_force_objects()
         if len(forces) == 0:
             raise RuntimeError("No forces have been created yet. See MSIBI.add_force()")
-        f = open(file_path, "wb")
-        pickle.dump(forces, f)
+        with open(file_path, "wb") as f:
+            pickle.dump(forces, f)
 
     def _build_force_objects(self) -> list:
         """Creates force objects for query simulations."""
@@ -304,7 +306,7 @@ class MSIBI(object):
                 force._compute_current_distribution(state)
                 force._save_current_distribution(state, iteration=self.n_iterations)
                 print(
-                    "Force: {0}, State: {1}, Iteration: {2}, Fit score:{3:f}".format(
+                    "Force: {}, State: {}, Iteration: {}, Fit score:{:f}".format(
                         force.name,
                         state.name,
                         self.n_iterations,

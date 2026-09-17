@@ -1,8 +1,6 @@
 class PotentialError(Exception):
     """Base class for exceptions related to potential operations."""
 
-    pass
-
 
 class PotentialNotOptimizedError(PotentialError):
     """Exception raised when attempting an operation that requires optimization to be enabled."""

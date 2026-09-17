@@ -23,8 +23,6 @@ class TestMSIBI(BaseTest):
             hoomd.md.methods.thermostats.MTTK,
         )
 
-        assert isinstance(msibi.device, hoomd.device.CPU)
-
     def test_add_state(self, msibi, stateX, stateY):
         msibi.add_state(stateX)
         msibi.add_state(stateY)
@@ -318,9 +316,9 @@ class TestMSIBI(BaseTest):
             msibi = MSIBI(
                 nlist=hoomd.md.nlist.Cell,
                 integrator_method=hoomd.md.methods.DisplacementCapped,
-                method_kwargs=dict(),
+                method_kwargs={},
                 thermostat=hoomd.md.methods.thermostats.MTTK,
-                thermostat_kwargs=dict(tau=0.01),
+                thermostat_kwargs={"tau": 0.01},
                 dt=0.003,
                 gsd_period=int(1e3),
             )

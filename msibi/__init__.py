@@ -6,13 +6,13 @@ from .optimize import MSIBI
 from .utils import conversion
 
 __all__ = [
-    "__version__",
     "MSIBI",
+    "Angle",
+    "Bond",
+    "Dihedral",
     "Pair",
     "State",
-    "Bond",
-    "Angle",
-    "Dihedral",
-    "utils",
+    "__version__",
     "conversion",
+    "utils",
 ]

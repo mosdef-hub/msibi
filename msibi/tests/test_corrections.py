@@ -135,7 +135,7 @@ def test_pair_tail_corrections():
     x, V = generate_lj_potential(noise_level=0)
     V_missing = np.copy(V)
     V_missing[0:15] = np.inf
-    V_corrected, head_start, idx_switch, real_indices = pair_corrections(
+    V_corrected, head_start, idx_switch, _real_indices = pair_corrections(
         x=x,
         V=V_missing,
         fit_window_size=10,
@@ -155,7 +155,7 @@ def test_pair_no_tail_corrections():
     x, V = generate_lj_potential(noise_level=0)
     V_missing = np.copy(V)
     V_missing[0:15] = np.inf
-    V_corrected, head_start, idx_switch, real_indices = pair_corrections(
+    V_corrected, head_start, _idx_switch, _real_indices = pair_corrections(
         x=x,
         V=V_missing,
         fit_window_size=10,
@@ -212,7 +212,7 @@ def test_auto_window_sweep_fills_gap():
     V_missing = np.copy(V)
     V_missing[0:15] = np.inf
     V_missing[-15:] = np.inf
-    V_corrected, head_start, tail_start, real_indices = bonded_corrections(
+    V_corrected, head_start, tail_start, _real_indices = bonded_corrections(
         x=x,
         V=V_missing,
         fit_window_size=None,

@@ -1,4 +1,4 @@
-from typing import Callable, Optional, Union
+from collections.abc import Callable
 
 import more_itertools as mit
 import numpy as np
@@ -18,7 +18,7 @@ See smoothing_window, correction_fit_window, smoothing_order, maxfev in msibi.Fo
 """
 
 
-def harmonic(x: np.ndarray, x0: Union[float, int], k: Union[float, int]):
+def harmonic(x: np.ndarray, x0: float, k: float):
     """Used as the default correction form for bonded forces.
 
         :math:`V(x) = 0.5*k(x - x0)^2`
@@ -32,7 +32,7 @@ def harmonic(x: np.ndarray, x0: Union[float, int], k: Union[float, int]):
     return 0.5 * k * (x - x0) ** 2
 
 
-def exponential(x: np.ndarray, A: Union[float, int], B: Union[float, int]):
+def exponential(x: np.ndarray, A: float, B: float):
     """Used as the default head correction for non-bonded pair potentials.
 
     :math:`V(x) = A*exp(-Bx)`
@@ -41,7 +41,7 @@ def exponential(x: np.ndarray, A: Union[float, int], B: Union[float, int]):
     return A * np.exp(-B * x)
 
 
-def linear(x: np.ndarray, m: Union[float, int], b: Union[float, int]):
+def linear(x: np.ndarray, m: float, b: float):
     """Functional form that can be used for head or tail corrections.
 
     :math:`V(x) = mx + b`
@@ -56,7 +56,7 @@ def bonded_corrections(
     V: np.ndarray,
     smoothing_window: int,
     smoothing_order: int,
-    fit_window_size: Optional[int],
+    fit_window_size: int | None,
     maxfev: int,
     head_correction_func: Callable,
     tail_correction_func: Callable,
@@ -181,10 +181,10 @@ def bonded_corrections(
 def pair_corrections(
     x: np.ndarray,
     V: np.ndarray,
-    r_switch: Union[float, int],
+    r_switch: float,
     smoothing_window: int,
     smoothing_order: int,
-    fit_window_size: Optional[int],
+    fit_window_size: int | None,
     maxfev: int,
     head_correction_func: Callable,
 ):

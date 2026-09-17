@@ -68,7 +68,7 @@ def validate_bonds():
     # IBI was learned (i.e., where bond-length distribution wasn't zero)
     test_potential = bond.potential_history[best_fit]
     indices = np.where((bond.x_range <= 1.6) & (bond.x_range >= 0.7))
-    params, params_covariance = curve_fit(
+    params, _params_covariance = curve_fit(
         harmonic, bond.x_range[indices], test_potential[indices], p0=[500, 1.1]
     )
     k_fit, x0_fit = params
@@ -133,7 +133,7 @@ def validate_angles():
     # Try to fit in range of potnetial that used IBI, instead of including large head/tail correction regions
     test_potential = angle.potential_history[best_fit]
     indices = np.where((angle.x_range <= 2.5) & (angle.x_range >= 1.5))
-    params, params_covariance = curve_fit(
+    params, _params_covariance = curve_fit(
         harmonic, angle.x_range[indices], test_potential[indices], p0=[250, 2.0]
     )
     k_fit, x0_fit = params
