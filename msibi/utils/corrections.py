@@ -318,7 +318,11 @@ def _boundary_slope(u_win: np.ndarray, v_win: np.ndarray, degree: int):
     Read from the derivative of a degree-`degree` polynomial fit to the whole
     window rather than a raw two-point difference, so the pinned slope is
     smoothed over the window instead of carrying a single point's noise.
+
+    Degree is capped at what the window supports; fewer than degree + 1 points
+    would be underdetermined.
     """
+    degree = min(degree, len(u_win) - 1)
     return float(np.polyval(np.polyder(np.polyfit(u_win, v_win, degree)), 0.0))
 
 
@@ -496,10 +500,12 @@ def _select_window(
         neighbors = [preds[w + d] for d in (-1, 1) if w + d in preds]
         instability[w] = _extrapolation_instability(pred, neighbors)
 
-    # Windows statistically tied with the best held-out RMSE, then break the tie
-    # on extrapolation stability.
+    # Tie on RMSE, then break it on stability. The floor keeps rounding-level
+    # differences from splitting the tie on noise-free data.
     best_rmse = min(rmse.values())
-    tied = [w for w, r in rmse.items() if r <= best_rmse * (1.0 + rmse_tol)]
+    v_scale = float(np.max(np.abs(v_region)))
+    atol = 1e-12 * (v_scale if v_scale > 0 else 1.0)
+    tied = [w for w, r in rmse.items() if r <= best_rmse * (1.0 + rmse_tol) + atol]
     best_w = min(tied, key=lambda w: instability[w])
 
     if return_scores:
