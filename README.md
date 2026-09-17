@@ -62,17 +62,19 @@ Here is a simple example using MSIBI to learn a bond-stretching force from a sin
 # This is the context/management class for MSIBI
 # Set simulation parameters, call `add_state` and `add_force` methods to store other MSIBI objects.
 optimizer = MSIBI(
-	nlist=hoomd.md.nlist.Cell,
+    nlist=hoomd.md.nlist.Cell,
     integrator_method=hoomd.md.methods.ConstantVolume,
-	thermostat=hoomd.md.methods.thermostats.MTTK,
+    thermostat=hoomd.md.methods.thermostats.MTTK,
     thermostat_kwargs={"tau": 0.1},
     method_kwargs={},
-	dt=0.0001,
-	gsd_period=int(1e4)
+    dt=0.0001,
+    gsd_period=int(1e4),
 )
 
 # Create a State instance, pass in a path to the target trajectory
-stateA = State(name="A", kT=5.0, traj_file="cg_trajectory.gsd", alpha0=0.7, n_frames=100)
+stateA = State(
+    name="A", kT=5.0, traj_file="cg_trajectory.gsd", alpha0=0.7, n_frames=100
+)
 
 # For each force you want to optimize, create an instance, set optimize=True
 AA_bond = Bond(type1="A", type2="A", optimize=True, nbins=80)
@@ -106,13 +108,13 @@ import hoomd
 from msibi import MSIBI, State, Pair, Bond, Angle
 
 optimizer = MSIBI(
-	nlist=hoomd.md.nlist.Cell,
-	integrator_method=hoomd.md.methods.ConstantVolume,
-	thermostat=hoomd.md.methods.thermostats.MTTK,
-	thermostat_kwargs={"tau": 0.1},
-	method_kwargs={},
-	dt=0.0001,
-	gsd_period=int(1e4)
+    nlist=hoomd.md.nlist.Cell,
+    integrator_method=hoomd.md.methods.ConstantVolume,
+    thermostat=hoomd.md.methods.thermostats.MTTK,
+    thermostat_kwargs={"tau": 0.1},
+    method_kwargs={},
+    dt=0.0001,
+    gsd_period=int(1e4),
 )
 
 # Create 3 State instances, pass in a path to the target trajectory

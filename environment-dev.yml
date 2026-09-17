@@ -6,9 +6,9 @@ dependencies:
 - freud >=3.4
 - gsd >=3.0
 - hoomd >=5.4
-- python >=3.10,<=3.13
+- python >=3.11,<3.15
 - pandas
-- numpy >=2.0,<2.3
+- numpy >=2.0
 - matplotlib
 - mdanalysis <3.0
 - more-itertools

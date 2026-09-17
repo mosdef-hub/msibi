@@ -9,6 +9,14 @@ from .base_test import BaseTest
 
 test_assets = os.path.join(os.path.dirname(__file__), "assets")
 
+amber_traj = os.path.join(test_assets, "amber.nc")
+amber_topology = os.path.join(test_assets, "amber.psf")
+gromacs_traj = os.path.join(test_assets, "gromacs.xtc")
+gromacs_topology = os.path.join(test_assets, "gromacs.tpr")
+lammps_dcd = os.path.join(test_assets, "lammps.dcd")
+lammps_dump = os.path.join(test_assets, "lammps.dump")
+lammps_topology = os.path.join(test_assets, "lammps.data")
+
 
 class TestConversion(BaseTest):
     def test_bad_inputs(self, tmp_path):
@@ -26,8 +34,8 @@ class TestConversion(BaseTest):
     def test_lammps_dump(
         self,
         tmp_path,
-        topology=os.path.join(test_assets, "lammps.data"),
-        trajectory=os.path.join(test_assets, "lammps.dump"),
+        topology=lammps_topology,
+        trajectory=lammps_dump,
     ):
         output = os.path.join(tmp_path, "lammps.dump.gsd")
         conversion.gsd_from_files(topology, trajectory, output=output)
@@ -43,8 +51,8 @@ class TestConversion(BaseTest):
     def test_lammps_dcd(
         self,
         tmp_path,
-        topology=os.path.join(test_assets, "lammps.data"),
-        trajectory=os.path.join(test_assets, "lammps.dcd"),
+        topology=lammps_topology,
+        trajectory=lammps_dcd,
     ):
         output = os.path.join(tmp_path, "lammps.dcd.gsd")
         conversion.gsd_from_files(topology, trajectory, output=output)
@@ -60,8 +68,8 @@ class TestConversion(BaseTest):
     def test_amber(
         self,
         tmp_path,
-        topology=os.path.join(test_assets, "amber.psf"),
-        trajectory=os.path.join(test_assets, "amber.nc"),
+        topology=amber_topology,
+        trajectory=amber_traj,
     ):
         output = os.path.join(tmp_path, "amber.gsd")
         conversion.gsd_from_files(topology, trajectory, output=output)
@@ -79,8 +87,8 @@ class TestConversion(BaseTest):
     def test_gromacs(
         self,
         tmp_path,
-        topology=os.path.join(test_assets, "gromacs.tpr"),
-        trajectory=os.path.join(test_assets, "gromacs.xtc"),
+        topology=gromacs_topology,
+        trajectory=gromacs_traj,
     ):
         output = os.path.join(tmp_path, "gromacs.gsd")
         conversion.gsd_from_files(topology, trajectory, output=output)

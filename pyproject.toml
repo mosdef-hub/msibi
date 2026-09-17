@@ -29,7 +29,7 @@ classifiers=[
     "Operating System :: MacOS",
 ]
 urls = {Homepage = "https://github.com/mosdef-hub/msibi"}
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 
 [tool.setuptools]
 zip-safe = false
@@ -41,3 +41,10 @@ find = {namespaces = false}
 
 [tool.setuptools.package-data]
 msibi = ['"utils/**"']
+
+[tool.ruff]
+line-length = 88
+
+[tool.isort]
+profile = "black"
+line_length = 88
