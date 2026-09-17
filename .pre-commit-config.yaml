@@ -14,7 +14,7 @@ repos:
   hooks:
     # Run the linter.
     - id: ruff
-      args: [--line-length=80, --fix]
+      args: [--fix]
     # Run the formatter.
     - id: ruff-format
 - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -30,5 +30,4 @@ repos:
   hooks:
     - id: isort
       name: isort (python)
-      args: [--profile=black, --line-length=80]
       exclude: "msibi/tests/assets/.*"

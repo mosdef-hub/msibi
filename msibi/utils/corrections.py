@@ -56,12 +56,16 @@ def bonded_corrections(
     V: np.ndarray,
     smoothing_window: int,
     smoothing_order: int,
-    fit_window_size: int,
+    fit_window_size: int | None,
     maxfev: int,
     head_correction_func: Callable,
     tail_correction_func: Callable,
 ):
     """The default correction method for bonded forces.
+
+    If fit_window_size is None, the fit window for each side is chosen
+    automatically by _select_window (a walk-forward window sweep) instead of
+    using a single user-supplied window.
 
     Parameters
     ----------
@@ -107,36 +111,60 @@ def bonded_corrections(
             mode=mode,
         )
 
-    # head correction (i.e., left side of potential)
-    # Get fit parameters for where we actually have data
-    # Need to shift x-values. Function must increase as x becomes smaller
-    x_head_pivot = x_real[fit_window_size - 1]
-    x_head_fit = _shift_x(x_real[:fit_window_size], origin=x_head_pivot)
+    # Choose per-side fit windows. When fit_window_size is None, sweep candidate
+    # windows and keep the one that best extrapolates onto held-out real data.
+    x_head_missing = x[:head_start]
+    x_tail_missing = x[tail_start + 1 :]
+    if fit_window_size is None:
+        head_window = _select_window(
+            x_real,
+            v_real,
+            x_head_missing,
+            head_correction_func,
+            maxfev,
+            side="head",
+        )
+        tail_window = _select_window(
+            x_real,
+            v_real,
+            x_tail_missing,
+            tail_correction_func,
+            maxfev,
+            side="tail",
+        )
+    else:
+        head_window = tail_window = fit_window_size
+
+    # head correction (i.e., left side of potential). The extrapolation is
+    # anchored to the boundary data point's value and slope, so it joins the
+    # real data with C1 continuity regardless of window or correction form.
     try:
-        popt_head, _pcov_head = curve_fit(
-            f=head_correction_func,
-            xdata=x_head_fit,
-            ydata=v_real[:fit_window_size],
-            maxfev=maxfev,
+        head_pot_correction = _anchored_predict(
+            x_real,
+            v_real,
+            x_head_missing,
+            head_correction_func,
+            maxfev,
+            side="head",
+            w=head_window,
         )
     except RuntimeError:
         print(bad_fit_error_msg)
         raise RuntimeError(
             "Curve fitting failed for the bond head correction."
         ) from None
-    x_head_missing = _shift_x(x[:head_start], origin=x_head_pivot)
-    # Apply these parameters to the x-range where we are missing data
-    head_pot_correction = head_correction_func(x_head_missing, *popt_head)
 
     # tail correction (i.e., right side of potential)
     try:
-        popt_tail, _pcov_tail = curve_fit(
-            f=tail_correction_func,
-            xdata=x_real[-fit_window_size:],
-            ydata=v_real[-fit_window_size:],
-            maxfev=maxfev,
+        tail_pot_correction = _anchored_predict(
+            x_real,
+            v_real,
+            x_tail_missing,
+            tail_correction_func,
+            maxfev,
+            side="tail",
+            w=tail_window,
         )
-        tail_pot_correction = tail_correction_func(x[tail_start + 1 :], *popt_tail)
     except RuntimeError:
         print(bad_fit_error_msg)
         raise RuntimeError(
@@ -156,7 +184,7 @@ def pair_corrections(
     r_switch: float,
     smoothing_window: int,
     smoothing_order: int,
-    fit_window_size: int,
+    fit_window_size: int | None,
     maxfev: int,
     head_correction_func: Callable,
 ):
@@ -199,16 +227,31 @@ def pair_corrections(
             polyorder=smoothing_order,
             mode="mirror",
         )
-    # head correction (short range repulsion)
-    # Get fit parameters for where we actually have data
-    try:
-        popt_head, _pcov_head = curve_fit(
-            f=head_correction_func,
-            xdata=x_real[: fit_window_size + 1],
-            ydata=v_real[: fit_window_size + 1],
-            maxfev=maxfev,
+    # head correction (short range repulsion).
+    # When fit_window_size is None, sweep candidate windows and keep the one
+    # that best extrapolates onto held-out real data near the gap. The
+    # extrapolation is anchored to the boundary data point's value and slope, so
+    # it joins the real data with C1 continuity regardless of window or form.
+    x_head_missing = x[:head_start]
+    if fit_window_size is None:
+        fit_window_size = _select_window(
+            x_real,
+            v_real,
+            x_head_missing,
+            head_correction_func,
+            maxfev,
+            side="head",
         )
-        head_pot_correction = head_correction_func(x[:head_start], *popt_head)
+    try:
+        head_pot_correction = _anchored_predict(
+            x_real,
+            v_real,
+            x_head_missing,
+            head_correction_func,
+            maxfev,
+            side="head",
+            w=fit_window_size,
+        )
     except RuntimeError:
         print(bad_fit_error_msg)
         raise RuntimeError(
@@ -269,9 +312,189 @@ def _get_real_indices(V: np.ndarray):
     return real_idx
 
 
-def _shift_x(x: np.ndarray, origin: float):
-    """Shift x-values in order to generate increasing f(x) as x decreases.
+def _boundary_slope(u_win: np.ndarray, v_win: np.ndarray, degree: int):
+    """Noise-averaged slope of the data at the seam (u = 0).
 
-    This is used for bonded_corrections().
+    Read from the derivative of a degree-`degree` polynomial fit to the whole
+    window rather than a raw two-point difference, so the pinned slope is
+    smoothed over the window instead of carrying a single point's noise.
+
+    Degree is capped at what the window supports; fewer than degree + 1 points
+    would be underdetermined.
     """
-    return x - origin
+    degree = min(degree, len(u_win) - 1)
+    return float(np.polyval(np.polyder(np.polyfit(u_win, v_win, degree)), 0.0))
+
+
+def _anchored_predict(
+    x_region: np.ndarray,
+    v_region: np.ndarray,
+    x_missing: np.ndarray,
+    func: Callable,
+    maxfev: int,
+    side: str,
+    w: int,
+    slope_degree: int = 2,
+):
+    """Extrapolate into the gap, anchored to the boundary data point.
+
+    The extrapolation is an offset from the real data point bordering the gap,
+
+        V(u) = v_b + s_b * u + g(u),   u = x - x_b,
+
+    where (x_b, v_b) is the boundary point and s_b its slope from
+    _boundary_slope. The curvature term g is `func` fit to the window with its
+    own value and slope at the boundary subtracted,
+
+        g(u) = func(u) - func(0) - func'(0) * u,
+
+    so g(0) = 0 and g'(0) = 0 for any form. Value and slope at the seam
+    therefore match the real data for any form and window, leaving `func` to set
+    only the curvature. A linear form gives g = 0 and a tangent continuation.
+
+    side='head' anchors on the first real point (extrapolating to smaller x),
+    side='tail' on the last. The form is fit in raw x, where it stays well
+    conditioned; g is unaffected by the coordinate choice since the form's own
+    tangent is subtracted.
+    """
+    if side == "head":
+        x_b, v_b = x_region[0], v_region[0]
+        x_win, v_win = x_region[:w], v_region[:w]
+    else:
+        x_b, v_b = x_region[-1], v_region[-1]
+        x_win, v_win = x_region[-w:], v_region[-w:]
+    s_b = _boundary_slope(x_win - x_b, v_win, slope_degree)
+    popt, _ = curve_fit(f=func, xdata=x_win, ydata=v_win, maxfev=maxfev)
+    # Subtract the form's own value and slope at the boundary so only its
+    # curvature survives; then re-pin value and slope to the data.
+    du = 1e-6 * (abs(x_b) + 1.0)
+    f_b = func(np.array([x_b]), *popt)[0]
+    fp_b = (
+        func(np.array([x_b + du]), *popt)[0] - func(np.array([x_b - du]), *popt)[0]
+    ) / (2.0 * du)
+    u_m = x_missing - x_b
+    g = func(x_missing, *popt) - f_b - fp_b * u_m
+    return v_b + s_b * u_m + g
+
+
+def _walk_forward_score(
+    x_region: np.ndarray,
+    v_region: np.ndarray,
+    func: Callable,
+    maxfev: int,
+    side: str,
+    w: int,
+    holdout: int,
+):
+    """Score a candidate fit window by held-out extrapolation error.
+
+    The gap itself has no ground truth to score against, so the extrapolation is
+    rehearsed on real data: the `holdout` points nearest the gap are set aside,
+    _anchored_predict builds the correction from the w points just inside them,
+    and the RMSE against the held-out values is returned. Lower is better.
+
+    Scoring uses the same construction that fills the gap, so a window that
+    scores well behaves the same way when applied.
+
+    side='head' treats the start of the arrays as the gap edge (extrapolating to
+    smaller x); side='tail' treats the end as the gap edge.
+    """
+    if side == "head":
+        x_hold, v_hold = x_region[:holdout], v_region[:holdout]
+        x_train, v_train = x_region[holdout:], v_region[holdout:]
+    else:
+        x_hold, v_hold = x_region[-holdout:], v_region[-holdout:]
+        x_train, v_train = x_region[:-holdout], v_region[:-holdout]
+    v_pred = _anchored_predict(x_train, v_train, x_hold, func, maxfev, side, w)
+    return float(np.sqrt(np.mean((v_pred - v_hold) ** 2)))
+
+
+def _extrapolation_instability(pred: np.ndarray, neighbors: list):
+    """Mean relative L2 distance between a gap extrapolation and its neighbors.
+
+    Measures how much the extrapolation changes when the window size is nudged.
+    A low value means the result is insensitive to the exact window; a high one
+    means it is not, regardless of that window's held-out RMSE. Returns 0.0 when
+    there are no neighbors to compare against.
+    """
+    if not neighbors:
+        return 0.0
+    diffs = []
+    for nb in neighbors:
+        scale = 0.5 * (np.linalg.norm(pred) + np.linalg.norm(nb)) + 1e-12
+        diffs.append(np.linalg.norm(pred - nb) / scale)
+    return float(np.mean(diffs))
+
+
+def _select_window(
+    x_region: np.ndarray,
+    v_region: np.ndarray,
+    x_missing: np.ndarray,
+    func: Callable,
+    maxfev: int,
+    side: str,
+    window_min: int = 4,
+    window_max: int = 25,
+    holdout: int = 3,
+    rmse_tol: float = 0.25,
+    return_scores: bool = False,
+):
+    """Sweep candidate fit windows and return the best window size.
+
+    Every window from window_min to window_max is scored by _walk_forward_score.
+    Selection is then two-stage: windows whose RMSE is within rmse_tol of the
+    best are treated as tied, and the tie is settled by _extrapolation_instability,
+    keeping the window whose gap extrapolation is least sensitive to window size.
+    The raw RMSE minimum can be a noise spike, so it is not taken directly.
+
+    Windows that fail to fit are skipped rather than aborting the sweep.
+
+    Set return_scores=True to also return a {window_size: {rmse, instability}}
+    dict for diagnostics.
+    """
+    n = len(v_region)
+    w_hi = min(window_max, n - holdout)
+    if w_hi < window_min:
+        # Too little real data to sweep, so fall back to as many points as we
+        # can spare while still leaving the holdout block.
+        w = max(2, n - holdout)
+        info = {w: {"rmse": float("nan"), "instability": float("nan")}}
+        return (w, info) if return_scores else w
+
+    rmse = {}
+    preds = {}
+    for w in range(window_min, w_hi + 1):
+        try:
+            score = _walk_forward_score(
+                x_region, v_region, func, maxfev, side, w, holdout
+            )
+            pred = _anchored_predict(
+                x_region, v_region, x_missing, func, maxfev, side, w
+            )
+        except (RuntimeError, TypeError, ValueError):
+            # A window this func can't fit is not a candidate.
+            continue
+        rmse[w] = score
+        preds[w] = pred
+    if not rmse:
+        raise RuntimeError(
+            "Window sweep failed to fit any candidate window.\n" + bad_fit_error_msg
+        )
+
+    instability = {}
+    for w, pred in preds.items():
+        neighbors = [preds[w + d] for d in (-1, 1) if w + d in preds]
+        instability[w] = _extrapolation_instability(pred, neighbors)
+
+    # Tie on RMSE, then break it on stability. The floor keeps rounding-level
+    # differences from splitting the tie on noise-free data.
+    best_rmse = min(rmse.values())
+    v_scale = float(np.max(np.abs(v_region)))
+    atol = 1e-12 * (v_scale if v_scale > 0 else 1.0)
+    tied = [w for w, r in rmse.items() if r <= best_rmse * (1.0 + rmse_tol) + atol]
+    best_w = min(tied, key=lambda w: instability[w])
+
+    if return_scores:
+        info = {w: {"rmse": rmse[w], "instability": instability[w]} for w in rmse}
+        return best_w, info
+    return best_w

@@ -159,7 +159,7 @@ class TestForce(BaseTest):
         )
         assert bond.smoothing_window == 15
         assert bond.smoothing_order == 2
-        assert bond.correction_fit_window == 10
+        assert bond.correction_fit_window is None
 
     def test_smooth_potential(self):
         bond = Bond(
@@ -292,7 +292,6 @@ class TestForce(BaseTest):
         bond.set_harmonic(k=500, r0=2)
         with pytest.warns(UserWarning):
             _ = bond.potential
-
         with pytest.warns(UserWarning):
             _ = bond.force
 
